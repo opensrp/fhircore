@@ -61,6 +61,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
@@ -79,7 +80,7 @@ constructor(
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
   val registerUiState = mutableStateOf(RegisterUiState())
   val currentPage: MutableState<Int> = mutableIntStateOf(0)
-  val searchText = mutableStateOf("")
+  val searchText: MutableState<UiSearchQuery> = mutableStateOf(UiSearchQuery.emptyText)
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<ResourceData>>> =
     MutableStateFlow(emptyFlow())
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
@@ -168,7 +169,7 @@ constructor(
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
         searchText.value = event.searchText
-        if (event.searchText.isEmpty()) {
+        if (event.searchText.isBlank()) {
           paginateRegisterData(registerUiState.value.registerId)
         } else {
           filterRegisterData(event)
@@ -196,7 +197,7 @@ constructor(
             searchBar.computedRules!!.any { ruleName ->
               // if ruleName not found in map return {-1}; check always return false hence no data
               val value = resourceData.computedValuesMap[ruleName]?.toString() ?: "{-1}"
-              value.contains(other = event.searchText, ignoreCase = true)
+              value.contains(other = event.searchText.query, ignoreCase = true)
             }
           }
         }

@@ -67,6 +67,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
@@ -165,7 +166,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,
                 registerUiState = registerViewModel.registerUiState.value,
-                searchText = registerViewModel.searchText,
+                searchQuery = registerViewModel.searchText,
                 currentPage = registerViewModel.currentPage,
                 pagingItems = pagingItems,
                 navController = findNavController(),
@@ -185,7 +186,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
   override fun onStop() {
     super.onStop()
-    registerViewModel.searchText.value = "" // Clear the search term
+    registerViewModel.searchText.value = UiSearchQuery.emptyText // Clear the search term
   }
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {

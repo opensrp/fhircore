@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfig
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val NO_REGISTER_VIEW_COLUMN_TEST_TAG = "noRegisterViewColumnTestTag"
@@ -63,15 +64,15 @@ fun GeoWidgetLauncherScreen(
          * */
         TopScreenSection(
           title = geoWidgetConfiguration.topScreenSection?.title ?: "",
-          searchText = "",
+          searchQuery = UiSearchQuery.emptyText,
           filteredRecordsCount = 1,
           isSearchBarVisible = geoWidgetConfiguration.topScreenSection?.searchBar?.visible ?: true,
           searchPlaceholder = geoWidgetConfiguration.topScreenSection?.searchBar?.display,
           showSearchByBarcode =
             geoWidgetConfiguration.topScreenSection?.searchBar?.searchByBarcode ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
-          onSearchTextChanged = { searchText ->
-            onEvent(GeoWidgetEvent.SearchServicePoints(searchText = searchText))
+          onSearchTextChanged = { uiSearchQuery ->
+            onEvent(GeoWidgetEvent.SearchServicePoints(searchQuery = uiSearchQuery))
           },
           isFilterIconEnabled = false,
           topScreenSection = geoWidgetConfiguration.topScreenSection,

@@ -50,6 +50,7 @@ import org.smartregister.fhircore.quest.ui.register.REGISTER_CARD_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.RegisterScreen
 import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import org.smartregister.fhircore.quest.ui.register.TOP_REGISTER_SCREEN_TEST_TAG
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
 
 @HiltAndroidTest
 class RegisterScreenTest {
@@ -74,7 +75,7 @@ class RegisterScreenTest {
         isSyncUpload = flowOf(false),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf("")
+    val searchText = mutableStateOf(UiSearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -87,7 +88,7 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
-        searchText = searchText,
+        searchQuery = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
@@ -114,7 +115,7 @@ class RegisterScreenTest {
         isSyncUpload = flowOf(false),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf("")
+    val searchText = mutableStateOf(UiSearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -127,7 +128,7 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
-        searchText = searchText,
+        searchQuery = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
@@ -157,7 +158,7 @@ class RegisterScreenTest {
         isSyncUpload = flowOf(false),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf("")
+    val searchText = mutableStateOf(UiSearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -170,7 +171,7 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
-        searchText = searchText,
+        searchQuery = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
@@ -200,7 +201,7 @@ class RegisterScreenTest {
         isSyncUpload = flowOf(false),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf("")
+    val searchText = mutableStateOf(UiSearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
     val pagingItems = mockk<LazyPagingItems<ResourceData>>().apply {}
 
@@ -210,7 +211,7 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
-        searchText = searchText,
+        searchQuery = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
@@ -236,7 +237,7 @@ class RegisterScreenTest {
         isSyncUpload = flowOf(false),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf("")
+    val searchText = mutableStateOf(UiSearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -249,7 +250,7 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
-        searchText = searchText,
+        searchQuery = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),

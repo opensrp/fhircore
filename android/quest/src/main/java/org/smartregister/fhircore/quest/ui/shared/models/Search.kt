@@ -14,11 +14,20 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.launcher
+package org.smartregister.fhircore.quest.ui.shared.models
 
-import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
+sealed class UiSearchMode {
+  data object KeyboardInput : UiSearchMode()
 
-sealed class GeoWidgetEvent {
-  data class SearchServicePoints(val searchQuery: UiSearchQuery = UiSearchQuery.emptyText) :
-    GeoWidgetEvent()
+  data object QrCodeScan : UiSearchMode()
+}
+
+data class UiSearchQuery(val query: String, val mode: UiSearchMode = UiSearchMode.KeyboardInput) {
+  fun isEmpty() = query.isEmpty()
+
+  fun isBlank() = query.isBlank()
+
+  companion object {
+    val emptyText = UiSearchQuery(query = "")
+  }
 }

@@ -55,6 +55,7 @@ import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val NO_REGISTER_VIEW_COLUMN_TEST_TAG = "noRegisterViewColumnTestTag"
@@ -74,7 +75,7 @@ fun RegisterScreen(
   openDrawer: (Boolean) -> Unit,
   onEvent: (RegisterEvent) -> Unit,
   registerUiState: RegisterUiState,
-  searchText: MutableState<String>,
+  searchQuery: MutableState<UiSearchQuery>,
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
@@ -96,15 +97,15 @@ fun RegisterScreen(
             registerUiState.screenTitle.ifEmpty {
               registerUiState.registerConfiguration?.topScreenSection?.title ?: ""
             }, // backward compatibility for screen title
-          searchText = searchText.value,
+          searchQuery = searchQuery.value,
           filteredRecordsCount = registerUiState.filteredRecordsCount,
           isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           showSearchByBarcode =
             registerUiState.registerConfiguration?.searchBar?.searchByBarcode ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
-          onSearchTextChanged = { searchText ->
-            onEvent(RegisterEvent.SearchRegister(searchText = searchText))
+          onSearchTextChanged = { uiSearchQuery ->
+            onEvent(RegisterEvent.SearchRegister(searchText = uiSearchQuery))
           },
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
           topScreenSection = registerUiState.registerConfiguration?.topScreenSection,
@@ -128,7 +129,7 @@ fun RegisterScreen(
           }
         }
         // Only show counter during search
-        if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
+        if (!searchQuery.value.isBlank()) RegisterHeader(resultCount = pagingItems.itemCount)
       }
     },
     floatingActionButton = {
@@ -169,7 +170,7 @@ fun RegisterScreen(
           onEvent = onEvent,
           registerUiState = registerUiState,
           currentPage = currentPage,
-          showPagination = searchText.value.isEmpty(),
+          showPagination = searchQuery.value.isEmpty(),
         )
       } else {
         registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->

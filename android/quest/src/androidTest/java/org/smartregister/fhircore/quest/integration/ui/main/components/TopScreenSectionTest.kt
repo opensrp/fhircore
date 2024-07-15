@@ -34,9 +34,10 @@ import org.smartregister.fhircore.quest.ui.main.components.TOP_ROW_TEXT_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.TRAILING_ICON_BUTTON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.TRAILING_ICON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
 
 class TopScreenSectionTest {
-  private val listener: (String) -> Unit = {}
+  private val listener: (UiSearchQuery) -> Unit = {}
 
   @get:Rule val composeTestRule = createComposeRule()
   private val navController: NavController = mockk(relaxUnitFun = true)
@@ -46,7 +47,7 @@ class TopScreenSectionTest {
     composeTestRule.setContent {
       TopScreenSection(
         title = "All Clients",
-        searchText = "search text",
+        searchQuery = UiSearchQuery("search text"),
         onSearchTextChanged = listener,
         navController = navController,
         isSearchBarVisible = true,
@@ -77,7 +78,7 @@ class TopScreenSectionTest {
     composeTestRule.setContent {
       TopScreenSection(
         title = "All Clients",
-        searchText = "search text",
+        searchQuery = UiSearchQuery("search text"),
         onSearchTextChanged = listener,
         navController = navController,
         isSearchBarVisible = true,
@@ -110,7 +111,7 @@ class TopScreenSectionTest {
     composeTestRule.setContent {
       TopScreenSection(
         title = "All Clients",
-        searchText = "search text",
+        searchQuery = UiSearchQuery("search text"),
         onSearchTextChanged = { clicked = true },
         navController = navController,
         isSearchBarVisible = true,
