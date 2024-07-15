@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.main.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -194,38 +195,39 @@ fun TopScreenSection(
           )
         },
         trailingIcon = {
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            if (showSearchByBarcode) {
-              IconButton(
-                onClick = {
-                  currentContext.getActivity()?.let {
-                    QrCodeScanUtils.scanBarcode(it) { code -> onSearchTextChanged(code ?: "") }
-                  }
-                },
-              ) {
-                navController.context
-                Icon(
-                  painter =
-                    painterResource(id = org.smartregister.fhircore.quest.R.drawable.ic_qr_code),
-                  contentDescription =
-                    stringResource(
-                      id = org.smartregister.fhircore.quest.R.string.qr_code,
-                    ),
-                )
+          Box(contentAlignment = Alignment.CenterEnd) {
+            when {
+              searchText.isNotBlank() -> {
+                IconButton(
+                  onClick = { onSearchTextChanged("") },
+                  modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
+                ) {
+                  Icon(
+                    imageVector = Icons.Filled.Clear,
+                    CLEAR,
+                    tint = Color.Gray,
+                    modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
+                  )
+                }
               }
-            }
-
-            if (searchText.isNotEmpty()) {
-              IconButton(
-                onClick = { onSearchTextChanged("") },
-                modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
-              ) {
-                Icon(
-                  imageVector = Icons.Filled.Clear,
-                  CLEAR,
-                  tint = Color.Gray,
-                  modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
-                )
+              showSearchByBarcode -> {
+                IconButton(
+                  onClick = {
+                    currentContext.getActivity()?.let {
+                      QrCodeScanUtils.scanBarcode(it) { code -> onSearchTextChanged(code ?: "") }
+                    }
+                  },
+                ) {
+                  navController.context
+                  Icon(
+                    painter =
+                      painterResource(id = org.smartregister.fhircore.quest.R.drawable.ic_qr_code),
+                    contentDescription =
+                      stringResource(
+                        id = org.smartregister.fhircore.quest.R.string.qr_code,
+                      ),
+                  )
+                }
               }
             }
           }
