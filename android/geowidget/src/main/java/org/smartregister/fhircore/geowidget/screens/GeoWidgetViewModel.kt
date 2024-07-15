@@ -57,6 +57,12 @@ class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherP
     map[ServicePointType.BSD.name.lowercase()] = ServicePointType.BSD
     map[ServicePointType.MEN.name.lowercase()] = ServicePointType.MEN
     map[ServicePointType.DREN.name.lowercase()] = ServicePointType.DREN
+    map[ServicePointType.DISTRICT_PPSPF.name.lowercase()] = ServicePointType.DISTRICT_PPSPF
+    map[ServicePointType.MAIRIE.name.lowercase()] = ServicePointType.MAIRIE
+    map[ServicePointType.ECOLE_COMMUNAUTAIRE.name.lowercase()] =
+      ServicePointType.ECOLE_COMMUNAUTAIRE
+    map[ServicePointType.ECOLE_PRIVÉ.name.lowercase()] = ServicePointType.ECOLE_PRIVÉ
+    map[ServicePointType.LYCÉE.name.lowercase()] = ServicePointType.LYCÉE
     return map
   }
 }
