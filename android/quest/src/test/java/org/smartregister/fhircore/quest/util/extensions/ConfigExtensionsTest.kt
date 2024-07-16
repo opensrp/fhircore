@@ -82,7 +82,6 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
-import timber.log.Timber
 
 @HiltAndroidTest
 class ConfigExtensionsTest : RobolectricTest() {
