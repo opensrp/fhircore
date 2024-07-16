@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.main.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,7 +50,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -63,8 +66,10 @@ import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.domain.model.TopScreenSectionConfig
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.shared.components.Image
+import org.smartregister.fhircore.quest.util.QrCodeScanUtils
 
 const val DRAWER_MENU = "Drawer Menu"
 const val SEARCH = "Search"
@@ -85,17 +90,20 @@ const val TOP_ROW_TOGGLE_ICON_TEST_tAG = "topRowToggleIconTestTag"
 fun TopScreenSection(
   modifier: Modifier = Modifier,
   title: String,
+  navController: NavController,
   isSearchBarVisible: Boolean,
   searchText: String,
+  showSearchByBarcode: Boolean = false,
   filteredRecordsCount: Long? = null,
   searchPlaceholder: String? = null,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
-  onSearchTextChanged: (String) -> Unit,
+  onSearchTextChanged: (String) -> Unit = {},
   isFilterIconEnabled: Boolean = false,
   topScreenSection: TopScreenSectionConfig? = null,
-  navController: NavController,
-  onClick: (ToolbarClickEvent) -> Unit,
+  onClick: (ToolbarClickEvent) -> Unit = {},
 ) {
+  val currentContext = LocalContext.current
+
   Column(
     modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
   ) {
@@ -187,17 +195,40 @@ fun TopScreenSection(
           )
         },
         trailingIcon = {
-          if (searchText.isNotEmpty()) {
-            IconButton(
-              onClick = { onSearchTextChanged("") },
-              modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
-            ) {
-              Icon(
-                imageVector = Icons.Filled.Clear,
-                CLEAR,
-                tint = Color.Gray,
-                modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
-              )
+          Box(contentAlignment = Alignment.CenterEnd) {
+            when {
+              searchText.isNotBlank() -> {
+                IconButton(
+                  onClick = { onSearchTextChanged("") },
+                  modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
+                ) {
+                  Icon(
+                    imageVector = Icons.Filled.Clear,
+                    CLEAR,
+                    tint = Color.Gray,
+                    modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
+                  )
+                }
+              }
+              showSearchByBarcode -> {
+                IconButton(
+                  onClick = {
+                    currentContext.getActivity()?.let {
+                      QrCodeScanUtils.scanBarcode(it) { code -> onSearchTextChanged(code ?: "") }
+                    }
+                  },
+                ) {
+                  navController.context
+                  Icon(
+                    painter =
+                      painterResource(id = org.smartregister.fhircore.quest.R.drawable.ic_qr_code),
+                    contentDescription =
+                      stringResource(
+                        id = org.smartregister.fhircore.quest.R.string.qr_code,
+                      ),
+                  )
+                }
+              }
             }
           }
         },
