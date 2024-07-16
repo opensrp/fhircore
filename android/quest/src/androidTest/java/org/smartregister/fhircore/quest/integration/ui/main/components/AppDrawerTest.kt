@@ -193,17 +193,17 @@ class AppDrawerTest {
         onSideMenuClick = onClickListener,
         appVersionPair = Pair(1, "0.0.1"),
         registerUiState =
-        RegisterUiState(
-          screenTitle = "Register101",
-          isFirstTimeSync = false,
-          registerId = "register101",
-          totalRecordsCount = 1,
-          filteredRecordsCount = 0,
-          pagesCount = 1,
-          progressPercentage = flowOf(0),
-          isSyncUpload = flowOf(false),
-          params = emptyMap(),
-        )
+          RegisterUiState(
+            screenTitle = "Register101",
+            isFirstTimeSync = false,
+            registerId = "register101",
+            totalRecordsCount = 1,
+            filteredRecordsCount = 0,
+            pagesCount = 1,
+            progressPercentage = flowOf(0),
+            isSyncUpload = flowOf(false),
+            params = emptyMap(),
+          ),
       )
     }
   }
