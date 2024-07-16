@@ -244,6 +244,11 @@ class GeoWidgetViewModelTest {
         "bsd" to ServicePointType.BSD,
         "men" to ServicePointType.MEN,
         "dren" to ServicePointType.DREN,
+        "district_ppspf" to ServicePointType.DISTRICT_PPSPF,
+        "mairie" to ServicePointType.MAIRIE,
+        "ecole_communautaire" to ServicePointType.ECOLE_COMMUNAUTAIRE,
+        "ecole_privé" to ServicePointType.ECOLE_PRIVÉ,
+        "lycée" to ServicePointType.LYCÉE,
       )
     Assert.assertEquals(expectedMap, result)
   }
