@@ -21,8 +21,8 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -370,9 +370,10 @@ fun Resource.appendRelatedEntityLocation(
 private fun updateReferenceList(
   oldReferenceList: List<Reference>?,
   newReference: Reference,
-): List<Reference> =
-  oldReferenceList.orEmpty().filterNot { it.reference.isNullOrEmpty() }.takeIf { it.isNotEmpty() }
-    ?: listOf(newReference)
+): List<Reference> {
+  val list = oldReferenceList?.filter { !it.reference.isNullOrEmpty() }
+  return if (!list.isNullOrEmpty()) list else listOf(newReference)
+}
 
 private fun updateReference(oldReference: Reference?, newReference: Reference): Reference =
   if (oldReference == null || oldReference.reference.isNullOrEmpty()) {
