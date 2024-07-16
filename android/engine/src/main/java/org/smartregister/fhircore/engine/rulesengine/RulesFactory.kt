@@ -29,6 +29,7 @@ import kotlin.system.measureTimeMillis
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
 import org.jeasy.rules.api.Facts
@@ -288,17 +289,34 @@ constructor(
       label: String,
     ): String = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
 
-    /** This function extracts the patient's age from the patient resource */
-    fun extractAge(patient: Patient): String = patient.extractAge(context)
+    /** Extracts a Patient/RelatedPerson's age */
+    fun extractAge(resource: Resource): String {
+      return when (resource) {
+        is Patient -> resource.extractAge(context)
+        is RelatedPerson -> resource.extractAge(context)
+        else -> ""
+      }
+    }
 
-    /**
-     * This function extracts and returns a translated string for the gender in Patient resource.
-     */
-    fun extractGender(patient: Patient): String = patient.extractGender(context) ?: ""
+    /** Extracts and returns a translated string for the gender in the resource */
+    fun extractGender(resource: Resource): String {
+      return when (resource) {
+        is Patient -> resource.extractGender(context) ?: ""
+        is RelatedPerson -> resource.extractGender(context) ?: ""
+        else -> ""
+      }
+    }
 
-    /** This function extracts the patient's DOB from the FHIR resource */
-    fun extractDOB(patient: Patient, dateFormat: String): String =
-      SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
+    /** This function extracts a Patient/RelatedPerson's DOB from the FHIR resource */
+    fun extractDOB(resource: Resource, dateFormat: String): String {
+      return when (resource) {
+        is Patient ->
+          SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(resource.birthDate) }
+        is RelatedPerson ->
+          SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(resource.birthDate) }
+        else -> ""
+      }
+    }
 
     /**
      * This function takes [inputDate] and returns a difference (for examples 7 hours, 2 day, 5
@@ -546,12 +564,11 @@ constructor(
         }
         .getOrNull()
 
-    fun generateTaskServiceStatus(task: Task): String {
-      val serviceStatus: String
-      if (task.isOverDue()) {
-        serviceStatus = ServiceStatus.OVERDUE.name
-      } else {
-        serviceStatus =
+    fun generateTaskServiceStatus(task: Task?): String {
+      return when {
+        task == null -> ""
+        task.isOverDue() -> ServiceStatus.OVERDUE.name
+        else -> {
           when (task.status) {
             Task.TaskStatus.NULL,
             Task.TaskStatus.RECEIVED,
@@ -569,9 +586,10 @@ constructor(
             Task.TaskStatus.CANCELLED -> ServiceStatus.EXPIRED.name
             Task.TaskStatus.INPROGRESS -> ServiceStatus.IN_PROGRESS.name
             Task.TaskStatus.COMPLETED -> ServiceStatus.COMPLETED.name
+            else -> ""
           }
+        }
       }
-      return serviceStatus
     }
   }
 
