@@ -67,6 +67,8 @@ import org.smartregister.fhircore.quest.ui.bottomsheet.SummaryBottomSheetFragmen
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
+import org.smartregister.fhircore.quest.ui.register.RegisterUiState
+import org.smartregister.fhircore.quest.ui.register.RegisterViewModel
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
@@ -83,6 +85,7 @@ class GeoWidgetLauncherFragment : Fragment() {
   private val geoWidgetLauncherViewModel by viewModels<GeoWidgetLauncherViewModel>()
   private val navArgs by navArgs<GeoWidgetLauncherFragmentArgs>()
   private val appMainViewModel by activityViewModels<AppMainViewModel>()
+  private val registerViewModel by activityViewModels<RegisterViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -98,6 +101,7 @@ class GeoWidgetLauncherFragment : Fragment() {
         val scope = rememberCoroutineScope()
         val scaffoldState = rememberScaffoldState()
         val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
+        val registerUiState: RegisterUiState = registerViewModel.registerUiState.value
         val openDrawer: (Boolean) -> Unit = { open: Boolean ->
           scope.launch {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
@@ -126,6 +130,7 @@ class GeoWidgetLauncherFragment : Fragment() {
             drawerContent = {
               AppDrawer(
                 appUiState = uiState,
+                registerUiState = registerUiState,
                 openDrawer = openDrawer,
                 onSideMenuClick = appMainViewModel::onEvent,
                 navController = findNavController(),

@@ -49,6 +49,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,6 +67,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.google.android.fhir.sync.CurrentSyncJobStatus
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -87,7 +90,6 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
-import org.smartregister.fhircore.quest.ui.main.SyncStatus
 import org.smartregister.fhircore.quest.ui.main.components.SyncCompleteStatus
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
@@ -128,44 +130,23 @@ fun RegisterScreen(
 
   var backgroundColor by remember { mutableStateOf(SideMenuTopItemDarkColor) }
   var showSyncBar by remember { mutableStateOf(false) }
-  var applyBackgroundColor by remember { mutableStateOf(false) }
+  var showSyncComplete by remember { mutableStateOf(false) }
+  var hasShownSyncComplete by rememberSaveable { mutableStateOf(false) }
 
   LaunchedEffect(
-    appUiState?.isSyncCompleted,
-    appUiState?.progressPercentage,
+    appUiState?.currentSyncJobStatus,
     registerUiState.isFirstTimeSync,
+    hasShownSyncComplete,
   ) {
-    when {
-      appUiState?.isSyncCompleted == SyncStatus.SUCCEEDED &&
-        appUiState.progressPercentage == 100 -> {
-        backgroundColor = Color(0xFF1DB11B)
-        showSyncBar = true
-        applyBackgroundColor = true
-        coroutineScope.launch {
-          delay(60000L)
-          showSyncBar = false
-          applyBackgroundColor = false
-          backgroundColor = SideMenuTopItemDarkColor
-        }
-      }
-      appUiState?.isSyncCompleted == SyncStatus.FAILED -> {
-        backgroundColor = Color(0xFFDF0E1A)
-        showSyncBar = true
-        applyBackgroundColor = true
-        coroutineScope.launch {
-          delay(60000L)
-          showSyncBar = false
-          applyBackgroundColor = false
-          backgroundColor = SideMenuTopItemDarkColor
-        }
-      }
-      appUiState?.isSyncCompleted == SyncStatus.INPROGRESS -> {
-        showSyncBar = true
-      }
-      else -> {
-        showSyncBar = false
-      }
-    }
+    updateSyncStatus(
+      appUiState = appUiState,
+      coroutineScope = coroutineScope,
+      hasShownSyncComplete = hasShownSyncComplete,
+      setHasShownSyncComplete = { hasShownSyncComplete = it },
+      setShowSyncBar = { showSyncBar = it },
+      setShowSyncComplete = { showSyncComplete = it },
+      setBackgroundColor = { backgroundColor = it },
+    )
   }
 
   Scaffold(
@@ -238,7 +219,7 @@ fun RegisterScreen(
         modifier =
           Modifier.background(backgroundColor)
             .background(
-              if (applyBackgroundColor) {
+              if (showSyncComplete) {
                 Color.White.copy(alpha = 0.83f)
               } else {
                 Color.Transparent
@@ -283,7 +264,7 @@ fun RegisterScreen(
                   .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
                   .background(backgroundColor)
                   .background(
-                    if (applyBackgroundColor) {
+                    if (showSyncComplete) {
                       Color.White.copy(alpha = 0.83f)
                     } else {
                       Color.Transparent
@@ -310,14 +291,14 @@ fun RegisterScreen(
                 .animateContentSize()
                 .background(backgroundColor)
                 .background(
-                  if (applyBackgroundColor) {
+                  if (showSyncComplete) {
                     Color.White.copy(alpha = 0.83f)
                   } else {
                     Color.Transparent
                   },
                 )
                 .then(
-                  if (applyBackgroundColor) {
+                  if (showSyncComplete) {
                     Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                   } else {
                     Modifier
@@ -326,7 +307,9 @@ fun RegisterScreen(
                 .testTag(SYNC_SUCCESS_TAG),
           ) {
             val context = LocalContext.current
-            if (applyBackgroundColor) {
+            if (
+              showSyncComplete && appUiState?.currentSyncJobStatus is CurrentSyncJobStatus.Succeeded
+            ) {
               SyncCompleteStatus(
                 modifier = modifier,
                 imageConfig = ImageConfig(type = "local", "ic_sync_success"),
@@ -336,37 +319,88 @@ fun RegisterScreen(
                 onCancelButtonClick = {},
               )
             } else if (
-              appUiState != null && appUiState.isSyncUpload && appUiState.progressPercentage != 100
+              appUiState != null && appUiState.currentSyncJobStatus is CurrentSyncJobStatus.Failed
             ) {
-              if (syncNotificationBarExpanded) {
-                SubsequentSyncDetailsBar(
-                  appUiState = appUiState,
-                  modifier = Modifier.testTag(SYNC_PROGRESS_BAR_TAG),
-                ) {
-                  onClick(AppMainEvent.CancelSyncData(context))
-                }
-              } else {
-                SubsequentSyncDetailsBar(
-                  appUiState = appUiState,
-                  hideExtraInformation = false,
-                  modifier = Modifier.testTag(SYNC_PROGRESS_BAR_TAG),
-                ) {
-                  onClick(AppMainEvent.CancelSyncData(context))
-                }
-              }
-            } else {
               SyncCompleteStatus(
                 modifier = modifier.testTag(SYNC_ERROR_TAG),
                 imageConfig = ImageConfig(type = "local", "ic_sync_fail"),
                 title = context.getString(R.string.sync_error),
                 showEndText = false,
                 showImage = syncNotificationBarExpanded,
+                syncSuccess = false,
                 onCancelButtonClick = {},
               )
+            } else if (
+              appUiState != null && appUiState.currentSyncJobStatus is CurrentSyncJobStatus.Running
+            ) {
+              if (syncNotificationBarExpanded) {
+                SubsequentSyncDetailsBar(
+                  percentageProgressFlow = registerUiState.progressPercentage,
+                  modifier = Modifier.testTag(SYNC_PROGRESS_BAR_TAG),
+                ) {
+                  onClick(AppMainEvent.CancelSyncData(context))
+                }
+              } else {
+                SubsequentSyncDetailsBar(
+                  percentageProgressFlow = registerUiState.progressPercentage,
+                  hideExtraInformation = false,
+                  modifier = Modifier.testTag(SYNC_PROGRESS_BAR_TAG),
+                ) {
+                  onClick(AppMainEvent.CancelSyncData(context))
+                }
+              }
             }
           }
         }
       }
+    }
+  }
+}
+
+private fun updateSyncStatus(
+  appUiState: AppMainUiState?,
+  coroutineScope: CoroutineScope,
+  hasShownSyncComplete: Boolean,
+  setHasShownSyncComplete: (Boolean) -> Unit,
+  setShowSyncBar: (Boolean) -> Unit,
+  setShowSyncComplete: (Boolean) -> Unit,
+  setBackgroundColor: (Color) -> Unit,
+) {
+  when (appUiState?.currentSyncJobStatus) {
+    is CurrentSyncJobStatus.Succeeded -> {
+      if (!hasShownSyncComplete) {
+        setBackgroundColor(Color(0xFF1DB11B))
+        setShowSyncBar(true)
+        setShowSyncComplete(true)
+        setHasShownSyncComplete(true)
+
+        coroutineScope.launch {
+          delay(60000L)
+          setShowSyncBar(false)
+          setShowSyncComplete(false)
+          setBackgroundColor(SideMenuTopItemDarkColor)
+        }
+      }
+    }
+    is CurrentSyncJobStatus.Failed -> {
+      setBackgroundColor(Color(0xFFDF0E1A))
+      setShowSyncBar(true)
+      setShowSyncComplete(true)
+      setHasShownSyncComplete(false)
+      coroutineScope.launch {
+        setShowSyncBar(false)
+        setShowSyncComplete(false)
+        setBackgroundColor(SideMenuTopItemDarkColor)
+      }
+    }
+    is CurrentSyncJobStatus.Running -> {
+      setShowSyncBar(true)
+      setBackgroundColor(SideMenuTopItemDarkColor)
+      setShowSyncComplete(false)
+      setHasShownSyncComplete(false)
+    }
+    else -> {
+      setShowSyncBar(false)
     }
   }
 }

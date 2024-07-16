@@ -189,5 +189,5 @@
     <string name="sync_error">Sync error</string>
     <string name="minutes_remaining">Calculating minutes remaining...</string>
     <string name="sync_inprogress">Syncing...</string>
-    <string name="cancel_sync">CANCEL...</string>
+    <string name="cancel_sync">CANCEL</string>
 </resources>
