@@ -194,7 +194,6 @@ class ConfigExtensionsTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-    Timber.plant(TestTree())
     every { navController.context } returns context
   }
 
@@ -778,27 +777,16 @@ class ConfigExtensionsTest : RobolectricTest() {
     val emptyComputedValuesMap = mutableMapOf<String, String>()
     val decodedImageMap = mutableMapOf<String, Bitmap>()
 
-    val logMessages = mutableListOf<String>()
-    Timber.plant(
-      object : Timber.Tree() {
-        override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-          logMessages.add(message)
-        }
-      },
-    )
-
     loadRemoteImagesBitmaps(
       listOf(rowProperties),
       registerRepository = registerRepository,
       computedValuesMap = emptyComputedValuesMap,
       decodedImageMap = decodedImageMap,
     )
-
-    assertTrue(logMessages.isEmpty())
     assertTrue(decodedImageMap.isEmpty())
   }
 
-  @Test
+  @Test(expected = Exception::class)
   fun testExceptionCaughtOnDecodingBitmap() = runTest {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     val listViewProperties = cardViewProperties.content[0] as ListProperties
@@ -826,32 +814,12 @@ class ConfigExtensionsTest : RobolectricTest() {
         this.data = "gibberish value".toByteArray()
       }
 
-    val logMessages = mutableListOf<String>()
-    Timber.plant(
-      object : Timber.Tree() {
-        override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-          logMessages.add(message)
-        }
-      },
-    )
-
     loadRemoteImagesBitmaps(
       listOf(rowProperties),
       registerRepository = registerRepository,
       computedValuesMap = emptyComputedValuesMap,
       decodedImageMap = decodedImageMap,
     )
-
-    assertTrue(logMessages.isNotEmpty())
-    assertTrue(logMessages.any { it.contains("Failed to decode image with error") })
     assertTrue(decodedImageMap.isEmpty())
-  }
-
-  class TestTree : Timber.Tree() {
-    private val logMessages = mutableListOf<String>()
-
-    override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-      logMessages.add(message)
-    }
   }
 }

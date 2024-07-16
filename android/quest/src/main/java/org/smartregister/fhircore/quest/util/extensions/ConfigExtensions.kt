@@ -287,10 +287,9 @@ suspend fun loadRemoteImagesBitmaps(
                 decodedImageMap[resourceId] = binary.data.decodeToBitmap()
               }
             }
-          } catch (nullPointerException: NullPointerException) {
-            Timber.e("Failed to decode image due to a null value: ${nullPointerException.message}")
           } catch (exception: Exception) {
             Timber.e("Failed to decode image with error: ${exception.message}")
+            throw exception
           }
         }
       }
