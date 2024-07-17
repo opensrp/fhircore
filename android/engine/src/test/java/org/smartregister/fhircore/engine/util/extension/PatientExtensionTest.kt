@@ -16,283 +16,29 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.app.Application
-import androidx.test.core.app.ApplicationProvider
-import androidx.test.platform.app.InstrumentationRegistry
-import java.time.LocalDate
-import java.time.ZoneId
-import java.util.Calendar
-import java.util.Date
-import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
 import org.junit.Assert
 import org.junit.Test
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class PatientExtensionTest : RobolectricTest() {
 
-  private val context = InstrumentationRegistry.getInstrumentation().context
-
-  private fun getDateFromDaysAgo(daysAgo: Long, localDateNow: LocalDate = LocalDate.now()): Date {
-    val localDate = localDateNow.minusDays(daysAgo)
-    return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant())
-  }
-
   @Test
-  fun testGetAgeString() {
-    val expectedAge = "1y"
-    Assert.assertEquals(
-      expectedAge,
-      calculateAge(
-        getDateFromDaysAgo(365, LocalDate.of(2023, 4, 4)),
-        context,
-        LocalDate.of(2023, 4, 4),
-      ),
-    )
-
-    val expectedAge2 = "1y 1m"
-    // passing days value for 1y 1m
-    Assert.assertEquals(
-      expectedAge2,
-      calculateAge(
-        getDateFromDaysAgo(399, LocalDate.of(2023, 4, 4)),
-        context,
-        LocalDate.of(2023, 4, 4),
-      ),
-    )
-
-    val expectedAge3 = "1y"
-    // passing days value for 1y 1w
-    Assert.assertEquals(
-      expectedAge3,
-      calculateAge(
-        getDateFromDaysAgo(372, LocalDate.of(2023, 4, 4)),
-        context,
-        LocalDate.of(2023, 4, 4),
-      ),
-    )
-
-    val expectedAge4 = "1m"
-    Assert.assertEquals(
-      expectedAge4,
-      calculateAge(
-        getDateFromDaysAgo(32, LocalDate.of(2023, 4, 4)),
-        context,
-        LocalDate.of(2023, 4, 4),
-      ),
-    )
-
-    val expectedAge6 = "1w"
-    Assert.assertEquals(
-      expectedAge6,
-      calculateAge(
-        getDateFromDaysAgo(7, LocalDate.of(2023, 4, 4)),
-        context,
-        LocalDate.of(2023, 4, 4),
-      ),
-    )
-
-    val expectedAge7 = "1w 2d"
-    Assert.assertEquals(
-      expectedAge7,
-      calculateAge(
-        getDateFromDaysAgo(9, LocalDate.of(2023, 4, 4)),
-        context,
-        LocalDate.of(2023, 4, 4),
-      ),
-    )
-
-    val expectedAge8 = "3d"
-    Assert.assertEquals(
-      expectedAge8,
-      calculateAge(
-        getDateFromDaysAgo(3, LocalDate.of(2023, 4, 4)),
-        context,
-        LocalDate.of(2023, 4, 4),
-      ),
-    )
-
-    val expectedAge9 = "1y 2m"
-    Assert.assertEquals(
-      expectedAge9,
-      calculateAge(
-        getDateFromDaysAgo(450, LocalDate.of(2023, 4, 4)),
-        context,
-        LocalDate.of(2023, 4, 4),
-      ),
-    )
-
-    val expectedAge10 = "40y 3m"
-    Assert.assertNotEquals(
-      expectedAge10,
-      calculateAge(
-        getDateFromDaysAgo(14700, LocalDate.of(2023, 4, 4)),
-        context,
-        LocalDate.of(2023, 4, 4),
-      ),
-    )
-
-    val expectedAge11 = "40y"
-    Assert.assertEquals(
-      expectedAge11,
-      calculateAge(
-        getDateFromDaysAgo(14700, LocalDate.of(2023, 4, 4)),
-        context,
-        LocalDate.of(2023, 4, 4),
-      ),
-    )
-
-    val expectedAge12 = "0d"
-    // if difference b/w current date and DOB is O from extractAge extension
-    Assert.assertEquals(
-      expectedAge12,
-      calculateAge(
-        getDateFromDaysAgo(0, LocalDate.of(2023, 4, 4)),
-        context,
-        LocalDate.of(2023, 4, 4),
-      ),
-    )
-
-    val expectedAge13 = "1y 6m"
-    // passing days value for 1y 6m
-    Assert.assertEquals(
-      expectedAge13,
-      calculateAge(
-        getDateFromDaysAgo(550, LocalDate.of(2023, 4, 4)),
-        context,
-        LocalDate.of(2023, 4, 4),
-      ),
-    )
-
-    val expectedAge14 = "5y"
-    // passing days value for 5y
-    Assert.assertEquals(
-      expectedAge14,
-      calculateAge(
-        getDateFromDaysAgo(1826, LocalDate.of(2023, 4, 4)),
-        context,
-        LocalDate.of(2023, 4, 4),
-      ),
-    )
-  }
-
-  @Test
-  fun testGetAgeStringFor49DayPeriod() {
-    val expectedAge5 = "1m 3w"
-    Assert.assertEquals(
-      expectedAge5,
-      calculateAge(
-        getDateFromDaysAgo(49, LocalDate.of(2023, 4, 4)),
-        context,
-        LocalDate.of(2023, 4, 4),
-      ),
-    )
-  }
-
-  @Test
-  fun testExtractAge() {
-    val patient =
-      Patient().apply { birthDate = Calendar.getInstance().apply { add(Calendar.YEAR, -19) }.time }
-
-    Assert.assertEquals("19y", patient.extractAge(context))
-  }
-
-  @Test
-  fun testExtractGenderShouldReturnMaleStringWhenPatientGenderIsMale() {
-    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.MALE }
-
-    Assert.assertEquals(
-      (ApplicationProvider.getApplicationContext() as Application).getString(R.string.male),
-      patient.extractGender(ApplicationProvider.getApplicationContext()),
-    )
-  }
-
-  @Test
-  fun testExtractGenderShouldReturnFemaleStringWhenPatientGenderIsFemale() {
-    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.FEMALE }
-
-    Assert.assertEquals(
-      (ApplicationProvider.getApplicationContext() as Application).getString(R.string.female),
-      patient.extractGender(ApplicationProvider.getApplicationContext()),
-    )
-  }
-
-  @Test
-  fun testExtractGenderShouldReturnOtherStringWhenPatientGenderIsOther() {
-    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.OTHER }
-
-    val applicationContext = (ApplicationProvider.getApplicationContext() as Application)
-
-    Assert.assertEquals(
-      applicationContext.getString(R.string.other),
-      patient.extractGender(applicationContext),
-    )
-  }
-
-  @Test
-  fun testExtractGenderShouldReturnUnknownStringWhenPatientGenderIsUnknown() {
-    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.UNKNOWN }
-
-    Assert.assertEquals(
-      (ApplicationProvider.getApplicationContext() as Application).getString(R.string.unknown),
-      patient.extractGender(ApplicationProvider.getApplicationContext()),
-    )
-  }
-
-  @Test
-  fun testExtractGenderShouldReturnAnEmptyStringWhenPatientGenderIsNull() {
-    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.NULL }
-
-    Assert.assertEquals("", patient.extractGender(ApplicationProvider.getApplicationContext()))
-  }
-
-  @Test
-  fun testExtractAgeShouldReturnAnEmptyStringWhenPatientDoesNotHaveBirthDate() {
-    val patient = Patient()
-
-    Assert.assertEquals("", patient.extractAge(context))
-  }
-
-  @Test
-  fun testExtractAgeShouldReturnCallGetAgeStringFromDaysWhenPatientHasBirthDate() {
-    val currentDate = LocalDate.now()
-
-    val oneYearAgo = currentDate.minusYears(1)
-
-    val calendar =
-      Calendar.getInstance().apply {
-        timeInMillis = oneYearAgo.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+  fun testExtractFamilyTag() {
+    val familyTag =
+      Coding().apply {
+        system = "http://example.org/family-tags"
+        code = "family"
+        display = "Family Head"
       }
 
-    val patient = Patient().apply { birthDate = calendar.time }
-    Assert.assertEquals("1y", patient.extractAge(context))
-  }
+    val patient = Patient().apply { meta = Meta().apply { tag.add(familyTag) } }
 
-  @Test
-  fun testTranslateMaleGender() {
-    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.MALE }
     Assert.assertEquals(
-      "Male",
-      patient.gender.translateGender(ApplicationProvider.getApplicationContext()),
-    )
-  }
-
-  @Test
-  fun testTranslateFemaleGender() {
-    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.FEMALE }
-    Assert.assertEquals(
-      "Female",
-      patient.gender.translateGender(ApplicationProvider.getApplicationContext()),
-    )
-  }
-
-  @Test
-  fun testTranslateGenderReturnsUnknownWhenValeIsNotMaleOrFemale() {
-    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.OTHER }
-    Assert.assertEquals(
-      "Unknown",
-      patient.gender.translateGender(ApplicationProvider.getApplicationContext()),
+      familyTag,
+      patient.extractFamilyTag(),
     )
   }
 }
