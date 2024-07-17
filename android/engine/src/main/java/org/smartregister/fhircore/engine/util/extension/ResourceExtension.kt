@@ -39,6 +39,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Group
@@ -54,6 +55,7 @@ import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
@@ -61,9 +63,11 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.model.Type
+import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.joda.time.Instant
 import org.json.JSONException
 import org.json.JSONObject
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -565,5 +569,49 @@ fun List<RepositoryResourceData>.filterByFhirPathExpression(
         fhirPathDataExtractor.extractValue(repositoryResourceData.resource, it).toBoolean()
       }
     }
+  }
+}
+
+/** Extracts and returns a translated string for the gender in the resource */
+fun Resource.extractGender(context: Context): String {
+  return when (this) {
+    is Patient -> getGenderString(this.gender, context)
+    is RelatedPerson -> getGenderString(this.gender, context)
+    else -> ""
+  }
+}
+
+private fun getGenderString(gender: Enumerations.AdministrativeGender?, context: Context): String {
+  return when (gender) {
+    Enumerations.AdministrativeGender.MALE -> context.getString(R.string.male)
+    Enumerations.AdministrativeGender.FEMALE -> context.getString(R.string.female)
+    Enumerations.AdministrativeGender.OTHER -> context.getString(R.string.other)
+    Enumerations.AdministrativeGender.UNKNOWN -> context.getString(R.string.unknown)
+    else -> ""
+  }
+}
+
+fun Enumerations.AdministrativeGender.translateGender(context: Context) =
+  when (this) {
+    Enumerations.AdministrativeGender.MALE -> context.getString(R.string.male)
+    Enumerations.AdministrativeGender.FEMALE -> context.getString(R.string.female)
+    else -> context.getString(R.string.unknown)
+  }
+
+/** Extract a Resource's age if birthDate is an available field */
+fun Resource.extractAge(context: Context): String {
+  return when (this) {
+    is Patient -> this.birthDate?.let { calculateAge(it, context) } ?: ""
+    is RelatedPerson -> this.birthDate?.let { calculateAge(it, context) } ?: ""
+    else -> ""
+  }
+}
+
+/** Extract a Resource's birthDate if it's an available field */
+fun Resource.extractBirthDate(): Date? {
+  return when (this) {
+    is Patient -> this.birthDate
+    is RelatedPerson -> this.birthDate
+    else -> null
   }
 }
