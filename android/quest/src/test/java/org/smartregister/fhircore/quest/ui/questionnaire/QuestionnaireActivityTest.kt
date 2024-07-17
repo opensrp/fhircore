@@ -46,6 +46,7 @@ import junit.framework.TestCase.assertTrue
 import kotlin.test.assertNotNull
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Enumerations
@@ -74,6 +75,7 @@ import org.smartregister.fhircore.engine.util.location.LocationUtils
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.sdk.runBlockingOnWorkerThread
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -206,7 +208,16 @@ class QuestionnaireActivityTest : RobolectricTest() {
     }
 
   @Test
-  fun testThatOnBackPressShowsConfirmationAlertDialog() = runTest {
+  fun testThatOnBackPressShowsConfirmationAlertDialog() =
+    runTest(UnconfinedTestDispatcher()) {
+      setupActivity()
+      questionnaireActivity.onBackPressedDispatcher.onBackPressed()
+      val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+      Assert.assertNotNull(dialog)
+    }
+
+  @Test
+  fun testThatOnBackPressShowsConfirmationAlertDialogTroubleshooting() = runBlockingOnWorkerThread {
     setupActivity()
     questionnaireActivity.onBackPressedDispatcher.onBackPressed()
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
