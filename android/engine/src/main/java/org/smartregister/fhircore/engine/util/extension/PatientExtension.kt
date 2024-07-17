@@ -16,11 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.content.Context
-import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
-import org.smartregister.fhircore.engine.R
 
 fun String?.join(other: String?, separator: String) =
   this.orEmpty().plus(other?.plus(separator).orEmpty())
@@ -28,11 +24,4 @@ fun String?.join(other: String?, separator: String) =
 fun Patient.extractFamilyTag() =
   this.meta.tag.firstOrNull {
     it.display.contentEquals("family", true) || it.display.contains("head", true)
-  }
-
-fun Enumerations.AdministrativeGender.translateGender(context: Context) =
-  when (this) {
-    Enumerations.AdministrativeGender.MALE -> context.getString(R.string.male)
-    Enumerations.AdministrativeGender.FEMALE -> context.getString(R.string.female)
-    else -> context.getString(R.string.unknown)
   }

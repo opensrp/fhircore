@@ -74,7 +74,6 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
-import java.text.SimpleDateFormat
 
 const val REFERENCE = "reference"
 const val PARTOF = "part-of"
@@ -590,6 +589,13 @@ private fun getGenderString(gender: Enumerations.AdministrativeGender, context: 
     else -> ""
   }
 }
+
+fun Enumerations.AdministrativeGender.translateGender(context: Context) =
+  when (this) {
+    Enumerations.AdministrativeGender.MALE -> context.getString(R.string.male)
+    Enumerations.AdministrativeGender.FEMALE -> context.getString(R.string.female)
+    else -> context.getString(R.string.unknown)
+  }
 
 fun Resource.extractAge(context: Context): String {
   return when (this) {
