@@ -291,11 +291,7 @@ constructor(
 
     /** Extracts a Patient/RelatedPerson's age */
     fun extractAge(resource: Resource): String {
-      return when (resource) {
-        is Patient -> resource.extractAge(context)
-        is RelatedPerson -> resource.extractAge(context)
-        else -> ""
-      }
+      return resource.extractAge(context)
     }
 
     /** Extracts and returns a translated string for the gender in the resource */
