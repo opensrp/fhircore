@@ -174,7 +174,7 @@ constructor(
     return if (output.hasActivity()) output else null
   }
 
-  // TODO refactor this code to remove hardcoded appended "PlanDefinition/"
+  // TODO refactor this code to remove hardcoded appended "PlanDefinition/" on https://github.com/opensrp/fhircore/issues/3386
   private fun CarePlan.cleanPlanDefinitionCanonical() {
     val canonicalValue = this.instantiatesCanonical.first().value
     if (canonicalValue.contains('/').not()) {
@@ -187,6 +187,11 @@ constructor(
     carePlan.cleanPlanDefinitionCanonical()
 
   /** Implements OpenSRP's $lite version of CarePlan & Tasks generation via StructureMap(s) */
+  @Deprecated(
+    message = "This function is deprecated, use workflowCarePlanGenerator.applyPlanDefinitionOnPatient() instead",
+    replaceWith = ReplaceWith("workflowCarePlanGenerator.applyPlanDefinitionOnPatient()"),
+    level = DeprecationLevel.WARNING
+  )
   private suspend fun liteApplyPlanDefinitionOnPatient(
     planDefinition: PlanDefinition,
     data: Bundle,
