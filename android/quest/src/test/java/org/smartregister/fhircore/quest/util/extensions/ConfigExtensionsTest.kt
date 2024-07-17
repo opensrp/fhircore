@@ -681,7 +681,7 @@ class ConfigExtensionsTest : RobolectricTest() {
         navigationMenuConfigs.decodeBinaryResourcesToBitmap(
           this,
           registerRepository,
-          decodedImageMap
+          decodedImageMap,
         )
       }
       assertTrue(decodedImageMap.isNotEmpty())

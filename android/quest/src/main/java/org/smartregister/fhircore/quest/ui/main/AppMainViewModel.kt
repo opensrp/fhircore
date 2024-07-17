@@ -124,7 +124,7 @@ constructor(
       .decodeBinaryResourcesToBitmap(
         viewModelScope,
         registerRepository,
-        configurationRegistry.decodedImageMap
+        configurationRegistry.decodedImageMap,
       )
   }
 
