@@ -78,7 +78,7 @@ constructor(
       val resourceData =
         resourceDataRulesExecutor.processResourceData(
           repositoryResourceData = repositoryResourceData,
-          ruleConfigs = geoWidgetConfig.servicePointConfig?.rules!!,
+          ruleConfigs = geoWidgetConfig.servicePointConfig?.rules ?: emptyList(),
           params = emptyMap(),
         )
       val servicePointProperties = mutableMapOf<String, JsonPrimitive>()
@@ -130,7 +130,7 @@ constructor(
     geoWidgetConfiguration.noResults?.let { _noLocationFoundDialog.postValue(true) }
   }
 
-  private suspend fun retrieveResources(
+  suspend fun retrieveResources(
     geoWidgetConfig: GeoWidgetConfiguration,
   ): List<RepositoryResourceData> {
     if (!this::repositoryResourceDataList.isInitialized) {
