@@ -188,12 +188,6 @@ constructor(
     carePlan.cleanPlanDefinitionCanonical()
 
   /** Implements OpenSRP's $lite version of CarePlan & Tasks generation via StructureMap(s) */
-  @Deprecated(
-    message =
-      "This function is deprecated, use workflowCarePlanGenerator.applyPlanDefinitionOnPatient() instead",
-    replaceWith = ReplaceWith("workflowCarePlanGenerator.applyPlanDefinitionOnPatient()"),
-    level = DeprecationLevel.WARNING,
-  )
   private suspend fun liteApplyPlanDefinitionOnPatient(
     planDefinition: PlanDefinition,
     data: Bundle,
