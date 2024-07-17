@@ -296,11 +296,7 @@ constructor(
 
     /** Extracts and returns a translated string for the gender in the resource */
     fun extractGender(resource: Resource): String {
-      return when (resource) {
-        is Patient -> resource.extractGender(context) ?: ""
-        is RelatedPerson -> resource.extractGender(context) ?: ""
-        else -> ""
-      }
+      return resource.extractGender(context)
     }
 
     /** This function extracts a Patient/RelatedPerson's DOB from the FHIR resource */

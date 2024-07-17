@@ -572,11 +572,11 @@ fun List<RepositoryResourceData>.filterByFhirPathExpression(
   }
 }
 
-fun Resource.extractGender(context: Context): String? {
+fun Resource.extractGender(context: Context): String {
   return when (this) {
-    is Patient -> this.gender?.let { getGenderString(it, context) }
-    is RelatedPerson -> this.gender?.let { getGenderString(it, context) }
-    else -> null
+    is Patient -> getGenderString(this.gender, context)
+    is RelatedPerson -> getGenderString(this.gender, context)
+    else -> ""
   }
 }
 

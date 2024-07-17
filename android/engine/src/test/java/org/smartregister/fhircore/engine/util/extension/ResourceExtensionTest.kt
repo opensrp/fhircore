@@ -53,6 +53,7 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
@@ -924,6 +925,16 @@ class ResourceExtensionTest : RobolectricTest() {
   }
 
   @Test
+  fun testExtractGenderShouldReturnMaleStringWhenRelatedPersonGenderIsMale() {
+    val relatedPerson = RelatedPerson().apply { gender = Enumerations.AdministrativeGender.MALE }
+
+    Assert.assertEquals(
+      (ApplicationProvider.getApplicationContext() as Application).getString(R.string.male),
+      relatedPerson.extractGender(ApplicationProvider.getApplicationContext()),
+    )
+  }
+
+  @Test
   fun testExtractGenderShouldReturnFemaleStringWhenPatientGenderIsFemale() {
     val patient = Patient().apply { gender = Enumerations.AdministrativeGender.FEMALE }
 
@@ -956,10 +967,17 @@ class ResourceExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun testExtractGenderShouldReturnAnEmptyStringWhenPatientGenderIsNull() {
+  fun testExtractGenderShouldReturnNullWhenPatientGenderIsNull() {
     val patient = Patient().apply { gender = Enumerations.AdministrativeGender.NULL }
 
     Assert.assertEquals("", patient.extractGender(ApplicationProvider.getApplicationContext()))
+  }
+
+  @Test
+  fun testExtractGenderShouldReturnNullWhenResourceDoesNotHaveGenderField() {
+    val resource = Task()
+
+    Assert.assertEquals("", resource.extractGender(ApplicationProvider.getApplicationContext()))
   }
 
   @Test
@@ -1146,7 +1164,7 @@ class ResourceExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun testExtractAge() {
+  fun testExtractAgeReturnsCorrectDateStringForAPatient() {
     val patient =
       Patient().apply { birthDate = Calendar.getInstance().apply { add(Calendar.YEAR, -19) }.time }
 
@@ -1154,16 +1172,23 @@ class ResourceExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun testExtractAgeShouldReturnAnEmptyStringWhenPatientDoesNotHaveBirthDate() {
-    val patient = Patient()
+  fun testExtractAgeReturnsCorrectDateStringForARelatedPerson() {
+    val relatedPerson =
+      RelatedPerson().apply { birthDate = Calendar.getInstance().apply { add(Calendar.YEAR, -21) }.time }
 
-    Assert.assertEquals("", patient.extractAge(context))
+    Assert.assertEquals("21y", relatedPerson.extractAge(context))
   }
 
   @Test
-  fun testExtractAgeShouldReturnCallGetAgeStringFromDaysWhenPatientHasBirthDate() {
-    val currentDate = LocalDate.now()
+  fun testExtractAgeShouldReturnAnEmptyStringWhenResourceDoesNotHaveBirthDate() {
+    val resource = Task()
 
+    Assert.assertEquals("", resource.extractAge(context))
+  }
+
+  @Test
+  fun testExtractAgeShouldReturnAgeStringFromDaysWhenPatientHasBirthDate() {
+    val currentDate = LocalDate.now()
     val oneYearAgo = currentDate.minusYears(1)
 
     val calendar =
