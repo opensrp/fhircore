@@ -31,8 +31,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
+import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.flowOf
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
@@ -46,7 +50,6 @@ import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.integration.Faker
-import org.smartregister.fhircore.quest.ui.main.SyncStatus
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 import org.smartregister.fhircore.quest.ui.register.FAB_BUTTON_REGISTER_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.FIRST_TIME_SYNC_DIALOG
@@ -86,15 +89,12 @@ class RegisterScreenTest {
         NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
     )
 
-  val appUiState =
+  private val appUiState =
     appMainUiStateOf(
       appTitle = "MOH VTS",
       username = "Demo",
       lastSyncTime = "05:30 PM, Mar 3",
       currentLanguage = "English",
-      progressPercentage = 50,
-      syncStatus = SyncStatus.INPROGRESS,
-      isSyncUpload = true,
       languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
       navigationConfiguration =
         navigationConfiguration.copy(
@@ -374,7 +374,15 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
-        appUiState = appUiState,
+        appUiState =
+          appUiState.copy(
+            currentSyncJobStatus =
+              CurrentSyncJobStatus.Running(
+                SyncJobStatus.InProgress(
+                  syncOperation = SyncOperation.UPLOAD,
+                ),
+              ),
+          ),
         searchText = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
@@ -412,6 +420,7 @@ class RegisterScreenTest {
     composeTestRule.setContent {
       val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
       val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
+
       RegisterScreen(
         modifier = Modifier,
         openDrawer = {},
@@ -419,8 +428,7 @@ class RegisterScreenTest {
         registerUiState = registerUiState,
         appUiState =
           appUiState.copy(
-            isSyncCompleted = SyncStatus.SUCCEEDED,
-            progressPercentage = 100,
+            currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
           ),
         searchText = searchText,
         currentPage = currentPage,
