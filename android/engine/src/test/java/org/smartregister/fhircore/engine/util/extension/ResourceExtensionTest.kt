@@ -53,7 +53,6 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
-import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
@@ -1174,7 +1173,9 @@ class ResourceExtensionTest : RobolectricTest() {
   @Test
   fun testExtractAgeReturnsCorrectDateStringForARelatedPerson() {
     val relatedPerson =
-      RelatedPerson().apply { birthDate = Calendar.getInstance().apply { add(Calendar.YEAR, -21) }.time }
+      RelatedPerson().apply {
+        birthDate = Calendar.getInstance().apply { add(Calendar.YEAR, -21) }.time
+      }
 
     Assert.assertEquals("21y", relatedPerson.extractAge(context))
   }

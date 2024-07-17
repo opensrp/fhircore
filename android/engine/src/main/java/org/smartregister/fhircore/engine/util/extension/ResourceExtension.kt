@@ -572,9 +572,7 @@ fun List<RepositoryResourceData>.filterByFhirPathExpression(
   }
 }
 
-/**
- * Extracts and returns a translated string for the gender in the resource
- */
+/** Extracts and returns a translated string for the gender in the resource */
 fun Resource.extractGender(context: Context): String {
   return when (this) {
     is Patient -> getGenderString(this.gender, context)
@@ -600,9 +598,7 @@ fun Enumerations.AdministrativeGender.translateGender(context: Context) =
     else -> context.getString(R.string.unknown)
   }
 
-/**
- * Extract a Resource's age if birthDate is an available field
- */
+/** Extract a Resource's age if birthDate is an available field */
 fun Resource.extractAge(context: Context): String {
   return when (this) {
     is Patient -> this.birthDate?.let { calculateAge(it, context) } ?: ""
