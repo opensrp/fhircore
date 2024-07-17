@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.main
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -30,6 +29,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
@@ -52,6 +52,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.sync.CustomSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
@@ -103,11 +104,7 @@ constructor(
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
   private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
 
-  private val percentageProgress by mutableIntStateOf(0)
-
-  private var isUploadSync by mutableStateOf(false)
-
-  private var isUploadSyncCompleted by mutableStateOf(SyncStatus.UNKNOWN)
+  private val currentSyncJobStatus by mutableStateOf(null)
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
@@ -143,9 +140,7 @@ constructor(
           languages = configurationRegistry.fetchLanguages(),
           navigationConfiguration = navigationConfiguration,
           registerCountMap = registerCountMap,
-          progressPercentage = percentageProgress,
-          isSyncUpload = isUploadSync,
-          syncStatus = isUploadSyncCompleted,
+          currentSyncJobStatus = currentSyncJobStatus,
         )
     }
 
@@ -182,7 +177,7 @@ constructor(
           workManager.cancelUniqueWork(
             "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
           )
-          trackSyncStatus(false, SyncStatus.UNKNOWN)
+          updateSyncStatus(CurrentSyncJobStatus.Cancelled)
         }
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
@@ -193,7 +188,6 @@ constructor(
             formatLastSyncTimestamp(event.state.timestamp),
           )
           retrieveAppMainUiState()
-          isUploadSyncCompleted = SyncStatus.SUCCEEDED
           viewModelScope.launch { retrieveAppMainUiState() }
         }
       }
@@ -282,6 +276,12 @@ constructor(
         requiresNetwork = false,
       )
 
+      schedulePeriodically<CustomSyncWorker>(
+        workId = CustomSyncWorker.WORK_ID,
+        repeatInterval = applicationConfiguration.syncInterval,
+        initialDelay = 0,
+      )
+
       measureReportConfigurations.forEach { measureReportConfig ->
         measureReportConfig.scheduledGenerationDuration?.let { scheduledGenerationDuration ->
           schedulePeriodically<MeasureReportMonthPeriodWorker>(
@@ -304,18 +304,10 @@ constructor(
     }
   }
 
-  fun trackSyncStatus(isSyncUpload: Boolean, syncStatus: SyncStatus) {
+  fun updateSyncStatus(currentSyncJobStatus: CurrentSyncJobStatus, isSyncUpload: Boolean = false) {
     appMainUiState.value =
       appMainUiState.value.copy(
-        isSyncUpload = isSyncUpload,
-        isSyncCompleted = syncStatus,
-      )
-  }
-
-  fun trackSyncUploadPercentage(progressPercentage: Int) {
-    appMainUiState.value =
-      appMainUiState.value.copy(
-        progressPercentage = progressPercentage,
+        currentSyncJobStatus = currentSyncJobStatus,
       )
   }
 
@@ -336,6 +328,39 @@ constructor(
       }
     }
   }
+
+  fun calculatePercentageProgress(
+    progressSyncJobStatus: SyncJobStatus.InProgress,
+  ): Int {
+    val totalRecordsOverall =
+      sharedPreferencesHelper.read(
+        SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
+          progressSyncJobStatus.syncOperation.name,
+        1L,
+      )
+    val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
+    val currentProgress: Int
+    val currentTotalRecords =
+      if (isProgressTotalLess) {
+        currentProgress =
+          totalRecordsOverall.toInt() - progressSyncJobStatus.total +
+            progressSyncJobStatus.completed
+        totalRecordsOverall.toInt()
+      } else {
+        sharedPreferencesHelper.write(
+          SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
+            progressSyncJobStatus.syncOperation.name,
+          progressSyncJobStatus.total.toLong(),
+        )
+        currentProgress = progressSyncJobStatus.completed
+        progressSyncJobStatus.total
+      }
+
+    return getSyncProgress(currentProgress, currentTotalRecords)
+  }
+
+  private fun getSyncProgress(completed: Int, total: Int) =
+    completed * 100 / if (total > 0) total else 1
 
   companion object {
     const val SYNC_TIMESTAMP_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"

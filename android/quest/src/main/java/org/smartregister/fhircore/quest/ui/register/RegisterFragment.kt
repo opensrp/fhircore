@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
-import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -64,7 +63,6 @@ import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
-import org.smartregister.fhircore.quest.ui.main.SyncStatus
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
@@ -82,6 +80,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
   private val appMainViewModel by activityViewModels<AppMainViewModel>()
   private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
   private val registerViewModel by viewModels<RegisterViewModel>()
+  private var lastSyncOperation: SyncOperation? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -107,6 +106,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
         val scope = rememberCoroutineScope()
         val scaffoldState = rememberScaffoldState()
         val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
+        val registerUiState: RegisterUiState = registerViewModel.registerUiState.value
         val openDrawer: (Boolean) -> Unit = { open: Boolean ->
           scope.launch {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
@@ -140,6 +140,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
             drawerContent = {
               AppDrawer(
                 appUiState = uiState,
+                registerUiState = registerUiState,
                 openDrawer = openDrawer,
                 onSideMenuClick = appMainViewModel::onEvent,
                 navController = findNavController(),
@@ -193,7 +194,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
-      is CurrentSyncJobStatus.Running ->
+      is CurrentSyncJobStatus.Running -> {
         if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
           lifecycleScope.launch {
             registerViewModel.emitSnackBarState(
@@ -201,45 +202,27 @@ class RegisterFragment : Fragment(), OnSyncListener {
             )
           }
         } else {
-          val isSyncUpload =
-            (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
-              SyncOperation.UPLOAD
-          emitPercentageProgress(
-            syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress,
-            isSyncUpload,
-          )
+          val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
+          val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+
+          val percentageProgress = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
+          lifecycleScope.launch {
+            registerViewModel.emitPercentageProgressState(percentageProgress, isSyncUpload)
+          }
+
+          lastSyncOperation = inProgressSyncJob.syncOperation
           if (isSyncUpload) {
-            appMainViewModel.trackSyncStatus(isSyncUpload, SyncStatus.INPROGRESS)
-          } else {
-            appMainViewModel.trackSyncStatus(isSyncUpload, SyncStatus.UNKNOWN)
+            appMainViewModel.updateSyncStatus(syncJobStatus)
           }
         }
+      }
       is CurrentSyncJobStatus.Succeeded -> {
         refreshRegisterData()
-        lifecycleScope.launch {
-          registerViewModel.emitSnackBarState(
-            SnackBarMessageConfig(
-              message = getString(R.string.sync_completed),
-              actionLabel = getString(R.string.ok).uppercase(),
-              duration = SnackbarDuration.Long,
-            ),
-          )
-          appMainViewModel.trackSyncStatus(false, SyncStatus.SUCCEEDED)
-        }
+        lifecycleScope.launch { appMainViewModel.updateSyncStatus(syncJobStatus) }
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
-        // Show error message in snackBar message
-        lifecycleScope.launch {
-          registerViewModel.emitSnackBarState(
-            SnackBarMessageConfig(
-              message = getString(R.string.sync_completed_with_errors),
-              duration = SnackbarDuration.Long,
-              actionLabel = getString(R.string.ok).uppercase(),
-            ),
-          )
-          appMainViewModel.trackSyncStatus(false, SyncStatus.FAILED)
-        }
+        lifecycleScope.launch { appMainViewModel.updateSyncStatus(syncJobStatus) }
       }
       else -> {
         // Do nothing
@@ -314,7 +297,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
   ) {
     lifecycleScope.launch {
       val percentageProgress: Int = calculateActualPercentageProgress(progressSyncJobStatus)
-      appMainViewModel.trackSyncUploadPercentage(percentageProgress)
       registerViewModel.emitPercentageProgressState(percentageProgress, isUploadSync)
     }
   }

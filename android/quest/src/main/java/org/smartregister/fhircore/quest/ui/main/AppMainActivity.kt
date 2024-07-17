@@ -322,7 +322,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
               lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
             ),
           )
-          appMainUiState.value.isSyncUpload = false
+          appMainViewModel.updateSyncStatus(syncJobStatus)
         }
       }
       is CurrentSyncJobStatus.Failed -> {
@@ -333,6 +333,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
               lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
             ),
           )
+          appMainViewModel.updateSyncStatus(syncJobStatus)
         }
       }
       is CurrentSyncJobStatus.Running ->
@@ -340,14 +341,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           val isSyncUpload =
             (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
               SyncOperation.UPLOAD
-          appMainViewModel.appMainUiState.value =
-            appMainViewModel.appMainUiState.value.copy(
-              isSyncUpload = isSyncUpload,
-            )
           if (isSyncUpload) {
-            appMainViewModel.trackSyncStatus(isSyncUpload, SyncStatus.INPROGRESS)
-          } else {
-            appMainViewModel.trackSyncStatus(isSyncUpload, SyncStatus.UNKNOWN)
+            appMainViewModel.updateSyncStatus(syncJobStatus)
           }
         }
       else -> {

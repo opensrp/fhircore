@@ -24,6 +24,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -44,6 +45,7 @@ import org.smartregister.fhircore.quest.ui.main.components.NAV_TOP_SECTION_TEST_
 import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ITEM_INNER_ROW_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ITEM_TEXT_TEST_TAG
+import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 
 class AppDrawerTest {
   private val noOpAppMainEventListener: (AppMainEvent) -> Unit = {}
@@ -190,6 +192,18 @@ class AppDrawerTest {
         openDrawer = {},
         onSideMenuClick = onClickListener,
         appVersionPair = Pair(1, "0.0.1"),
+        registerUiState =
+          RegisterUiState(
+            screenTitle = "Register101",
+            isFirstTimeSync = false,
+            registerId = "register101",
+            totalRecordsCount = 1,
+            filteredRecordsCount = 0,
+            pagesCount = 1,
+            progressPercentage = flowOf(0),
+            isSyncUpload = flowOf(false),
+            params = emptyMap(),
+          ),
       )
     }
   }

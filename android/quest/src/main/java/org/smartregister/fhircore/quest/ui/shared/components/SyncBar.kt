@@ -28,30 +28,32 @@ import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
-import org.smartregister.fhircore.quest.ui.main.AppMainUiState
-import timber.log.Timber
+
+const val MAX_PROGRESS = 100
 
 @Composable
 fun SubsequentSyncDetailsBar(
   modifier: Modifier = Modifier,
-  appUiState: AppMainUiState,
+  percentageProgressFlow: Flow<Int> = flowOf(0),
   hideExtraInformation: Boolean = true,
   onCancelButtonClick: () -> Unit,
 ) {
-  Timber.d(
-    "AppDrawer SubsequentSyncDetailsBar : ${appUiState.isSyncUpload}  ${appUiState.progressPercentage}",
-  )
-  val progress by remember { mutableFloatStateOf(appUiState.progressPercentage.toFloat() / 100) }
+  val context = LocalContext.current
+  val currentPercentage = percentageProgressFlow.collectAsState(0).value
+  val progress = currentPercentage.toFloat() / MAX_PROGRESS
   val backgroundColor = Color(0xFF002B4A)
 
   Box(
@@ -74,7 +76,7 @@ fun SubsequentSyncDetailsBar(
       ) {
         if (hideExtraInformation) {
           Text(
-            text = "${(progress * 100).toInt()}% Syncing...",
+            text = "${(progress * 100).toInt()}% ${context.getString(R.string.sync_inprogress)}",
             color = Color.White,
             fontSize = 16.sp,
             modifier = Modifier.padding(bottom = 8.dp).align(Alignment.Start),
@@ -88,7 +90,7 @@ fun SubsequentSyncDetailsBar(
         )
         if (hideExtraInformation) {
           Text(
-            text = "Calculating mins remaining...",
+            text = context.getString(R.string.minutes_remaining),
             color = SubtitleTextColor,
             fontSize = 15.sp,
             textAlign = TextAlign.Center,
@@ -102,7 +104,7 @@ fun SubsequentSyncDetailsBar(
           onClick = { onCancelButtonClick() },
           colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF28B8F9)),
         ) {
-          Text(text = "CANCEL")
+          Text(text = context.getString(R.string.cancel_sync))
         }
       }
     }

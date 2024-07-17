@@ -48,6 +48,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,7 +64,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
@@ -84,11 +90,10 @@ import org.smartregister.fhircore.engine.util.extension.appVersion
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
-import org.smartregister.fhircore.quest.ui.main.SyncStatus
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
+import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
-import timber.log.Timber
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
 const val NAV_TOP_SECTION_TEST_TAG = "navTopSectionTestTag"
@@ -107,6 +112,7 @@ private val DividerColor = MenuItemColor.copy(alpha = 0.2f)
 fun AppDrawer(
   modifier: Modifier = Modifier,
   appUiState: AppMainUiState,
+  registerUiState: RegisterUiState,
   navController: NavController,
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
@@ -114,7 +120,6 @@ fun AppDrawer(
 ) {
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
-  Timber.d("AppDrawer : ${appUiState.isSyncUpload}  ${appUiState.progressPercentage}")
   val navigationConfiguration = appUiState.navigationConfiguration
 
   Scaffold(
@@ -134,7 +139,7 @@ fun AppDrawer(
       }
     },
     bottomBar = { // Display bottom section of the nav (sync)
-      NavBottomSection(modifier, appUiState, onSideMenuClick, openDrawer)
+      NavBottomSection(modifier, appUiState, registerUiState, onSideMenuClick, openDrawer)
     },
     backgroundColor = SideMenuDarkColor,
   ) { innerPadding ->
@@ -205,67 +210,78 @@ fun AppDrawer(
 private fun NavBottomSection(
   modifier: Modifier = Modifier,
   appUiState: AppMainUiState,
+  registerUiState: RegisterUiState,
   onSideMenuClick: (AppMainEvent) -> Unit,
   openDrawer: (Boolean) -> Unit,
 ) {
   val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
 
-  var showSyncBar by remember { mutableStateOf(false) }
   var backgroundColor by remember { mutableStateOf(SideMenuTopItemDarkColor) }
-  LaunchedEffect(appUiState.isSyncCompleted, appUiState.progressPercentage) {
-    if (
-      appUiState.isSyncCompleted == SyncStatus.SUCCEEDED && appUiState.progressPercentage == 100
-    ) {
-      backgroundColor = Color(0xFF1DB11B)
-      showSyncBar = true
-      coroutineScope.launch {
-        delay(60000L)
-        showSyncBar = false
-        backgroundColor = SideMenuTopItemDarkColor
-      }
-    } else if (appUiState.isSyncCompleted == SyncStatus.FAILED) {
-      backgroundColor = Color(0xFFDF0E1A)
-    }
+  var showSyncComplete by remember { mutableStateOf(false) }
+  var showSyncBar by remember { mutableStateOf(false) }
+  var hasShownSyncComplete by rememberSaveable { mutableStateOf(false) }
+
+  // Update sync status
+  LaunchedEffect(appUiState.currentSyncJobStatus) {
+    updateSyncStatus(
+      appUiState,
+      coroutineScope,
+      hasShownSyncComplete,
+      { hasShownSyncComplete = it },
+      { showSyncBar = it },
+      { showSyncComplete = it },
+      { backgroundColor = it },
+    )
   }
 
-  if (!appUiState.isSyncUpload) {
-    Box(
-      modifier =
-        modifier
-          .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
-          .background(backgroundColor)
-          .background(
-            if (showSyncBar || appUiState.isSyncCompleted == SyncStatus.FAILED) {
-              Color.White.copy(alpha = 0.83f)
-            } else {
-              Color.Transparent
-            },
-          )
-          .padding(horizontal = 16.dp, vertical = 4.dp),
-    ) {
-      if (showSyncBar) {
-        SyncCompleteStatus(
-          modifier = modifier,
-          imageConfig = ImageConfig(type = "local", "ic_sync_success"),
-          title = "Sync Complete",
-          showEndText = false,
-          onCancelButtonClick = {},
+  Box(
+    modifier =
+      modifier
+        .background(backgroundColor)
+        .background(
+          if (showSyncComplete) Color.White.copy(alpha = 0.83f) else Color.Transparent,
         )
-      } else if (appUiState.isSyncCompleted == SyncStatus.FAILED) {
+        .then(
+          if (showSyncComplete) Modifier.padding(horizontal = 16.dp, vertical = 4.dp) else Modifier,
+        ),
+  ) {
+    when {
+      appUiState.currentSyncJobStatus is CurrentSyncJobStatus.Running -> {
+        val isSyncUpload =
+          (appUiState.currentSyncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress)
+            .syncOperation == SyncOperation.UPLOAD
+        if (isSyncUpload) {
+          SubsequentSyncDetailsBar(percentageProgressFlow = registerUiState.progressPercentage) {
+            onSideMenuClick(AppMainEvent.CancelSyncData(context))
+            openDrawer(false)
+          }
+        }
+      }
+      appUiState.currentSyncJobStatus is CurrentSyncJobStatus.Failed -> {
         SyncCompleteStatus(
           modifier = modifier,
           imageConfig = ImageConfig(type = "local", "ic_sync_fail"),
-          title = "Sync error",
+          title = context.getString(org.smartregister.fhircore.engine.R.string.sync_error),
           syncSuccess = false,
           showEndText = true,
         ) {
           openDrawer(false)
           onSideMenuClick(AppMainEvent.SyncData(context))
         }
-      } else {
+      }
+      appUiState.currentSyncJobStatus is CurrentSyncJobStatus.Succeeded && showSyncComplete -> {
+        SyncCompleteStatus(
+          modifier = modifier,
+          imageConfig = ImageConfig(type = "local", "ic_sync_success"),
+          title = context.getString(org.smartregister.fhircore.engine.R.string.sync_completed),
+          showEndText = false,
+          onCancelButtonClick = {},
+        )
+      }
+      else -> {
         SideMenuItem(
-          modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
+          modifier = modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
           imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
           title = stringResource(org.smartregister.fhircore.engine.R.string.sync),
           endText = appUiState.lastSyncTime,
@@ -277,10 +293,47 @@ private fun NavBottomSection(
         }
       }
     }
-  } else {
-    SubsequentSyncDetailsBar(appUiState = appUiState) {
-      onSideMenuClick(AppMainEvent.CancelSyncData(context))
-      openDrawer(false)
+  }
+}
+
+private fun updateSyncStatus(
+  appUiState: AppMainUiState?,
+  coroutineScope: CoroutineScope,
+  hasShownSyncComplete: Boolean,
+  setHasShownSyncComplete: (Boolean) -> Unit,
+  setShowSyncBar: (Boolean) -> Unit,
+  setShowSyncComplete: (Boolean) -> Unit,
+  setBackgroundColor: (Color) -> Unit,
+) {
+  when (appUiState?.currentSyncJobStatus) {
+    is CurrentSyncJobStatus.Succeeded -> {
+      if (!hasShownSyncComplete) {
+        setBackgroundColor(Color(0xFF1DB11B))
+        setShowSyncBar(true)
+        setShowSyncComplete(true)
+        setHasShownSyncComplete(true)
+        coroutineScope.launch {
+          delay(60000L)
+          setShowSyncBar(false)
+          setShowSyncComplete(false)
+          setBackgroundColor(SideMenuTopItemDarkColor)
+        }
+      }
+    }
+    is CurrentSyncJobStatus.Failed -> {
+      setBackgroundColor(Color(0xFFDF0E1A))
+      setShowSyncBar(true)
+      setShowSyncComplete(true)
+      setHasShownSyncComplete(true)
+    }
+    is CurrentSyncJobStatus.Running -> {
+      setShowSyncBar(true)
+      setBackgroundColor(SideMenuTopItemDarkColor)
+      setShowSyncComplete(false)
+      setHasShownSyncComplete(false)
+    }
+    else -> {
+      setShowSyncBar(false)
     }
   }
 }
@@ -543,6 +596,18 @@ fun AppDrawerPreview() {
             menuActionButton =
               NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
           ),
+      ),
+    registerUiState =
+      RegisterUiState(
+        screenTitle = "Register101",
+        isFirstTimeSync = false,
+        registerId = "register101",
+        totalRecordsCount = 1,
+        filteredRecordsCount = 0,
+        pagesCount = 1,
+        progressPercentage = flowOf(0),
+        isSyncUpload = flowOf(false),
+        params = emptyMap(),
       ),
     navController = rememberNavController(),
     openDrawer = {},

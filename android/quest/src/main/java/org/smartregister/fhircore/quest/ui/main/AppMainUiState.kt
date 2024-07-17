@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import java.util.Locale
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.domain.model.Language
@@ -25,9 +26,7 @@ data class AppMainUiState(
   val username: String,
   val lastSyncTime: String,
   val currentLanguage: String,
-  var progressPercentage: Int = 0,
-  var isSyncUpload: Boolean = false,
-  var isSyncCompleted: SyncStatus = SyncStatus.UNKNOWN,
+  val currentSyncJobStatus: CurrentSyncJobStatus?,
   val languages: List<Language>,
   val navigationConfiguration: NavigationConfiguration,
   val registerCountMap: Map<String, Long> = emptyMap(),
@@ -38,12 +37,10 @@ fun appMainUiStateOf(
   username: String = "",
   lastSyncTime: String = "",
   currentLanguage: String = Locale.ENGLISH.displayName,
-  progressPercentage: Int = 0,
-  isSyncUpload: Boolean = false,
-  syncStatus: SyncStatus = SyncStatus.UNKNOWN,
   languages: List<Language> = emptyList(),
   navigationConfiguration: NavigationConfiguration,
   registerCountMap: Map<String, Long> = emptyMap(),
+  currentSyncJobStatus: CurrentSyncJobStatus? = null,
 ): AppMainUiState {
   return AppMainUiState(
     appTitle = appTitle,
@@ -53,15 +50,6 @@ fun appMainUiStateOf(
     languages = languages,
     navigationConfiguration = navigationConfiguration,
     registerCountMap = registerCountMap,
-    progressPercentage = progressPercentage,
-    isSyncUpload = isSyncUpload,
-    isSyncCompleted = syncStatus,
+    currentSyncJobStatus = currentSyncJobStatus,
   )
-}
-
-enum class SyncStatus {
-  SUCCEEDED,
-  FAILED,
-  UNKNOWN,
-  INPROGRESS,
 }
