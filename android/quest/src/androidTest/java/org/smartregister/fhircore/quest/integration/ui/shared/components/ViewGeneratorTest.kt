@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.integration.ui.shared.components
 
 import android.graphics.Bitmap
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -369,7 +370,7 @@ class ViewGeneratorTest {
   @Test
   fun testImageIsRenderedFromDecodedBitmap() {
     composeRule.setContent {
-      val decodedImageMap = mutableMapOf<String, Bitmap>()
+      val decodedImageMap = mutableStateMapOf<String, Bitmap>()
       decodedImageMap["testImageReference"] = Bitmap.createBitmap(100, 16, Bitmap.Config.ARGB_8888)
       GenerateView(
         properties =
