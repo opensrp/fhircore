@@ -28,8 +28,6 @@ import javax.inject.Inject
 import kotlin.system.measureTimeMillis
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
 import org.jeasy.rules.api.Facts
@@ -51,6 +49,7 @@ import org.smartregister.fhircore.engine.util.extension.SDF_DD_MMM_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
 import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractBirthDate
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
@@ -301,13 +300,9 @@ constructor(
 
     /** This function extracts a Patient/RelatedPerson's DOB from the FHIR resource */
     fun extractDOB(resource: Resource, dateFormat: String): String {
-      return when (resource) {
-        is Patient ->
-          SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(resource.birthDate) }
-        is RelatedPerson ->
-          SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(resource.birthDate) }
-        else -> ""
-      }
+      return SimpleDateFormat(dateFormat, Locale.ENGLISH).run {
+        resource.extractBirthDate()?.let { format(it) }
+      } ?: ""
     }
 
     /**

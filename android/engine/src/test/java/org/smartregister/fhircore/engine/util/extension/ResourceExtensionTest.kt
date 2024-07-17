@@ -28,6 +28,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import java.math.BigDecimal
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Calendar
@@ -1199,5 +1200,33 @@ class ResourceExtensionTest : RobolectricTest() {
 
     val patient = Patient().apply { birthDate = calendar.time }
     Assert.assertEquals("1y", patient.extractAge(context))
+  }
+
+  @Test
+  fun extractBirthDateReturnsCorrectDateWhenResourceIsPatientAndHasAValidBirthDate() {
+    val resource = Patient().setBirthDate(org.joda.time.LocalDate.parse("2015-10-03").toDate())
+
+    Assert.assertEquals(
+      "03/10/2015",
+      resource.extractBirthDate()?.let { SimpleDateFormat("dd/MM/yyyy").format(it) },
+    )
+  }
+
+  @Test
+  fun extractBirthDateReturnsCorrectDateWhenResourceIsRelatedPersonAndHasAValidBirthDate() {
+    val resource =
+      RelatedPerson().setBirthDate(org.joda.time.LocalDate.parse("2015-10-03").toDate())
+
+    Assert.assertEquals(
+      "03/10/2015",
+      resource.extractBirthDate()?.let { SimpleDateFormat("dd/MM/yyyy").format(it) },
+    )
+  }
+
+  @Test
+  fun extractBirthDateReturnsNullWhenResourceDoesNotHaveABirthDateField() {
+    val resource = Task()
+
+    Assert.assertNull(resource.extractBirthDate())
   }
 }

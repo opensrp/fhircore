@@ -581,7 +581,7 @@ fun Resource.extractGender(context: Context): String {
   }
 }
 
-private fun getGenderString(gender: Enumerations.AdministrativeGender, context: Context): String {
+private fun getGenderString(gender: Enumerations.AdministrativeGender?, context: Context): String {
   return when (gender) {
     Enumerations.AdministrativeGender.MALE -> context.getString(R.string.male)
     Enumerations.AdministrativeGender.FEMALE -> context.getString(R.string.female)
@@ -604,5 +604,14 @@ fun Resource.extractAge(context: Context): String {
     is Patient -> this.birthDate?.let { calculateAge(it, context) } ?: ""
     is RelatedPerson -> this.birthDate?.let { calculateAge(it, context) } ?: ""
     else -> ""
+  }
+}
+
+/** Extract a Resource's birthDate if it's an available field */
+fun Resource.extractBirthDate(): Date? {
+  return when (this) {
+    is Patient -> this.birthDate
+    is RelatedPerson -> this.birthDate
+    else -> null
   }
 }
