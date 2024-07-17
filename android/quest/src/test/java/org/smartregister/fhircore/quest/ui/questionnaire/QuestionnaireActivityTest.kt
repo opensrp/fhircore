@@ -76,7 +76,6 @@ import org.smartregister.fhircore.engine.util.location.LocationUtils
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.sdk.runBlockingOnWorkerThread
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
