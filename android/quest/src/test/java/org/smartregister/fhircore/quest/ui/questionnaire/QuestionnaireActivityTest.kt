@@ -219,14 +219,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
     }
 
   @Test
-  fun testThatOnBackPressShowsConfirmationAlertDialogTroubleshooting() = runBlockingOnWorkerThread {
-    setupActivity()
-    questionnaireActivity.onBackPressedDispatcher.onBackPressed()
-    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
-    Assert.assertNotNull(dialog)
-  }
-
-  @Test
   fun `setupLocationServices should fetch location when location is enabled and permissions granted`() {
     setupActivity()
     assertTrue(
