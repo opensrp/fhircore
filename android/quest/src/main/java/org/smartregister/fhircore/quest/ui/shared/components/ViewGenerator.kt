@@ -34,7 +34,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,7 +73,7 @@ fun GenerateView(
   properties: ViewProperties,
   resourceData: ResourceData,
   navController: NavController,
-  decodedImageMap: MutableMap<String, Bitmap> = mutableMapOf(),
+  decodedImageMap: SnapshotStateMap<String, Bitmap> = mutableStateMapOf(),
 ) {
   if (properties.visible.toBoolean()) {
     when (properties.viewType) {

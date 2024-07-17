@@ -247,6 +247,7 @@ private fun RenderSimpleAppTopBar(
       resourceData =
         profileUiState.resourceData ?: ResourceData("", ResourceType.Patient, emptyMap()),
       navController = navController,
+      decodedImageMap = profileUiState.decodedImageMap,
     )
   }
 }

@@ -23,6 +23,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
@@ -676,7 +677,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     runBlocking {
       defaultRepository.create(addResourceTags = true, binaryImage)
       val navigationMenuConfigs = sequenceOf(navigationMenuConfig)
-      val decodedImageMap = mutableMapOf<String, Bitmap>()
+      val decodedImageMap = mutableStateMapOf<String, Bitmap>()
       runBlocking {
         navigationMenuConfigs.decodeBinaryResourcesToBitmap(
           this,
@@ -691,7 +692,7 @@ class ConfigExtensionsTest : RobolectricTest() {
   fun decodeBinaryResourcesToBitmapOnOverflowMenuConfigDoneCorrectly(): Unit = runBlocking {
     defaultRepository.create(addResourceTags = true, binaryImage)
     val navigationMenuConfigs = listOf(overflowMenuItemConfig)
-    val decodedImageMap = mutableMapOf<String, Bitmap>()
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
     runBlocking {
       navigationMenuConfigs.decodeBinaryResourcesToBitmap(this, registerRepository, decodedImageMap)
     }
@@ -701,7 +702,7 @@ class ConfigExtensionsTest : RobolectricTest() {
   @Test
   fun testImageBitmapUpdatedCorrectlyGivenProfileConfiguration(): Unit = runBlocking {
     defaultRepository.create(addResourceTags = true, binaryImage)
-    val decodedImageMap = mutableMapOf<String, Bitmap>()
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
     loadRemoteImagesBitmaps(
       profileConfiguration.views,
       registerRepository = registerRepository,
@@ -715,7 +716,7 @@ class ConfigExtensionsTest : RobolectricTest() {
   fun testImageBitmapUpdatedCorrectlyGivenCardViewProperties(): Unit = runBlocking {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     defaultRepository.create(addResourceTags = true, binaryImage)
-    val decodedImageMap = mutableMapOf<String, Bitmap>()
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
     loadRemoteImagesBitmaps(
       listOf(cardViewProperties),
       registerRepository = registerRepository,
@@ -729,7 +730,7 @@ class ConfigExtensionsTest : RobolectricTest() {
   fun testImageBitmapUpdatedCorrectlyGivenListViewProperties(): Unit = runBlocking {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     defaultRepository.create(addResourceTags = true, binaryImage)
-    val decodedImageMap = mutableMapOf<String, Bitmap>()
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
     loadRemoteImagesBitmaps(
       listOf(cardViewProperties.content[0]),
       registerRepository = registerRepository,
@@ -743,7 +744,7 @@ class ConfigExtensionsTest : RobolectricTest() {
   fun testImageBitmapUpdatedCorrectlyGivenColumnProperties(): Unit = runBlocking {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     val listViewProperties = cardViewProperties.content[0] as ListProperties
-    val decodedImageMap = mutableMapOf<String, Bitmap>()
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
     defaultRepository.create(addResourceTags = true, binaryImage)
     loadRemoteImagesBitmaps(
       listOf(listViewProperties.registerCard.views[0]),
@@ -760,7 +761,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val listViewProperties = cardViewProperties.content[0] as ListProperties
     val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
     defaultRepository.create(addResourceTags = true, binaryImage)
-    val decodedImageMap = mutableMapOf<String, Bitmap>()
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
     loadRemoteImagesBitmaps(
       listOf(columnProperties.children[0]),
       registerRepository = registerRepository,
@@ -789,7 +790,7 @@ class ConfigExtensionsTest : RobolectricTest() {
           ),
       )
     val emptyComputedValuesMap = mutableMapOf<String, String>()
-    val decodedImageMap = mutableMapOf<String, Bitmap>()
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
 
     loadRemoteImagesBitmaps(
       listOf(rowProperties),
@@ -819,7 +820,7 @@ class ConfigExtensionsTest : RobolectricTest() {
           ),
       )
     val emptyComputedValuesMap = mutableMapOf<String, String>()
-    val decodedImageMap = mutableMapOf<String, Bitmap>()
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
 
     coEvery { defaultRepository.loadResource<Binary>(anyString()) } returns
       Binary().apply {

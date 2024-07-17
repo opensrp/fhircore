@@ -23,6 +23,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
@@ -236,7 +237,7 @@ fun Array<ActionParameter>?.toParamDataMap(): Map<String, String> =
 fun List<OverflowMenuItemConfig>.decodeBinaryResourcesToBitmap(
   coroutineScope: CoroutineScope,
   registerRepository: RegisterRepository,
-  decodedImageMap: MutableMap<String, Bitmap>,
+  decodedImageMap: SnapshotStateMap<String, Bitmap>,
 ) {
   this.forEach {
     val resourceId = it.icon!!.reference!!.extractLogicalIdUuid()
@@ -251,7 +252,7 @@ fun List<OverflowMenuItemConfig>.decodeBinaryResourcesToBitmap(
 fun Sequence<NavigationMenuConfig>.decodeBinaryResourcesToBitmap(
   coroutineScope: CoroutineScope,
   registerRepository: RegisterRepository,
-  decodedImageMap: MutableMap<String, Bitmap>,
+  decodedImageMap: SnapshotStateMap<String, Bitmap>,
 ) {
   this.forEach {
     val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
