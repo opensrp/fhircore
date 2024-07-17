@@ -98,7 +98,11 @@ constructor(
       )
     profileConfig.overFlowMenuItems
       .filter { it.icon != null && !it.icon!!.reference.isNullOrEmpty() }
-      .decodeBinaryResourcesToBitmap(viewModelScope, registerRepository)
+      .decodeBinaryResourcesToBitmap(
+        viewModelScope,
+        registerRepository,
+        configurationRegistry.decodedImageMap
+      )
   }
 
   suspend fun retrieveProfileUiState(

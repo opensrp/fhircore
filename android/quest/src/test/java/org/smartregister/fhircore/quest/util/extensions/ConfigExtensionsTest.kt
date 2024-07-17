@@ -676,68 +676,82 @@ class ConfigExtensionsTest : RobolectricTest() {
     runBlocking {
       defaultRepository.create(addResourceTags = true, binaryImage)
       val navigationMenuConfigs = sequenceOf(navigationMenuConfig)
-      runBlocking { navigationMenuConfigs.decodeBinaryResourcesToBitmap(this, registerRepository) }
-      assertNotNull(navigationMenuConfig.menuIconConfig!!.decodedBitmap)
+      val decodedImageMap = mutableMapOf<String, Bitmap>()
+      runBlocking {
+        navigationMenuConfigs.decodeBinaryResourcesToBitmap(
+          this,
+          registerRepository,
+          decodedImageMap
+        )
+      }
+      assertTrue(decodedImageMap.isNotEmpty())
     }
 
   @Test
   fun decodeBinaryResourcesToBitmapOnOverflowMenuConfigDoneCorrectly(): Unit = runBlocking {
     defaultRepository.create(addResourceTags = true, binaryImage)
     val navigationMenuConfigs = listOf(overflowMenuItemConfig)
-    runBlocking { navigationMenuConfigs.decodeBinaryResourcesToBitmap(this, registerRepository) }
-    assertNotNull(navigationMenuConfig.menuIconConfig!!.decodedBitmap)
+    val decodedImageMap = mutableMapOf<String, Bitmap>()
+    runBlocking {
+      navigationMenuConfigs.decodeBinaryResourcesToBitmap(this, registerRepository, decodedImageMap)
+    }
+    assertTrue(decodedImageMap.isNotEmpty())
   }
 
   @Test
   fun testImageBitmapUpdatedCorrectlyGivenProfileConfiguration(): Unit = runBlocking {
     defaultRepository.create(addResourceTags = true, binaryImage)
+    val decodedImageMap = mutableMapOf<String, Bitmap>()
     loadRemoteImagesBitmaps(
       profileConfiguration.views,
       registerRepository = registerRepository,
       computedValuesMap = emptyMap(),
       configurationRegistry.decodedImageMap,
     )
-    assertNotNull(imageProperties.imageConfig?.decodedBitmap)
+    assertTrue(decodedImageMap.isNotEmpty())
   }
 
   @Test
   fun testImageBitmapUpdatedCorrectlyGivenCardViewProperties(): Unit = runBlocking {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     defaultRepository.create(addResourceTags = true, binaryImage)
+    val decodedImageMap = mutableMapOf<String, Bitmap>()
     loadRemoteImagesBitmaps(
       listOf(cardViewProperties),
       registerRepository = registerRepository,
       computedValuesMap = emptyMap(),
-      configurationRegistry.decodedImageMap,
+      decodedImageMap,
     )
-    assertNotNull(imageProperties.imageConfig?.decodedBitmap)
+    assertTrue(decodedImageMap.isNotEmpty())
   }
 
   @Test
   fun testImageBitmapUpdatedCorrectlyGivenListViewProperties(): Unit = runBlocking {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     defaultRepository.create(addResourceTags = true, binaryImage)
+    val decodedImageMap = mutableMapOf<String, Bitmap>()
     loadRemoteImagesBitmaps(
       listOf(cardViewProperties.content[0]),
       registerRepository = registerRepository,
       computedValuesMap = emptyMap(),
-      configurationRegistry.decodedImageMap,
+      decodedImageMap,
     )
-    assertNotNull(imageProperties.imageConfig?.decodedBitmap)
+    assertTrue(decodedImageMap.isNotEmpty())
   }
 
   @Test
   fun testImageBitmapUpdatedCorrectlyGivenColumnProperties(): Unit = runBlocking {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     val listViewProperties = cardViewProperties.content[0] as ListProperties
+    val decodedImageMap = mutableMapOf<String, Bitmap>()
     defaultRepository.create(addResourceTags = true, binaryImage)
     loadRemoteImagesBitmaps(
       listOf(listViewProperties.registerCard.views[0]),
       registerRepository = registerRepository,
       computedValuesMap = emptyMap(),
-      configurationRegistry.decodedImageMap,
+      decodedImageMap,
     )
-    assertNotNull(imageProperties.imageConfig?.decodedBitmap)
+    assertTrue(decodedImageMap.isNotEmpty())
   }
 
   @Test
@@ -746,13 +760,14 @@ class ConfigExtensionsTest : RobolectricTest() {
     val listViewProperties = cardViewProperties.content[0] as ListProperties
     val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
     defaultRepository.create(addResourceTags = true, binaryImage)
+    val decodedImageMap = mutableMapOf<String, Bitmap>()
     loadRemoteImagesBitmaps(
       listOf(columnProperties.children[0]),
       registerRepository = registerRepository,
       computedValuesMap = emptyMap(),
-      configurationRegistry.decodedImageMap,
+      decodedImageMap,
     )
-    assertNotNull(imageProperties.imageConfig?.decodedBitmap)
+    assertTrue(decodedImageMap.isNotEmpty())
   }
 
   @Test

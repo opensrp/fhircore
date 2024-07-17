@@ -236,12 +236,13 @@ fun Array<ActionParameter>?.toParamDataMap(): Map<String, String> =
 fun List<OverflowMenuItemConfig>.decodeBinaryResourcesToBitmap(
   coroutineScope: CoroutineScope,
   registerRepository: RegisterRepository,
+  decodedImageMap: MutableMap<String, Bitmap>,
 ) {
   this.forEach {
     val resourceId = it.icon!!.reference!!.extractLogicalIdUuid()
     coroutineScope.launch() {
       registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-        it.icon!!.decodedBitmap = binary.data.decodeToBitmap()
+        decodedImageMap[resourceId] = binary.data.decodeToBitmap()
       }
     }
   }
@@ -250,12 +251,13 @@ fun List<OverflowMenuItemConfig>.decodeBinaryResourcesToBitmap(
 fun Sequence<NavigationMenuConfig>.decodeBinaryResourcesToBitmap(
   coroutineScope: CoroutineScope,
   registerRepository: RegisterRepository,
+  decodedImageMap: MutableMap<String, Bitmap>,
 ) {
   this.forEach {
     val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
     coroutineScope.launch() {
       registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-        it.menuIconConfig!!.decodedBitmap = binary.data.decodeToBitmap()
+        decodedImageMap[resourceId] = binary.data.decodeToBitmap()
       }
     }
   }
