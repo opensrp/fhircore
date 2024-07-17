@@ -179,6 +179,14 @@ class RulesEngineServiceTest : RobolectricTest() {
   }
 
   @Test
+  fun `generateTaskServiceStatus() should return en empty string when Task is NULL`() {
+    Assert.assertEquals(
+      "",
+      rulesEngineService.generateTaskServiceStatus(null),
+    )
+  }
+
+  @Test
   fun `generateTaskServiceStatus() should return UPCOMING when Task#status is NULL`() {
     val task = Task().apply { status = Task.TaskStatus.NULL }
 
