@@ -16,13 +16,13 @@
 
 package org.smartregister.fhircore.quest.integration.ui.main.components
 
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.navigation.NavController
-import io.mockk.mockk
+import androidx.navigation.testing.TestNavHostController
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -33,13 +33,13 @@ import org.smartregister.fhircore.quest.ui.main.components.TOP_ROW_ICON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.TOP_ROW_TEXT_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.TRAILING_ICON_BUTTON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.TRAILING_ICON_TEST_TAG
+import org.smartregister.fhircore.quest.ui.main.components.TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 
 class TopScreenSectionTest {
   private val listener: (String) -> Unit = {}
 
   @get:Rule val composeTestRule = createComposeRule()
-  private val navController: NavController = mockk(relaxUnitFun = true)
 
   @Test
   fun testTopScreenSectionRendersTitleRowCorrectly() {
@@ -48,7 +48,7 @@ class TopScreenSectionTest {
         title = "All Clients",
         searchText = "search text",
         onSearchTextChanged = listener,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
         onClick = {},
       )
@@ -79,7 +79,7 @@ class TopScreenSectionTest {
         title = "All Clients",
         searchText = "search text",
         onSearchTextChanged = listener,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
         onClick = {},
       )
@@ -112,7 +112,7 @@ class TopScreenSectionTest {
         title = "All Clients",
         searchText = "search text",
         onSearchTextChanged = { clicked = true },
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
         onClick = {},
       )
@@ -122,5 +122,35 @@ class TopScreenSectionTest {
     trailingIcon.assertExists()
     trailingIcon.performClick()
     Assert.assertTrue(clicked)
+  }
+
+  @Test
+  fun thatTopScreenSectionHideQrCodeIconWhenShowSearchByQrCodeIsTrueAndSearchTextIsNotBlank() {
+    composeTestRule.setContent {
+      TopScreenSection(
+        title = "All Clients",
+        searchText = "search text",
+        showSearchByQrCode = true,
+        navController = TestNavHostController(LocalContext.current),
+        isSearchBarVisible = true,
+        onClick = {},
+      )
+    }
+    composeTestRule.onNodeWithTag(TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG).assertDoesNotExist()
+  }
+
+  @Test
+  fun thatTopScreenSectionShowsQrCodeIconWhenShowSearchByQrCodeIsTrueAndSearchTextIsBlank() {
+    composeTestRule.setContent {
+      TopScreenSection(
+        title = "All Clients",
+        searchText = "",
+        showSearchByQrCode = true,
+        navController = TestNavHostController(LocalContext.current),
+        isSearchBarVisible = true,
+        onClick = {},
+      )
+    }
+    composeTestRule.onNodeWithTag(TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG).assertIsDisplayed()
   }
 }

@@ -18,9 +18,10 @@ package org.smartregister.fhircore.quest.ui.sdc.qrCode
 
 import android.Manifest
 import android.app.Application
-import android.content.Context
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBarcodeScanningFragment
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -28,17 +29,18 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockkConstructor
-import io.mockk.mockkStatic
 import io.mockk.runs
+import io.mockk.spyk
 import io.mockk.unmockkConstructor
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Shadows.shadowOf
-import org.smartregister.fhircore.quest.R
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.quest.hiltActivityForTestScenario
 import org.smartregister.fhircore.quest.launchFragmentInHiltContainer
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.sdc.qrCode.QrCodeCameraDialogFragment.Companion.QR_CODE_SCANNER_FRAGMENT_TAG
@@ -55,7 +57,7 @@ class QrCodeCameraDialogFragmentTest : RobolectricTest() {
   }
 
   @Test
-  fun shouldShowQrCodeScannerWhenCameraPermissionGranted() {
+  fun onResumeShouldShowQrCodeScannerWhenCameraPermissionGranted() {
     shadowOf(applicationContext).grantPermissions(Manifest.permission.CAMERA)
     mockkConstructor(LiveBarcodeScanningFragment::class)
     every {
@@ -74,29 +76,62 @@ class QrCodeCameraDialogFragmentTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("TODO--")
-  fun showReturnCodeReceivedFromQrCodeScanningWhenPermissionGranted() {
+  fun onResumeShouldReturnCorrectCodeReceivedFromQrCodeScanningWhenPermissionGranted() {
     shadowOf(applicationContext).grantPermissions(Manifest.permission.CAMERA)
     mockkConstructor(LiveBarcodeScanningFragment::class)
-    every {
-      anyConstructed<LiveBarcodeScanningFragment>().show(any<FragmentManager>(), any<String>())
-    } just runs
+    val sampleBarcodeResult = "13462889"
+    var receivedCode: String? = null
+
+    hiltActivityForTestScenario().use { scenario ->
+      scenario.onActivity { activity ->
+        val activityFragmentManager = activity.supportFragmentManager
+        every {
+          anyConstructed<LiveBarcodeScanningFragment>().show(any<FragmentManager>(), any<String>())
+        } answers
+          {
+            activityFragmentManager.setFragmentResult(
+              LiveBarcodeScanningFragment.RESULT_REQUEST_KEY,
+              bundleOf(LiveBarcodeScanningFragment.RESULT_REQUEST_KEY to sampleBarcodeResult),
+            )
+          }
+        activityFragmentManager.setFragmentResultListener(
+          QrCodeCameraDialogFragment.RESULT_REQUEST_KEY,
+          activity,
+        ) { _, result ->
+          val code = result.getString(QrCodeCameraDialogFragment.RESULT_REQUEST_KEY)
+          Assert.assertEquals(sampleBarcodeResult, code)
+          receivedCode = code
+        }
+
+        activityFragmentManager.commitNow {
+          add(QrCodeCameraDialogFragment(), QrCodeCameraDialogFragmentTest::class.java.simpleName)
+        }
+
+        Assert.assertNotNull(receivedCode)
+        Assert.assertEquals(sampleBarcodeResult, receivedCode)
+      }
+    }
 
     unmockkConstructor(LiveBarcodeScanningFragment::class)
   }
 
   @Test
-  @Ignore("TODO--")
-  fun showShowCameraPermissionDeniedMessageWhenPermissionDenied() {
-    mockkStatic(Toast::class)
+  fun onResumeShouldLaunchCameraPermissionRequestWhenPermissionDenied() {
     shadowOf(applicationContext).denyPermissions(Manifest.permission.CAMERA)
-    launchFragmentInHiltContainer<QrCodeCameraDialogFragment> {
-      verify {
-        Toast.makeText(
-          any<Context>(),
-          applicationContext.getString(R.string.barcode_camera_permission_denied),
-          Toast.LENGTH_SHORT,
+    hiltActivityForTestScenario().use { scenario ->
+      scenario.onActivity { activity ->
+        val qrCodeFragment = QrCodeCameraDialogFragment()
+        val cameraPermissionRequestSpy = spyk(qrCodeFragment.cameraPermissionRequest)
+        ReflectionHelpers.setField(
+          qrCodeFragment,
+          "cameraPermissionRequest",
+          cameraPermissionRequestSpy,
         )
+
+        activity.supportFragmentManager.commitNow {
+          add(qrCodeFragment, QrCodeCameraDialogFragmentTest::class.java.simpleName)
+        }
+        verify { cameraPermissionRequestSpy.launch(Manifest.permission.CAMERA) }
       }
     }
     unmockkStatic(Toast::class)
