@@ -249,6 +249,7 @@ private fun NavBottomSection(
               appUiState.currentSyncJobStatus is CurrentSyncJobStatus.Cancelled
           ) {
             Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+              .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
           } else {
             Modifier
           },

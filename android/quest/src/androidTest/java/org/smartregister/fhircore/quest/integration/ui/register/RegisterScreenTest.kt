@@ -361,6 +361,14 @@ class RegisterScreenTest {
         pagesCount = 0,
         progressPercentage = flowOf(50),
         isSyncUpload = flowOf(true),
+        currentSyncJobStatus =
+          flowOf(
+            CurrentSyncJobStatus.Running(
+              SyncJobStatus.InProgress(
+                syncOperation = SyncOperation.UPLOAD,
+              ),
+            ),
+          ),
         params = emptyMap(),
       )
     val searchText = mutableStateOf("")
@@ -412,6 +420,7 @@ class RegisterScreenTest {
         pagesCount = 0,
         progressPercentage = flowOf(100),
         isSyncUpload = flowOf(false),
+        currentSyncJobStatus = flowOf(CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())),
         params = emptyMap(),
       )
     val searchText = mutableStateOf("")

@@ -43,6 +43,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.android.fhir.datacapture.extensions.tryUnwrapContext
+import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.delay
@@ -54,6 +57,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -75,7 +79,7 @@ import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 import timber.log.Timber
 
 @AndroidEntryPoint
-class GeoWidgetLauncherFragment : Fragment() {
+class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   @Inject lateinit var eventBus: EventBus
 
@@ -206,6 +210,32 @@ class GeoWidgetLauncherFragment : Fragment() {
         .showCurrentLocationButtonVisibility(geoWidgetConfiguration.showLocation)
         .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.showPlaneSwitcher)
         .build()
+  }
+
+  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
+    when (syncJobStatus) {
+      is CurrentSyncJobStatus.Running -> {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
+          lifecycleScope.launch {}
+        } else {
+          val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
+          val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+          lifecycleScope.launch {
+            registerViewModel.updateSyncStatus(syncJobStatus)
+            appMainViewModel.updateSyncStatus(syncJobStatus)
+          }
+        }
+      }
+      is CurrentSyncJobStatus.Succeeded -> {
+        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
+      }
+      is CurrentSyncJobStatus.Failed -> {
+        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
+      }
+      else -> {
+        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
+      }
+    }
   }
 
   private fun setOnQuestionnaireSubmissionListener() {
