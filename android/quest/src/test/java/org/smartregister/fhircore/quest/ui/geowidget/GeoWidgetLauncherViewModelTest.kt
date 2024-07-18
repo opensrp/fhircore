@@ -16,11 +16,9 @@
 
 package org.smartregister.fhircore.quest.ui.geowidget
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
@@ -43,13 +41,11 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TestRule
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
@@ -64,8 +60,6 @@ import org.smartregister.fhircore.quest.ui.launcher.GeoWidgetLauncherViewModel
 class GeoWidgetLauncherViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-
-  @get:Rule(order = 1) val rule: TestRule = InstantTaskExecutorRule()
 
   @Inject lateinit var defaultRepository: DefaultRepository
 
@@ -155,24 +149,6 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   @Test
   fun testRetrieveResourcesShouldReturnListOfRepositoryResourceData() {
     runTest {
-      coEvery {
-        defaultRepository.searchResourcesRecursively(
-          filterActiveResources = null,
-          fhirResourceConfig = geoWidgetConfiguration.resourceConfig,
-          configRules = null,
-          secondaryResourceConfigs = null,
-          filterByRelatedEntityLocationMetaTag = false,
-        )
-      } returns
-        listOf(
-          RepositoryResourceData(
-            resource =
-              Location().apply {
-                id = "loc1"
-                name = "Root Location"
-              },
-          ),
-        )
       val retrieveResources = viewModel.retrieveResources(geoWidgetConfiguration)
       assertFalse(retrieveResources.isEmpty())
       assertEquals("loc1", retrieveResources.first().resource.logicalId)
