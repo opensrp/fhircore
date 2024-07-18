@@ -338,8 +338,10 @@ fun RegisterScreen(
                   showEndText = false,
                   showImage = syncNotificationBarExpanded,
                   syncSuccess = false,
-                  onCancelButtonClick = {},
-                )
+                ) {
+                  openDrawer(false)
+                  onClick(AppMainEvent.SyncData(context))
+                }
               }
               currentSyncJobStatus is CurrentSyncJobStatus.Succeeded && showSyncComplete -> {
                 SyncCompleteStatus(
@@ -393,6 +395,7 @@ private fun updateSyncStatus(
       setShowSyncComplete(true)
       setHasShownSyncComplete(false)
       coroutineScope.launch {
+        delay(10.seconds)
         setShowSyncBar(false)
         setShowSyncComplete(false)
         setBackgroundColor(SideMenuTopItemDarkColor)
