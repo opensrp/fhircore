@@ -200,6 +200,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
           lifecycleScope.launch {
             emitPercentageProgress(inProgressSyncJob, isSyncUpload)
             registerViewModel.updateSyncStatus(syncJobStatus)
+            appMainViewModel.updateSyncStatus(syncJobStatus)
           }
         }
       }

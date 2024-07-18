@@ -143,6 +143,7 @@ class UserSettingFragment : Fragment(), OnSyncListener {
           val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
           lifecycleScope.launch {
             registerViewModel.updateSyncStatus(syncJobStatus)
+            appMainViewModel.updateSyncStatus(syncJobStatus)
             val percentageProgress = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
             registerViewModel.emitPercentageProgressState(percentageProgress, isSyncUpload)
           }

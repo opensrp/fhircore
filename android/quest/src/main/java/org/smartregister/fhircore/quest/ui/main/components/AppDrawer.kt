@@ -244,7 +244,10 @@ private fun NavBottomSection(
           if (showSyncComplete) Color.White.copy(alpha = 0.83f) else Color.Transparent,
         )
         .then(
-          if (currentSyncJobStatus !is CurrentSyncJobStatus.Running) {
+          if (
+            currentSyncJobStatus !is CurrentSyncJobStatus.Running ||
+              appUiState.currentSyncJobStatus is CurrentSyncJobStatus.Cancelled
+          ) {
             Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
           } else {
             Modifier
@@ -252,7 +255,8 @@ private fun NavBottomSection(
         ),
   ) {
     when {
-      currentSyncJobStatus is CurrentSyncJobStatus.Running -> {
+      currentSyncJobStatus is CurrentSyncJobStatus.Running &&
+        appUiState.currentSyncJobStatus !is CurrentSyncJobStatus.Cancelled -> {
         SubsequentSyncDetailsBar(percentageProgressFlow = registerUiState.progressPercentage) {
           onSideMenuClick(AppMainEvent.CancelSyncData(context))
           openDrawer(false)

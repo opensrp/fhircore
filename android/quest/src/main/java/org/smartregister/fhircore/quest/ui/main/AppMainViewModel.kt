@@ -177,7 +177,7 @@ constructor(
           workManager.cancelUniqueWork(
             "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
           )
-          retrieveAppMainUiState()
+          updateSyncStatus(CurrentSyncJobStatus.Cancelled)
         }
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)

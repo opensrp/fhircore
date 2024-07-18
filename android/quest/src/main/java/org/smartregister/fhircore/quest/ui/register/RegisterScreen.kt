@@ -53,7 +53,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -258,7 +257,7 @@ fun RegisterScreen(
               }
             }
           }
-          if (showSyncBar) {
+          if (showSyncBar && appUiState!!.currentSyncJobStatus !is CurrentSyncJobStatus.Cancelled) {
             Box(
               modifier =
                 Modifier.align(Alignment.BottomStart)
@@ -312,7 +311,8 @@ fun RegisterScreen(
           ) {
             val context = LocalContext.current
             when {
-              currentSyncJobStatus is CurrentSyncJobStatus.Running -> {
+              currentSyncJobStatus is CurrentSyncJobStatus.Running &&
+                appUiState!!.currentSyncJobStatus !is CurrentSyncJobStatus.Cancelled -> {
                 if (syncNotificationBarExpanded) {
                   SubsequentSyncDetailsBar(
                     percentageProgressFlow = registerUiState.progressPercentage,
