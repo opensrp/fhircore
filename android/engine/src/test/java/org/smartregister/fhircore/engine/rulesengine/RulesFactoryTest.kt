@@ -891,10 +891,11 @@ class RulesFactoryTest : RobolectricTest() {
       coEvery { defaultRepository.purge(any<Resource>(), any()) } returns Unit
 
       rulesEngineService.updateResource(
-        resource,
-        "List.entry[0].item.reference",
-        "Group/new-ref",
-        true
+        resource = resource,
+        path = "List.entry[0].item.reference",
+        value = "Group/new-ref",
+        purgeAffectedResources = true,
+        createLocalChangeEntitiesAfterPurge = true
       )
 
       coVerify {
@@ -907,7 +908,7 @@ class RulesFactoryTest : RobolectricTest() {
       }
 
       coVerify {
-        defaultRepository.createRemote(
+        defaultRepository.addOrUpdate(
           any(),
           withArg {
             Assert.assertEquals("Group/new-ref", (it as ListResource).entry[0].item.reference)
@@ -929,10 +930,11 @@ class RulesFactoryTest : RobolectricTest() {
       coEvery { defaultRepository.purge(any<Resource>(), any()) } returns Unit
 
       rulesEngineService.updateResource(
-        resource,
-        "$.entry[0].item.reference",
-        "Group/new-ref",
-        true
+        resource = resource,
+        path = "$.entry[0].item.reference",
+        value = "Group/new-ref",
+        purgeAffectedResources = true,
+        createLocalChangeEntitiesAfterPurge = true
       )
 
       coVerify {
@@ -945,7 +947,7 @@ class RulesFactoryTest : RobolectricTest() {
       }
 
       coVerify {
-        defaultRepository.createRemote(
+        defaultRepository.addOrUpdate(
           any(),
           withArg {
             Assert.assertEquals("Group/new-ref", (it as ListResource).entry[0].item.reference)
@@ -968,11 +970,11 @@ class RulesFactoryTest : RobolectricTest() {
       coEvery { defaultRepository.addOrUpdate(any(), any()) } returns Unit
 
       rulesEngineService.updateResource(
-        resource,
-        "List.entry[0].item.reference",
-        "Group/new-ref",
-        true,
-        true
+        resource = resource,
+        path = "List.entry[0].item.reference",
+        value = "Group/new-ref",
+        purgeAffectedResources = true,
+        createLocalChangeEntitiesAfterPurge = true
       )
 
       coVerify {
@@ -1007,11 +1009,11 @@ class RulesFactoryTest : RobolectricTest() {
       coEvery { defaultRepository.addOrUpdate(any(), any()) } returns Unit
 
       rulesEngineService.updateResource(
-        resource,
-        "List.entry[0].item.reference",
-        "Group/new-ref",
-        true,
-        true
+        resource = resource,
+        path = "List.entry[0].item.reference",
+        value = "Group/new-ref",
+        purgeAffectedResources = true,
+        createLocalChangeEntitiesAfterPurge = true
       )
 
       coVerify {
