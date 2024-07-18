@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +34,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -70,6 +73,7 @@ fun GenerateView(
   properties: ViewProperties,
   resourceData: ResourceData,
   navController: NavController,
+  decodedImageMap: SnapshotStateMap<String, Bitmap> = mutableStateMapOf(),
 ) {
   if (properties.visible.toBoolean()) {
     when (properties.viewType) {
@@ -108,6 +112,7 @@ fun GenerateView(
                 properties = properties,
                 resourceData = resourceData,
                 navController = navController,
+                decodedImageMap = decodedImageMap,
               )
             }
           }
@@ -150,6 +155,7 @@ fun GenerateView(
                 properties = child.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
                 navController = navController,
+                decodedImageMap = decodedImageMap,
               )
               if (properties.showDivider.toBoolean() && index < children.lastIndex) {
                 Divider(
@@ -183,6 +189,7 @@ fun GenerateView(
                 properties = properties.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
                 navController = navController,
+                decodedImageMap = decodedImageMap,
               )
             }
           }
@@ -225,6 +232,7 @@ fun GenerateView(
                 properties = child.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
                 navController = navController,
+                decodedImageMap = decodedImageMap,
               )
             }
           }
@@ -243,6 +251,7 @@ fun GenerateView(
           viewProperties = properties as CardViewProperties,
           resourceData = resourceData,
           navController = navController,
+          decodedImageMap = decodedImageMap,
         )
       ViewType.PERSONAL_DATA ->
         PersonalDataView(
@@ -261,6 +270,7 @@ fun GenerateView(
           viewProperties = properties as ListProperties,
           resourceData = resourceData,
           navController = navController,
+          decodedImageMap = decodedImageMap,
         )
       ViewType.IMAGE ->
         Image(
@@ -268,6 +278,7 @@ fun GenerateView(
           imageProperties = properties as ImageProperties,
           resourceData = resourceData,
           navController = navController,
+          decodedImageMap = decodedImageMap,
         )
       ViewType.STACK ->
         StackView(
@@ -275,6 +286,7 @@ fun GenerateView(
           stackViewProperties = properties as StackViewProperties,
           resourceData = resourceData,
           navController = navController,
+          decodedImageMap = decodedImageMap,
         )
     }
   }
