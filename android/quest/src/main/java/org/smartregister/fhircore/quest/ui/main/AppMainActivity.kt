@@ -346,7 +346,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           }
         }
       else -> {
-        // Do nothing
+        appMainViewModel.updateSyncStatus(syncJobStatus)
       }
     }
   }

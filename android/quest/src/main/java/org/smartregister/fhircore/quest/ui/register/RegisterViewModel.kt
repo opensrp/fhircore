@@ -27,6 +27,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.math.ceil
@@ -90,7 +91,8 @@ constructor(
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
-
+  private val _currentSyncJobStatusFlow: MutableSharedFlow<CurrentSyncJobStatus?> =
+    MutableSharedFlow(0)
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
   }
@@ -476,6 +478,7 @@ constructor(
                 .toInt(),
             progressPercentage = _percentageProgress,
             isSyncUpload = _isUploadSync,
+            currentSyncJobStatus = _currentSyncJobStatusFlow,
             params = paramsMap,
           )
       }
@@ -484,6 +487,13 @@ constructor(
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
+  }
+
+  suspend fun updateSyncStatus(
+    currentSyncJobStatus: CurrentSyncJobStatus,
+    isSyncUpload: Boolean = false,
+  ) {
+    _currentSyncJobStatusFlow.emit(currentSyncJobStatus)
   }
 
   suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {

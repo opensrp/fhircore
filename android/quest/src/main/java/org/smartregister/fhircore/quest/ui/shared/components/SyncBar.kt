@@ -61,7 +61,7 @@ fun SubsequentSyncDetailsBar(
       modifier
         .fillMaxWidth()
         .background(color = backgroundColor)
-        .padding(horizontal = 16.dp, vertical = 4.dp),
+        .padding(horizontal = 16.dp, vertical = if (hideExtraInformation) 4.dp else 2.dp),
     contentAlignment = Alignment.Center,
   ) {
     Row(
