@@ -121,7 +121,11 @@ constructor(
           it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
           !it.menuIconConfig!!.reference.isNullOrEmpty()
       }
-      .decodeBinaryResourcesToBitmap(viewModelScope, registerRepository)
+      .decodeBinaryResourcesToBitmap(
+        viewModelScope,
+        registerRepository,
+        configurationRegistry.decodedImageMap,
+      )
   }
 
   fun retrieveAppMainUiState(refreshAll: Boolean = true) {
