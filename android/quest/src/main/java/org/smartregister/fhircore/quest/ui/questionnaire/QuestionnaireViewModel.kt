@@ -803,7 +803,9 @@ constructor(
     }
 
     // Generate questionnaireResponse with items present in current questionnaire
-    val newQuestionnaireResponseItems: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent> = mutableListOf()
+    val newQuestionnaireResponseItems:
+      MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent> =
+      mutableListOf()
     val questionnaireItemsMap = questionnaire.item.associateBy { it.linkId }
 
     questionnaireResponse?.item?.forEach {
@@ -812,7 +814,8 @@ constructor(
       }
     }
 
-    return questionnaireResponse?.apply { item = newQuestionnaireResponseItems } ?: QuestionnaireResponse()
+    return questionnaireResponse?.apply { item = newQuestionnaireResponseItems }
+      ?: QuestionnaireResponse()
   }
 
   /**

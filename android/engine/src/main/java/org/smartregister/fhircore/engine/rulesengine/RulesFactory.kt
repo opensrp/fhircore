@@ -596,32 +596,33 @@ constructor(
 
       val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
 
-      val updatedResourceDocument = try {
-        jsonParse.apply {
-          // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
-          if (path.startsWith("\$") && value != null) {
-            set(path, value)
-          }
-          if (path.startsWith(
-              resource.resourceType.name,
-              ignoreCase = true,
-            ) && value != null
-          ) {
-            set(
-              path.replace(resource.resourceType.name, "\$"),
-              value,
-            )
-          }
+      val updatedResourceDocument =
+        try {
+          jsonParse.apply {
+            // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
+            if (path.startsWith("\$") && value != null) {
+              set(path, value)
+            }
+            if (path.startsWith(
+                resource.resourceType.name,
+                ignoreCase = true,
+              ) && value != null
+            ) {
+              set(
+                path.replace(resource.resourceType.name, "\$"),
+                value,
+              )
+            }
 
-          if (resource.id.startsWith("#")) {
-            val idPath = "\$.id"
-            set(idPath, resource.id.replace("#", ""))
+            if (resource.id.startsWith("#")) {
+              val idPath = "\$.id"
+              set(idPath, resource.id.replace("#", ""))
+            }
           }
+        } catch (e: PathNotFoundException) {
+          Timber.e(e, "Path $path not found")
+          jsonParse
         }
-      } catch (e: PathNotFoundException) {
-        Timber.e(e, "Path $path not found")
-        jsonParse
-      }
 
       val resourceDefinition: Class<out IBaseResource>? =
         FhirContext.forR4Cached().getResourceDefinition(resource).implementingClass
