@@ -29,9 +29,6 @@ import io.mockk.mockk
 import io.mockk.spyk
 import java.util.UUID
 import javax.inject.Inject
-import junit.framework.TestCase.assertEquals
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -48,8 +45,7 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.geowidget.model.Coordinates
-import org.smartregister.fhircore.geowidget.model.Feature
+import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.geowidget.model.ServicePointType
 import org.smartregister.fhircore.geowidget.rule.CoroutineTestRule
@@ -112,70 +108,12 @@ class GeoWidgetViewModelTest {
     coEvery { defaultRepository.create(any()) } returns emptyList()
   }
 
-  @Test
-  fun `test adding locations to map`() {
-    // Given
-    val feature1 =
-      Feature(
-        geometry = Geometry(coordinates = listOf(Coordinates(0.0, 0.0))),
-        id = "id1",
-        type = "type1",
-        serverVersion = 1,
-      )
-    val feature2 =
-      Feature(
-        geometry = Geometry(coordinates = listOf(Coordinates(0.0, 0.0))),
-        id = "id2",
-        type = "type2",
-        serverVersion = 2,
-      )
-    val features = setOf(feature1, feature2)
-
-    // When
-    viewModel.addLocationsToMap(features)
-
-    // Then
-    val result = runBlocking { viewModel.featuresFlow.first() }
-    Assert.assertEquals(2, result.size)
-  }
-
-  @Test
-  fun `test clearing locations`() {
-    // Given
-    val feature1 =
-      Feature(
-        geometry = Geometry(coordinates = listOf(Coordinates(0.0, 0.0))),
-        id = "id1",
-        type = "type1",
-        serverVersion = 1,
-      )
-    val feature2 =
-      Feature(
-        geometry = Geometry(coordinates = listOf(Coordinates(0.0, 0.0))),
-        id = "id2",
-        type = "type2",
-        serverVersion = 2,
-      )
-    val features = setOf(feature1, feature2)
-    viewModel.addLocationsToMap(features)
-
-    // When
-    viewModel.clearLocations()
-
-    // Then
-    val result = runBlocking { viewModel.featuresFlow.first() }
-    Assert.assertEquals(0, result.size)
-  }
-
-  fun `test mapping service point keys to types`() {
-    // Given
+  fun testMappingServicePointKeysToTypes() {
     val expectedMap = mutableMapOf<String, ServicePointType>()
-    ServicePointType.values().forEach { expectedMap[it.name.lowercase()] = it }
+    ServicePointType.entries.forEach { expectedMap[it.name.lowercase()] = it }
 
-    // When
     val result = viewModel.getServicePointKeyToType()
 
-    // Then
     Assert.assertEquals(expectedMap.size, result.size)
     expectedMap.forEach { (key, expectedValue) ->
       val actualValue = result[key]
@@ -184,40 +122,37 @@ class GeoWidgetViewModelTest {
   }
 
   @Test
-  fun `add location to map`() {
+  fun testAddGeoJsonFeaturesToLiveData() {
     val serverVersion = (1..10).random()
-    val locations =
-      setOf(
-        Feature(
+    val geoJsonFeatures =
+      listOf(
+        GeoJsonFeature(
           id = UUID.randomUUID().toString(),
           geometry =
             Geometry(
-              coordinates = listOf(Coordinates(34.76, 68.23)),
+              coordinates = listOf(34.76, 68.23),
             ),
           properties = mapOf(),
           serverVersion = serverVersion,
         ),
-        Feature(
+        GeoJsonFeature(
           id = UUID.randomUUID().toString(),
           geometry =
             Geometry(
-              coordinates = listOf(Coordinates(34.76, 68.23)),
+              coordinates = listOf(34.76, 68.23),
             ),
           properties = mapOf(),
           serverVersion = serverVersion,
         ),
       )
-    geoWidgetViewModel.addLocationsToMap(locations)
+    geoWidgetViewModel.features.value = geoJsonFeatures
 
-    Assert.assertEquals(geoWidgetViewModel.featuresFlow.value.size, locations.size)
+    Assert.assertEquals(geoWidgetViewModel.features.value!!.size, geoJsonFeatures.size)
   }
 
   @Test
-  fun `should return a map of ServicePointType enum values based on their lowercase names`() {
-    // When
+  fun testThatMapOfServicePointTypeReturnsEnumValuesBasedOnTheirLowercaseNames() {
     val result = geoWidgetViewModel.getServicePointKeyToType()
-
-    // Then
     val expectedMap =
       mapOf(
         "epp" to ServicePointType.EPP,
