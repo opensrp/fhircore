@@ -82,6 +82,8 @@ const val TOP_ROW_FILTER_ICON_TEST_TAG = "topRowFilterIconTestTag"
 const val OUTLINED_BOX_TEST_TAG = "outlinedBoxTestTag"
 const val TRAILING_ICON_TEST_TAG = "trailingIconTestTag"
 const val TRAILING_ICON_BUTTON_TEST_TAG = "trailingIconButtonTestTag"
+const val TRAILING_QR_SCAN_ICON_TEST_TAG = "qrCodeScanTrailingIconTestTag"
+const val TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG = "qrCodeScanTrailingIconButtonTestTag"
 const val LEADING_ICON_TEST_TAG = "leadingIconTestTag"
 const val SEARCH_FIELD_TEST_TAG = "searchFieldTestTag"
 const val TOP_ROW_TOGGLE_ICON_TEST_tAG = "topRowToggleIconTestTag"
@@ -93,7 +95,7 @@ fun TopScreenSection(
   navController: NavController,
   isSearchBarVisible: Boolean,
   searchText: String,
-  showSearchByBarcode: Boolean = false,
+  showSearchByQrCode: Boolean = false,
   filteredRecordsCount: Long? = null,
   searchPlaceholder: String? = null,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
@@ -210,13 +212,14 @@ fun TopScreenSection(
                   )
                 }
               }
-              showSearchByBarcode -> {
+              showSearchByQrCode -> {
                 IconButton(
                   onClick = {
                     currentContext.getActivity()?.let {
-                      QrCodeScanUtils.scanBarcode(it) { code -> onSearchTextChanged(code ?: "") }
+                      QrCodeScanUtils.scanQrCode(it) { code -> onSearchTextChanged(code ?: "") }
                     }
                   },
+                  modifier = modifier.testTag(TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG),
                 ) {
                   navController.context
                   Icon(
@@ -226,6 +229,7 @@ fun TopScreenSection(
                       stringResource(
                         id = org.smartregister.fhircore.quest.R.string.qr_code,
                       ),
+                    modifier = modifier.testTag(TRAILING_QR_SCAN_ICON_TEST_TAG),
                   )
                 }
               }

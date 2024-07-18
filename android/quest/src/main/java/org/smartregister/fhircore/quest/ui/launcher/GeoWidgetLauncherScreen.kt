@@ -67,8 +67,8 @@ fun GeoWidgetLauncherScreen(
           filteredRecordsCount = 1,
           isSearchBarVisible = geoWidgetConfiguration.topScreenSection?.searchBar?.visible ?: true,
           searchPlaceholder = geoWidgetConfiguration.topScreenSection?.searchBar?.display,
-          showSearchByBarcode =
-            geoWidgetConfiguration.topScreenSection?.searchBar?.searchByBarcode ?: false,
+          showSearchByQrCode =
+            geoWidgetConfiguration.topScreenSection?.searchBar?.searchByQrCode ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { searchText ->
             onEvent(GeoWidgetEvent.SearchServicePoints(searchText = searchText))

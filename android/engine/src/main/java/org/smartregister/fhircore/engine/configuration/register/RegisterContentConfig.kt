@@ -26,5 +26,5 @@ data class RegisterContentConfig(
   val rules: List<RuleConfig>? = null,
   val visible: Boolean? = null,
   val computedRules: List<String>? = null,
-  val searchByBarcode: Boolean? = false,
+  val searchByQrCode: Boolean? = false,
 )

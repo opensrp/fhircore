@@ -100,8 +100,8 @@ fun RegisterScreen(
           filteredRecordsCount = registerUiState.filteredRecordsCount,
           isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
-          showSearchByBarcode =
-            registerUiState.registerConfiguration?.searchBar?.searchByBarcode ?: false,
+          showSearchByQrCode =
+            registerUiState.registerConfiguration?.searchBar?.searchByQrCode ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { searchText ->
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))

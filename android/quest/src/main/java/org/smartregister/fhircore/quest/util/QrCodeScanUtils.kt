@@ -17,23 +17,23 @@
 package org.smartregister.fhircore.quest.util
 
 import androidx.fragment.app.FragmentActivity
-import org.smartregister.fhircore.quest.ui.sdc.qrCode.EditTextQrCodeViewHolderFactory
 import org.smartregister.fhircore.quest.ui.sdc.qrCode.QrCodeCameraDialogFragment
 
 object QrCodeScanUtils {
 
-  fun scanBarcode(lifecycleOwner: FragmentActivity, onBarcodeScanResult: (String?) -> Unit) {
+  const val QR_CODE_SCAN_UTILS_TAG = "QrCodeScanUtils"
+
+  fun scanQrCode(lifecycleOwner: FragmentActivity, onQrCodeScanResult: (String?) -> Unit) {
     lifecycleOwner.supportFragmentManager.apply {
       setFragmentResultListener(
         QrCodeCameraDialogFragment.RESULT_REQUEST_KEY,
         lifecycleOwner,
       ) { _, result ->
         val barcode = result.getString(QrCodeCameraDialogFragment.RESULT_REQUEST_KEY)
-        onBarcodeScanResult.invoke(barcode)
+        onQrCodeScanResult.invoke(barcode)
       }
 
-      QrCodeCameraDialogFragment()
-        .show(this@apply, EditTextQrCodeViewHolderFactory::class.java.simpleName)
+      QrCodeCameraDialogFragment().show(this@apply, QR_CODE_SCAN_UTILS_TAG)
     }
   }
 }

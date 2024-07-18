@@ -121,5 +121,6 @@
     <string name="submit_questionnaire">Submit</string>
     <string name="qr_code" translatable="false">qr_code</string>
     <string name="barcode_camera_permission_denied">Camera permission request denied. Barcode may not work as expected</string>
+    <string name="prompt_point_at_a_barcode">Place your camera over the QR Code to start scanning</string>
 
 </resources>

@@ -50,7 +50,7 @@ object EditTextQrCodeViewHolderFactory :
 
         val onQrCodeIconClickListener: (Context) -> Unit = {
           it.tryUnwrapContext()?.let { appCompatActivity ->
-            QrCodeScanUtils.scanBarcode(appCompatActivity) { code ->
+            QrCodeScanUtils.scanQrCode(appCompatActivity) { code ->
               itemView.findViewById<TextInputEditText>(R.id.text_input_edit_text).setText(code)
             }
           }
