@@ -672,16 +672,17 @@ constructor(
   suspend fun updateResourcesRecursively(resourceConfig: ResourceConfig, subject: Resource) {
     val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
     val computedValuesMap =
-      configRulesExecutor.fireRules(rules = configRules, baseResource = subject).mapValues { entry ->
-      val initialValue = entry.value.toString()
-      if (initialValue.contains('/')) {
-            "${initialValue.substringBefore("/")}/${
-              initialValue.extractLogicalIdUuid()
-            }"
-      } else {
-        initialValue
+      configRulesExecutor.fireRules(rules = configRules, baseResource = subject).mapValues { entry
+        ->
+        val initialValue = entry.value.toString()
+        if (initialValue.contains('/')) {
+          "${initialValue.substringBefore("/")}/${
+          initialValue.extractLogicalIdUuid()
+          }"
+        } else {
+          initialValue
+        }
       }
-    }
 
     Timber.i("Computed values map = ${computedValuesMap.values}")
     val search =
@@ -754,9 +755,9 @@ constructor(
 
   /**
    * Filtering the Related Resources is achieved by use of the filterFhirPathExpression
-   * configuration. It specifies which field and values to filter the resources by.
-   * This can also be used to filter Base Resources that meet a certain criteria by providing a
-   * fhirpath expression through the filterFhirPathExpression.
+   * configuration. It specifies which field and values to filter the resources by. This can also be
+   * used to filter Base Resources that meet a certain criteria by providing a fhirpath expression
+   * through the filterFhirPathExpression.
    */
   fun filterResource(resource: Resource, resourceConfig: ResourceConfig): Boolean {
     return if (resourceConfig.filterFhirPathExpressions?.isEmpty() == true) {
