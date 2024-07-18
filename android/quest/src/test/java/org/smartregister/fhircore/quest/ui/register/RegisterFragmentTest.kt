@@ -20,7 +20,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.SnackbarDuration
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
-import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
@@ -126,7 +125,6 @@ class RegisterFragmentTest : RobolectricTest() {
       TestNavHostController(mainActivity).apply {
         setGraph(org.smartregister.fhircore.quest.R.navigation.application_nav_graph)
       }
-    Navigation.setViewNavController(mainActivity.navHostFragment.requireView(), navController)
     mainActivity.supportFragmentManager.run {
       commitNow { add(registerFragment, RegisterFragment::class.java.simpleName) }
       executePendingTransactions()

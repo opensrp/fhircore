@@ -43,6 +43,7 @@ import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperti
 import org.smartregister.fhircore.engine.configuration.view.RowArrangement
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
+import org.smartregister.fhircore.engine.configuration.view.StackViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
@@ -383,6 +384,37 @@ class ViewGeneratorTest {
     }
     composeRule
       .onNodeWithTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
+
+  @Test
+  fun testStackViewIsRenderedCorrectlyWhenStackViewPropertiesHasChildren() {
+    composeRule.setContent {
+      GenerateView(
+        properties =
+          StackViewProperties(
+            size = 250,
+            alignment = ViewAlignment.CENTER,
+            children =
+              listOf(
+                ButtonProperties(status = "DUE", text = "Due Task"),
+                ButtonProperties(status = "COMPLETED", text = "Completed Task"),
+                ButtonProperties(status = "READY", text = "Ready Task"),
+              ),
+            viewType = ViewType.STACK,
+          ),
+        resourceData = resourceData,
+        navController = TestNavHostController(LocalContext.current),
+      )
+    }
+    composeRule
+      .onNodeWithText("Due Task", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule.onNodeWithText("Completed Task", useUnmergedTree = true).assertExists()
+    composeRule
+      .onNodeWithText("Ready Task", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
   }

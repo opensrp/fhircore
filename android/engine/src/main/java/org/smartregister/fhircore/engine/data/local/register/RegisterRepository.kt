@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.engine.data.local.register
 
+import android.content.Context
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Resource
@@ -51,6 +53,7 @@ constructor(
   override val configRulesExecutor: ConfigRulesExecutor,
   override val fhirPathDataExtractor: FhirPathDataExtractor,
   override val parser: IParser,
+  @ApplicationContext override val context: Context,
 ) :
   Repository,
   DefaultRepository(
@@ -62,6 +65,7 @@ constructor(
     configRulesExecutor = configRulesExecutor,
     fhirPathDataExtractor = fhirPathDataExtractor,
     parser = parser,
+    context = context,
   ) {
 
   override suspend fun loadRegisterData(
@@ -72,6 +76,8 @@ constructor(
   ): List<RepositoryResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     return searchResourcesRecursively(
+      filterByRelatedEntityLocationMetaTag =
+        registerConfiguration.filterDataByRelatedEntityLocation,
       filterActiveResources = registerConfiguration.activeResourceFilters,
       fhirResourceConfig = fhirResourceConfig ?: registerConfiguration.fhirResource,
       secondaryResourceConfigs = registerConfiguration.secondaryResources,
@@ -91,6 +97,7 @@ constructor(
     val fhirResource = fhirResourceConfig ?: registerConfiguration.fhirResource
     val baseResourceConfig = fhirResource.baseResource
     val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
+    val filterByRelatedEntityLocation = registerConfiguration.filterDataByRelatedEntityLocation
     val search =
       Search(baseResourceConfig.resource).apply {
         applyConfiguredSortAndFilters(
@@ -98,6 +105,10 @@ constructor(
           sortData = false,
           filterActiveResources = registerConfiguration.activeResourceFilters,
           configComputedRuleValues = configComputedRuleValues,
+        )
+        applyFilterByRelatedEntityLocationMetaTag(
+          baseResourceType = baseResourceConfig.resource,
+          filterByRelatedEntityLocation = filterByRelatedEntityLocation,
         )
       }
     return search.count(
@@ -168,8 +179,4 @@ constructor(
     paramsMap: Map<String, String>?,
   ): RegisterConfiguration =
     configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramsMap)
-
-  companion object {
-    const val ACTIVE = "active"
-  }
 }

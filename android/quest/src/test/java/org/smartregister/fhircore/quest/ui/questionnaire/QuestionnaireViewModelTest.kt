@@ -21,10 +21,10 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -49,6 +49,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Basic
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -82,6 +83,7 @@ import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
@@ -173,12 +175,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           configRulesExecutor = configRulesExecutor,
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
+          context = context,
         ),
       )
 
     questionnaireConfig =
       QuestionnaireConfig(
-        id = "754", // Same as ID in sample_patient_registration.json
+        id = "e5155788-8831-4916-a3f5-486915ce34b211", // Same as ID in
+        // sample_patient_registration.json
         title = "Patient registration",
         type = "DEFAULT",
       )
@@ -200,7 +204,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // Sample questionnaire
     val questionnaireJson =
-      context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
+      context.assets.open("resources/sample_patient_registration.json").bufferedReader().use {
+        it.readText()
+      }
 
     samplePatientRegisterQuestionnaire = questionnaireJson.decodeResourceFromString()
   }
@@ -599,8 +605,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireBarcodeItem =
       newQuestionnaireConfig.barcodeLinkId?.let { questionnaire?.find(it) }
     val barCodeItemValue: Type? = questionnaireBarcodeItem?.initial?.firstOrNull()?.value
-    Assert.assertTrue(barCodeItemValue is StringType)
-    Assert.assertEquals(
+    Assert.assertFalse(barCodeItemValue is StringType)
+    Assert.assertNull(
       newQuestionnaireConfig.resourceIdentifier,
       barCodeItemValue?.primitiveValue(),
     )
@@ -705,6 +711,226 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         ),
       )
     }
+  }
+
+  @Test
+  fun testValidateQuestionnaireResponseWithRepeatsGroup() = runTest {
+    val questionnaireString =
+      """
+      {
+        "resourceType": "Questionnaire",
+        "item": [
+              {
+                "linkId": "systolic-bp",
+                "type": "integer",
+                "required": true
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "type": "group",
+                "required": false,
+                "repeats": true,
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "type": "integer",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+      }
+        """
+        .trimIndent()
+    val questionnaireResponseString =
+      """
+      {
+        "resourceType": "QuestionnaireResponse",
+        "item": [
+              {
+                "linkId": "systolic-bp",
+                "answer": [
+                  {
+                    "valueInteger": 123
+                  }
+                ]
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "answer": [
+                      {
+                        "valueInteger": 124
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "answer": [
+                      {
+                        "valueInteger": 125
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "answer": [
+                      {
+                        "valueInteger": 126
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+      }
+        """
+        .trimIndent()
+    val questionnaire = parser.parseResource(questionnaireString) as Questionnaire
+    val questionnaireResponse =
+      parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
+    val result =
+      questionnaireViewModel.validateQuestionnaireResponse(
+        questionnaire,
+        questionnaireResponse,
+        context,
+      )
+    Assert.assertTrue(result)
+  }
+
+  @Test
+  fun testValidateQuestionnaireResponseWithNestedRepeatsGroup() = runTest {
+    val questionnaireString =
+      """
+      {
+        "resourceType": "Questionnaire",
+        "item": [
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                "valueCodeableConcept": {
+                  "coding": [
+                    {
+                      "system": "http://hl7.org/fhir/questionnaire-item-control",
+                      "code": "page",
+                      "display": "Page 1"
+                    }
+                  ],
+                  "text": "Page 1"
+                }
+              }
+            ],
+            "linkId": "page-1",
+            "type": "group",
+            "item": [
+              {
+                "linkId": "systolic-bp",
+                "type": "integer",
+                "required": true
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "type": "group",
+                "required": false,
+                "repeats": true,
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "type": "integer",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+        """
+        .trimIndent()
+    val questionnaireResponseString =
+      """
+      {
+        "resourceType": "QuestionnaireResponse",
+        "item": [
+          {
+            "linkId": "page-1",
+            "item": [
+              {
+                "linkId": "systolic-bp",
+                "answer": [
+                  {
+                    "valueInteger": 123
+                  }
+                ]
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "answer": [
+                      {
+                        "valueInteger": 124
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "answer": [
+                      {
+                        "valueInteger": 125
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "answer": [
+                      {
+                        "valueInteger": 126
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+        """
+        .trimIndent()
+    val questionnaire = parser.parseResource(questionnaireString) as Questionnaire
+    val questionnaireResponse =
+      parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
+    val result =
+      questionnaireViewModel.validateQuestionnaireResponse(
+        questionnaire,
+        questionnaireResponse,
+        context,
+      )
+    Assert.assertTrue(result)
   }
 
   @Test
@@ -1273,6 +1499,184 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       // Assert that the listResource id matches the linkId
       assertEquals(linkId, listResource.id)
     }
+
+  @Test
+  fun testRetireUsedQuestionnaireUniqueIdShouldUpdateGroupResourceWhenIDIsUsed() = runTest {
+    val linkId = "phn"
+    val uniqueIdAssignmentConfig =
+      UniqueIdAssignmentConfig(
+        linkId = linkId,
+        idFhirPathExpression = "",
+        resource = ResourceType.Group,
+      )
+    val questionnaireConfig =
+      QuestionnaireConfig(
+        id = "sample_config_123",
+        uniqueIdAssignment = uniqueIdAssignmentConfig,
+      )
+    val group =
+      Group().apply {
+        id = "grp1"
+        addCharacteristic(
+          Group.GroupCharacteristicComponent(
+            CodeableConcept(Coding()).setText("phn"),
+            CodeableConcept(Coding()).setText("1234"),
+            BooleanType(false),
+          ),
+        )
+        addCharacteristic(
+          Group.GroupCharacteristicComponent(
+            CodeableConcept(Coding()).setText("phn"),
+            CodeableConcept(Coding()).setText("12345"),
+            BooleanType(false),
+          ),
+        )
+      }
+
+    val questionnaireResponse =
+      extractionQuestionnaireResponse().apply {
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType(linkId)).apply {
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                setValue(StringType("1234"))
+              },
+            )
+          },
+        )
+      }
+    questionnaireViewModel.uniqueIdResource = group
+    coEvery { defaultRepository.addOrUpdate(resource = group) } just runs
+    questionnaireViewModel.retireUsedQuestionnaireUniqueId(
+      questionnaireConfig,
+      questionnaireResponse,
+    )
+
+    coVerify(exactly = 1) { defaultRepository.addOrUpdate(resource = group) }
+    Assert.assertTrue(group.characteristic.first().exclude)
+    Assert.assertFalse(group.characteristic.last().exclude)
+    Assert.assertTrue(group.active)
+  }
+
+  @Test
+  fun testRetireUsedQuestionnaireUniqueIdShouldDeactivateGroupResourceWhenAllIDsAreUsed() =
+    runTest {
+      val linkId = "phn"
+      val uniqueIdAssignmentConfig =
+        UniqueIdAssignmentConfig(
+          linkId = linkId,
+          idFhirPathExpression = "",
+          resource = ResourceType.Group,
+        )
+      val questionnaireConfig =
+        QuestionnaireConfig(
+          id = "sample_config_123",
+          uniqueIdAssignment = uniqueIdAssignmentConfig,
+        )
+      val group =
+        Group().apply {
+          id = "grp2"
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept(Coding()).setText("phn"),
+              CodeableConcept(Coding()).setText("1234"),
+              BooleanType(true),
+            ),
+          )
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept(Coding()).setText("phn"),
+              CodeableConcept(Coding()).setText("1235"),
+              BooleanType(false),
+            ),
+          )
+          this.quantity = 1
+        }
+
+      val questionnaireResponse =
+        extractionQuestionnaireResponse().apply {
+          addItem(
+            QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType(linkId)).apply {
+              addAnswer(
+                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                  setValue(StringType("1235"))
+                },
+              )
+            },
+          )
+        }
+
+      questionnaireViewModel.uniqueIdResource = group
+      coEvery { defaultRepository.addOrUpdate(resource = group) } just runs
+      questionnaireViewModel.retireUsedQuestionnaireUniqueId(
+        questionnaireConfig,
+        questionnaireResponse,
+      )
+
+      coVerify(exactly = 1) { defaultRepository.addOrUpdate(resource = group) }
+      Assert.assertTrue(group.characteristic.first().exclude)
+      Assert.assertTrue(group.characteristic.last().exclude)
+      Assert.assertFalse(group.active)
+    }
+
+  @Test
+  fun testGroupResourceShouldNotBeUpdatedWhenCustomUniqueIDsAreUsed() = runTest {
+    val linkId = "phn"
+    val uniqueIdAssignmentConfig =
+      UniqueIdAssignmentConfig(
+        linkId = linkId,
+        idFhirPathExpression = "",
+        resource = ResourceType.Group,
+      )
+    val questionnaireConfig =
+      QuestionnaireConfig(
+        id = "sample_config_123",
+        uniqueIdAssignment = uniqueIdAssignmentConfig,
+      )
+    val group =
+      Group().apply {
+        id = "grp2"
+        addCharacteristic(
+          Group.GroupCharacteristicComponent(
+            CodeableConcept(Coding()).setText("phn"),
+            CodeableConcept(Coding()).setText("1234"),
+            BooleanType(true),
+          ),
+        )
+        addCharacteristic(
+          Group.GroupCharacteristicComponent(
+            CodeableConcept(Coding()).setText("phn"),
+            CodeableConcept(Coding()).setText("1235"),
+            BooleanType(false),
+          ),
+        )
+        this.quantity = 1
+      }
+
+    val questionnaireResponse =
+      extractionQuestionnaireResponse().apply {
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType(linkId)).apply {
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                setValue(StringType("CUSTID123456"))
+              },
+            )
+          },
+        )
+      }
+
+    questionnaireViewModel.uniqueIdResource = group
+    questionnaireViewModel.retireUsedQuestionnaireUniqueId(
+      questionnaireConfig,
+      questionnaireResponse,
+    )
+
+    coVerify(exactly = 0) { defaultRepository.addOrUpdate(resource = group) }
+    Assert.assertTrue(group.characteristic.first().exclude)
+    Assert.assertFalse(group.characteristic.last().exclude)
+    Assert.assertFalse(group.active)
+  }
 
   @Test
   fun testThatPopulateQuestionnaireSetInitialDefaultValueForQuestionnaireInitialExpression() =
