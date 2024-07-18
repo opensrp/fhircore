@@ -686,6 +686,7 @@ class ConfigExtensionsTest : RobolectricTest() {
         )
       }
       assertTrue(decodedImageMap.isNotEmpty())
+      assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
     }
 
   @Test
@@ -697,6 +698,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       navigationMenuConfigs.decodeBinaryResourcesToBitmap(this, registerRepository, decodedImageMap)
     }
     assertTrue(decodedImageMap.isNotEmpty())
+    assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
   }
 
   @Test
@@ -710,6 +712,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       configurationRegistry.decodedImageMap,
     )
     assertTrue(decodedImageMap.isNotEmpty())
+    assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
   }
 
   @Test
@@ -723,6 +726,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       computedValuesMap = emptyMap(),
       decodedImageMap,
     )
+    assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
     assertTrue(decodedImageMap.isNotEmpty())
   }
 
@@ -737,6 +741,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       computedValuesMap = emptyMap(),
       decodedImageMap,
     )
+    assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
     assertTrue(decodedImageMap.isNotEmpty())
   }
 
@@ -752,6 +757,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       computedValuesMap = emptyMap(),
       decodedImageMap,
     )
+    assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
     assertTrue(decodedImageMap.isNotEmpty())
   }
 
@@ -768,6 +774,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       computedValuesMap = emptyMap(),
       decodedImageMap,
     )
+    assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
     assertTrue(decodedImageMap.isNotEmpty())
   }
 
@@ -799,6 +806,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       decodedImageMap = decodedImageMap,
     )
     assertTrue(decodedImageMap.isEmpty())
+    assertTrue(!decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
   }
 
   @Test(expected = Exception::class)
@@ -836,5 +844,6 @@ class ConfigExtensionsTest : RobolectricTest() {
       decodedImageMap = decodedImageMap,
     )
     assertTrue(decodedImageMap.isEmpty())
+    assertTrue(!decodedImageMap.containsKey("null Reference"))
   }
 }
