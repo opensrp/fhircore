@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Consent
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
@@ -298,6 +299,7 @@ fun Resource.appendOrganizationInfo(authenticatedOrganizationIds: List<String>?)
         is Group -> managingEntity = updateReference(managingEntity, organizationRef)
         is Encounter -> serviceProvider = updateReference(serviceProvider, organizationRef)
         is Location -> managingOrganization = updateReference(managingOrganization, organizationRef)
+        is Consent -> organization = updateReferenceList(organization, organizationRef)
         else -> {}
       }
     }
@@ -330,6 +332,7 @@ fun Resource.appendPractitionerInfo(practitionerId: String?) {
           } else {
             participant
           }
+      is Consent -> performer = updateReferenceList(performer, practitionerRef)
       else -> {}
     }
   }
@@ -366,6 +369,14 @@ fun Resource.appendRelatedEntityLocation(
         this.meta.addTag(locationCoding.apply { setCode(locationId) })
       }
     }
+}
+
+private fun updateReferenceList(
+  oldReferenceList: List<Reference>?,
+  newReference: Reference,
+): List<Reference> {
+  val list = oldReferenceList?.filter { !it.reference.isNullOrEmpty() }
+  return if (!list.isNullOrEmpty()) list else listOf(newReference)
 }
 
 private fun updateReference(oldReference: Reference?, newReference: Reference): Reference =
