@@ -40,6 +40,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -405,6 +406,7 @@ private fun ServiceCardServiceOverduePreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }
@@ -460,6 +462,7 @@ private fun ServiceCardServiceOverdueWithBackgroundColorPreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }
@@ -515,6 +518,7 @@ private fun ServiceCardServiceOverdueWithNoBackgroundColorAndStatusPreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }
@@ -570,6 +574,7 @@ private fun ServiceCardServiceDuePreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }
@@ -624,6 +629,7 @@ private fun ServiceCardServiceUpcomingPreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }
@@ -659,6 +665,7 @@ private fun ServiceCardServiceFamilyMemberPreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }
@@ -704,6 +711,7 @@ private fun ServiceCardServiceWithTinyServiceButtonPreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }
@@ -757,6 +765,7 @@ private fun ServiceCardServiceCompletedPreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }
@@ -804,6 +813,7 @@ private fun ServiceCardANCServiceDuePreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }
@@ -861,6 +871,7 @@ private fun ServiceCardANCServiceOverduePreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }
