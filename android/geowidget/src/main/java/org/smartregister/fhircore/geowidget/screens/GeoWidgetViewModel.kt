@@ -16,53 +16,20 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.LinkedList
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import org.jetbrains.annotations.VisibleForTesting
-import org.json.JSONObject
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.geowidget.model.Feature
+import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.ServicePointType
-import org.smartregister.fhircore.geowidget.util.extensions.getGeoJsonGeometry
-import org.smartregister.fhircore.geowidget.util.extensions.getProperties
-import timber.log.Timber
 
 @HiltViewModel
 class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherProvider) :
   ViewModel() {
 
-  private val _featuresFlow: MutableStateFlow<Set<com.mapbox.geojson.Feature>> =
-    MutableStateFlow(setOf())
-  val featuresFlow: StateFlow<Set<com.mapbox.geojson.Feature>> = _featuresFlow
-
-  @VisibleForTesting
-  fun addLocationToMap(feature: Feature) {
-    try {
-      val jsonFeature =
-        JSONObject().apply {
-          put("id", feature.id)
-          put("type", feature.type)
-          put("properties", feature.getProperties())
-          put("geometry", feature.getGeoJsonGeometry())
-          put("serverVersion", feature.serverVersion)
-        }
-      val mapBoxfeature = com.mapbox.geojson.Feature.fromJson(jsonFeature.toString())
-      _featuresFlow.value += mapBoxfeature
-    } catch (e: Exception) {
-      Timber.e(e)
-    }
-  }
-
-  fun addLocationsToMap(locations: Set<Feature>) {
-    locations.forEach { location -> addLocationToMap(location) }
-  }
-
-  fun clearLocations() {
-    _featuresFlow.value = setOf()
-  }
+  val features = MutableLiveData<List<GeoJsonFeature>>(LinkedList())
 
   fun getServicePointKeyToType(): Map<String, ServicePointType> {
     val map: MutableMap<String, ServicePointType> = HashMap()

@@ -167,8 +167,9 @@ fun RegisterScreen(
           isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           toolBarHomeNavigation = toolBarHomeNavigation,
-          onSearchTextChanged = { searchText ->
-            onEvent(RegisterEvent.SearchRegister(searchText = searchText))
+          onSearchTextChanged = { text ->
+            searchText.value = text
+            onEvent(RegisterEvent.SearchRegister(searchText = text))
           },
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
           topScreenSection = registerUiState.registerConfiguration?.topScreenSection,
