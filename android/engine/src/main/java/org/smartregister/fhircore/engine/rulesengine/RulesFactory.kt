@@ -33,7 +33,6 @@ import javax.inject.Inject
 import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Resource
@@ -679,8 +678,8 @@ constructor(
           jsonParse
         }
 
-     val updatedResource =
-       parser.parseResource(resource::class.java, updatedResourceDocument.jsonString())
+      val updatedResource =
+        parser.parseResource(resource::class.java, updatedResourceDocument.jsonString())
       CoroutineScope(dispatcherProvider.io()).launch {
         if (purgeAffectedResources) {
           defaultRepository.purge(updatedResource as Resource, forcePurge = true)
