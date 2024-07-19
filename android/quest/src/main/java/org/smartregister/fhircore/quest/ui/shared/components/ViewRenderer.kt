@@ -16,7 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
@@ -47,6 +51,7 @@ fun ViewRenderer(
   viewProperties: List<ViewProperties>,
   resourceData: ResourceData,
   navController: NavController,
+  decodedImageMap: SnapshotStateMap<String, Bitmap>,
 ) {
   viewProperties.forEach { properties ->
     GenerateView(
@@ -54,6 +59,7 @@ fun ViewRenderer(
       properties = properties.interpolate(resourceData.computedValuesMap),
       resourceData = resourceData,
       navController = navController,
+      decodedImageMap = decodedImageMap,
     )
   }
 }
@@ -88,6 +94,7 @@ private fun PreviewWeightedViewsInRow() {
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
+    decodedImageMap = remember { mutableStateMapOf() },
   )
 }
 
@@ -143,6 +150,7 @@ private fun PreviewWrappedViewsInRow() {
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
+    decodedImageMap = remember { mutableStateMapOf() },
   )
 }
 
@@ -180,6 +188,7 @@ private fun PreviewSameSizedViewInRow() {
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
+    decodedImageMap = remember { mutableStateMapOf() },
   )
 }
 
@@ -298,5 +307,6 @@ private fun PreviewCardViewWithRows() {
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
+    decodedImageMap = remember { mutableStateMapOf() },
   )
 }

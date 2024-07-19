@@ -20,8 +20,10 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
@@ -36,6 +38,7 @@ import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
+import org.smartregister.fhircore.engine.configuration.view.StackViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
@@ -58,6 +61,7 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
+import timber.log.Timber
 
 const val PRACTITIONER_ID = "practitionerId"
 
@@ -164,11 +168,20 @@ fun List<ActionConfig>.handleClickEvent(
       ApplicationWorkflow.LAUNCH_INSIGHT_SCREEN ->
         navController.navigate(MainNavigationScreen.Insight.route)
       ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
-      ApplicationWorkflow.LAUNCH_MAP ->
-        navController.navigate(
-          MainNavigationScreen.GeoWidgetLauncher.route,
-          bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id),
-        )
+      ApplicationWorkflow.LAUNCH_MAP -> {
+        val mapFragmentDestination = MainNavigationScreen.GeoWidgetLauncher.route
+
+        val isMapFragmentExists = navController.currentDestination?.id == mapFragmentDestination
+        if (isMapFragmentExists) {
+          navController.popBackStack(mapFragmentDestination, false)
+        } else {
+          navController.navigate(
+            resId = mapFragmentDestination,
+            args = bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id),
+            navOptions = navOptions(mapFragmentDestination, inclusive = true, singleOnTop = true),
+          )
+        }
+      }
       ApplicationWorkflow.LAUNCH_DIALLER -> {
         val actionParameter = interpolatedParams.first()
         val patientPhoneNumber = actionParameter.value
@@ -224,12 +237,13 @@ fun Array<ActionParameter>?.toParamDataMap(): Map<String, String> =
 fun List<OverflowMenuItemConfig>.decodeBinaryResourcesToBitmap(
   coroutineScope: CoroutineScope,
   registerRepository: RegisterRepository,
+  decodedImageMap: SnapshotStateMap<String, Bitmap>,
 ) {
   this.forEach {
     val resourceId = it.icon!!.reference!!.extractLogicalIdUuid()
     coroutineScope.launch() {
       registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-        it.icon!!.decodedBitmap = binary.data.decodeToBitmap()
+        decodedImageMap[resourceId] = binary.data.decodeToBitmap()
       }
     }
   }
@@ -238,12 +252,13 @@ fun List<OverflowMenuItemConfig>.decodeBinaryResourcesToBitmap(
 fun Sequence<NavigationMenuConfig>.decodeBinaryResourcesToBitmap(
   coroutineScope: CoroutineScope,
   registerRepository: RegisterRepository,
+  decodedImageMap: SnapshotStateMap<String, Bitmap>,
 ) {
   this.forEach {
     val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
     coroutineScope.launch() {
       registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-        it.menuIconConfig!!.decodedBitmap = binary.data.decodeToBitmap()
+        decodedImageMap[resourceId] = binary.data.decodeToBitmap()
       }
     }
   }
@@ -253,6 +268,7 @@ suspend fun loadRemoteImagesBitmaps(
   views: List<ViewProperties>,
   registerRepository: RegisterRepository,
   computedValuesMap: Map<String, Any>,
+  decodedImageMap: MutableMap<String, Bitmap>,
 ) {
   suspend fun ViewProperties.loadIcons() {
     when (this.viewType) {
@@ -262,13 +278,21 @@ suspend fun loadRemoteImagesBitmaps(
           !imageProps.imageConfig?.reference.isNullOrEmpty() &&
             imageProps.imageConfig?.type == ICON_TYPE_REMOTE
         ) {
-          val resourceId =
-            imageProps.imageConfig!!
-              .reference!!
-              .interpolate(computedValuesMap)
-              .extractLogicalIdUuid()
-          registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-            imageProps.imageConfig?.decodedBitmap = binary.data.decodeToBitmap()
+          try {
+            val resourceId =
+              imageProps.imageConfig
+                ?.reference
+                ?.interpolate(computedValuesMap)
+                ?.extractLogicalIdUuid()
+
+            if (resourceId != null) {
+              registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
+                decodedImageMap[resourceId] = binary.data.decodeToBitmap()
+              }
+            }
+          } catch (exception: Exception) {
+            Timber.e("Failed to decode image with error: ${exception.message}")
+            throw exception
           }
         }
       }
@@ -287,6 +311,10 @@ suspend fun loadRemoteImagesBitmaps(
       ViewType.LIST -> {
         val list = this as ListProperties
         list.registerCard.views.forEach { it.loadIcons() }
+      }
+      ViewType.STACK -> {
+        val stack = this as StackViewProperties
+        stack.children.forEach { it.loadIcons() }
       }
       else -> {
         // Handle any other view types if needed

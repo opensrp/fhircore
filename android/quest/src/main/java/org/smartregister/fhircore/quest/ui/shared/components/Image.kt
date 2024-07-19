@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import android.content.Context
+import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -56,6 +57,8 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.engine.util.extension.retrieveResourceId
 import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ICON
@@ -73,6 +76,7 @@ fun Image(
   imageProperties: ImageProperties = ImageProperties(viewType = ViewType.IMAGE, size = 24),
   navController: NavController,
   resourceData: ResourceData? = null,
+  decodedImageMap: MutableMap<String, Bitmap> = mutableMapOf(),
 ) {
   val imageConfig = imageProperties.imageConfig
   val colorTint = tint ?: imageProperties.imageConfig?.color.parseColor()
@@ -98,6 +102,7 @@ fun Image(
           resourceData = resourceData,
           modifier = modifier,
           context = cotext,
+          decodedImageMap = decodedImageMap,
         )
       }
     } else {
@@ -110,6 +115,7 @@ fun Image(
         resourceData = resourceData,
         modifier = modifier,
         context = cotext,
+        decodedImageMap = decodedImageMap,
       )
     }
   }
@@ -125,6 +131,7 @@ fun ClickableImageIcon(
   navController: NavController,
   resourceData: ResourceData? = null,
   context: Context? = null,
+  decodedImageMap: MutableMap<String, Bitmap> = mutableMapOf(),
 ) {
   Box(
     contentAlignment = Alignment.Center,
@@ -176,24 +183,32 @@ fun ClickableImageIcon(
         }
       }
       ICON_TYPE_REMOTE ->
-        if (imageConfig.decodedBitmap != null) {
+        if (decodedImageMap.isNotEmpty()) {
           val imageType = imageProperties.imageConfig?.imageType
           val colorFilter =
             if (imageType == ImageType.SVG || imageType == ImageType.PNG) tint else null
           val contentScale =
             convertContentScaleTypeToContentScale(imageProperties.imageConfig!!.contentScale)
-          Image(
-            modifier =
-              Modifier.testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
-                .conditional(paddingEnd != null, { padding(end = paddingEnd?.dp!!) })
-                .align(Alignment.Center)
-                .fillMaxSize(0.9f),
-            bitmap = imageConfig.decodedBitmap!!.asImageBitmap(),
-            contentDescription = null,
-            alpha = imageProperties.imageConfig!!.alpha,
-            contentScale = contentScale,
-            colorFilter = colorFilter?.let { ColorFilter.tint(it) },
-          )
+          val decodedImage =
+            decodedImageMap[
+              imageConfig.reference
+                ?.interpolate(resourceData!!.computedValuesMap)
+                ?.extractLogicalIdUuid(),
+            ]
+          if (decodedImage != null) {
+            Image(
+              modifier =
+                Modifier.testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
+                  .conditional(paddingEnd != null, { padding(end = paddingEnd?.dp!!) })
+                  .align(Alignment.Center)
+                  .fillMaxSize(0.9f),
+              bitmap = decodedImage!!.asImageBitmap(),
+              contentDescription = null,
+              alpha = imageProperties.imageConfig!!.alpha,
+              contentScale = contentScale,
+              colorFilter = colorFilter?.let { ColorFilter.tint(it) },
+            )
+          }
         }
     }
   }

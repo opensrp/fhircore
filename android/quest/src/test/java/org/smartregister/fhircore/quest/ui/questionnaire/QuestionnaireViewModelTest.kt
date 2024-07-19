@@ -56,6 +56,7 @@ import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Consent
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
@@ -819,6 +820,226 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testValidateQuestionnaireResponseWithRepeatsGroup() = runTest {
+    val questionnaireString =
+      """
+      {
+        "resourceType": "Questionnaire",
+        "item": [
+              {
+                "linkId": "systolic-bp",
+                "type": "integer",
+                "required": true
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "type": "group",
+                "required": false,
+                "repeats": true,
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "type": "integer",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+      }
+        """
+        .trimIndent()
+    val questionnaireResponseString =
+      """
+      {
+        "resourceType": "QuestionnaireResponse",
+        "item": [
+              {
+                "linkId": "systolic-bp",
+                "answer": [
+                  {
+                    "valueInteger": 123
+                  }
+                ]
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "answer": [
+                      {
+                        "valueInteger": 124
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "answer": [
+                      {
+                        "valueInteger": 125
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "answer": [
+                      {
+                        "valueInteger": 126
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+      }
+        """
+        .trimIndent()
+    val questionnaire = parser.parseResource(questionnaireString) as Questionnaire
+    val questionnaireResponse =
+      parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
+    val result =
+      questionnaireViewModel.validateQuestionnaireResponse(
+        questionnaire,
+        questionnaireResponse,
+        context,
+      )
+    Assert.assertTrue(result)
+  }
+
+  @Test
+  fun testValidateQuestionnaireResponseWithNestedRepeatsGroup() = runTest {
+    val questionnaireString =
+      """
+      {
+        "resourceType": "Questionnaire",
+        "item": [
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                "valueCodeableConcept": {
+                  "coding": [
+                    {
+                      "system": "http://hl7.org/fhir/questionnaire-item-control",
+                      "code": "page",
+                      "display": "Page 1"
+                    }
+                  ],
+                  "text": "Page 1"
+                }
+              }
+            ],
+            "linkId": "page-1",
+            "type": "group",
+            "item": [
+              {
+                "linkId": "systolic-bp",
+                "type": "integer",
+                "required": true
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "type": "group",
+                "required": false,
+                "repeats": true,
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "type": "integer",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+        """
+        .trimIndent()
+    val questionnaireResponseString =
+      """
+      {
+        "resourceType": "QuestionnaireResponse",
+        "item": [
+          {
+            "linkId": "page-1",
+            "item": [
+              {
+                "linkId": "systolic-bp",
+                "answer": [
+                  {
+                    "valueInteger": 123
+                  }
+                ]
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "answer": [
+                      {
+                        "valueInteger": 124
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "answer": [
+                      {
+                        "valueInteger": 125
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "linkId": "blood-pressure-repeating-group",
+                "item": [
+                  {
+                    "linkId": "systolic-bp",
+                    "answer": [
+                      {
+                        "valueInteger": 126
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+        """
+        .trimIndent()
+    val questionnaire = parser.parseResource(questionnaireString) as Questionnaire
+    val questionnaireResponse =
+      parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
+    val result =
+      questionnaireViewModel.validateQuestionnaireResponse(
+        questionnaire,
+        questionnaireResponse,
+        context,
+      )
+    Assert.assertTrue(result)
+  }
+
+  @Test
   fun testExecuteCqlShouldInvokeRunCqlLibrary() = runTest {
     val bundle =
       Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
@@ -1132,6 +1353,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val flag = Flag().apply { this.id = "123456" }
     flag.appendPractitionerInfo("12345")
     Assert.assertEquals("Practitioner/12345", flag.author.reference)
+  }
+
+  @Test
+  fun testAddPractitionerInfoAppendedCorrectlyOnConsentResource() {
+    val consent = Consent().apply { this.id = "123456" }
+    consent.appendPractitionerInfo("12345")
+    Assert.assertEquals("Practitioner/12345", consent.performer.first().reference)
   }
 
   @Test
