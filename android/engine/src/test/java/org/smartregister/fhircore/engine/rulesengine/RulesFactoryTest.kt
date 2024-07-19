@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
@@ -977,7 +977,23 @@ class RulesFactoryTest : RobolectricTest() {
   @Test
   fun testExtractSharedPrefValuesReturnsPractitionerLocation() {
     val sharedPreferenceKey = "PRACTITIONER_LOCATION"
-    val expectedValue = "1234"
+    val expectedValue = "Demo Facility"
+    every {
+      configurationRegistry.sharedPreferencesHelper.read(
+        sharedPreferenceKey,
+        "",
+      )
+    } returns expectedValue
+    val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
+
+    verify { configurationRegistry.sharedPreferencesHelper.read(sharedPreferenceKey, "") }
+    Assert.assertEquals(expectedValue, result)
+  }
+
+  @Test
+  fun testExtractSharedPrefValuesReturnsPractitionerLocationId() {
+    val sharedPreferenceKey = "PRACTITIONER_LOCATION_ID"
+    val expectedValue = "ABCD1234"
     every {
       configurationRegistry.sharedPreferencesHelper.read(
         sharedPreferenceKey,

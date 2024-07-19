@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import android.content.Context
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.search.Order
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.math.BigDecimal
@@ -28,7 +28,6 @@ import javax.inject.Inject
 import kotlin.system.measureTimeMillis
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
 import org.jeasy.rules.api.Facts
@@ -50,6 +49,7 @@ import org.smartregister.fhircore.engine.util.extension.SDF_DD_MMM_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
 import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractBirthDate
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
@@ -288,17 +288,22 @@ constructor(
       label: String,
     ): String = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
 
-    /** This function extracts the patient's age from the patient resource */
-    fun extractAge(patient: Patient): String = patient.extractAge(context)
+    /** Extracts a Patient/RelatedPerson's age */
+    fun extractAge(resource: Resource): String {
+      return resource.extractAge(context)
+    }
 
-    /**
-     * This function extracts and returns a translated string for the gender in Patient resource.
-     */
-    fun extractGender(patient: Patient): String = patient.extractGender(context) ?: ""
+    /** Extracts and returns a translated string for the gender in the resource */
+    fun extractGender(resource: Resource): String {
+      return resource.extractGender(context)
+    }
 
-    /** This function extracts the patient's DOB from the FHIR resource */
-    fun extractDOB(patient: Patient, dateFormat: String): String =
-      SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
+    /** This function extracts a Patient/RelatedPerson's DOB from the FHIR resource */
+    fun extractDOB(resource: Resource, dateFormat: String): String {
+      return SimpleDateFormat(dateFormat, Locale.ENGLISH).run {
+        resource.extractBirthDate()?.let { format(it) }
+      } ?: ""
+    }
 
     /**
      * This function takes [inputDate] and returns a difference (for examples 7 hours, 2 day, 5
@@ -349,6 +354,11 @@ constructor(
           SharedPreferenceKey.PRACTITIONER_LOCATION ->
             configurationRegistry.sharedPreferencesHelper.read(
               SharedPreferenceKey.PRACTITIONER_LOCATION.name,
+              "",
+            )
+          SharedPreferenceKey.PRACTITIONER_LOCATION_ID ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name,
               "",
             )
           else -> ""
@@ -541,15 +551,13 @@ constructor(
         }
         .getOrNull()
 
-    fun generateTaskServiceStatus(task: Task): String {
-      val serviceStatus: String
-      if (task.isOverDue()) {
-        serviceStatus = ServiceStatus.OVERDUE.name
-      } else {
-        serviceStatus =
+    fun generateTaskServiceStatus(task: Task?): String {
+      return when {
+        task == null -> ""
+        task.isOverDue() -> ServiceStatus.OVERDUE.name
+        else -> {
           when (task.status) {
             Task.TaskStatus.NULL,
-            Task.TaskStatus.FAILED,
             Task.TaskStatus.RECEIVED,
             Task.TaskStatus.ENTEREDINERROR,
             Task.TaskStatus.ACCEPTED,
@@ -559,14 +567,16 @@ constructor(
               Timber.e("Task.status is null", Exception())
               ServiceStatus.UPCOMING.name
             }
+            Task.TaskStatus.FAILED -> ServiceStatus.FAILED.name
             Task.TaskStatus.REQUESTED -> ServiceStatus.UPCOMING.name
             Task.TaskStatus.READY -> ServiceStatus.DUE.name
             Task.TaskStatus.CANCELLED -> ServiceStatus.EXPIRED.name
             Task.TaskStatus.INPROGRESS -> ServiceStatus.IN_PROGRESS.name
             Task.TaskStatus.COMPLETED -> ServiceStatus.COMPLETED.name
+            else -> ""
           }
+        }
       }
-      return serviceStatus
     }
   }
 

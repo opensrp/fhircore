@@ -37,16 +37,23 @@ val localProperties = readProperties((project.properties["localPropertiesFile"] 
 requiredFhirProperties.forEach { property ->
   project.extra.set(property, localProperties.getProperty(property, when {
     property.contains("URL") -> "https://sample.url/fhir/"
-    property.equals("OPENSRP_APP_ID") -> """"""""
-    else -> "sample_" + property
+    property == "OPENSRP_APP_ID" -> """"""""
+    else -> "sample_$property"
   }
   ))
 }
 
 // Set required keystore properties
 val requiredKeystoreProperties = listOf("KEYSTORE_ALIAS", "KEY_PASSWORD", "KEYSTORE_PASSWORD")
-val keystoreProperties = readProperties((project.properties["keystorePropertiesFile"] ?: "${rootProject.projectDir}/keystore.properties").toString())
+val keystoreProperties = try{ readProperties((project.properties["keystorePropertiesFile"] ?: "${rootProject.projectDir}/keystore.properties").toString()) } catch (e:FileNotFoundException){
+
+  if (project.properties["keystorePropertiesFile"] != null){
+    throw e
+  }else Properties()
+
+
+}
 
 requiredKeystoreProperties.forEach { property ->
-  project.extra.set(property, keystoreProperties.getProperty(property,"sample_" + property))
+  project.extra.set(property, keystoreProperties.getProperty(property, "sample_$property"))
 }

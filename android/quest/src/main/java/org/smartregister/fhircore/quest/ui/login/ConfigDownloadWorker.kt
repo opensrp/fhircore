@@ -39,14 +39,13 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
   val defaultRepository: DefaultRepository,
-  val dataMigration: DataMigration
+  val dataMigration: DataMigration,
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
-    val isInitialLogin = inputData.getBoolean(IS_INITIAL_LOGIN, true)
     return withContext(dispatcherProvider.io()) {
       try {
-        configurationRegistry.fetchNonWorkflowConfigResources(isInitialLogin)
+        configurationRegistry.fetchNonWorkflowConfigResources()
         dataMigration.migrate()
         Result.success()
       } catch (httpException: HttpException) {
@@ -55,9 +54,5 @@ constructor(
         Result.failure()
       }
     }
-  }
-
-  companion object {
-    const val IS_INITIAL_LOGIN = "isInitialLogin"
   }
 }

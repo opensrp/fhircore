@@ -19,34 +19,63 @@ package org.smartregister.fhircore.quest.util.extensions
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
-import com.google.android.fhir.logicalId
+import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.extensions.logicalId
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import javax.inject.Inject
+import junit.framework.TestCase.assertNotNull
+import junit.framework.TestCase.assertTrue
 import kotlin.test.assertEquals
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatchers.anyString
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
+import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
+import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
+import org.smartregister.fhircore.engine.configuration.view.ListProperties
+import org.smartregister.fhircore.engine.configuration.view.RowProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
+import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -55,13 +84,104 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 
+@HiltAndroidTest
 class ConfigExtensionsTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
-  private val navController = mockk<NavController>(relaxUnitFun = true)
+  @Inject lateinit var defaultRepository: DefaultRepository
+
+  @Inject lateinit var registerRepository: RegisterRepository
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Inject lateinit var parser: IParser
+
+  @Inject lateinit var fhirEngine: FhirEngine
+
+  private val navController = mockk<NavController>(relaxUnitFun = true, relaxed = true)
   private val context = mockk<Context>(relaxUnitFun = true, relaxed = true)
   private val navigationMenuConfig by lazy {
-    NavigationMenuConfig(id = "id", display = "menu", visible = true)
+    NavigationMenuConfig(
+      id = "id",
+      display = "menu",
+      visible = true,
+      menuIconConfig =
+        ImageConfig(
+          type = ICON_TYPE_REMOTE,
+          reference = "d60ff460-7671-466a-93f4-c93a2ebf2077",
+        ),
+    )
   }
+  private val overflowMenuItemConfig by lazy {
+    OverflowMenuItemConfig(
+      visible = "true",
+      icon =
+        ImageConfig(
+          type = ICON_TYPE_REMOTE,
+          reference = "d60ff460-7671-466a-93f4-c93a2ebf2077",
+        ),
+    )
+  }
+  private val imageProperties =
+    ImageProperties(
+      imageConfig =
+        ImageConfig(
+          type = ICON_TYPE_REMOTE,
+          reference = "d60ff460-7671-466a-93f4-c93a2ebf2077",
+        ),
+    )
+
+  private val profileConfiguration =
+    ProfileConfiguration(
+      id = "1",
+      appId = "a",
+      fhirResource =
+        FhirResourceConfig(
+          baseResource = ResourceConfig(resource = ResourceType.Patient),
+          relatedResources =
+            listOf(
+              ResourceConfig(
+                resource = ResourceType.Encounter,
+              ),
+              ResourceConfig(
+                resource = ResourceType.Task,
+              ),
+            ),
+        ),
+      views =
+        listOf(
+          CardViewProperties(
+            viewType = ViewType.CARD,
+            content =
+              listOf(
+                ListProperties(
+                  viewType = ViewType.LIST,
+                  registerCard =
+                    RegisterCardConfig(
+                      views =
+                        listOf(
+                          ColumnProperties(
+                            viewType = ViewType.COLUMN,
+                            children =
+                              listOf(
+                                RowProperties(
+                                  viewType = ViewType.ROW,
+                                  children =
+                                    listOf(
+                                      imageProperties,
+                                    ),
+                                ),
+                              ),
+                          ),
+                        ),
+                    ),
+                ),
+              ),
+          ),
+        ),
+    )
+
+  private val binaryImage = Faker.buildBinaryResource()
   private val patient = Faker.buildPatient()
   private val resourceData by lazy {
     ResourceData(
@@ -73,6 +193,7 @@ class ConfigExtensionsTest : RobolectricTest() {
 
   @Before
   fun setUp() {
+    hiltAndroidRule.inject()
     every { navController.context } returns context
   }
 
@@ -282,11 +403,16 @@ class ConfigExtensionsTest : RobolectricTest() {
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
-    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
-    Assert.assertEquals(MainNavigationScreen.GeoWidget.route, slotInt.captured)
-    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.GeoWidgetLauncher.route, slotInt.captured)
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
     Assert.assertEquals(1, slotBundle.captured.size())
-    Assert.assertEquals("geoWidgetId", slotBundle.captured.getString(NavigationArg.CONFIG_ID))
+    Assert.assertEquals("geoWidgetId", slotBundle.captured.getString(NavigationArg.GEO_WIDGET_ID))
   }
 
   @Test
@@ -544,5 +670,180 @@ class ConfigExtensionsTest : RobolectricTest() {
     every { mockClipboardManager.setPrimaryClip(any()) } returns Unit
     listOf(clickAction).handleClickEvent(navController, resourceData, context = context)
     verify { context.showToast(text, Toast.LENGTH_LONG) }
+  }
+
+  @Test
+  fun decodeBinaryResourcesToBitmapOnNavigationMenuClientRegistersDoneCorrectly(): Unit =
+    runBlocking {
+      defaultRepository.create(addResourceTags = true, binaryImage)
+      val navigationMenuConfigs = sequenceOf(navigationMenuConfig)
+      val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+      runBlocking {
+        navigationMenuConfigs.decodeBinaryResourcesToBitmap(
+          this,
+          registerRepository,
+          decodedImageMap,
+        )
+      }
+      assertTrue(decodedImageMap.isNotEmpty())
+      assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+    }
+
+  @Test
+  fun decodeBinaryResourcesToBitmapOnOverflowMenuConfigDoneCorrectly(): Unit = runBlocking {
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    val navigationMenuConfigs = listOf(overflowMenuItemConfig)
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+    runBlocking {
+      navigationMenuConfigs.decodeBinaryResourcesToBitmap(this, registerRepository, decodedImageMap)
+    }
+    assertTrue(decodedImageMap.isNotEmpty())
+    assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+  }
+
+  @Test
+  fun testImageBitmapUpdatedCorrectlyGivenProfileConfiguration(): Unit = runBlocking {
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+    loadRemoteImagesBitmaps(
+      profileConfiguration.views,
+      registerRepository = registerRepository,
+      computedValuesMap = emptyMap(),
+      configurationRegistry.decodedImageMap,
+    )
+    assertTrue(decodedImageMap.isNotEmpty())
+    assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+  }
+
+  @Test
+  fun testImageBitmapUpdatedCorrectlyGivenCardViewProperties(): Unit = runBlocking {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+    loadRemoteImagesBitmaps(
+      listOf(cardViewProperties),
+      registerRepository = registerRepository,
+      computedValuesMap = emptyMap(),
+      decodedImageMap,
+    )
+    assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+    assertTrue(decodedImageMap.isNotEmpty())
+  }
+
+  @Test
+  fun testImageBitmapUpdatedCorrectlyGivenListViewProperties(): Unit = runBlocking {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+    loadRemoteImagesBitmaps(
+      listOf(cardViewProperties.content[0]),
+      registerRepository = registerRepository,
+      computedValuesMap = emptyMap(),
+      decodedImageMap,
+    )
+    assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+    assertTrue(decodedImageMap.isNotEmpty())
+  }
+
+  @Test
+  fun testImageBitmapUpdatedCorrectlyGivenColumnProperties(): Unit = runBlocking {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    val listViewProperties = cardViewProperties.content[0] as ListProperties
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    loadRemoteImagesBitmaps(
+      listOf(listViewProperties.registerCard.views[0]),
+      registerRepository = registerRepository,
+      computedValuesMap = emptyMap(),
+      decodedImageMap,
+    )
+    assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+    assertTrue(decodedImageMap.isNotEmpty())
+  }
+
+  @Test
+  fun testImageBitmapUpdatedCorrectlyGivenRowProperties(): Unit = runBlocking {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    val listViewProperties = cardViewProperties.content[0] as ListProperties
+    val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+    loadRemoteImagesBitmaps(
+      listOf(columnProperties.children[0]),
+      registerRepository = registerRepository,
+      computedValuesMap = emptyMap(),
+      decodedImageMap,
+    )
+    assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+    assertTrue(decodedImageMap.isNotEmpty())
+  }
+
+  @Test
+  fun testImageMapNotUpdatedWhenReferenceIsNull() = runTest {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    val listViewProperties = cardViewProperties.content[0] as ListProperties
+    val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
+    val rowProperties =
+      (columnProperties.children[0] as RowProperties).copy(
+        children =
+          listOf(
+            ImageProperties(
+              imageConfig =
+                ImageConfig(
+                  type = ICON_TYPE_REMOTE,
+                  reference = null,
+                ),
+            ),
+          ),
+      )
+    val emptyComputedValuesMap = mutableMapOf<String, String>()
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+
+    loadRemoteImagesBitmaps(
+      listOf(rowProperties),
+      registerRepository = registerRepository,
+      computedValuesMap = emptyComputedValuesMap,
+      decodedImageMap = decodedImageMap,
+    )
+    assertTrue(decodedImageMap.isEmpty())
+    assertTrue(!decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+  }
+
+  @Test(expected = Exception::class)
+  fun testExceptionCaughtOnDecodingBitmap() = runTest {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    val listViewProperties = cardViewProperties.content[0] as ListProperties
+    val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
+    val rowProperties =
+      (columnProperties.children[0] as RowProperties).copy(
+        children =
+          listOf(
+            ImageProperties(
+              imageConfig =
+                ImageConfig(
+                  type = ICON_TYPE_REMOTE,
+                  reference = "null Reference",
+                ),
+            ),
+          ),
+      )
+    val emptyComputedValuesMap = mutableMapOf<String, String>()
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+
+    coEvery { defaultRepository.loadResource<Binary>(anyString()) } returns
+      Binary().apply {
+        this.id = "null Reference"
+        this.contentType = "image/jpeg"
+        this.data = "gibberish value".toByteArray()
+      }
+
+    loadRemoteImagesBitmaps(
+      listOf(rowProperties),
+      registerRepository = registerRepository,
+      computedValuesMap = emptyComputedValuesMap,
+      decodedImageMap = decodedImageMap,
+    )
+    assertTrue(decodedImageMap.isEmpty())
+    assertTrue(!decodedImageMap.containsKey("null Reference"))
   }
 }

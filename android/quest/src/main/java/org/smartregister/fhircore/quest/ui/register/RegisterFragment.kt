@@ -62,11 +62,13 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
+import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import org.smartregister.fhircore.quest.ui.shared.viewmodels.SearchViewModel
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
@@ -78,9 +80,10 @@ class RegisterFragment : Fragment(), OnSyncListener {
   @Inject lateinit var syncListenerManager: SyncListenerManager
 
   @Inject lateinit var eventBus: EventBus
-  private val appMainViewModel by activityViewModels<AppMainViewModel>()
   private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
   private val registerViewModel by viewModels<RegisterViewModel>()
+  private val appMainViewModel by activityViewModels<AppMainViewModel>()
+  private val searchViewModel by activityViewModels<SearchViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -140,7 +143,12 @@ class RegisterFragment : Fragment(), OnSyncListener {
               AppDrawer(
                 appUiState = uiState,
                 openDrawer = openDrawer,
-                onSideMenuClick = appMainViewModel::onEvent,
+                onSideMenuClick = {
+                  if (it is AppMainEvent.TriggerWorkflow) {
+                    searchViewModel.searchText.value = ""
+                  }
+                  appMainViewModel.onEvent(it)
+                },
                 navController = findNavController(),
               )
             },
@@ -165,7 +173,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,
                 registerUiState = registerViewModel.registerUiState.value,
-                searchText = registerViewModel.searchText,
+                searchText = searchViewModel.searchText,
                 currentPage = registerViewModel.currentPage,
                 pagingItems = pagingItems,
                 navController = findNavController(),
@@ -181,11 +189,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
   override fun onResume() {
     super.onResume()
     syncListenerManager.registerSyncListener(this, lifecycle)
-  }
-
-  override fun onStop() {
-    super.onStop()
-    registerViewModel.searchText.value = "" // Clear the search term
   }
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
@@ -262,8 +265,13 @@ class RegisterFragment : Fragment(), OnSyncListener {
         eventBus.events
           .getFor(MainNavigationScreen.Home.eventId(registerFragmentArgs.registerId))
           .onEach { appEvent ->
-            if (appEvent is AppEvent.OnSubmitQuestionnaire) {
-              handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+            when (appEvent) {
+              is AppEvent.OnSubmitQuestionnaire ->
+                handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+              is AppEvent.RefreshRegisterData -> {
+                appMainViewModel.countRegisterData()
+                refreshRegisterData()
+              }
             }
           }
           .launchIn(lifecycleScope)

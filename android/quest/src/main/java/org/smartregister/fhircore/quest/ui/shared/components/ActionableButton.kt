@@ -32,6 +32,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -53,6 +54,7 @@ import org.smartregister.fhircore.engine.configuration.view.ButtonType
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
+import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -148,6 +150,7 @@ fun ActionableButton(
         if (isButtonEnabled) {
           when (status) {
             ServiceStatus.COMPLETED.name -> SuccessColor
+            ServiceStatus.FAILED.name -> DangerColor
             else -> statusColor
           }
         } else {
@@ -163,9 +166,15 @@ fun ActionableButton(
       } else {
         Icon(
           imageVector =
-            if (status == ServiceStatus.COMPLETED.name) {
-              Icons.Filled.Check
-            } else Icons.Filled.Add,
+            when (status) {
+              ServiceStatus.COMPLETED.name -> {
+                Icons.Filled.Check
+              }
+              ServiceStatus.FAILED.name -> {
+                Icons.Filled.Clear
+              }
+              else -> Icons.Filled.Add
+            },
           contentDescription = null,
           tint = iconTintColor,
           modifier = Modifier.size(16.dp),

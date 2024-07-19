@@ -23,10 +23,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.Constraints
 import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import androidx.work.workDataOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import io.sentry.protocol.User
@@ -415,7 +413,7 @@ constructor(
     )
   }
 
-  private fun writePractitionerDetailsToShredPref(
+  fun writePractitionerDetailsToShredPref(
     careTeam: List<String>,
     organization: List<String>,
     location: List<String>,
@@ -452,17 +450,19 @@ constructor(
       key = SharedPreferenceKey.ORGANIZATION.name,
       value = organization.joinToString(separator = ""),
     )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name,
+      value = locations.joinToString(separator = ""),
+    )
   }
 
-  fun downloadNowWorkflowConfigs(isInitialLogin: Boolean = true) {
-    val data = workDataOf(ConfigDownloadWorker.IS_INITIAL_LOGIN to isInitialLogin)
-    val oneTimeWorkRequest: OneTimeWorkRequest =
+  fun downloadNowWorkflowConfigs() {
+    workManager.enqueue(
       OneTimeWorkRequestBuilder<ConfigDownloadWorker>()
         .setConstraints(
           Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
         )
-        .setInputData(data)
-        .build()
-    workManager.enqueue(oneTimeWorkRequest)
+        .build(),
+    )
   }
 }
