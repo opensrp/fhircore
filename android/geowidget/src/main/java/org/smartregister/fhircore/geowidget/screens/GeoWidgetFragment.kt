@@ -38,7 +38,6 @@ import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.expressions.Expression
 import com.mapbox.mapboxsdk.style.layers.Property
-import com.mapbox.mapboxsdk.style.layers.Property.TEXT_ANCHOR_TOP
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
@@ -64,7 +63,6 @@ import org.smartregister.fhircore.geowidget.model.ServicePointType
 import org.smartregister.fhircore.geowidget.model.TYPE
 import org.smartregister.fhircore.geowidget.util.ResourceUtils
 import timber.log.Timber
-import java.util.LinkedList
 
 @AndroidEntryPoint
 class GeoWidgetFragment : Fragment() {
@@ -215,12 +213,14 @@ class GeoWidgetFragment : Fragment() {
           PropertyFactory.iconAllowOverlap(false),
 
           // Add these properties for the text field
-          PropertyFactory.textField(Expression.get("number")), // Assuming your data source has a "number" property
+          PropertyFactory.textField(
+            Expression.get("number"),
+          ), // Assuming your data source has a "number" property
           PropertyFactory.textFont(arrayOf("Open Sans Bold", "Arial Unicode MS Bold")),
           PropertyFactory.textSize(24f),
           PropertyFactory.textOffset(arrayOf()), // Adjust the offset as needed
           PropertyFactory.textAnchor(Property.TEXT_ANCHOR_CENTER),
-          PropertyFactory.textColor(Expression.get("numberColor"))
+          PropertyFactory.textColor(Expression.get("numberColor")),
         )
         symbolLayer.setFilter(
           Expression.eq(
