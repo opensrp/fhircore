@@ -17,26 +17,7 @@
 package org.smartregister.fhircore.engine.configuration.register
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
-import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
-import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
-
-@Serializable
-data class ProfileLaunch(val id: String) {
-  fun toActionConfig() =
-    ActionConfig(
-      trigger = ActionTrigger.ON_CLICK,
-      id = this.id,
-      workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
-    )
-}
-
-@Serializable
-data class SearchByScanConfig(
-  val isEnabled: Boolean = true,
-  val profileLaunch: ProfileLaunch? = null,
-)
 
 @Serializable
 data class RegisterContentConfig(
@@ -45,5 +26,5 @@ data class RegisterContentConfig(
   val rules: List<RuleConfig>? = null,
   val visible: Boolean? = null,
   val computedRules: List<String>? = null,
-  val searchByQrCode: SearchByScanConfig? = null,
+  val searchByQrCode: Boolean? = null,
 )

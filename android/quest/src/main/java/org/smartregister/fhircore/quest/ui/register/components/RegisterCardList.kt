@@ -35,8 +35,8 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import org.smartregister.fhircore.engine.configuration.register.ProfileLaunch
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
@@ -65,7 +65,7 @@ fun RegisterCardList(
   registerUiState: RegisterUiState,
   currentPage: MutableState<Int>,
   showPagination: Boolean = false,
-  scanProfileLaunch: ProfileLaunch? = null,
+  onSearchByQrSingleResultActions: List<ActionConfig>? = null,
 ) {
   val context = LocalContext.current
 
@@ -109,10 +109,12 @@ fun RegisterCardList(
           }
         }
         loadState.append.endOfPaginationReached || loadState.refresh.endOfPaginationReached -> {
-          if (pagingItems.itemCount == 1 && scanProfileLaunch != null) {
-            scanProfileLaunch
-              .toActionConfig()
-              .handleClickEvent(navController, pagingItems[0]!!, context = context)
+          if (pagingItems.itemCount == 1 && !onSearchByQrSingleResultActions.isNullOrEmpty()) {
+            onSearchByQrSingleResultActions.handleClickEvent(
+              navController,
+              pagingItems[0]!!,
+              context = context
+            )
           }
         }
       }
