@@ -73,7 +73,6 @@ import org.smartregister.fhircore.quest.ui.bottomsheet.SummaryBottomSheetFragmen
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
-import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import org.smartregister.fhircore.quest.ui.register.RegisterViewModel
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
@@ -84,6 +83,7 @@ import timber.log.Timber
 class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   @Inject lateinit var eventBus: EventBus
+
   @Inject lateinit var syncListenerManager: SyncListenerManager
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
@@ -109,9 +109,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         val scaffoldState = rememberScaffoldState()
         val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
 
-        val registerUiState by remember {
-          registerViewModel.registerUiState
-        }
+        val registerUiState by remember { registerViewModel.registerUiState }
         val openDrawer: (Boolean) -> Unit = { open: Boolean ->
           scope.launch {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
@@ -199,9 +197,10 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         lifecycleScope.launch {
           registerViewModel.updateSyncStatus(syncJobStatus)
           registerViewModel.retrieveRegisterUiState(
-            screenTitle = "" ,
+            screenTitle = "",
             registerId = "",
-            clearCache = false)
+            clearCache = false,
+          )
           appMainViewModel.updateSyncStatus(syncJobStatus)
         }
       }
