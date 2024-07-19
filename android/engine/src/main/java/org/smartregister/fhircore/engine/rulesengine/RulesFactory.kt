@@ -679,11 +679,8 @@ constructor(
           jsonParse
         }
 
-      val resourceDefinition: Class<out IBaseResource>? =
-        FhirContext.forR4Cached().getResourceDefinition(resource).implementingClass
-
-      val updatedResource =
-        parser.parseResource(resourceDefinition, updatedResourceDocument.jsonString())
+     val updatedResource =
+       parser.parseResource(resource::class.java, updatedResourceDocument.jsonString())
       CoroutineScope(dispatcherProvider.io()).launch {
         if (purgeAffectedResources) {
           defaultRepository.purge(updatedResource as Resource, forcePurge = true)
