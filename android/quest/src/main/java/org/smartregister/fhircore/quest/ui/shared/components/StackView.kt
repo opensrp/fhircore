@@ -16,10 +16,13 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -41,6 +44,7 @@ fun StackView(
   stackViewProperties: StackViewProperties,
   resourceData: ResourceData,
   navController: NavController,
+  decodedImageMap: SnapshotStateMap<String, Bitmap> = mutableStateMapOf(),
 ) {
   val backgroundColor = stackViewProperties.backgroundColor.parseColor()
   val size = stackViewProperties.size
@@ -58,6 +62,7 @@ fun StackView(
         properties = child.interpolate(resourceData.computedValuesMap),
         resourceData = resourceData,
         navController = navController,
+        decodedImageMap = decodedImageMap,
       )
     }
   }

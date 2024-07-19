@@ -29,7 +29,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -61,7 +60,7 @@ fun SubsequentSyncDetailsBar(
       modifier
         .fillMaxWidth()
         .background(color = backgroundColor)
-        .padding(horizontal = 16.dp, vertical = 4.dp),
+        .padding(horizontal = 16.dp, vertical = if (hideExtraInformation) 4.dp else 2.dp),
     contentAlignment = Alignment.Center,
   ) {
     Row(

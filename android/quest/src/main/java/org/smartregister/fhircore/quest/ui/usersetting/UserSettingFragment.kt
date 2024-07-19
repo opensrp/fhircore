@@ -41,9 +41,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.BuildConfig
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.SettingsOptions
-import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -139,28 +137,25 @@ class UserSettingFragment : Fragment(), OnSyncListener {
     when (syncJobStatus) {
       is CurrentSyncJobStatus.Running ->
         if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
-          lifecycleScope.launch {
-            userSettingViewModel.emitSnackBarState(
-              SnackBarMessageConfig(message = getString(R.string.syncing)),
-            )
-          }
+          lifecycleScope.launch {}
         } else {
+          val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
+          val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
           lifecycleScope.launch {
-            val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
-            val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+            registerViewModel.updateSyncStatus(syncJobStatus)
             appMainViewModel.updateSyncStatus(syncJobStatus)
             val percentageProgress = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
             registerViewModel.emitPercentageProgressState(percentageProgress, isSyncUpload)
           }
         }
       is CurrentSyncJobStatus.Succeeded -> {
-        lifecycleScope.launch { appMainViewModel.updateSyncStatus(syncJobStatus) }
+        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
       }
       is CurrentSyncJobStatus.Failed -> {
-        lifecycleScope.launch { appMainViewModel.updateSyncStatus(syncJobStatus) }
+        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
       }
       else -> {
-        // Do nothing
+        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
       }
     }
   }

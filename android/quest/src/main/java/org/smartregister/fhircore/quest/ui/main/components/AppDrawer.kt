@@ -22,11 +22,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -44,6 +42,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,8 +64,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.android.fhir.sync.CurrentSyncJobStatus
-import com.google.android.fhir.sync.SyncJobStatus
-import com.google.android.fhir.sync.SyncOperation
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
@@ -217,15 +215,18 @@ private fun NavBottomSection(
   val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
 
+  var currentSyncJobStatus: CurrentSyncJobStatus? =
+    registerUiState.currentSyncJobStatus.collectAsState(null).value
+
   var backgroundColor by remember { mutableStateOf(SideMenuTopItemDarkColor) }
   var showSyncComplete by remember { mutableStateOf(false) }
   var showSyncBar by remember { mutableStateOf(false) }
   var hasShownSyncComplete by rememberSaveable { mutableStateOf(false) }
 
   // Update sync status
-  LaunchedEffect(appUiState.currentSyncJobStatus) {
+  LaunchedEffect(currentSyncJobStatus) {
     updateSyncStatus(
-      appUiState,
+      currentSyncJobStatus,
       coroutineScope,
       hasShownSyncComplete,
       { hasShownSyncComplete = it },
@@ -243,22 +244,26 @@ private fun NavBottomSection(
           if (showSyncComplete) Color.White.copy(alpha = 0.83f) else Color.Transparent,
         )
         .then(
-          if (showSyncComplete) Modifier.padding(horizontal = 16.dp, vertical = 4.dp) else Modifier,
+          if (
+            currentSyncJobStatus !is CurrentSyncJobStatus.Running ||
+              appUiState.currentSyncJobStatus is CurrentSyncJobStatus.Cancelled
+          ) {
+            Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+          } else {
+            Modifier
+          },
         ),
   ) {
     when {
-      appUiState.currentSyncJobStatus is CurrentSyncJobStatus.Running -> {
-        val isSyncUpload =
-          (appUiState.currentSyncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress)
-            .syncOperation == SyncOperation.UPLOAD
-        if (isSyncUpload) {
-          SubsequentSyncDetailsBar(percentageProgressFlow = registerUiState.progressPercentage) {
-            onSideMenuClick(AppMainEvent.CancelSyncData(context))
-            openDrawer(false)
-          }
+      currentSyncJobStatus is CurrentSyncJobStatus.Running &&
+        appUiState.currentSyncJobStatus !is CurrentSyncJobStatus.Cancelled -> {
+        SubsequentSyncDetailsBar(percentageProgressFlow = registerUiState.progressPercentage) {
+          onSideMenuClick(AppMainEvent.CancelSyncData(context))
+          openDrawer(false)
+          currentSyncJobStatus = CurrentSyncJobStatus.Cancelled
         }
       }
-      appUiState.currentSyncJobStatus is CurrentSyncJobStatus.Failed -> {
+      currentSyncJobStatus is CurrentSyncJobStatus.Failed -> {
         SyncCompleteStatus(
           modifier = modifier,
           imageConfig = ImageConfig(type = "local", "ic_sync_fail"),
@@ -270,7 +275,7 @@ private fun NavBottomSection(
           onSideMenuClick(AppMainEvent.SyncData(context))
         }
       }
-      appUiState.currentSyncJobStatus is CurrentSyncJobStatus.Succeeded && showSyncComplete -> {
+      currentSyncJobStatus is CurrentSyncJobStatus.Succeeded && showSyncComplete -> {
         SyncCompleteStatus(
           modifier = modifier,
           imageConfig = ImageConfig(type = "local", "ic_sync_success"),
@@ -297,7 +302,7 @@ private fun NavBottomSection(
 }
 
 private fun updateSyncStatus(
-  appUiState: AppMainUiState?,
+  currentSyncJobStatus: CurrentSyncJobStatus?,
   coroutineScope: CoroutineScope,
   hasShownSyncComplete: Boolean,
   setHasShownSyncComplete: (Boolean) -> Unit,
@@ -305,7 +310,7 @@ private fun updateSyncStatus(
   setShowSyncComplete: (Boolean) -> Unit,
   setBackgroundColor: (Color) -> Unit,
 ) {
-  when (appUiState?.currentSyncJobStatus) {
+  when (currentSyncJobStatus) {
     is CurrentSyncJobStatus.Succeeded -> {
       if (!hasShownSyncComplete) {
         setBackgroundColor(Color(0xFF1DB11B))
@@ -313,7 +318,7 @@ private fun updateSyncStatus(
         setShowSyncComplete(true)
         setHasShownSyncComplete(true)
         coroutineScope.launch {
-          delay(60000L)
+          delay(10.seconds)
           setShowSyncBar(false)
           setShowSyncComplete(false)
           setBackgroundColor(SideMenuTopItemDarkColor)
@@ -331,6 +336,9 @@ private fun updateSyncStatus(
       setBackgroundColor(SideMenuTopItemDarkColor)
       setShowSyncComplete(false)
       setHasShownSyncComplete(false)
+    }
+    is CurrentSyncJobStatus.Cancelled -> {
+      setShowSyncBar(false)
     }
     else -> {
       setShowSyncBar(false)
@@ -511,11 +519,11 @@ fun SyncCompleteStatus(
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
-    modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min),
+    modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(
-      modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 10.dp),
+      modifier = Modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG),
       verticalAlignment = Alignment.CenterVertically,
     ) {
       if (showImage) {
@@ -526,27 +534,22 @@ fun SyncCompleteStatus(
           navController = rememberNavController(),
         )
       }
-      val syncTextStatusSize = if (showImage) 18 else 13
-      Column { // Wrap SideMenuItemText and description in a Column
-        SideMenuItemText(
-          title = title,
-          textColor = Color(0xFF282828),
-          syncTextStatusSize,
-          boldText = true,
+      Column() {
+        Text(
+          text = title,
+          color = Color(0xFF282828),
+          fontSize = if (showImage) 16.sp else 10.sp,
+          fontWeight = FontWeight(500),
         )
-        // Check if the description is not null and then display it
         if (description != null) {
           Text(
             text = description,
             color = Color.Gray,
             fontSize = 12.sp,
-            modifier = Modifier.padding(top = 4.dp), // Add some padding at the top
+            modifier = Modifier.padding(top = 4.dp),
           )
         }
       }
-      // TODO add a n additional descriptive text below the SideMenuItemText
-      // kinda like a description
-      // however this will be shown under only certain condition
     }
     Spacer(modifier = Modifier.width(16.dp))
     if (showEndText) {

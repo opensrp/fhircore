@@ -126,7 +126,11 @@ constructor(
           it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
           !it.menuIconConfig!!.reference.isNullOrEmpty()
       }
-      .decodeBinaryResourcesToBitmap(viewModelScope, registerRepository)
+      .decodeBinaryResourcesToBitmap(
+        viewModelScope,
+        registerRepository,
+        configurationRegistry.decodedImageMap,
+      )
   }
 
   fun retrieveAppMainUiState(refreshAll: Boolean = true) {
@@ -304,7 +308,7 @@ constructor(
     }
   }
 
-  fun updateSyncStatus(currentSyncJobStatus: CurrentSyncJobStatus, isSyncUpload: Boolean = false) {
+  fun updateSyncStatus(currentSyncJobStatus: CurrentSyncJobStatus) {
     appMainUiState.value =
       appMainUiState.value.copy(
         currentSyncJobStatus = currentSyncJobStatus,
