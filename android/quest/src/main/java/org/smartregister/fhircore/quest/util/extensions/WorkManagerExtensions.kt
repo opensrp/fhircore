@@ -37,6 +37,7 @@ inline fun <reified W : ListenableWorker> WorkManager.schedulePeriodically(
   existingPeriodicWorkPolicy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP,
   requiresNetwork: Boolean = true,
   inputData: Data = workDataOf(),
+  initialDelay: Long? = null,
 ) {
   val constraint =
     Constraints.Builder()
@@ -55,7 +56,7 @@ inline fun <reified W : ListenableWorker> WorkManager.schedulePeriodically(
     workId,
     existingPeriodicWorkPolicy,
     workRequestBuilder
-      .setInitialDelay(repeatInterval, timeUnit)
+      .setInitialDelay(initialDelay ?: repeatInterval, timeUnit)
       .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
       .setConstraints(constraint)
       .setInputData(inputData)

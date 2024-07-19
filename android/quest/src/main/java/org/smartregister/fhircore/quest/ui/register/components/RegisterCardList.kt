@@ -24,6 +24,8 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -68,11 +70,14 @@ fun RegisterCardList(
       contentType = pagingItems.itemContentType(),
     ) { index ->
       // Register card UI rendered dynamically should be wrapped in a column
-      Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+      Column(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
+      ) {
         ViewRenderer(
           viewProperties = registerCardConfig.views,
           resourceData = pagingItems[index]!!,
           navController = navController,
+          decodedImageMap = remember { mutableStateMapOf() },
         )
       }
       Divider(color = DividerColor, thickness = 1.dp)

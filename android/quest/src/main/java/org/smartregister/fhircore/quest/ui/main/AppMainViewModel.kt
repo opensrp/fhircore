@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.sync.CustomSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
@@ -120,7 +121,11 @@ constructor(
           it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
           !it.menuIconConfig!!.reference.isNullOrEmpty()
       }
-      .decodeBinaryResourcesToBitmap(viewModelScope, registerRepository)
+      .decodeBinaryResourcesToBitmap(
+        viewModelScope,
+        registerRepository,
+        configurationRegistry.decodedImageMap,
+      )
   }
 
   fun retrieveAppMainUiState(refreshAll: Boolean = true) {
@@ -258,6 +263,12 @@ constructor(
         workId = FhirCompleteCarePlanWorker.WORK_ID,
         duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
         requiresNetwork = false,
+      )
+
+      schedulePeriodically<CustomSyncWorker>(
+        workId = CustomSyncWorker.WORK_ID,
+        repeatInterval = applicationConfiguration.syncInterval,
+        initialDelay = 0,
       )
 
       measureReportConfigurations.forEach { measureReportConfig ->
