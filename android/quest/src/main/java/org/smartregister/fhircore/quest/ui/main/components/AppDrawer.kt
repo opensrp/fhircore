@@ -92,6 +92,7 @@ import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import timber.log.Timber
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
 const val NAV_TOP_SECTION_TEST_TAG = "navTopSectionTestTag"
@@ -116,6 +117,10 @@ fun AppDrawer(
   onSideMenuClick: (AppMainEvent) -> Unit,
   appVersionPair: Pair<Int, String>? = null,
 ) {
+  val currentSyncJobStatus: CurrentSyncJobStatus? =
+    registerUiState.currentSyncJobStatus.collectAsState(null).value
+
+  Timber.d("Current job status in the  app drawer is : $currentSyncJobStatus")
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
   val navigationConfiguration = appUiState.navigationConfiguration

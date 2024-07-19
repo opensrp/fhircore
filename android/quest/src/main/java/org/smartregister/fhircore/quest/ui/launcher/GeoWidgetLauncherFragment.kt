@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -58,6 +59,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -82,6 +84,7 @@ import timber.log.Timber
 class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   @Inject lateinit var eventBus: EventBus
+  @Inject lateinit var syncListenerManager: SyncListenerManager
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var geoWidgetFragment: GeoWidgetFragment
@@ -105,7 +108,10 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         val scope = rememberCoroutineScope()
         val scaffoldState = rememberScaffoldState()
         val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
-        val registerUiState: RegisterUiState = registerViewModel.registerUiState.value
+
+        val registerUiState by remember {
+          registerViewModel.registerUiState
+        }
         val openDrawer: (Boolean) -> Unit = { open: Boolean ->
           scope.launch {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
@@ -169,6 +175,51 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
     }
   }
 
+  override fun onResume() {
+    super.onResume()
+    syncListenerManager.registerSyncListener(this, lifecycle)
+  }
+
+  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
+    Timber.d("On sync called inside GeoWidgetLauncherFragment $syncJobStatus")
+    when (syncJobStatus) {
+      is CurrentSyncJobStatus.Running -> {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
+          lifecycleScope.launch {}
+        } else {
+          val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
+          val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+          lifecycleScope.launch {
+            registerViewModel.updateSyncStatus(syncJobStatus)
+            appMainViewModel.updateSyncStatus(syncJobStatus)
+          }
+        }
+      }
+      is CurrentSyncJobStatus.Succeeded -> {
+        lifecycleScope.launch {
+          registerViewModel.updateSyncStatus(syncJobStatus)
+          registerViewModel.retrieveRegisterUiState(
+            screenTitle = "" ,
+            registerId = "",
+            clearCache = false)
+          appMainViewModel.updateSyncStatus(syncJobStatus)
+        }
+      }
+      is CurrentSyncJobStatus.Failed -> {
+        lifecycleScope.launch {
+          registerViewModel.updateSyncStatus(syncJobStatus)
+          appMainViewModel.updateSyncStatus(syncJobStatus)
+        }
+      }
+      else -> {
+        lifecycleScope.launch {
+          registerViewModel.updateSyncStatus(syncJobStatus)
+          appMainViewModel.updateSyncStatus(syncJobStatus)
+        }
+      }
+    }
+  }
+
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     showSetLocationDialog()
@@ -210,32 +261,6 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         .showCurrentLocationButtonVisibility(geoWidgetConfiguration.showLocation)
         .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.showPlaneSwitcher)
         .build()
-  }
-
-  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
-    when (syncJobStatus) {
-      is CurrentSyncJobStatus.Running -> {
-        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
-          lifecycleScope.launch {}
-        } else {
-          val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
-          val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
-          lifecycleScope.launch {
-            registerViewModel.updateSyncStatus(syncJobStatus)
-            appMainViewModel.updateSyncStatus(syncJobStatus)
-          }
-        }
-      }
-      is CurrentSyncJobStatus.Succeeded -> {
-        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
-      }
-      is CurrentSyncJobStatus.Failed -> {
-        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
-      }
-      else -> {
-        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
-      }
-    }
   }
 
   private fun setOnQuestionnaireSubmissionListener() {
