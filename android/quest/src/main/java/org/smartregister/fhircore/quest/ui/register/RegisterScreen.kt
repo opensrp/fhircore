@@ -96,6 +96,7 @@ import org.smartregister.fhircore.quest.ui.main.components.SyncCompleteStatus
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
+import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val NO_REGISTER_VIEW_COLUMN_TEST_TAG = "noRegisterViewColumnTestTag"
@@ -119,6 +120,7 @@ fun RegisterScreen(
   onEvent: (RegisterEvent) -> Unit,
   onClick: (AppMainEvent) -> Unit,
   registerUiState: RegisterUiState,
+  appDrawerUIState: AppDrawerUIState = AppDrawerUIState(),
   appUiState: AppMainUiState? = null,
   searchText: MutableState<String>,
   currentPage: MutableState<Int>,
@@ -126,8 +128,7 @@ fun RegisterScreen(
   navController: NavController,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
 ) {
-  val currentSyncJobStatus: CurrentSyncJobStatus? =
-    registerUiState.currentSyncJobStatus.collectAsState(null).value
+  val currentSyncJobStatus: CurrentSyncJobStatus? = appDrawerUIState.currentSyncJobStatus
   val lazyListState: LazyListState = rememberLazyListState()
   var syncNotificationBarExpanded by remember { mutableStateOf(true) }
   val coroutineScope = rememberCoroutineScope()
@@ -316,14 +317,14 @@ fun RegisterScreen(
                 appUiState!!.currentSyncJobStatus !is CurrentSyncJobStatus.Cancelled -> {
                 if (syncNotificationBarExpanded) {
                   SubsequentSyncDetailsBar(
-                    percentageProgressFlow = registerUiState.progressPercentage,
+                    percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress),
                     modifier = Modifier.testTag(SYNC_PROGRESS_BAR_TAG),
                   ) {
                     onClick(AppMainEvent.CancelSyncData(context))
                   }
                 } else {
                   SubsequentSyncDetailsBar(
-                    percentageProgressFlow = registerUiState.progressPercentage,
+                    percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress),
                     hideExtraInformation = false,
                     modifier = Modifier.testTag(SYNC_PROGRESS_BAR_TAG),
                   ) {

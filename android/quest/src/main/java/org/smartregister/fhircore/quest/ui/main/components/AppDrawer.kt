@@ -42,7 +42,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -91,6 +90,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import org.smartregister.fhircore.quest.ui.shared.components.Image
+import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import timber.log.Timber
 
@@ -112,13 +112,13 @@ fun AppDrawer(
   modifier: Modifier = Modifier,
   appUiState: AppMainUiState,
   registerUiState: RegisterUiState,
+  appDrawerUIState: AppDrawerUIState = AppDrawerUIState(),
   navController: NavController,
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
   appVersionPair: Pair<Int, String>? = null,
 ) {
-  val currentSyncJobStatus: CurrentSyncJobStatus? =
-    registerUiState.currentSyncJobStatus.collectAsState(null).value
+  val currentSyncJobStatus: CurrentSyncJobStatus? = appDrawerUIState.currentSyncJobStatus
 
   Timber.d("Current job status in the  app drawer is : $currentSyncJobStatus")
   val context = LocalContext.current
@@ -142,7 +142,15 @@ fun AppDrawer(
       }
     },
     bottomBar = { // Display bottom section of the nav (sync)
-      NavBottomSection(modifier, appUiState, registerUiState, onSideMenuClick, openDrawer)
+      NavBottomSection(
+        modifier,
+        appUiState,
+        registerUiState,
+        appDrawerUIState,
+        currentSyncJobStatus,
+        onSideMenuClick,
+        openDrawer
+      )
     },
     backgroundColor = SideMenuDarkColor,
   ) { innerPadding ->
@@ -214,14 +222,13 @@ private fun NavBottomSection(
   modifier: Modifier = Modifier,
   appUiState: AppMainUiState,
   registerUiState: RegisterUiState,
+  appDrawerUIState: AppDrawerUIState,
+  currentSyncJobStatus: CurrentSyncJobStatus?,
   onSideMenuClick: (AppMainEvent) -> Unit,
   openDrawer: (Boolean) -> Unit,
 ) {
   val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
-
-  var currentSyncJobStatus: CurrentSyncJobStatus? =
-    registerUiState.currentSyncJobStatus.collectAsState(null).value
 
   var backgroundColor by remember { mutableStateOf(SideMenuTopItemDarkColor) }
   var showSyncComplete by remember { mutableStateOf(false) }
@@ -263,10 +270,11 @@ private fun NavBottomSection(
     when {
       currentSyncJobStatus is CurrentSyncJobStatus.Running &&
         appUiState.currentSyncJobStatus !is CurrentSyncJobStatus.Cancelled -> {
-        SubsequentSyncDetailsBar(percentageProgressFlow = registerUiState.progressPercentage) {
+        SubsequentSyncDetailsBar(
+          percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress)
+        ) {
           onSideMenuClick(AppMainEvent.CancelSyncData(context))
           openDrawer(false)
-          currentSyncJobStatus = CurrentSyncJobStatus.Cancelled
         }
       }
       currentSyncJobStatus is CurrentSyncJobStatus.Failed -> {

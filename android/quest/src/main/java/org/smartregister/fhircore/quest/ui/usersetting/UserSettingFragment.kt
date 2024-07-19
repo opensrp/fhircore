@@ -57,7 +57,6 @@ class UserSettingFragment : Fragment(), OnSyncListener {
   val userSettingViewModel by viewModels<UserSettingViewModel>()
   private val appMainViewModel by activityViewModels<AppMainViewModel>()
   private val registerViewModel by activityViewModels<RegisterViewModel>()
-  private var lastSyncOperation: SyncOperation? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -141,15 +140,19 @@ class UserSettingFragment : Fragment(), OnSyncListener {
         } else {
           val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
           val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+          val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
           lifecycleScope.launch {
-            registerViewModel.updateSyncStatus(syncJobStatus)
-            appMainViewModel.updateSyncStatus(syncJobStatus)
-            val percentageProgress = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
-            registerViewModel.emitPercentageProgressState(percentageProgress, isSyncUpload)
+            registerViewModel.updateAppDrawerUIState(
+              isSyncUpload,
+              syncJobStatus,
+              progressPercentage
+            )
           }
         }
       is CurrentSyncJobStatus.Succeeded -> {
-        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
+        lifecycleScope.launch {
+          registerViewModel.updateAppDrawerUIState(false, syncJobStatus, 100)
+        }
       }
       is CurrentSyncJobStatus.Failed -> {
         lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }

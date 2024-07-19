@@ -107,6 +107,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
         val scaffoldState = rememberScaffoldState()
         val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
         val registerUiState: RegisterUiState = registerViewModel.registerUiState.value
+        val appDrawerUIState = registerViewModel.appDrawerUiState.value
         val openDrawer: (Boolean) -> Unit = { open: Boolean ->
           scope.launch {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
@@ -141,6 +142,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
               AppDrawer(
                 appUiState = uiState,
                 registerUiState = registerUiState,
+                appDrawerUIState = appDrawerUIState,
                 openDrawer = openDrawer,
                 onSideMenuClick = {
                   if (it is AppMainEvent.TriggerWorkflow) {
@@ -174,6 +176,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 onClick = appMainViewModel::onEvent,
                 registerUiState = registerViewModel.registerUiState.value,
                 appUiState = appMainViewModel.appMainUiState.value,
+                appDrawerUIState = registerViewModel.appDrawerUiState.value,
                 searchText = searchViewModel.searchText,
                 currentPage = registerViewModel.currentPage,
                 pagingItems = pagingItems,
@@ -200,16 +203,24 @@ class RegisterFragment : Fragment(), OnSyncListener {
         } else {
           val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
           val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+          val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
           lifecycleScope.launch {
             emitPercentageProgress(inProgressSyncJob, isSyncUpload)
+            registerViewModel.updateAppDrawerUIState(
+              isSyncUpload,
+              syncJobStatus,
+              progressPercentage
+            )
             registerViewModel.updateSyncStatus(syncJobStatus)
-            appMainViewModel.updateSyncStatus(syncJobStatus)
           }
         }
       }
       is CurrentSyncJobStatus.Succeeded -> {
         refreshRegisterData()
-        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
+        lifecycleScope.launch {
+          registerViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
+          registerViewModel.updateSyncStatus(syncJobStatus)
+        }
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
