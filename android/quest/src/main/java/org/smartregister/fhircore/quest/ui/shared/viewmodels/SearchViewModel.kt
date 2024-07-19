@@ -14,26 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.geowidget.model
+package org.smartregister.fhircore.quest.ui.shared.viewmodels
 
-data class Feature(
-  val geometry: Geometry? = null,
-  val id: String = "",
-  val properties: Map<String, Any> = emptyMap(),
-  val serverVersion: Int = 0,
-  val type: String = FEATURE,
-)
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
 
-data class Geometry(
-  val coordinates: List<Coordinates>? = emptyList(),
-  val type: String = POINT,
-)
-
-data class Coordinates(
-  val latitude: Double = 0.0,
-  val longitude: Double = 0.0,
-)
-
-const val TYPE = "type"
-const val POINT = "Point"
-const val FEATURE = "Feature"
+class SearchViewModel : ViewModel() {
+  val searchQuery: MutableState<UiSearchQuery> = mutableStateOf(UiSearchQuery.emptyText)
+}

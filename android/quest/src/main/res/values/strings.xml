@@ -121,5 +121,8 @@
     <string name="submit_questionnaire">Submit</string>
     <string name="qr_code" translatable="false">qr_code</string>
     <string name="barcode_camera_permission_denied">Camera permission request denied. Barcode may not work as expected</string>
-
+    <string name="prompt_point_at_a_barcode">Place your camera over the QR Code to start scanning</string>
+    <string name="invalid_base_resource">The base resource for GeoWidgetConfiguration MUST be Location</string>
+    <string name="no_search_coonfigs_provided">No configs provided for search bar</string>
+    <string name="no_found_locations_matching_text">No location found matching text \"%1$s\"</string>
 </resources>

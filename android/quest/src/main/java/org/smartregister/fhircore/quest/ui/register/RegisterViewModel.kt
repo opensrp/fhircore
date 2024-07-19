@@ -168,11 +168,10 @@ constructor(
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
-        searchText.value = event.searchText
-        if (event.searchText.isBlank()) {
+        if (event.searchQuery.isBlank()) {
           paginateRegisterData(registerUiState.value.registerId)
         } else {
-          filterRegisterData(event)
+          filterRegisterData(event.searchQuery.query)
         }
       }
       is RegisterEvent.MoveToNextPage -> {
@@ -186,7 +185,7 @@ constructor(
       RegisterEvent.ResetFilterRecordsCount -> _filteredRecordsCount.longValue = -1
     }
 
-  fun filterRegisterData(event: RegisterEvent.SearchRegister) {
+  fun filterRegisterData(searchText: String) {
     val searchBar = registerUiState.value.registerConfiguration?.searchBar
     // computedRules (names of pre-computed rules) must be provided for search to work.
     if (searchBar?.computedRules != null) {
@@ -197,7 +196,7 @@ constructor(
             searchBar.computedRules!!.any { ruleName ->
               // if ruleName not found in map return {-1}; check always return false hence no data
               val value = resourceData.computedValuesMap[ruleName]?.toString() ?: "{-1}"
-              value.contains(other = event.searchText.query, ignoreCase = true)
+              value.contains(other = searchText, ignoreCase = true)
             }
           }
         }

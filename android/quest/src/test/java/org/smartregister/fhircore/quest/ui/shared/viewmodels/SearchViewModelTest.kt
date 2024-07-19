@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.launcher
+package org.smartregister.fhircore.quest.ui.shared.viewmodels
 
+import org.junit.Assert
+import org.junit.Test
 import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
 
-sealed class GeoWidgetEvent {
-  data class SearchServicePoints(val searchQuery: UiSearchQuery = UiSearchQuery.emptyText) :
-    GeoWidgetEvent()
+class SearchViewModelTest {
+
+  @Test
+  fun testThatSearchViewModelIsProperlyConstructed() {
+    val searchViewModel = SearchViewModel()
+    searchViewModel.searchQuery.value = UiSearchQuery(query = "New")
+    Assert.assertEquals("New", searchViewModel.searchQuery.value.query)
+  }
 }

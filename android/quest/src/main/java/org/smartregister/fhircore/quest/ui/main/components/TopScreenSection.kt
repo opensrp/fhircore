@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -84,6 +85,8 @@ const val TOP_ROW_FILTER_ICON_TEST_TAG = "topRowFilterIconTestTag"
 const val OUTLINED_BOX_TEST_TAG = "outlinedBoxTestTag"
 const val TRAILING_ICON_TEST_TAG = "trailingIconTestTag"
 const val TRAILING_ICON_BUTTON_TEST_TAG = "trailingIconButtonTestTag"
+const val TRAILING_QR_SCAN_ICON_TEST_TAG = "qrCodeScanTrailingIconTestTag"
+const val TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG = "qrCodeScanTrailingIconButtonTestTag"
 const val LEADING_ICON_TEST_TAG = "leadingIconTestTag"
 const val SEARCH_FIELD_TEST_TAG = "searchFieldTestTag"
 const val TOP_ROW_TOGGLE_ICON_TEST_tAG = "topRowToggleIconTestTag"
@@ -95,7 +98,7 @@ fun TopScreenSection(
   navController: NavController,
   isSearchBarVisible: Boolean,
   searchQuery: UiSearchQuery,
-  showSearchByBarcode: Boolean = false,
+  showSearchByQrCode: Boolean = false,
   filteredRecordsCount: Long? = null,
   searchPlaceholder: String? = null,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
@@ -105,6 +108,13 @@ fun TopScreenSection(
   onClick: (ToolbarClickEvent) -> Unit = {},
 ) {
   val currentContext = LocalContext.current
+
+  // Trigger search automatically on launch if text is not empty
+  LaunchedEffect(Unit) {
+    if (!searchQuery.isBlank()) {
+      onSearchTextChanged(searchQuery)
+    }
+  }
 
   Column(
     modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
@@ -214,19 +224,19 @@ fun TopScreenSection(
                   )
                 }
               }
-              showSearchByBarcode -> {
+              showSearchByQrCode -> {
                 IconButton(
                   onClick = {
                     currentContext.getActivity()?.let {
-                      QrCodeScanUtils.scanBarcode(it) { code ->
+                      QrCodeScanUtils.scanQrCode(it) { code ->
                         onSearchTextChanged(
                           UiSearchQuery(code ?: "", mode = UiSearchMode.QrCodeScan),
                         )
                       }
                     }
                   },
+                  modifier = modifier.testTag(TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG),
                 ) {
-                  navController.context
                   Icon(
                     painter =
                       painterResource(id = org.smartregister.fhircore.quest.R.drawable.ic_qr_code),
@@ -234,6 +244,7 @@ fun TopScreenSection(
                       stringResource(
                         id = org.smartregister.fhircore.quest.R.string.qr_code,
                       ),
+                    modifier = modifier.testTag(TRAILING_QR_SCAN_ICON_TEST_TAG),
                   )
                 }
               }
