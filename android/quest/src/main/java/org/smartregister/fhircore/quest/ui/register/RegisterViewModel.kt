@@ -491,7 +491,6 @@ constructor(
 
   suspend fun updateSyncStatus(
     currentSyncJobStatus: CurrentSyncJobStatus,
-    isSyncUpload: Boolean = false,
   ) {
     _currentSyncJobStatusFlow.emit(currentSyncJobStatus)
   }
