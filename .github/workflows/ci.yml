@@ -188,7 +188,7 @@ jobs:
         run:  bash <(curl -s https://codecov.io/bash) -F geowidget -f "geowidget/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
   quest-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         api-level: [30]
