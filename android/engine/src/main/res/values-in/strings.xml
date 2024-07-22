@@ -174,4 +174,5 @@
     <string name="os_version">Versi OS</string>
     <string name="device_date">Tanggal</string>
     <string name="device">Perangkat</string>
+    <string name="data_migration_version">Versi migrasi data</string>
 </resources>
