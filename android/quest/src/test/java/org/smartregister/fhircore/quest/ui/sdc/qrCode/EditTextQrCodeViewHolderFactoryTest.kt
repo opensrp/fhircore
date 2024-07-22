@@ -30,6 +30,8 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockkConstructor
 import io.mockk.unmockkConstructor
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -115,8 +117,17 @@ class EditTextQrCodeViewHolderFactoryTest : RobolectricTest() {
                 addExtension(
                   Extension().apply {
                     url =
-                      "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl"
-                    setValue(StringType("qr_code-widget"))
+                      "https://github.com/opensrp/android-fhir/StructureDefinition/questionnaire-itemControl"
+                    setValue(
+                      CodeableConcept()
+                        .addCoding(
+                          Coding().apply {
+                            system =
+                              "https://github.com/opensrp/android-fhir/questionnaire-item-control"
+                            code = "qr_code-widget"
+                          },
+                        ),
+                    )
                   },
                 )
               },
@@ -147,8 +158,16 @@ class EditTextQrCodeViewHolderFactoryTest : RobolectricTest() {
         addExtension(
           Extension().apply {
             url =
-              "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl"
-            setValue(StringType("qr_code-widget"))
+              "https://github.com/opensrp/android-fhir/StructureDefinition/questionnaire-itemControl"
+            setValue(
+              CodeableConcept()
+                .addCoding(
+                  Coding().apply {
+                    system = "https://github.com/opensrp/android-fhir/questionnaire-item-control"
+                    code = "qr_code-widget"
+                  },
+                ),
+            )
           },
         )
       }
