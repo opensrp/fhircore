@@ -300,83 +300,83 @@ fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
   )
 }
 
-// @PreviewWithBackgroundExcludeGenerated
-// @Composable
-// fun TopScreenSectionWithFilterCountNinetyNinePreview() {
-//  TopScreenSection(
-//    title = "All Clients",
-//    searchText = "Eddy",
-//    filteredRecordsCount = 99,
-//    onSearchTextChanged = {},
-//    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
-//    isFilterIconEnabled = true,
-//    onClick = {},
-//    isSearchBarVisible = true,
-//    navController = rememberNavController(),
-//  )
-// }
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun TopScreenSectionWithFilterCountNinetyNinePreview() {
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    filteredRecordsCount = 99,
+    onSearchTextChanged = {},
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+    isFilterIconEnabled = true,
+    onClick = {},
+    isSearchBarVisible = true,
+    navController = rememberNavController(),
+  )
+}
 
-// @PreviewWithBackgroundExcludeGenerated
-// @Composable
-// fun TopScreenSectionNoFilterIconPreview() {
-//  TopScreenSection(
-//    title = "All Clients",
-//    searchText = "Eddy",
-//    onSearchTextChanged = {},
-//    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
-//    isFilterIconEnabled = false,
-//    onClick = {},
-//    isSearchBarVisible = true,
-//    navController = rememberNavController(),
-//    topScreenSection =
-//      TopScreenSectionConfig(
-//        searchBar = null,
-//        title = "Service Point",
-//        menuIcons =
-//          arrayListOf(
-//            ImageProperties(imageConfig = ImageConfig(reference = "ic_service_points")),
-//          ),
-//      ),
-//  )
-// }
-//
-// @PreviewWithBackgroundExcludeGenerated
-// @Composable
-// fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
-//  TopScreenSection(
-//    title = "All Clients",
-//    searchText = "Eddy",
-//    filteredRecordsCount = 120,
-//    onSearchTextChanged = {},
-//    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
-//    isFilterIconEnabled = true,
-//    onClick = {},
-//    isSearchBarVisible = true,
-//    navController = rememberNavController(),
-//    topScreenSection =
-//      TopScreenSectionConfig(
-//        searchBar = null,
-//        title = "Service Point",
-//        menuIcons =
-//          arrayListOf(
-//            ImageProperties(imageConfig = ImageConfig(reference = "ic_service_points")),
-//          ),
-//      ),
-//  )
-// }
-//
-// @PreviewWithBackgroundExcludeGenerated
-// @Composable
-// fun TopScreenSectionWithToggleIconPreview() {
-//  TopScreenSection(
-//    title = "All Clients",
-//    searchText = "Eddy",
-//    filteredRecordsCount = 120,
-//    onSearchTextChanged = {},
-//    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
-//    isFilterIconEnabled = false,
-//    onClick = {},
-//    isSearchBarVisible = true,
-//    navController = rememberNavController(),
-//  )
-// }
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun TopScreenSectionNoFilterIconPreview() {
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    onSearchTextChanged = {},
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+    isFilterIconEnabled = false,
+    onClick = {},
+    isSearchBarVisible = true,
+    navController = rememberNavController(),
+    topScreenSection =
+      TopScreenSectionConfig(
+        searchBar = null,
+        title = "Service Point",
+        menuIcons =
+          arrayListOf(
+            ImageProperties(imageConfig = ImageConfig(reference = "ic_service_points")),
+          ),
+      ),
+  )
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    filteredRecordsCount = 120,
+    onSearchTextChanged = {},
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+    isFilterIconEnabled = true,
+    onClick = {},
+    isSearchBarVisible = true,
+    navController = rememberNavController(),
+    topScreenSection =
+      TopScreenSectionConfig(
+        searchBar = null,
+        title = "Service Point",
+        menuIcons =
+          arrayListOf(
+            ImageProperties(imageConfig = ImageConfig(reference = "ic_service_points")),
+          ),
+      ),
+  )
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun TopScreenSectionWithToggleIconPreview() {
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    filteredRecordsCount = 120,
+    onSearchTextChanged = {},
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+    isFilterIconEnabled = false,
+    onClick = {},
+    isSearchBarVisible = true,
+    navController = rememberNavController(),
+  )
+}
