@@ -201,7 +201,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
     coEvery { fhirResourceDataSource.getResource("List?_id=123456&_page=1&_count=200") } returns
-            bundle
+      bundle
 
     configurationRegistry.fetchNonWorkflowConfigResources()
 
