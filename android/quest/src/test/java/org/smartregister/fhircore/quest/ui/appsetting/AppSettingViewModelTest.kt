@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.appsetting
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
-import ca.uhn.fhir.util.JsonUtil
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -30,12 +29,10 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
-import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
-import java.util.Base64
 import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
@@ -62,12 +59,9 @@ import org.mockito.ArgumentMatchers.anyString
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -124,7 +118,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   @Test
   fun testLoadConfigurations() = runTest {
     coEvery { appSettingViewModel.fhirResourceDataSource.getResource(any()) } returns
-      Bundle().apply { addEntry().resource = Composition() }
+            Bundle().apply { addEntry().resource = Composition() }
     coEvery { appSettingViewModel.defaultRepository.create(any()) } returns emptyList()
 
     val appId = "app/debug"
@@ -143,180 +137,18 @@ class AppSettingViewModelTest : RobolectricTest() {
       appSettingViewModel.onApplicationIdChanged(appId)
 
       coEvery { fhirResourceDataSource.getResource(any()) } returns
-        Bundle().apply {
-          addEntry().resource =
-            Composition().apply {
-              addSection().apply { this.focus = Reference().apply { reference = "Binary/123" } }
-            }
-        }
+              Bundle().apply {
+                addEntry().resource =
+                  Composition().apply {
+                    addSection().apply { this.focus = Reference().apply { reference = "Binary/123" } }
+                  }
+              }
       coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
 
       appSettingViewModel.fetchConfigurations(context)
 
       coVerify { fhirResourceDataSource.getResource(any()) }
       coVerify { appSettingViewModel.defaultRepository.createRemote(any(), any()) }
-    }
-
-  @Test
-  fun `fetchConfigurations() should call configurationRegistry#processResultBundleBinaries with correct values`() =
-    runTest {
-      coEvery {
-        appSettingViewModel.configurationRegistry.fetchRemoteImplementationGuideByAppId(
-          any(),
-          any(),
-        )
-      } returns null
-
-      coEvery {
-        appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any())
-      } returns
-        Composition().apply {
-          addSection().apply {
-            this.focus =
-              Reference().apply {
-                reference = "Binary/123"
-                identifier = Identifier().apply { value = "register-test" }
-              }
-          }
-        }
-
-      val expectedBundle =
-        Bundle().apply {
-          addEntry().resource =
-            Binary().apply {
-              id = "binary-id-1"
-              data =
-                Base64.getEncoder()
-                  .encode(
-                    JsonUtil.serialize(
-                        RegisterConfiguration(
-                          id = "1",
-                          appId = "a",
-                          fhirResource =
-                            FhirResourceConfig(
-                              baseResource =
-                                ResourceConfig(
-                                  resource = ResourceType.Patient,
-                                ),
-                              relatedResources =
-                                listOf(
-                                  ResourceConfig(
-                                    resource = ResourceType.Encounter,
-                                  ),
-                                  ResourceConfig(
-                                    resource = ResourceType.Task,
-                                  ),
-                                ),
-                            ),
-                        ),
-                      )
-                      .encodeToByteArray(),
-                  )
-            }
-        }
-      coEvery { fhirResourceDataSource.post(any(), any()) } returns expectedBundle
-
-      coEvery { defaultRepository.createRemote(any(), any()) } just runs
-      coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just
-        runs
-      coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
-      coEvery { appSettingViewModel.isNonProxy() } returns false
-      coEvery {
-        appSettingViewModel.configurationRegistry.processResultBundleBinaries(any(), any())
-      } just runs
-
-      appSettingViewModel.run {
-        onApplicationIdChanged("app")
-        fetchConfigurations(context)
-      }
-
-      val binarySlot = slot<Binary>()
-
-      coVerify { appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any()) }
-      coVerify { fhirResourceDataSource.post(any(), any()) }
-      coVerify { defaultRepository.createRemote(any(), any()) }
-      coVerify {
-        appSettingViewModel.configurationRegistry.processResultBundleBinaries(
-          capture(binarySlot),
-          any(),
-        )
-      }
-
-      assertEquals(expectedBundle.entry[0].resource.id, binarySlot.captured.id)
-      assertEquals((expectedBundle.entry[0].resource as Binary).data, binarySlot.captured.data)
-    }
-
-  @Test
-  fun `fetchConfigurations() should decode profile configuration`() =
-    runTest(timeout = 90.seconds) {
-      fhirEngine.create(
-        Composition().apply { id = "sampleComposition" },
-      ) // Create sample Composition
-
-      coEvery { appSettingViewModel.fetchComposition(any(), any()) } returns
-        Composition().apply {
-          addSection().apply {
-            this.focus =
-              Reference().apply {
-                reference = "Binary/123"
-                identifier = Identifier().apply { value = "register-test" }
-              }
-          }
-        }
-      coEvery { fhirResourceDataSource.post(any(), any()) } returns
-        Bundle().apply {
-          addEntry().resource =
-            Binary().apply {
-              data =
-                Base64.getEncoder()
-                  .encode(
-                    JsonUtil.serialize(
-                        ProfileConfiguration(
-                          id = "1",
-                          appId = "a",
-                          fhirResource =
-                            FhirResourceConfig(
-                              baseResource = ResourceConfig(resource = ResourceType.Patient),
-                              relatedResources =
-                                listOf(
-                                  ResourceConfig(
-                                    resource = ResourceType.Encounter,
-                                  ),
-                                  ResourceConfig(
-                                    resource = ResourceType.Task,
-                                  ),
-                                ),
-                            ),
-                          profileParams = listOf("1"),
-                        ),
-                      )
-                      .encodeToByteArray(),
-                  )
-            }
-        }
-      coEvery { defaultRepository.createRemote(any(), any()) } just runs
-      coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just
-        runs
-      coEvery { appSettingViewModel.isNonProxy() } returns false
-
-      appSettingViewModel.run {
-        onApplicationIdChanged("app")
-        fetchConfigurations(context)
-      }
-
-      val slot = slot<List<ResourceType>>()
-
-      coVerify { appSettingViewModel.fetchComposition(any(), any()) }
-      coVerify { fhirResourceDataSource.post(any(), any()) }
-      coVerify { defaultRepository.createRemote(any(), any()) }
-      coVerify {
-        appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(capture(slot))
-      }
-
-      Assert.assertEquals(
-        listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
-        slot.captured,
-      )
     }
 
   @Test(expected = HttpException::class)
@@ -326,12 +158,12 @@ class AppSettingViewModelTest : RobolectricTest() {
     val context = mockk<Context>(relaxed = true)
     val fhirResourceDataSource = FhirResourceDataSource(mockk())
     coEvery { fhirResourceDataSource.getResource(anyString()) } throws
-      HttpException(
-        Response.error<ResponseBody>(
-          500,
-          "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull()),
-        ),
-      )
+            HttpException(
+              Response.error<ResponseBody>(
+                500,
+                "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull()),
+              ),
+            )
     fhirResourceDataSource.getResource(anyString())
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
     coVerify { fhirResourceDataSource.getResource(anyString()) }
@@ -352,12 +184,12 @@ class AppSettingViewModelTest : RobolectricTest() {
     val context = mockk<Context>(relaxed = true)
     val fhirResourceDataSource = FhirResourceDataSource(mockk())
     coEvery { fhirResourceDataSource.getResource(anyString()) } throws
-      HttpException(
-        Response.error<ResponseBody>(
-          504,
-          "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull()),
-        ),
-      )
+            HttpException(
+              Response.error<ResponseBody>(
+                504,
+                "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull()),
+              ),
+            )
 
     runBlocking { fhirResourceDataSource.getResource(anyString()) }
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
@@ -378,7 +210,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     appSettingViewModel.onApplicationIdChanged(appId)
     val fhirResourceDataSource = FhirResourceDataSource(mockk())
     coEvery { fhirResourceDataSource.getResource(anyString()) } throws
-      UnknownHostException(context.getString(R.string.error_loading_config_no_internet))
+            UnknownHostException(context.getString(R.string.error_loading_config_no_internet))
     fhirResourceDataSource.getResource(anyString())
     coVerify { appSettingViewModel.fetchConfigurations(context) }
     verify { context.showToast(context.getString(R.string.error_loading_config_no_internet)) }
@@ -397,7 +229,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     appSettingViewModel.onApplicationIdChanged(appId)
     val fhirResourceDataSource = FhirResourceDataSource(mockk())
     coEvery { fhirResourceDataSource.getResource(anyString()) } throws
-      Exception(context.getString(R.string.error_loading_config_general))
+            Exception(context.getString(R.string.error_loading_config_general))
     coEvery { appSettingViewModel.fetchConfigurations(context) } just runs
     appSettingViewModel.fetchConfigurations(any(Context::class.java))
     every { context.getString(R.string.error_loading_config_general) }
@@ -412,18 +244,18 @@ class AppSettingViewModelTest : RobolectricTest() {
   @Test
   fun `fetchComposition() should return composition resource`() = runTest {
     coEvery { fhirResourceDataSource.getResource(any()) } returns
-      Bundle().apply {
-        addEntry().resource =
-          Composition().apply {
-            addSection().apply {
-              this.focus =
-                Reference().apply {
-                  reference = "Binary/123"
-                  identifier = Identifier().apply { value = "register-test" }
+            Bundle().apply {
+              addEntry().resource =
+                Composition().apply {
+                  addSection().apply {
+                    this.focus =
+                      Reference().apply {
+                        reference = "Binary/123"
+                        identifier = Identifier().apply { value = "register-test" }
+                      }
+                  }
                 }
             }
-          }
-      }
 
     val result =
       appSettingViewModel.fetchComposition(
@@ -461,8 +293,8 @@ class AppSettingViewModelTest : RobolectricTest() {
     val compositionSections = mutableListOf<Composition.SectionComponent>()
 
     for (i in
-      1..ConfigurationRegistry.MANIFEST_PROCESSOR_BATCH_SIZE +
-          1) { // We need more than the MAX batch size
+    1..ConfigurationRegistry.MANIFEST_PROCESSOR_BATCH_SIZE +
+            1) { // We need more than the MAX batch size
       compositionSections.add(
         Composition.SectionComponent().apply {
           focus.reference = "${ResourceType.Binary.name}/id-$i"
@@ -489,26 +321,22 @@ class AppSettingViewModelTest : RobolectricTest() {
       appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(appId)
     } returns composition
     coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
-    coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just runs
-    coEvery {
-      appSettingViewModel.configurationRegistry.processResultBundleBinaries(any(), any())
-    } just runs
     coEvery { fhirResourceDataSource.post(any(), any()) } returns
-      Bundle().apply {
-        entry =
-          listOf(
-            Bundle.BundleEntryComponent().apply {
-              resource =
-                Binary().apply {
-                  data =
-                    RegisterConfiguration(id = "1", appId = appId, fhirResource = mockk())
-                      .apply {}
-                      .toString()
-                      .toByteArray(StandardCharsets.UTF_8)
-                }
-            },
-          )
-      }
+            Bundle().apply {
+              entry =
+                listOf(
+                  Bundle.BundleEntryComponent().apply {
+                    resource =
+                      Binary().apply {
+                        data =
+                          RegisterConfiguration(id = "1", appId = appId, fhirResource = mockk())
+                            .apply {}
+                            .toString()
+                            .toByteArray(StandardCharsets.UTF_8)
+                      }
+                  },
+                )
+            }
 
     appSettingViewModel.fetchConfigurations(context)
 
@@ -544,77 +372,6 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `fetchConfigurations() should decode profile configuration Non Proxy`() =
-    runTest(timeout = 90.seconds) {
-      fhirEngine.create(Composition().apply { id = "sampleComposition" })
-
-      coEvery { appSettingViewModel.fetchComposition(any(), any()) } returns
-        Composition().apply {
-          addSection().apply {
-            this.focus =
-              Reference().apply {
-                reference = "Binary/123"
-                identifier = Identifier().apply { value = "register-test" }
-              }
-          }
-        }
-      coEvery { fhirResourceDataSource.getResource(any()) } returns
-        Bundle().apply {
-          addEntry().resource =
-            Binary().apply {
-              data =
-                Base64.getEncoder()
-                  .encode(
-                    JsonUtil.serialize(
-                        ProfileConfiguration(
-                          id = "1",
-                          appId = "a",
-                          fhirResource =
-                            FhirResourceConfig(
-                              baseResource = ResourceConfig(resource = ResourceType.Patient),
-                              relatedResources =
-                                listOf(
-                                  ResourceConfig(
-                                    resource = ResourceType.Encounter,
-                                  ),
-                                  ResourceConfig(
-                                    resource = ResourceType.Task,
-                                  ),
-                                ),
-                            ),
-                          profileParams = listOf("1"),
-                        ),
-                      )
-                      .encodeToByteArray(),
-                  )
-            }
-        }
-      coEvery { defaultRepository.createRemote(any(), any()) } just runs
-      coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just
-        runs
-      coEvery { appSettingViewModel.isNonProxy() } returns true
-
-      appSettingViewModel.run {
-        onApplicationIdChanged("app")
-        fetchConfigurations(context)
-      }
-
-      val slot = slot<List<ResourceType>>()
-
-      coVerify { appSettingViewModel.fetchComposition(any(), any()) }
-      coVerify { fhirResourceDataSource.getResource(any()) }
-      coVerify { defaultRepository.createRemote(any(), any()) }
-      coVerify {
-        appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(capture(slot))
-      }
-
-      Assert.assertEquals(
-        listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
-        slot.captured,
-      )
-    }
-
-  @Test
   fun `fetchConfigurations() with an ImplementationGuide should call fetchRemoteCompositionById()`() {
     runBlocking {
       appSettingViewModel.run {
@@ -646,8 +403,6 @@ class AppSettingViewModelTest : RobolectricTest() {
       coEvery {
         appSettingViewModel.configurationRegistry.fetchRemoteCompositionById(any(), any())
       } returns composition
-      coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just
-        runs
       coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
       appSettingViewModel.fetchConfigurations(context)
       coVerify {
@@ -673,8 +428,6 @@ class AppSettingViewModelTest : RobolectricTest() {
       coEvery {
         appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any())
       } returns composition
-      coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just
-        runs
       coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
       appSettingViewModel.fetchConfigurations(context)
       coVerify { appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any()) }
