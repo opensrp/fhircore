@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -96,6 +97,13 @@ fun TopScreenSection(
   navController: NavController,
   onClick: (ToolbarClickEvent) -> Unit,
 ) {
+  // Trigger search automatically on launch if text is not empty
+  LaunchedEffect(Unit) {
+    if (searchText.isNotEmpty()) {
+      onSearchTextChanged(searchText)
+    }
+  }
+
   Column(
     modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
   ) {

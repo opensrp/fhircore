@@ -14,6 +14,7 @@
     <string name="app_logo">Application logo</string>
     <string name="powered_by">Powered By</string>
     <string name="app_version">App version %1$d(%2$s)</string>
+    <string name="data_migration_version">Data migration version %1$s</string>
     <string name="last_sync">Last sync %1$s</string>
     <string name="login_text">LOGIN</string>
     <string name="login_call_fail_error_message">Failed to verify credentials from the server. Check your internet connection</string>

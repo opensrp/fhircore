@@ -89,6 +89,7 @@ class ProfileFragment : Fragment() {
             profileUiState = profileViewModel.profileUiState.value,
             onEvent = profileViewModel::onEvent,
             snackStateFlow = profileViewModel.snackBarStateFlow,
+            decodedImageMap = configurationRegistry.decodedImageMap,
           )
         }
       }
