@@ -35,6 +35,8 @@ tasks.dokkaHtmlMultiModule {
   }
 }
 
+apply(from = "mapbox.gradle.kts")
+
 allprojects {
   repositories {
     gradlePluginPortal()

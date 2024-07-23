@@ -122,7 +122,9 @@ dependencies {
   implementation(libs.kujaku.library) {
     isTransitive = true
     exclude(group = "stax", module = "stax-api")
+    exclude(group = "com.android.volley", module = "volley")
   }
+  implementation(libs.volley)
 
   // Annotation processors
   kapt(libs.hilt.compiler)
