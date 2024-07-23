@@ -199,6 +199,7 @@ class UserSettingScreenTest {
           isDebugVariant = isDebugVariant,
           onEvent = {},
           mainNavController = rememberNavController(),
+          dataMigrationVersion = "0",
           lastSyncTime = "05:30 PM, Mar 3",
           showProgressIndicatorFlow = MutableStateFlow(false),
           enableManualSync = showManualSync,
