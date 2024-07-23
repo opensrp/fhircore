@@ -37,6 +37,7 @@ import javax.inject.Inject
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -100,7 +101,7 @@ class CustomSyncWorkerTest : RobolectricTest() {
   }
 
   @Test
-  fun `should create sync worker with organization`() = runBlocking {
+  fun `should create sync worker with organization`() = runTest {
     sharedPreferencesHelper =
       SharedPreferencesHelper(ApplicationProvider.getApplicationContext(), Gson())
 
