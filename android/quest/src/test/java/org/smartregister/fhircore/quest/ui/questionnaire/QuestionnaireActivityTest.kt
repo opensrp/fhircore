@@ -55,7 +55,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -208,7 +207,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
     }
 
   @Test
-  @Ignore("Failing on CI")
   fun testThatOnBackPressShowsConfirmationAlertDialog() =
     runTest(UnconfinedTestDispatcher()) {
       setupActivity()
