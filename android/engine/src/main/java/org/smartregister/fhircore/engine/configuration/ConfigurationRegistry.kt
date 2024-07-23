@@ -633,7 +633,8 @@ constructor(
         resource.idElement.idPart
       }
 
-    return File(context.filesDir, "$fileName.json").apply {
+    return File(context.filesDir, "${resource.resourceType}/$fileName.json").apply {
+      this.parentFile?.mkdirs()
       writeText(jsonParser.encodeResourceToString(resource))
     }
   }
