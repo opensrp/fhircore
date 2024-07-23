@@ -411,10 +411,8 @@ tasks.withType<Test> {
   testLogging { events = setOf(TestLogEvent.FAILED) }
   minHeapSize = "4608m"
   maxHeapSize = "4608m"
- // maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
-  configure<JacocoTaskExtension> {
-    isIncludeNoLocationClasses = true
-  }
+  // maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+  configure<JacocoTaskExtension> { isIncludeNoLocationClasses = true }
 }
 
 configurations { all { exclude(group = "xpp3") } }
