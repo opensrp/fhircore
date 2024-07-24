@@ -18,6 +18,8 @@ package org.smartregister.fhircore.quest.ui.sdc.qrCode
 
 import android.view.MotionEvent
 import android.widget.FrameLayout
+import androidx.core.os.bundleOf
+import androidx.fragment.app.FragmentManager
 import androidx.test.core.view.MotionEventBuilder
 import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.views.QuestionnaireViewItem
@@ -26,8 +28,10 @@ import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
-import io.mockk.mockkObject
-import io.mockk.unmockkObject
+import io.mockk.mockkConstructor
+import io.mockk.unmockkConstructor
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -53,13 +57,8 @@ class EditTextQrCodeViewHolderFactoryTest : RobolectricTest() {
 
   @Test
   fun getQuestionnaireItemViewHolderDelegateShouldUpdateTextCorrectlyWhenScanQrCodeReceived() {
-    mockkObject(QrCodeScanUtils)
+    mockkConstructor(QrCodeCameraDialogFragment::class)
     val sampleQrCode = "d84fbd12-4f22-423a-8645-5525504e1bcb"
-    every { QrCodeScanUtils.scanQrCode(any(), any()) } answers
-      {
-        val onScanResultCallback = secondArg<(String?) -> Unit>()
-        onScanResultCallback.invoke(sampleQrCode)
-      }
     /**
      * Using style 'com.google.android.material.R.style.Theme_Material3_DayNight' to prevent
      * Robolectric [UnsupportedOperationException] error for 'attr/colorSurfaceVariant'
@@ -76,14 +75,24 @@ class EditTextQrCodeViewHolderFactoryTest : RobolectricTest() {
         val textInputEditText =
           textInputLayout.findViewById<TextInputEditText>(R.id.text_input_edit_text)
         Assert.assertNotNull(textInputEditText)
+        every {
+          anyConstructed<QrCodeCameraDialogFragment>()
+            .show(any<FragmentManager>(), QrCodeScanUtils.QR_CODE_SCAN_UTILS_TAG)
+        } answers
+          {
+            activity.supportFragmentManager.setFragmentResult(
+              QrCodeCameraDialogFragment.RESULT_REQUEST_KEY,
+              bundleOf(QrCodeCameraDialogFragment.RESULT_REQUEST_KEY to sampleQrCode),
+            )
+          }
+
         textInputEditText.dispatchTouchEvent(
           MotionEventBuilder.newBuilder().setAction(MotionEvent.ACTION_UP).build(),
         )
         Assert.assertEquals(sampleQrCode, textInputEditText.text.toString())
       }
     }
-
-    unmockkObject(QrCodeScanUtils)
+    unmockkConstructor(QrCodeCameraDialogFragment::class)
   }
 
   @Test
@@ -108,8 +117,17 @@ class EditTextQrCodeViewHolderFactoryTest : RobolectricTest() {
                 addExtension(
                   Extension().apply {
                     url =
-                      "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl"
-                    setValue(StringType("qr_code-widget"))
+                      "https://github.com/opensrp/android-fhir/StructureDefinition/questionnaire-itemControl"
+                    setValue(
+                      CodeableConcept()
+                        .addCoding(
+                          Coding().apply {
+                            system =
+                              "https://github.com/opensrp/android-fhir/questionnaire-item-control"
+                            code = "qr_code-widget"
+                          },
+                        ),
+                    )
                   },
                 )
               },
@@ -140,8 +158,16 @@ class EditTextQrCodeViewHolderFactoryTest : RobolectricTest() {
         addExtension(
           Extension().apply {
             url =
-              "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl"
-            setValue(StringType("qr_code-widget"))
+              "https://github.com/opensrp/android-fhir/StructureDefinition/questionnaire-itemControl"
+            setValue(
+              CodeableConcept()
+                .addCoding(
+                  Coding().apply {
+                    system = "https://github.com/opensrp/android-fhir/questionnaire-item-control"
+                    code = "qr_code-widget"
+                  },
+                ),
+            )
           },
         )
       }

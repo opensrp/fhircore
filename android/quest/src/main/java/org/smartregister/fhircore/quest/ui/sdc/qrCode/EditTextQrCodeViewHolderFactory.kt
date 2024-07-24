@@ -22,7 +22,6 @@ import android.text.Editable
 import android.text.InputType
 import android.view.MotionEvent
 import android.view.View
-import com.google.android.fhir.datacapture.extensions.asStringValue
 import com.google.android.fhir.datacapture.extensions.getValidationErrorMessage
 import com.google.android.fhir.datacapture.extensions.tryUnwrapContext
 import com.google.android.fhir.datacapture.views.QuestionnaireViewItem
@@ -31,6 +30,7 @@ import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemView
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolderFactory
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
@@ -111,11 +111,15 @@ object EditTextQrCodeViewHolderFactory :
     }
 
   fun matcher(questionnaireItem: Questionnaire.QuestionnaireItemComponent): Boolean {
-    return questionnaireItem.getExtensionByUrl(EXTENSION_URL)?.value?.asStringValue() ==
+    val codeableConcept =
+      questionnaireItem.getExtensionByUrl(EXTENSION_URL)?.value as? CodeableConcept
+    return codeableConcept?.coding?.firstOrNull { it.system == EXTENSION_CONTROL_SYSTEM }?.code ==
       EXTENSION_VALUE
   }
 
   private const val EXTENSION_URL =
-    "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl"
+    "https://github.com/opensrp/android-fhir/StructureDefinition/questionnaire-itemControl"
+  private const val EXTENSION_CONTROL_SYSTEM =
+    "https://github.com/opensrp/android-fhir/questionnaire-item-control"
   private const val EXTENSION_VALUE = "qr_code-widget"
 }

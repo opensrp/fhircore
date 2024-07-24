@@ -113,7 +113,7 @@ fun RegisterCardList(
             onSearchByQrSingleResultActions.handleClickEvent(
               navController,
               pagingItems[0]!!,
-              context = context
+              context = context,
             )
           }
         }

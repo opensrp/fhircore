@@ -555,8 +555,15 @@ Below is the specific extension for this. The extension is validated in this cla
 QR Code widget can be set up for a Questionnaire by adding `qr_code-widget` extension to a QuestionnaireItem
 
 ```json
-  {
-    "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
-    "valueString": "qr_code-widget"
-  }
+    {
+      "url": "https://github.com/opensrp/android-fhir/StructureDefinition/questionnaire-itemControl",
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "https://github.com/opensrp/android-fhir/questionnaire-item-control",
+            "code": "qr_code-widget"
+          }
+        ]
+      }
+    }
 ```

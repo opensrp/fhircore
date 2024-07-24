@@ -48,7 +48,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: android
-      
+
       - name: Copy CI gradle.properties
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
 
@@ -57,8 +57,8 @@ jobs:
 
       - name: Spotless check engine module
         run: ./gradlew -PlocalPropertiesFile=local.properties :engine:spotlessCheck :engine:ktlintCheck --stacktrace
-        working-directory: android 
-      
+        working-directory: android
+
       - name: Load AVD cache
         uses: actions/cache@v2
         id: avd-cache
@@ -79,10 +79,10 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
-      
+
       - name: Run Engine module unit and instrumentation tests and generate coverage report
         uses: reactivecircus/android-emulator-runner@v2
-        with: 
+        with:
           working-directory: android
           api-level: ${{ matrix.api-level }}
           arch: x86_64
@@ -91,13 +91,12 @@ jobs:
           disable-animations: true
           script: ./gradlew -PlocalPropertiesFile=local.properties :engine:clean :engine:fhircoreJacocoReport --stacktrace
 
-      - name: Upload Test results
+      - name: Upload Test reports
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: engine-test-results
-          path: |
-            android/engine/build/reports
-            android/engine/build/test-results
+          name: engine-test-reports
+          path: android/engine/build/reports
 
 
       - name: Upload Engine module test coverage report to Codecov
@@ -137,7 +136,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: android
-      
+
       - name: Copy CI gradle.properties
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
 
@@ -146,8 +145,8 @@ jobs:
 
       - name: Spotless check geowidget module
         run: ./gradlew -PlocalPropertiesFile=local.properties :geowidget:spotlessCheck --stacktrace
-        working-directory: android 
-      
+        working-directory: android
+
       - name: Load AVD cache
         uses: actions/cache@v2
         id: avd-cache
@@ -168,10 +167,10 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
-      
+
       - name: Run Geowidget module unit and instrumentation tests and generate coverage report
         uses: reactivecircus/android-emulator-runner@v2
-        with: 
+        with:
           working-directory: android
           api-level: ${{ matrix.api-level }}
           arch: x86_64
@@ -180,13 +179,12 @@ jobs:
           disable-animations: true
           script: ./gradlew -PlocalPropertiesFile=local.properties :geowidget:clean :geowidget:fhircoreJacocoReport --stacktrace
 
-      - name: Upload Test results
+      - name: Upload Test reports
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: geowidget-test-results
-          path: |
-            android/geowidget/build/reports 
-            android/geowidget/build/test-results
+          name: geowidget-test-reports
+          path: android/geowidget/build/reports
 
       - name: Upload Geowidget module test coverage report to Codecov
         if: matrix.api-level == 30 # Only upload coverage on API level 30
@@ -265,16 +263,15 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew clean  -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
+          script: ./gradlew -PlocalPropertiesFile=local.properties -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance :quest:clean :quest:fhircoreJacocoReport --stacktrace
           # ./gradlew -PlocalPropertiesFile=local.properties :quest:clean && ./gradlew -PlocalPropertiesFile=local.properties :quest:assembleOpensrpDebugAndroidTest --stacktrace && /Users/runner/Library/Android/sdk/platform-tools/adb install quest/build/outputs/apk/androidTest/opensrp/debug/quest-opensrp-debug-androidTest.apk && ./gradlew -PlocalPropertiesFile=local.properties :quest:assembleOpensrpDebug --stacktrace && /Users/runner/Library/Android/sdk/platform-tools/adb install quest/build/outputs/apk/opensrp/debug/quest-opensrp-debug.apk && /Users/runner/Library/Android/sdk/platform-tools/adb shell am instrument -w -e package org.smartregister.fhircore.quest.ui.profile -e coverage "true" org.smartregister.opensrp.test/org.smartregister.fhircore.quest.QuestTestRunner && /Users/runner/Library/Android/sdk/platform-tools/adb shell run-as org.smartregister.opensrp cat "/data/user/0/org.smartregister.opensrp/files/coverage.ec" > quest/coverage.ec && ./gradlew -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace
 
-      - name: Upload Test results
+      - name: Upload Test reports
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: quest-test-results
-          path: |
-            android/quest/build/reports
-            android/quest/build/test-results
+          name: quest-test-reports
+          path: android/quest/build/reports
 
       - name: Upload Quest module test coverage report to Codecov
         if: matrix.api-level == 30 # Only upload coverage on API level 30
