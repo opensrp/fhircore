@@ -127,7 +127,10 @@ fun AppDrawer(
       LazyColumn(modifier = modifier) {
         item {
           Column(modifier = modifier.background(SideMenuDarkColor).padding(horizontal = 16.dp)) {
-            if (navigationConfiguration.clientRegisters.isNotEmpty() && navigationConfiguration.clientRegisters.size > 1) {
+            if (
+              navigationConfiguration.clientRegisters.isNotEmpty() &&
+                navigationConfiguration.clientRegisters.size > 1
+            ) {
               Text(
                 text = stringResource(id = R.string.registers).uppercase(),
                 fontSize = 14.sp,
@@ -146,7 +149,7 @@ fun AppDrawer(
             endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
             showEndText = navigationMenu.showCount,
             endTextColor = navigationMenu.countColor.parseColor(),
-            endTextFontSize = navigationMenu.countFontSize
+            endTextFontSize = navigationMenu.countFontSize,
           ) {
             openDrawer(false)
             onSideMenuClick(
@@ -169,9 +172,7 @@ fun AppDrawer(
           }
         }
         // Add a divider between clientRegisters and the next section
-        item {
-          Divider(color = DividerColor)
-        }
+        item { Divider(color = DividerColor) }
 
         // Display list of configurable static menu
         items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
@@ -282,7 +283,7 @@ private fun NavTopSection(
     )
     Text(
       text = "$versionCode($versionName)",
-      fontSize = appUiState.appVersionFontSize.sp,
+      fontSize = appUiState.appVersionFontSize?.sp ?: 22.sp,
       color = AppTitleColor,
       modifier = modifier.padding(vertical = 16.dp),
       maxLines = 1,
@@ -345,7 +346,7 @@ private fun SideMenuItem(
   endTextFontSize: Float? = null,
   showEndText: Boolean,
   endImageVector: ImageVector? = null,
-  onSideMenuClick: () -> Unit
+  onSideMenuClick: () -> Unit,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,

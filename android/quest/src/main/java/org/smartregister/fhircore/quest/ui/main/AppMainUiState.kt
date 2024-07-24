@@ -23,7 +23,7 @@ import org.smartregister.fhircore.engine.domain.model.Language
 data class AppMainUiState(
   val appTitle: String,
   val username: String,
-  val appVersionFontSize : Float = 22f,
+  val appVersionFontSize: Float? = 22f,
   val lastSyncTime: String,
   val currentLanguage: String,
   val languages: List<Language>,
