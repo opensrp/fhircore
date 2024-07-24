@@ -22,8 +22,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -61,6 +63,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
@@ -148,6 +151,8 @@ fun TopScreenSection(
       // to support m3 guidelines
       // https://m3.material.io/components/top-app-bar/guidelines#b1b64842-7d88-4c3f-8ffb-4183fe648c9e
       SetupToolbarIcons(topScreenSection?.menuIcons, navController, modifier, onClick)
+
+      if (isFilterIconEnabled) Spacer(modifier = Modifier.width(24.dp))
 
       if (isFilterIconEnabled) {
         BadgedBox(
@@ -314,6 +319,18 @@ fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
     isFilterIconEnabled = true,
     onClick = {},
     isSearchBarVisible = true,
+    topScreenSection =
+      TopScreenSectionConfig(
+        searchBar = null,
+        menuIcons =
+          listOf(
+            ImageProperties(
+              imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_toggle_map_view"),
+              backgroundColor = Color.White.toString(),
+              size = 10,
+            ),
+          ),
+      ),
     navController = rememberNavController(),
   )
 }
