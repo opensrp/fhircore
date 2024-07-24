@@ -690,7 +690,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     }
 
   @Test
-  fun decodeBinaryResourcesToBitmapOnOverflowMenuConfigDoneCorrectly(): Unit = runBlocking {
+  fun decodeBinaryResourcesToBitmapOnOverflowMenuConfigDoneCorrectly(): Unit = runTest {
     defaultRepository.create(addResourceTags = true, binaryImage)
     val navigationMenuConfigs = listOf(overflowMenuItemConfig)
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
@@ -702,7 +702,7 @@ class ConfigExtensionsTest : RobolectricTest() {
   }
 
   @Test
-  fun testImageBitmapUpdatedCorrectlyGivenProfileConfiguration(): Unit = runBlocking {
+  fun testImageBitmapUpdatedCorrectlyGivenProfileConfiguration(): Unit = runTest {
     defaultRepository.create(addResourceTags = true, binaryImage)
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
     loadRemoteImagesBitmaps(
@@ -716,7 +716,7 @@ class ConfigExtensionsTest : RobolectricTest() {
   }
 
   @Test
-  fun testImageBitmapUpdatedCorrectlyGivenCardViewProperties(): Unit = runBlocking {
+  fun testImageBitmapUpdatedCorrectlyGivenCardViewProperties(): Unit = runTest {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     defaultRepository.create(addResourceTags = true, binaryImage)
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
@@ -731,7 +731,7 @@ class ConfigExtensionsTest : RobolectricTest() {
   }
 
   @Test
-  fun testImageBitmapUpdatedCorrectlyGivenListViewProperties(): Unit = runBlocking {
+  fun testImageBitmapUpdatedCorrectlyGivenListViewProperties(): Unit = runTest {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     defaultRepository.create(addResourceTags = true, binaryImage)
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
@@ -746,7 +746,7 @@ class ConfigExtensionsTest : RobolectricTest() {
   }
 
   @Test
-  fun testImageBitmapUpdatedCorrectlyGivenColumnProperties(): Unit = runBlocking {
+  fun testImageBitmapUpdatedCorrectlyGivenColumnProperties(): Unit = runTest {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     val listViewProperties = cardViewProperties.content[0] as ListProperties
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
@@ -762,7 +762,7 @@ class ConfigExtensionsTest : RobolectricTest() {
   }
 
   @Test
-  fun testImageBitmapUpdatedCorrectlyGivenRowProperties(): Unit = runBlocking {
+  fun testImageBitmapUpdatedCorrectlyGivenRowProperties(): Unit = runTest {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     val listViewProperties = cardViewProperties.content[0] as ListProperties
     val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
