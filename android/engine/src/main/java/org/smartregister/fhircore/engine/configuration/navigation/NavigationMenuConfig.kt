@@ -33,6 +33,8 @@ data class NavigationMenuConfig(
   val showCount: Boolean = false,
   val animate: Boolean = true,
   val actions: List<ActionConfig>? = null,
+  val countFontSize: Float? = null,
+  val countColor: String? = null
 ) : Parcelable, java.io.Serializable
 
 @Serializable

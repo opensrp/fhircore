@@ -68,6 +68,7 @@ import org.smartregister.fhircore.engine.ui.theme.SideMenuTopItemDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
+import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
@@ -123,10 +124,10 @@ fun AppDrawer(
     backgroundColor = SideMenuDarkColor,
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
+      LazyColumn(modifier = modifier) {
         item {
-          Column(modifier = modifier.background(SideMenuDarkColor)) {
-            if (navigationConfiguration.clientRegisters.isNotEmpty()) {
+          Column(modifier = modifier.background(SideMenuDarkColor).padding(horizontal = 16.dp)) {
+            if (navigationConfiguration.clientRegisters.isNotEmpty() && navigationConfiguration.clientRegisters.size > 1) {
               Text(
                 text = stringResource(id = R.string.registers).uppercase(),
                 fontSize = 14.sp,
@@ -144,6 +145,8 @@ fun AppDrawer(
             title = navigationMenu.display,
             endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
             showEndText = navigationMenu.showCount,
+            endTextColor = navigationMenu.countColor.parseColor(),
+            endTextFontSize = navigationMenu.countFontSize
           ) {
             openDrawer(false)
             onSideMenuClick(
@@ -154,7 +157,7 @@ fun AppDrawer(
 
         item {
           if (navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true) {
-            Column {
+            Column(modifier = modifier.padding(horizontal = 16.dp)) {
               OtherPatientsItem(
                 navigationConfiguration = navigationConfiguration,
                 onSideMenuClick = onSideMenuClick,
@@ -164,6 +167,10 @@ fun AppDrawer(
               if (navigationConfiguration.staticMenu.isNotEmpty()) Divider(color = DividerColor)
             }
           }
+        }
+        // Add a divider between clientRegisters and the next section
+        item {
+          Divider(color = DividerColor)
         }
 
         // Display list of configurable static menu
@@ -275,7 +282,7 @@ private fun NavTopSection(
     )
     Text(
       text = "$versionCode($versionName)",
-      fontSize = 22.sp,
+      fontSize = appUiState.appVersionFontSize.sp,
       color = AppTitleColor,
       modifier = modifier.padding(vertical = 16.dp),
       maxLines = 1,
@@ -335,9 +342,10 @@ private fun SideMenuItem(
   title: String,
   endText: String = "",
   endTextColor: Color = Color.White,
+  endTextFontSize: Float? = null,
   showEndText: Boolean,
   endImageVector: ImageVector? = null,
-  onSideMenuClick: () -> Unit,
+  onSideMenuClick: () -> Unit
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -345,7 +353,8 @@ private fun SideMenuItem(
       modifier
         .fillMaxWidth()
         .clickable { onSideMenuClick() }
-        .testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG),
+        .testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG)
+        .padding(horizontal = 16.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(
@@ -361,7 +370,7 @@ private fun SideMenuItem(
       SideMenuItemText(title = title, textColor = Color.White)
     }
     if (showEndText) {
-      SideMenuItemText(title = endText, textColor = endTextColor)
+      SideMenuItemText(title = endText, textColor = endTextColor, fontSize = endTextFontSize)
     }
     endImageVector?.let { imageVector ->
       Icon(
@@ -375,11 +384,11 @@ private fun SideMenuItem(
 }
 
 @Composable
-private fun SideMenuItemText(title: String, textColor: Color) {
+private fun SideMenuItemText(title: String, textColor: Color, fontSize: Float? = null) {
   Text(
     text = title,
     color = textColor,
-    fontSize = 18.sp,
+    fontSize = fontSize?.sp ?: 18.sp,
     modifier = Modifier.testTag(SIDE_MENU_ITEM_TEXT_TEST_TAG),
   )
 }
