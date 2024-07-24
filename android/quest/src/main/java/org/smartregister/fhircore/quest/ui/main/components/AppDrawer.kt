@@ -148,7 +148,7 @@ fun AppDrawer(
             title = navigationMenu.display,
             endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
             showEndText = navigationMenu.showCount,
-            endTextColor = navigationMenu.countColor.parseColor(),
+            endTextColor = navigationMenu.countColor?.parseColor() ?: Color.White,
             endTextFontSize = navigationMenu.countFontSize,
           ) {
             openDrawer(false)
