@@ -139,6 +139,7 @@ constructor(
           languages = configurationRegistry.fetchLanguages(),
           navigationConfiguration = navigationConfiguration,
           registerCountMap = registerCountMap,
+          appVersionFontSize = applicationConfiguration.appVersionFontSize,
         )
     }
 

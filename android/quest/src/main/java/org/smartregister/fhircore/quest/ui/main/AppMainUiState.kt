@@ -23,7 +23,7 @@ import org.smartregister.fhircore.engine.domain.model.Language
 data class AppMainUiState(
   val appTitle: String,
   val username: String,
-  val appVersionFontSize: Float? = 22f,
+  val appVersionFontSize: Float?,
   val lastSyncTime: String,
   val currentLanguage: String,
   val languages: List<Language>,
@@ -39,6 +39,7 @@ fun appMainUiStateOf(
   languages: List<Language> = emptyList(),
   navigationConfiguration: NavigationConfiguration,
   registerCountMap: Map<String, Long> = emptyMap(),
+  appVersionFontSize: Float? = null,
 ): AppMainUiState {
   return AppMainUiState(
     appTitle = appTitle,
@@ -48,5 +49,6 @@ fun appMainUiStateOf(
     languages = languages,
     navigationConfiguration = navigationConfiguration,
     registerCountMap = registerCountMap,
+    appVersionFontSize = appVersionFontSize,
   )
 }
