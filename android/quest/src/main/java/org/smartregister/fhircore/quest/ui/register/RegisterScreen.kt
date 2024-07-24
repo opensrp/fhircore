@@ -100,7 +100,7 @@ fun RegisterScreen(
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           showSearchByQrCode =
             registerUiState.registerConfiguration?.let {
-              !it.onSearchByQrSingleResultActions.isNullOrEmpty() ||
+              !it.onSearchByQrSingleResultValidActions.isNullOrEmpty() ||
                 it.searchBar?.searchByQrCode == true
             } ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
@@ -174,7 +174,7 @@ fun RegisterScreen(
           showPagination = searchQuery.value.isEmpty(),
           onSearchByQrSingleResultActions =
             if (!searchQuery.value.isBlank() && searchQuery.value.mode == UiSearchMode.QrCodeScan) {
-              registerUiState.registerConfiguration.onSearchByQrSingleResultActions
+              registerUiState.registerConfiguration.onSearchByQrSingleResultValidActions
             } else {
               null
             },
