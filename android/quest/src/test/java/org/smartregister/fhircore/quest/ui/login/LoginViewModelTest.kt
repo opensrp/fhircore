@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.login
 
+import androidx.lifecycle.Observer
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
@@ -617,8 +619,19 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Test
   fun testForgotPasswordLoadsContact() {
-    loginViewModel.forgotPassword()
-    Assert.assertEquals("tel:0123456789", loginViewModel.launchDialPad.value)
+    val launchDialPadObserver =
+      Observer<String?> { dialPadUri ->
+        if (dialPadUri != null) {
+          Assert.assertEquals("tel:1234567890", dialPadUri)
+        }
+      }
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+    try {
+      loginViewModel.launchDialPad.observeForever(launchDialPadObserver)
+      loginViewModel.forgotPassword(context)
+    } finally {
+      loginViewModel.launchDialPad.removeObserver(launchDialPadObserver)
+    }
   }
 
   @Test

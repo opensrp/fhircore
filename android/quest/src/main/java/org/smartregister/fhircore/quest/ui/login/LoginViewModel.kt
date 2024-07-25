@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.login
 
 import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -35,6 +36,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -179,9 +181,13 @@ constructor(
     }
   }
 
-  fun forgotPassword() {
-    // TODO load supervisor contact e.g.
-    _launchDialPad.value = "tel:0123456789"
+  fun forgotPassword(context: Context) {
+    if (!applicationConfiguration.loginConfig.contactNumber.isNullOrEmpty()) {
+      _launchDialPad.value = "tel:${applicationConfiguration.loginConfig.contactNumber}"
+    } else {
+      Toast.makeText(context, context.getString(R.string.supervisor_contact), Toast.LENGTH_LONG)
+        .show()
+    }
   }
 
   fun updateNavigateHome(navigateHome: Boolean = true) {

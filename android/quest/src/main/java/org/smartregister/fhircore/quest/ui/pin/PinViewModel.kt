@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.pin
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
@@ -79,6 +80,7 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
+  @SuppressLint("StringFormatInvalid")
   fun setPinUiState(setupPin: Boolean = false, context: Context) {
     val username = secureSharedPreference.retrieveSessionUsername()
     pinUiState.value =

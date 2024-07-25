@@ -151,7 +151,6 @@ class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testForgotPinLaunchesDialer() {
-    // Create an observer for launchDialPad
     val launchDialPadObserver =
       Observer<String?> { dialPadUri ->
         if (dialPadUri != null) {
@@ -159,17 +158,12 @@ class PinViewModelTest : RobolectricTest() {
         }
       }
 
-    // Use InstrumentationRegistry to get context
     val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     try {
-      // Observe the LiveData forever
       pinViewModel.launchDialPad.observeForever(launchDialPadObserver)
-
-      // Trigger forgotPin
       pinViewModel.forgotPin(context)
     } finally {
-      // Clean up observer
       pinViewModel.launchDialPad.removeObserver(launchDialPadObserver)
     }
   }
