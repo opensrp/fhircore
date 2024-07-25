@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.pin
 
+import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -56,6 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -102,7 +104,7 @@ fun PinLoginPage(
   onSetPin: (CharArray) -> Unit,
   onMenuLoginClicked: (Boolean) -> Unit,
   onShowPinError: (Boolean) -> Unit,
-  forgotPin: () -> Unit,
+  forgotPin: (Context) -> Unit,
   onPinEntered: (CharArray, (Boolean) -> Unit) -> Unit,
 ) {
   var showMenu by remember { mutableStateOf(false) }
@@ -125,7 +127,9 @@ fun PinLoginPage(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       if (showForgotPinDialog && !applicationConfiguration.loginConfig.contactNumber.isNullOrEmpty()) {
-        ForgotPinDialog(applicationConfiguration = applicationConfiguration,forgotPin = forgotPin, onDismissDialog = { showForgotPinDialog = false })
+        ForgotPinDialog(
+          applicationConfiguration = applicationConfiguration,
+          forgotPin = forgotPin, onDismissDialog = { showForgotPinDialog = false })
       }
       Column {
         Spacer(modifier = modifier.fillMaxHeight(0.22f))
@@ -270,10 +274,12 @@ private fun PinTopBar(
 @Composable
 fun ForgotPinDialog(
   applicationConfiguration: ApplicationConfiguration,
-  forgotPin: () -> Unit,
+  forgotPin: (Context) -> Unit,
   onDismissDialog: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
+  val context = LocalContext.current
+
   AlertDialog(
     onDismissRequest = onDismissDialog,
     title = {
@@ -303,8 +309,8 @@ fun ForgotPinDialog(
           modifier =
             modifier.padding(horizontal = 10.dp).clickable {
               onDismissDialog()
-              forgotPin()
-            },
+              forgotPin(context)
+            }
         )
       }
     },
@@ -332,7 +338,7 @@ private fun PinSetupPreview() {
     onSetPin = {},
     onMenuLoginClicked = {},
     onShowPinError = {},
-    forgotPin = {},
+    forgotPin = { },
     onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
   )
 }

@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.integration.ui.pin
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
@@ -34,7 +33,6 @@ import org.smartregister.fhircore.quest.ui.pin.CIRCULAR_PROGRESS_INDICATOR
 import org.smartregister.fhircore.quest.ui.pin.PIN_LOGO_IMAGE
 import org.smartregister.fhircore.quest.ui.pin.PinLoginPage
 import org.smartregister.fhircore.quest.ui.pin.PinUiState
-import org.smartregister.fhircore.quest.ui.pin.PinViewModel
 
 class PinLoginScreenKtTest {
   @get:Rule(order = 1) val composeRule = createComposeRule()

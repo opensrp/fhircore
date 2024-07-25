@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.pin
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
@@ -130,13 +131,13 @@ constructor(
     }
   }
 
-  fun forgotPin() {
+  fun forgotPin(context: Context) {
     if(!applicationConfiguration.loginConfig.contactNumber.isNullOrEmpty()) {
       _launchDialPad.value = "tel:${applicationConfiguration.loginConfig.contactNumber.toString()}"
     }
     else{
-      "Please add contact in App Configs"
-    }
+      Toast.makeText(context, context.getString(R.string.supervisor_contact), Toast.LENGTH_LONG).show()
+         }
   }
 
   fun pinLogin(enteredPin: CharArray, callback: (Boolean) -> Unit) {

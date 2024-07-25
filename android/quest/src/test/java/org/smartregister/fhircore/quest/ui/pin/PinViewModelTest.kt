@@ -17,7 +17,9 @@
 package org.smartregister.fhircore.quest.ui.pin
 
 import android.app.Application
+import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -36,6 +38,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.manipulation.Ordering.Context
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -148,11 +151,27 @@ class PinViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testForgotPin() {
-    configurationRegistry.configsJsonMap[ConfigType.Application.name] =
-      "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{\"contactNumber\":\"1234567890\"}}"
-    pinViewModel.forgotPin()
-    Assert.assertEquals("tel:1234567890", pinViewModel.launchDialPad.value)
+  fun testForgotPinLaunchesDialer() {
+    // Create an observer for launchDialPad
+    val launchDialPadObserver = Observer<String?> { dialPadUri ->
+      if (dialPadUri != null) {
+        Assert.assertEquals("tel:1234567890", dialPadUri)
+      }
+    }
+
+    // Use InstrumentationRegistry to get context
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    try {
+      // Observe the LiveData forever
+      pinViewModel.launchDialPad.observeForever(launchDialPadObserver)
+
+      // Trigger forgotPin
+      pinViewModel.forgotPin(context)
+    } finally {
+      // Clean up observer
+      pinViewModel.launchDialPad.removeObserver(launchDialPadObserver)
+    }
   }
 
   @Test

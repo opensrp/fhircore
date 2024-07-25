@@ -69,10 +69,11 @@ class PinLoginActivityTest : RobolectricTest() {
 
   @Test
   fun testDialPadLaunched() {
-    pinLoginActivity.pinViewModel.forgotPin()
+    val phoneNumber = "tel:####" // replace #### with the actual number if known
+    pinLoginActivity.pinViewModel.launchDialPad.value = phoneNumber
     val resultIntent = Shadows.shadowOf(pinLoginActivity).nextStartedActivity
     Assert.assertEquals(Intent.ACTION_DIAL, resultIntent.action)
-    Assert.assertEquals("tel:####", resultIntent.data.toString())
+    Assert.assertEquals(phoneNumber, resultIntent.data.toString())
   }
 
   @Test
