@@ -27,5 +27,5 @@ data class LoginConfig(
   val logoHeight: Int = 120,
   val logoWidth: Int = 140,
   val showAppTitle: Boolean = true,
-  val contactNumber: String? = ""
+  val contactNumber: String? = "",
 )

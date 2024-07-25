@@ -37,28 +37,28 @@ import org.smartregister.fhircore.quest.ui.pin.PinUiState
 class PinLoginScreenKtTest {
   @get:Rule(order = 1) val composeRule = createComposeRule()
 
-
   @Test
   fun testThatPinSetupPageIsLaunched() {
     composeRule.setContent {
       PinLoginPage(
-        applicationConfiguration =  ApplicationConfiguration(
-          appId = "appId",
-          configType = "application",
-          appTitle = "FHIRCore App",
-        ) ,
+        applicationConfiguration =
+          ApplicationConfiguration(
+            appId = "appId",
+            configType = "application",
+            appTitle = "FHIRCore App",
+          ),
         onSetPin = {},
         showError = false,
         onMenuLoginClicked = {},
         forgotPin = {},
         pinUiState =
-        PinUiState(
-          message = "CHA will use this PIN to login",
-          appName = "MOH eCBIS",
-          setupPin = true,
-          pinLength = 4,
-          showLogo = true,
-        ),
+          PinUiState(
+            message = "CHA will use this PIN to login",
+            appName = "MOH eCBIS",
+            setupPin = true,
+            pinLength = 4,
+            showLogo = true,
+          ),
         onShowPinError = {},
         onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
       )
@@ -77,11 +77,12 @@ class PinLoginScreenKtTest {
   fun testThatEnterPinPageIsLaunched() {
     composeRule.setContent {
       PinLoginPage(
-        applicationConfiguration =  ApplicationConfiguration(
-          appId = "appId",
-          configType = "application",
-          appTitle = "FHIRCore App",
-        ) ,
+        applicationConfiguration =
+          ApplicationConfiguration(
+            appId = "appId",
+            configType = "application",
+            appTitle = "FHIRCore App",
+          ),
         onSetPin = {},
         showError = false,
         onMenuLoginClicked = {},
@@ -118,11 +119,12 @@ class PinLoginScreenKtTest {
     val errorMessage = "Incorrect PIN. Please try again."
     composeRule.setContent {
       PinLoginPage(
-        applicationConfiguration =  ApplicationConfiguration(
-          appId = "appId",
-          configType = "application",
-          appTitle = "FHIRCore App",
-        ) ,
+        applicationConfiguration =
+          ApplicationConfiguration(
+            appId = "appId",
+            configType = "application",
+            appTitle = "FHIRCore App",
+          ),
         onSetPin = {},
         showError = true,
         onMenuLoginClicked = {},
@@ -147,11 +149,12 @@ class PinLoginScreenKtTest {
   fun testThatPinSetupPageShowsCircularProgressIndicator() {
     composeRule.setContent {
       PinLoginPage(
-        applicationConfiguration =  ApplicationConfiguration(
-          appId = "appId",
-          configType = "application",
-          appTitle = "FHIRCore App",
-        ) ,
+        applicationConfiguration =
+          ApplicationConfiguration(
+            appId = "appId",
+            configType = "application",
+            appTitle = "FHIRCore App",
+          ),
         onSetPin = {},
         showError = false,
         onMenuLoginClicked = {},
@@ -180,11 +183,12 @@ class PinLoginScreenKtTest {
     val pinStateMessage = "Provider will use this PIN to login"
     composeRule.setContent {
       PinLoginPage(
-        applicationConfiguration =  ApplicationConfiguration(
-          appId = "appId",
-          configType = "application",
-          appTitle = "FHIRCore App",
-        ) ,
+        applicationConfiguration =
+          ApplicationConfiguration(
+            appId = "appId",
+            configType = "application",
+            appTitle = "FHIRCore App",
+          ),
         onSetPin = {},
         showError = false,
         onMenuLoginClicked = {},

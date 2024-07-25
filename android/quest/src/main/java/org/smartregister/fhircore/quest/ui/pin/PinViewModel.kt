@@ -132,12 +132,12 @@ constructor(
   }
 
   fun forgotPin(context: Context) {
-    if(!applicationConfiguration.loginConfig.contactNumber.isNullOrEmpty()) {
-      _launchDialPad.value = "tel:${applicationConfiguration.loginConfig.contactNumber.toString()}"
+    if (!applicationConfiguration.loginConfig.contactNumber.isNullOrEmpty()) {
+      _launchDialPad.value = "tel:${applicationConfiguration.loginConfig.contactNumber}"
+    } else {
+      Toast.makeText(context, context.getString(R.string.supervisor_contact), Toast.LENGTH_LONG)
+        .show()
     }
-    else{
-      Toast.makeText(context, context.getString(R.string.supervisor_contact), Toast.LENGTH_LONG).show()
-         }
   }
 
   fun pinLogin(enteredPin: CharArray, callback: (Boolean) -> Unit) {

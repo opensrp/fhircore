@@ -81,7 +81,6 @@ fun PinLoginScreen(viewModel: PinViewModel) {
   val pinUiState = viewModel.pinUiState.value
   val applicationConfiguration = remember { viewModel.applicationConfiguration }
 
-
   PinLoginPage(
     applicationConfiguration = applicationConfiguration,
     showError = showError,
@@ -126,10 +125,14 @@ fun PinLoginPage(
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (showForgotPinDialog && !applicationConfiguration.loginConfig.contactNumber.isNullOrEmpty()) {
+      if (
+        showForgotPinDialog && !applicationConfiguration.loginConfig.contactNumber.isNullOrEmpty()
+      ) {
         ForgotPinDialog(
           applicationConfiguration = applicationConfiguration,
-          forgotPin = forgotPin, onDismissDialog = { showForgotPinDialog = false })
+          forgotPin = forgotPin,
+          onDismissDialog = { showForgotPinDialog = false },
+        )
       }
       Column {
         Spacer(modifier = modifier.fillMaxHeight(0.22f))
@@ -289,10 +292,11 @@ fun ForgotPinDialog(
         fontSize = 20.sp,
       )
     },
-    text = { Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp,vertical = 12.dp)) {
-      Text(text = stringResource(R.string.please_contact_supervisor), fontSize = 16.sp)
-      Text(applicationConfiguration.loginConfig.contactNumber.toString())
-    }
+    text = {
+      Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
+        Text(text = stringResource(R.string.please_contact_supervisor), fontSize = 16.sp)
+        Text(applicationConfiguration.loginConfig.contactNumber.toString())
+      }
     },
     buttons = {
       Row(
@@ -310,7 +314,7 @@ fun ForgotPinDialog(
             modifier.padding(horizontal = 10.dp).clickable {
               onDismissDialog()
               forgotPin(context)
-            }
+            },
         )
       }
     },
@@ -321,11 +325,12 @@ fun ForgotPinDialog(
 @PreviewWithBackgroundExcludeGenerated
 private fun PinSetupPreview() {
   PinLoginPage(
-    applicationConfiguration =  ApplicationConfiguration(
-      appId = "appId",
-      configType = "application",
-      appTitle = "FHIRCore App",
-    ) ,
+    applicationConfiguration =
+      ApplicationConfiguration(
+        appId = "appId",
+        configType = "application",
+        appTitle = "FHIRCore App",
+      ),
     showError = false,
     pinUiState =
       PinUiState(
@@ -338,7 +343,7 @@ private fun PinSetupPreview() {
     onSetPin = {},
     onMenuLoginClicked = {},
     onShowPinError = {},
-    forgotPin = { },
+    forgotPin = {},
     onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
   )
 }
@@ -347,11 +352,12 @@ private fun PinSetupPreview() {
 @PreviewWithBackgroundExcludeGenerated
 private fun PinSetupPreviewWithProgress() {
   PinLoginPage(
-    applicationConfiguration =  ApplicationConfiguration(
-      appId = "appId",
-      configType = "application",
-      appTitle = "FHIRCore App",
-    ) ,
+    applicationConfiguration =
+      ApplicationConfiguration(
+        appId = "appId",
+        configType = "application",
+        appTitle = "FHIRCore App",
+      ),
     showError = false,
     pinUiState =
       PinUiState(
@@ -374,11 +380,12 @@ private fun PinSetupPreviewWithProgress() {
 @PreviewWithBackgroundExcludeGenerated
 private fun PinLoginPreview() {
   PinLoginPage(
-    applicationConfiguration =  ApplicationConfiguration(
-      appId = "appId",
-      configType = "application",
-      appTitle = "FHIRCore App",
-    ) ,
+    applicationConfiguration =
+      ApplicationConfiguration(
+        appId = "appId",
+        configType = "application",
+        appTitle = "FHIRCore App",
+      ),
     showError = false,
     pinUiState =
       PinUiState(

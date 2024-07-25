@@ -38,7 +38,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.manipulation.Ordering.Context
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -153,11 +152,12 @@ class PinViewModelTest : RobolectricTest() {
   @Test
   fun testForgotPinLaunchesDialer() {
     // Create an observer for launchDialPad
-    val launchDialPadObserver = Observer<String?> { dialPadUri ->
-      if (dialPadUri != null) {
-        Assert.assertEquals("tel:1234567890", dialPadUri)
+    val launchDialPadObserver =
+      Observer<String?> { dialPadUri ->
+        if (dialPadUri != null) {
+          Assert.assertEquals("tel:1234567890", dialPadUri)
+        }
       }
-    }
 
     // Use InstrumentationRegistry to get context
     val context = InstrumentationRegistry.getInstrumentation().targetContext
