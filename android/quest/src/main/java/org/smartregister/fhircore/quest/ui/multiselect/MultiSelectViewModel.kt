@@ -21,7 +21,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import androidx.compose.ui.state.ToggleableState
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -34,7 +33,7 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewConfig
-import org.smartregister.fhircore.engine.domain.model.SyncLocationToggleableState
+import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.ui.multiselect.TreeBuilder
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -50,7 +49,7 @@ constructor(
 
   val searchTextState: MutableState<String> = mutableStateOf("")
   val rootTreeNodes: SnapshotStateList<TreeNode<String>> = SnapshotStateList()
-  val selectedNodes: SnapshotStateMap<String, ToggleableState> = SnapshotStateMap()
+  val selectedNodes: SnapshotStateMap<String, SyncLocationState> = SnapshotStateMap()
   val flag = MutableLiveData(false)
   private var _rootTreeNodes: List<TreeNode<String>> = mutableListOf()
 
@@ -60,7 +59,7 @@ constructor(
       flag.postValue(true)
       val previouslySelectedNodes = context.syncLocationIdsProtoStore.data.firstOrNull()
       if (!previouslySelectedNodes.isNullOrEmpty()) {
-        previouslySelectedNodes.forEach { selectedNodes[it.locationId] = it.toggleableState }
+        previouslySelectedNodes.values.forEach { selectedNodes[it.locationId] = it }
       }
 
       val resourcesMap =
@@ -142,9 +141,7 @@ constructor(
   }
 
   suspend fun saveSelectedLocations(context: Context) {
-    context.syncLocationIdsProtoStore.updateData {
-      selectedNodes.map { SyncLocationToggleableState(it.key, it.value) }
-    }
+    context.syncLocationIdsProtoStore.updateData { selectedNodes }
   }
 
   fun search() {

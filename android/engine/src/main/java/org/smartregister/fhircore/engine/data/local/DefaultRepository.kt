@@ -1065,6 +1065,7 @@ constructor(
         val locationIds =
           context.syncLocationIdsProtoStore.data
             .firstOrNull()
+            ?.values
             ?.filter { it.toggleableState == ToggleableState.On }
             ?.map { it.locationId }
             .takeIf { !it.isNullOrEmpty() }
