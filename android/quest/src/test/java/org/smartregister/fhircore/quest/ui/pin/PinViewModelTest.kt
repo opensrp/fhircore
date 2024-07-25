@@ -149,8 +149,10 @@ class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testForgotPin() {
+    configurationRegistry.configsJsonMap[ConfigType.Application.name] =
+      "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{\"contactNumber\":\"1234567890\"}}"
     pinViewModel.forgotPin()
-    Assert.assertEquals("tel:####", pinViewModel.launchDialPad.value)
+    Assert.assertEquals("tel:1234567890", pinViewModel.launchDialPad.value)
   }
 
   @Test

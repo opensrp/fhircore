@@ -64,6 +64,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.PinInput
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
@@ -76,8 +77,11 @@ const val PIN_LOGO_IMAGE = "pin_logo_image"
 fun PinLoginScreen(viewModel: PinViewModel) {
   val showError by viewModel.showError.observeAsState(initial = false)
   val pinUiState = viewModel.pinUiState.value
+  val applicationConfiguration = remember { viewModel.applicationConfiguration }
+
 
   PinLoginPage(
+    applicationConfiguration = applicationConfiguration,
     showError = showError,
     pinUiState = pinUiState,
     onMenuLoginClicked = viewModel::onMenuItemClicked,
@@ -91,6 +95,7 @@ fun PinLoginScreen(viewModel: PinViewModel) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PinLoginPage(
+  applicationConfiguration: ApplicationConfiguration,
   modifier: Modifier = Modifier,
   showError: Boolean,
   pinUiState: PinUiState,
@@ -104,7 +109,6 @@ fun PinLoginPage(
   var showForgotPinDialog by remember { mutableStateOf(false) }
   var newPin by remember { mutableStateOf(charArrayOf()) }
   val bringIntoViewRequester = remember { BringIntoViewRequester() }
-
   LaunchedEffect(Unit) { bringIntoViewRequester.bringIntoView() }
 
   Scaffold(
@@ -120,8 +124,8 @@ fun PinLoginPage(
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (showForgotPinDialog) {
-        ForgotPinDialog(forgotPin = forgotPin, onDismissDialog = { showForgotPinDialog = false })
+      if (showForgotPinDialog && !applicationConfiguration.loginConfig.contactNumber.isNullOrEmpty()) {
+        ForgotPinDialog(applicationConfiguration = applicationConfiguration,forgotPin = forgotPin, onDismissDialog = { showForgotPinDialog = false })
       }
       Column {
         Spacer(modifier = modifier.fillMaxHeight(0.22f))
@@ -265,6 +269,7 @@ private fun PinTopBar(
 
 @Composable
 fun ForgotPinDialog(
+  applicationConfiguration: ApplicationConfiguration,
   forgotPin: () -> Unit,
   onDismissDialog: () -> Unit,
   modifier: Modifier = Modifier,
@@ -278,7 +283,11 @@ fun ForgotPinDialog(
         fontSize = 20.sp,
       )
     },
-    text = { Text(text = stringResource(R.string.please_contact_supervisor), fontSize = 16.sp) },
+    text = { Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp,vertical = 12.dp)) {
+      Text(text = stringResource(R.string.please_contact_supervisor), fontSize = 16.sp)
+      Text(applicationConfiguration.loginConfig.contactNumber.toString())
+    }
+    },
     buttons = {
       Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
@@ -306,6 +315,11 @@ fun ForgotPinDialog(
 @PreviewWithBackgroundExcludeGenerated
 private fun PinSetupPreview() {
   PinLoginPage(
+    applicationConfiguration =  ApplicationConfiguration(
+      appId = "appId",
+      configType = "application",
+      appTitle = "FHIRCore App",
+    ) ,
     showError = false,
     pinUiState =
       PinUiState(
@@ -327,6 +341,11 @@ private fun PinSetupPreview() {
 @PreviewWithBackgroundExcludeGenerated
 private fun PinSetupPreviewWithProgress() {
   PinLoginPage(
+    applicationConfiguration =  ApplicationConfiguration(
+      appId = "appId",
+      configType = "application",
+      appTitle = "FHIRCore App",
+    ) ,
     showError = false,
     pinUiState =
       PinUiState(
@@ -349,6 +368,11 @@ private fun PinSetupPreviewWithProgress() {
 @PreviewWithBackgroundExcludeGenerated
 private fun PinLoginPreview() {
   PinLoginPage(
+    applicationConfiguration =  ApplicationConfiguration(
+      appId = "appId",
+      configType = "application",
+      appTitle = "FHIRCore App",
+    ) ,
     showError = false,
     pinUiState =
       PinUiState(

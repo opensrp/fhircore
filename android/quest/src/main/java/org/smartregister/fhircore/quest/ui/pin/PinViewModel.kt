@@ -38,6 +38,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.clearPasswordInMemory
 import org.smartregister.fhircore.engine.util.toPasswordHash
 
+@Suppress("UNUSED_EXPRESSION")
 @HiltViewModel
 class PinViewModel
 @Inject
@@ -73,7 +74,7 @@ constructor(
       PinUiState(message = "", appName = "", setupPin = false, pinLength = 0, showLogo = false),
     )
 
-  private val applicationConfiguration: ApplicationConfiguration by lazy {
+  val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
@@ -130,8 +131,12 @@ constructor(
   }
 
   fun forgotPin() {
-    // TODO use valid supervisor (Practitioner) telephone number
-    _launchDialPad.value = "tel:####"
+    if(!applicationConfiguration.loginConfig.contactNumber.isNullOrEmpty()) {
+      _launchDialPad.value = "tel:${applicationConfiguration.loginConfig.contactNumber.toString()}"
+    }
+    else{
+      "Please add contact in App Configs"
+    }
   }
 
   fun pinLogin(enteredPin: CharArray, callback: (Boolean) -> Unit) {
