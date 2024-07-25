@@ -50,13 +50,13 @@ constructor(
   val searchTextState: MutableState<String> = mutableStateOf("")
   val rootTreeNodes: SnapshotStateList<TreeNode<String>> = SnapshotStateList()
   val selectedNodes: SnapshotStateMap<String, SyncLocationState> = SnapshotStateMap()
-  val flag = MutableLiveData(false)
+  val isLoading = MutableLiveData(false)
   private var _rootTreeNodes: List<TreeNode<String>> = mutableListOf()
 
   fun populateLookupMap(context: Context, multiSelectViewConfig: MultiSelectViewConfig) {
     // Mark previously selected nodes
     viewModelScope.launch {
-      flag.postValue(true)
+      isLoading.postValue(true)
       val previouslySelectedNodes = context.syncLocationIdsProtoStore.data.firstOrNull()
       if (!previouslySelectedNodes.isNullOrEmpty()) {
         previouslySelectedNodes.values.forEach { selectedNodes[it.locationId] = it }
@@ -124,7 +124,7 @@ constructor(
             data = data,
           )
         }
-      flag.postValue(false)
+      isLoading.postValue(false)
       _rootTreeNodes = TreeBuilder.buildTrees(lookupItems, rootNodeIds)
       rootTreeNodes.addAll(_rootTreeNodes)
     }

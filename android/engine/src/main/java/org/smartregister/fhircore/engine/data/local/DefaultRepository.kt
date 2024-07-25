@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.data.local
 
 import android.content.Context
 import androidx.annotation.VisibleForTesting
-import androidx.compose.ui.state.ToggleableState
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.DateClientParam
@@ -75,7 +74,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
-import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
@@ -96,6 +94,7 @@ import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
+import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationIds
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -1062,21 +1061,25 @@ constructor(
       if (filterByRelatedEntityLocation) {
         val system = context.getString(R.string.sync_strategy_related_entity_location_system)
         val display = context.getString(R.string.sync_strategy_related_entity_location_display)
+        val syncLocationIds = context.retrieveRelatedEntitySyncLocationIds()
+        // TODO Do we want to configure when to include subLocations and parent ids?
+        // TODO This will require a new config model for related entity location filter
         val locationIds =
-          context.syncLocationIdsProtoStore.data
-            .firstOrNull()
-            ?.values
-            ?.filter { it.toggleableState == ToggleableState.On }
-            ?.map { it.locationId }
-            .takeIf { !it.isNullOrEmpty() }
+          syncLocationIds
+            .map { retrieveSubLocations(it).map { subLocation -> subLocation.logicalId } }
+            .flatten()
+            .plus(syncLocationIds)
+
         val filters =
-          if (baseResourceType == ResourceType.Location) { // E.g where  _id=uuid1,uuid2
-            locationIds?.map {
+          if (
+            baseResourceType == ResourceType.Location && locationIds.isNotEmpty()
+          ) { // E.g where  _id=uuid1,uuid2
+            locationIds.map {
               val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it) }
               apply
             }
           } else {
-            locationIds?.map { code -> // The RelatedEntityLocation is retrieved from meta tag
+            locationIds.map { code -> // The RelatedEntityLocation is retrieved from meta tag
               val apply: TokenParamFilterCriterion.() -> Unit = {
                 value = of(Coding(system, code, display))
               }
@@ -1084,7 +1087,7 @@ constructor(
             }
           }
 
-        if (!filters.isNullOrEmpty()) {
+        if (filters.isNotEmpty()) {
           this@applyFilterByRelatedEntityLocationMetaTag.filter(
             if (baseResourceType == ResourceType.Location) {
               Location.RES_ID
@@ -1140,6 +1143,29 @@ constructor(
     }
     return null
   }
+
+  suspend fun retrieveFlattenedSubLocations(locationId: String): LinkedList<Location> {
+    val locations = LinkedList<Location>()
+    val resources: LinkedList<Location> = retrieveSubLocations(locationId)
+
+    while (resources.isNotEmpty()) {
+      val currentResource = resources.removeFirst()
+      locations.add(currentResource)
+      retrieveSubLocations(currentResource.logicalId).forEach(resources::addLast)
+    }
+    return locations
+  }
+
+  private suspend fun retrieveSubLocations(locationId: String) =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine
+        .search<Location>(
+          Search(type = ResourceType.Location).apply {
+            filter(Location.PARTOF, { value = "Location/$locationId" })
+          },
+        )
+        .mapTo(LinkedList()) { it.resource }
+    }
 
   /**
    * A wrapper data class to hold search results. All related resources are flattened into one Map
