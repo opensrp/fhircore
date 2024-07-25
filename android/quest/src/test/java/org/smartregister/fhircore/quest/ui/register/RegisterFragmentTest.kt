@@ -20,7 +20,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.SnackbarDuration
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
-import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
@@ -38,10 +37,8 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.time.OffsetDateTime
 import javax.inject.Inject
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -130,19 +127,10 @@ class RegisterFragmentTest : RobolectricTest() {
       TestNavHostController(mainActivity).apply {
         setGraph(org.smartregister.fhircore.quest.R.navigation.application_nav_graph)
       }
-    Navigation.setViewNavController(mainActivity.navHostFragment.requireView(), navController)
     mainActivity.supportFragmentManager.run {
       commitNow { add(registerFragment, RegisterFragment::class.java.simpleName) }
       executePendingTransactions()
     }
-  }
-
-  @Test
-  fun testOnStopClearsSearchText() {
-    coEvery { registerFragmentMock.onStop() } just runs
-    registerFragmentMock.onStop()
-    verify { registerFragmentMock.onStop() }
-    Assert.assertEquals(registerViewModel.searchText.value, "")
   }
 
   @Test
@@ -154,7 +142,6 @@ class RegisterFragmentTest : RobolectricTest() {
   }
 
   @Test
-  @OptIn(ExperimentalCoroutinesApi::class)
   fun `test On changed emits a snack bar message`() = runTest {
     val snackBarMessageConfig =
       SnackBarMessageConfig(
@@ -172,7 +159,7 @@ class RegisterFragmentTest : RobolectricTest() {
   }
 
   @Test
-  @OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class)
+  @OptIn(ExperimentalMaterialApi::class)
   fun `test On Sync Progress emits progress percentage`() = runTest {
     val downloadProgressSyncStatus =
       CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 1000, 300))
@@ -206,7 +193,7 @@ class RegisterFragmentTest : RobolectricTest() {
   }
 
   @Test
-  @OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class)
+  @OptIn(ExperimentalMaterialApi::class)
   fun `test On Sync Progress emits correct download progress percentage after a glitch`() =
     runTest {
       val downloadProgressSyncStatus: SyncJobStatus.InProgress =

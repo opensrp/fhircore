@@ -25,7 +25,6 @@ import com.google.android.fhir.SearchResult
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Search
-import com.google.common.reflect.TypeToken
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -773,7 +772,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
-  fun testThatNextIsInvokedWhenItExistsInABundleLink() = runTest {
+  fun testThatNextIsInvokedWhenItExistsInABundleLink() {
     val appId = "theAppId"
     val compositionSections = mutableListOf<SectionComponent>()
     compositionSections.add(
@@ -804,14 +803,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
           },
         )
       }
+    val nextPageUrlLink = bundle.getLink(PAGINATION_NEXT).url
 
     val finalBundle =
       Bundle().apply { entry = listOf(BundleEntryComponent().setResource(listResource)) }
 
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
-    fhirEngine.create(composition)
-
+    runBlocking { fhirEngine.create(composition) }
     coEvery {
       fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
     } returns Bundle().apply { addEntry().resource = composition }
@@ -823,8 +822,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     } returns bundle
 
-    val nextPageUrlLink = bundle.getLink(PAGINATION_NEXT).url
-
     coEvery {
       fhirResourceDataSource.getResourceWithGatewayModeHeader(
         "list-entries",
@@ -832,7 +829,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     } returns finalBundle
 
-    configRegistry.fetchNonWorkflowConfigResources()
+    runBlocking { configRegistry.fetchNonWorkflowConfigResources() }
 
     coVerify {
       fhirResourceDataSource.getResourceWithGatewayModeHeader(
@@ -1020,30 +1017,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
       assertEquals("composition-id-1", requestPathArgumentSlot.last().id)
       assertEquals(ResourceType.Composition, requestPathArgumentSlot.last().resourceType)
     }
-
-  @Test
-  fun testSaveSyncSharedPreferencesShouldVerifyDataSave() {
-    val resourceType =
-      listOf(ResourceType.Task, ResourceType.Patient, ResourceType.Task, ResourceType.Patient)
-
-    configRegistry.saveSyncSharedPreferences(resourceType)
-
-    val savedSyncResourcesResult =
-      configRegistry.sharedPreferencesHelper.read(
-        SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-        null,
-      )!!
-    val listResourceTypeToken = object : TypeToken<List<ResourceType>>() {}.type
-    val savedSyncResourceTypes: List<ResourceType> =
-      configRegistry.sharedPreferencesHelper.gson.fromJson(
-        savedSyncResourcesResult,
-        listResourceTypeToken,
-      )
-
-    assertEquals(2, savedSyncResourceTypes.size)
-    assertEquals(ResourceType.Task, savedSyncResourceTypes.first())
-    assertEquals(ResourceType.Patient, savedSyncResourceTypes.last())
-  }
 
   @Test
   fun writeToFileWithMetadataResourceWithNameShouldCreateFileWithResourceName() {

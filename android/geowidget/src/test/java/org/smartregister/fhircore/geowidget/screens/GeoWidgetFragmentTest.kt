@@ -75,7 +75,7 @@ class GeoWidgetFragmentTest {
   }
 
   @Test
-  fun test_add_and_cancel_location_points() {
+  fun testAddAndCancelLocationPoints() {
     // Mock dependencies
     val mockFeatureCollection = mockk<FeatureCollection>(relaxed = true)
     val mockGeoJsonSource = mockk<GeoJsonSource>(relaxed = true)

@@ -29,7 +29,9 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -68,10 +70,10 @@ constructor(
   val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val preferenceDataStore: PreferenceDataStore,
   val configurationRegistry: ConfigurationRegistry,
   val workManager: WorkManager,
   val dispatcherProvider: DispatcherProvider,
+  private val preferenceDataStore: PreferenceDataStore,
 ) : ViewModel() {
 
   val languages by lazy { configurationRegistry.fetchLanguages() }
@@ -91,7 +93,6 @@ constructor(
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
-  // TODO: Reads an object type ---> UserInfo
   fun retrieveUserInfo() =
     sharedPreferencesHelper.read<UserInfo>(
       key = SharedPreferenceKey.USER_INFO.name,
@@ -106,6 +107,10 @@ constructor(
   fun retrieveCareTeam() = preferenceDataStore.readOnce(PreferenceDataStore.CARE_TEAM_NAME, null)
 
   // TODO: Reads an object type ---> OffsetDateTime
+  fun retrieveDataMigrationVersion(): String = runBlocking {
+    (preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).firstOrNull() ?: 0).toString()
+  }
+
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
@@ -153,7 +158,7 @@ constructor(
         // TODO : Write an object type ---> AppMainEvent
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
-          configurationRegistry.clearConfigsCache()
+          configurationRegistry.configCacheMap.clear()
           setAppLocale(event.language.tag)
           getActivity()?.refresh()
         }

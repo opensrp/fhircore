@@ -81,7 +81,6 @@ constructor(
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
   val registerUiState = mutableStateOf(RegisterUiState())
   val currentPage: MutableState<Int> = mutableIntStateOf(0)
-  val searchText = mutableStateOf("")
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<ResourceData>>> =
     MutableStateFlow(emptyFlow())
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
@@ -169,11 +168,10 @@ constructor(
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
-        searchText.value = event.searchText
         if (event.searchText.isEmpty()) {
           paginateRegisterData(registerUiState.value.registerId)
         } else {
-          filterRegisterData(event)
+          filterRegisterData(event.searchText)
         }
       }
       is RegisterEvent.MoveToNextPage -> {
@@ -187,7 +185,7 @@ constructor(
       RegisterEvent.ResetFilterRecordsCount -> _filteredRecordsCount.longValue = -1
     }
 
-  fun filterRegisterData(event: RegisterEvent.SearchRegister) {
+  fun filterRegisterData(searchText: String) {
     val searchBar = registerUiState.value.registerConfiguration?.searchBar
     // computedRules (names of pre-computed rules) must be provided for search to work.
     if (searchBar?.computedRules != null) {
@@ -198,7 +196,7 @@ constructor(
             searchBar.computedRules!!.any { ruleName ->
               // if ruleName not found in map return {-1}; check always return false hence no data
               val value = resourceData.computedValuesMap[ruleName]?.toString() ?: "{-1}"
-              value.contains(other = event.searchText, ignoreCase = true)
+              value.contains(other = searchText, ignoreCase = true)
             }
           }
         }

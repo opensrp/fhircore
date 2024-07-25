@@ -146,7 +146,6 @@ constructor(
           return@launch
         }
 
-        val patientRelatedResourceTypes = mutableListOf<ResourceType>()
         compositionResource
           .retrieveCompositionSections()
           .asSequence()
@@ -183,19 +182,10 @@ constructor(
               resultBundle.entry.forEach { bundleEntryComponent ->
                 if (bundleEntryComponent.resource != null) {
                   defaultRepository.createRemote(false, bundleEntryComponent.resource)
-
-                  if (bundleEntryComponent.resource is Binary) {
-                    configurationRegistry.processResultBundleBinaries(
-                      bundleEntryComponent.resource as Binary,
-                      patientRelatedResourceTypes,
-                    )
-                  }
                 }
               }
             }
           }
-
-        configurationRegistry.saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
 
         // Save composition after fetching all the referenced section resources
         defaultRepository.createRemote(false, compositionResource)

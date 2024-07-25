@@ -79,6 +79,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
   lateinit var fhirEngine: FhirEngine
   private var sharedPreferencesHelper: SharedPreferencesHelper
   private lateinit var preferenceDataStore: PreferenceDataStore
@@ -116,6 +117,7 @@ class UserSettingViewModelTest : RobolectricTest() {
           fhirEngine = mockk(),
           dispatcherProvider = dispatcherProvider,
           syncListenerManager = mockk(relaxed = true),
+          workManager = workManager,
           context = context,
         ),
       )

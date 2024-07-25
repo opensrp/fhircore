@@ -22,6 +22,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.WorkManager
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -55,6 +56,9 @@ class UserSettingFragmentTest : RobolectricTest() {
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var workManager: WorkManager
+
   private val navController = TestNavHostController(ApplicationProvider.getApplicationContext())
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private val resourceService: FhirResourceService = mockk()
@@ -67,6 +71,7 @@ class UserSettingFragmentTest : RobolectricTest() {
   private lateinit var userSettingViewModel: UserSettingViewModel
   private lateinit var accountAuthenticator: AccountAuthenticator
   private lateinit var secureSharedPreference: SecureSharedPreference
+  private lateinit var preferenceDataStore: PreferenceDataStore
 
   init {
     sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
@@ -82,12 +87,14 @@ class UserSettingFragmentTest : RobolectricTest() {
     accountAuthenticator = mockk()
     secureSharedPreference = mockk()
     sharedPreferencesHelper = mockk()
+    preferenceDataStore = mockk()
     syncBroadcaster =
       SyncBroadcaster(
         configurationRegistry,
         fhirEngine = mockk(),
         dispatcherProvider = dispatcherProvider,
         syncListenerManager = mockk(relaxed = true),
+        workManager = workManager,
         context = application,
       )
 
