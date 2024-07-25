@@ -17,8 +17,13 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import android.content.Context
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.search.Order
+import com.jayway.jsonpath.Configuration
+import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.Option
+import com.jayway.jsonpath.PathNotFoundException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
@@ -26,6 +31,8 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Resource
@@ -37,6 +44,7 @@ import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -48,6 +56,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.SDF_DD_MMM_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
 import org.smartregister.fhircore.engine.util.extension.daysPassed
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractBirthDate
 import org.smartregister.fhircore.engine.util.extension.extractGender
@@ -69,6 +78,8 @@ constructor(
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val dispatcherProvider: DispatcherProvider,
   val locationService: LocationService,
+  val fhirContext: FhirContext,
+  val defaultRepository: DefaultRepository,
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
   private var facts: Facts = Facts()
@@ -135,6 +146,11 @@ constructor(
 
   /** Provide access to utility functions accessible to the users defining rules in JSON format. */
   inner class RulesEngineService {
+
+    val parser = fhirContext.newJsonParser()
+
+    private var conf: Configuration =
+      Configuration.defaultConfiguration().apply { addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL) }
 
     /**
      * This function creates a property key from the string [value] and uses the key to retrieve the
@@ -462,6 +478,48 @@ constructor(
         }
         .getOrNull()
 
+    fun filterResourcesByJsonPath(
+      resources: List<Resource>?,
+      jsonPathExpression: String,
+      dataType: String,
+      value: Any,
+      vararg compareToResult: Any,
+    ): List<Resource>? {
+      if (resources.isNullOrEmpty() || jsonPathExpression.isBlank()) return null
+
+      val expression =
+        if (jsonPathExpression.startsWith("\$")) {
+          jsonPathExpression
+        } else {
+          jsonPathExpression.replace(
+            jsonPathExpression.substring(0, jsonPathExpression.indexOf(".")),
+            "\$",
+          )
+        }
+
+      return runCatching {
+          resources.filter {
+            val document = JsonPath.using(conf).parse(it.encodeResourceToString())
+            val result: Any = document.read(expression)
+
+            when (DataType.valueOf(dataType.uppercase())) {
+              DataType.BOOLEAN -> (result as Boolean).compareTo(value as Boolean) in compareToResult
+              DataType.DATE -> (result as Date).compareTo(value as Date) in compareToResult
+              DataType.DATETIME ->
+                (result as DateTime).compareTo(value as DateTime) in compareToResult
+              DataType.DECIMAL ->
+                (result as BigDecimal).compareTo(value as BigDecimal) in compareToResult
+              DataType.INTEGER -> (result as Int).compareTo(value as Int) in compareToResult
+              DataType.STRING -> (result as String).compareTo(value as String) in compareToResult
+              else -> {
+                false
+              }
+            }
+          }
+        }
+        .getOrNull()
+    }
+
     /**
      * This function combines all string indexes to a list separated by the separator and regex
      * defined by the content author
@@ -576,6 +634,59 @@ constructor(
             else -> ""
           }
         }
+      }
+    }
+
+    @JvmOverloads
+    fun updateResource(
+      resource: Resource?,
+      path: String?,
+      value: Any?,
+      purgeAffectedResources: Boolean = false,
+      createLocalChangeEntitiesAfterPurge: Boolean = true,
+    ) {
+      if (resource == null || path.isNullOrEmpty()) return
+
+      val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
+
+      val updatedResourceDocument =
+        try {
+          jsonParse.apply {
+            // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
+            if (path.startsWith("\$") && value != null) {
+              set(path, value)
+            }
+            if (
+              path.startsWith(
+                resource.resourceType.name,
+                ignoreCase = true,
+              ) && value != null
+            ) {
+              set(
+                path.replace(resource.resourceType.name, "\$"),
+                value,
+              )
+            }
+
+            if (resource.id.startsWith("#")) {
+              val idPath = "\$.id"
+              set(idPath, resource.id.replace("#", ""))
+            }
+          }
+        } catch (e: PathNotFoundException) {
+          Timber.e(e, "Path $path not found")
+          jsonParse
+        }
+
+      val updatedResource =
+        parser.parseResource(resource::class.java, updatedResourceDocument.jsonString())
+      CoroutineScope(dispatcherProvider.io()).launch {
+        if (purgeAffectedResources) {
+          defaultRepository.purge(updatedResource as Resource, forcePurge = true)
+        }
+        if (createLocalChangeEntitiesAfterPurge) {
+          defaultRepository.addOrUpdate(resource = updatedResource as Resource)
+        } else defaultRepository.createRemote(resource = arrayOf(updatedResource as Resource))
       }
     }
   }
