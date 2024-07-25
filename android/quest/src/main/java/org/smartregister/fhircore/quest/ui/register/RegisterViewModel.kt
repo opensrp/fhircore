@@ -61,7 +61,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
-import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
@@ -80,7 +79,6 @@ constructor(
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
   val registerUiState = mutableStateOf(RegisterUiState())
   val currentPage: MutableState<Int> = mutableIntStateOf(0)
-  val searchText: MutableState<UiSearchQuery> = mutableStateOf(UiSearchQuery.emptyText)
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<ResourceData>>> =
     MutableStateFlow(emptyFlow())
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()

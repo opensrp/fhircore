@@ -76,7 +76,7 @@ fun List<ActionConfig>.handleClickEvent(
       it.trigger.isIn(ActionTrigger.ON_CLICK, ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION)
     }
 
-  onClickAction?.let { handleClickEvent(navController, resourceData, navMenu, context) }
+  onClickAction?.handleClickEvent(navController, resourceData, navMenu, context)
 }
 
 fun ActionConfig.handleClickEvent(
