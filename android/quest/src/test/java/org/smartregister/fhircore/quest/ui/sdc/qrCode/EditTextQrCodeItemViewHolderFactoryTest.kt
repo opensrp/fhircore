@@ -46,7 +46,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.util.QrCodeScanUtils
 
 @HiltAndroidTest
-class EditTextQrCodeViewHolderFactoryTest : RobolectricTest() {
+class EditTextQrCodeItemViewHolderFactoryTest : RobolectricTest() {
 
   @get:Rule(order = 0) var hiltAndroidRule = HiltAndroidRule(this)
 
@@ -68,7 +68,7 @@ class EditTextQrCodeViewHolderFactoryTest : RobolectricTest() {
       scenario ->
       scenario.onActivity { activity ->
         val parentView = FrameLayout(activity)
-        val viewHolder = EditTextQrCodeViewHolderFactory.create(parentView)
+        val viewHolder = EditTextQrCodeItemViewHolderFactory { _, _ -> }.create(parentView)
         val textInputLayout =
           viewHolder.itemView.findViewById<TextInputLayout>(R.id.text_input_layout)
         Assert.assertNotNull(textInputLayout)
@@ -107,7 +107,7 @@ class EditTextQrCodeViewHolderFactoryTest : RobolectricTest() {
       scenario ->
       scenario.onActivity { activity ->
         val parentView = FrameLayout(activity)
-        val viewHolder = EditTextQrCodeViewHolderFactory.create(parentView)
+        val viewHolder = EditTextQrCodeItemViewHolderFactory { _, _ -> }.create(parentView)
         viewHolder.bind(
           QuestionnaireViewItem(
             questionnaireItem =
@@ -171,7 +171,8 @@ class EditTextQrCodeViewHolderFactoryTest : RobolectricTest() {
           },
         )
       }
+    TODO("Fix and move to the correct class")
 
-    Assert.assertTrue(EditTextQrCodeViewHolderFactory.matcher(questionnaireItem))
+    //    Assert.assertTrue(EditTextQrCodeItemViewHolderFactory.matcher(questionnaireItem))
   }
 }
