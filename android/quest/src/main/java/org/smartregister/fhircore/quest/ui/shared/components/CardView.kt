@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,9 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,6 +62,7 @@ fun CardView(
   viewProperties: CardViewProperties,
   resourceData: ResourceData,
   navController: NavController,
+  decodedImageMap: SnapshotStateMap<String, Bitmap>,
 ) {
   // Check if card is visible
   if (viewProperties.visible.toBoolean()) {
@@ -109,6 +114,7 @@ fun CardView(
             viewProperties = viewProperties.content,
             resourceData = resourceData,
             navController = navController,
+            decodedImageMap = decodedImageMap,
           )
         }
       }
@@ -147,6 +153,7 @@ private fun CardViewWithoutPaddingPreview() {
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }
@@ -183,6 +190,7 @@ private fun CardViewWithPaddingPreview() {
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }
@@ -205,6 +213,7 @@ private fun CardViewWithoutPaddingAndHeaderPreview() {
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }
@@ -272,6 +281,7 @@ private fun CardViewImageWithItems() {
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }

@@ -20,14 +20,13 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonPrimitive
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Location
@@ -37,14 +36,14 @@ import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
-import org.smartregister.fhircore.geowidget.model.Coordinates
-import org.smartregister.fhircore.geowidget.model.Feature
+import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 
@@ -61,114 +60,131 @@ constructor(
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
 
-  private val _locationsFlow: MutableStateFlow<Set<Feature>> = MutableStateFlow(setOf())
-  val locationsFlow: StateFlow<Set<Feature>> = _locationsFlow
+  private val _noLocationFoundDialog = MutableLiveData<Boolean>()
+  val noLocationFoundDialog: LiveData<Boolean>
+    get() = _noLocationFoundDialog
 
-  private val _locationDialog = MutableLiveData<String>()
-  val locationDialog: LiveData<String>
-    get() = _locationDialog
+  private lateinit var repositoryResourceDataList: List<RepositoryResourceData>
 
-  // TODO: use List or Linkage resource to connect Location with Group/Patient/etc
-  private fun retrieveLocations(geoWidgetConfig: GeoWidgetConfiguration) {
-    viewModelScope.launch(dispatcherProvider.io()) {
-      // TODO: Loading all the data with the related resources may impact performance. This
-      //  needs to be refactored in future
-      val repositoryResourceDataList =
-        defaultRepository.searchResourcesRecursively(
-          filterActiveResources = null,
-          fhirResourceConfig = geoWidgetConfig.resourceConfig,
-          configRules = null,
-          secondaryResourceConfigs = null,
-          filterByRelatedEntityLocationMetaTag = false,
+  suspend fun retrieveLocations(
+    geoWidgetConfig: GeoWidgetConfiguration,
+    searchText: String? = null,
+  ): List<GeoJsonFeature> {
+    val geoJsonFeatures = mutableListOf<GeoJsonFeature>()
+    val repositoryResourceDataList = retrieveResources(geoWidgetConfig)
+
+    repositoryResourceDataList.forEach { repositoryResourceData ->
+      val location = repositoryResourceData.resource as Location
+      val resourceData =
+        resourceDataRulesExecutor.processResourceData(
+          repositoryResourceData = repositoryResourceData,
+          ruleConfigs = geoWidgetConfig.servicePointConfig?.rules ?: emptyList(),
+          params = emptyMap(),
         )
+      val servicePointProperties = mutableMapOf<String, JsonPrimitive>()
+      geoWidgetConfig.servicePointConfig?.servicePointProperties?.forEach { (key, value) ->
+        servicePointProperties[key] =
+          JsonPrimitive(value.interpolate(resourceData.computedValuesMap))
+      }
 
-      repositoryResourceDataList.forEach { repositoryResourceData ->
-        val location = repositoryResourceData.resource as Location
-        val resourceData =
-          resourceDataRulesExecutor.processResourceData(
-            repositoryResourceData = repositoryResourceData,
-            ruleConfigs = geoWidgetConfig.servicePointConfig?.rules!!,
-            params = emptyMap(),
+      if (
+        location.hasPosition() &&
+          location.position.hasLatitude() &&
+          location.position.hasLongitude()
+      ) {
+        val feature =
+          GeoJsonFeature(
+            id = location.idElement.idPart,
+            geometry =
+              Geometry(
+                coordinates = // MapBox coordinates are represented as Long,Lat (NOT Lat,Long)
+                listOf(
+                    location.position.longitude.toDouble(),
+                    location.position.latitude.toDouble(),
+                  ),
+              ),
+            properties = servicePointProperties,
           )
-        val servicePointProperties = mutableMapOf<String, Any>()
-        geoWidgetConfig.servicePointConfig?.servicePointProperties?.forEach { (key, value) ->
-          servicePointProperties[key] = value.interpolate(resourceData.computedValuesMap)
+
+        val keys = geoWidgetConfig.topScreenSection?.searchBar?.computedRules
+
+        if (!keys.isNullOrEmpty() && !searchText.isNullOrEmpty()) {
+          val addFeature =
+            keys.any { key ->
+              servicePointProperties[key].toString().contains(other = searchText, ignoreCase = true)
+            }
+          if (addFeature) {
+            geoJsonFeatures.add(feature)
+          }
         }
-        if (
-          location.hasPosition() &&
-            location.position.hasLatitude() &&
-            location.position.hasLongitude()
-        ) {
-          val feature =
-            Feature(
-              id = location.idElement.idPart,
-              geometry =
-                Geometry(
-                  coordinates =
-                    arrayListOf(
-                      Coordinates(
-                        latitude = location.position.latitude.toDouble(),
-                        longitude = location.position.longitude.toDouble(),
-                      ),
-                    ),
-                ),
-              properties = servicePointProperties,
-            )
-          addLocationToFlow(feature)
+
+        if (searchText.isNullOrEmpty()) {
+          geoJsonFeatures.add(feature)
         }
       }
     }
+    return geoJsonFeatures
   }
 
-  fun checkSelectedLocation(configuration: GeoWidgetConfiguration) {
-    // check preference if location/region is already selected otherwise show dialog to select
-    // location
-    // through Location Selector Feature/Screen
-    // todo - for now we are calling this method, once location Selector is developed, we can remove
-    // this line
-    retrieveLocations(configuration)
+  fun showNoLocationDialog(geoWidgetConfiguration: GeoWidgetConfiguration) {
+    geoWidgetConfiguration.noResults?.let { _noLocationFoundDialog.postValue(true) }
   }
 
-  private fun addLocationToFlow(location: Feature) {
-    _locationsFlow.value = _locationsFlow.value + location
+  suspend fun retrieveResources(
+    geoWidgetConfig: GeoWidgetConfiguration,
+  ): List<RepositoryResourceData> {
+    if (!this::repositoryResourceDataList.isInitialized) {
+      repositoryResourceDataList = coroutineScope {
+        async {
+            defaultRepository.searchResourcesRecursively(
+              filterActiveResources = null,
+              fhirResourceConfig = geoWidgetConfig.resourceConfig,
+              configRules = null,
+              secondaryResourceConfigs = null,
+              filterByRelatedEntityLocationMetaTag =
+                geoWidgetConfig.filterDataByRelatedEntityLocation == true,
+            )
+          }
+          .await()
+      }
+    }
+    return repositoryResourceDataList
   }
 
-  private suspend fun getLocationFromDb(id: String): Location? {
-    return defaultRepository.loadResource(id.extractLogicalIdUuid())
-  }
-
-  suspend fun onQuestionnaireSubmission(extractedResourceIds: List<IdType>) {
+  suspend fun onQuestionnaireSubmission(
+    extractedResourceIds: List<IdType>,
+    emitFeature: (GeoJsonFeature) -> Unit,
+  ) {
     val locationId =
       extractedResourceIds.firstOrNull { it.resourceType == ResourceType.Location.name } ?: return
-    val location = getLocationFromDb(locationId.valueAsString) ?: return
+    val location =
+      defaultRepository.loadResource<Location>(locationId.valueAsString.extractLogicalIdUuid())
+        ?: return
 
     val feature =
-      Feature(
+      GeoJsonFeature(
         id = location.id,
         geometry =
           Geometry(
-            coordinates =
-              listOf(
-                Coordinates(
-                  latitude = location.position.latitude.toDouble(),
-                  longitude = location.position.longitude.toDouble(),
-                ),
+            coordinates = // MapBox coordinates are represented as Long,Lat (NOT Lat,Long)
+            listOf(
+                location.position.longitude.toDouble(),
+                location.position.latitude.toDouble(),
               ),
           ),
-        // TODO: add initial color for location
       )
-    addLocationToFlow(feature)
+    emitFeature(feature)
   }
 
   fun launchQuestionnaire(
     questionnaireConfig: QuestionnaireConfig,
-    feature: Feature,
+    feature: GeoJsonFeature,
     context: Context,
   ) {
     val params =
       addMatchingCoordinatesToActionParameters(
-        feature.geometry?.coordinates?.get(0)?.latitude!!,
-        feature.geometry?.coordinates?.get(0)?.longitude,
+        feature.geometry?.coordinates?.get(0),
+        feature.geometry?.coordinates?.get(1),
         questionnaireConfig.extraParams,
       )
     if (context is QuestionnaireHandler) {
@@ -179,14 +195,6 @@ constructor(
       )
     }
   }
-
-  fun onEvent(event: GeoWidgetEvent) =
-    when (event) {
-      is GeoWidgetEvent.SearchServicePoints -> {
-        // TODO: here the search bar query will be processed
-        ""
-      }
-    }
 
   /**
    * Adds coordinates into the correct action parameter as [ActionParameter.value] if the
@@ -213,6 +221,10 @@ constructor(
           else -> it
         }
       }
+  }
+
+  suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
+    _snackBarStateFlow.emit(snackBarMessageConfig)
   }
 
   private companion object {

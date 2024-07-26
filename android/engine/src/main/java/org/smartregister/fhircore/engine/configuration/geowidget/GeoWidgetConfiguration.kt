@@ -20,6 +20,7 @@ import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -40,6 +41,8 @@ data class GeoWidgetConfiguration(
   val servicePointConfig: ServicePointConfig?,
   val summaryBottomSheetConfig: SummaryBottomSheetConfig? = null,
   val actions: List<ActionConfig>? = emptyList(),
+  val noResults: NoResultsConfig? = null,
+  val filterDataByRelatedEntityLocation: Boolean? = null,
 ) : Configuration()
 
 @Serializable
