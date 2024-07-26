@@ -108,7 +108,8 @@ class AppMainViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
+    sharedPreferencesHelper =
+      SharedPreferencesHelper(application, gson, SecureSharedPreference(application))
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
 

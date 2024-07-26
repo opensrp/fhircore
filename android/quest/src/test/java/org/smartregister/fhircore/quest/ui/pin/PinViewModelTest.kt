@@ -119,7 +119,7 @@ class PinViewModelTest : RobolectricTest() {
     pinViewModel.onSetPin("1990".toCharArray())
 
     val newPinSlot = slot<CharArray>()
-    verify { secureSharedPreference.saveSessionPin(capture(newPinSlot)) }
+    verify { secureSharedPreference.saveSessionPin(any(), capture(newPinSlot)) }
 
     Assert.assertEquals("1990", newPinSlot.captured.concatToString())
     Assert.assertEquals(true, pinViewModel.navigateToHome.value)

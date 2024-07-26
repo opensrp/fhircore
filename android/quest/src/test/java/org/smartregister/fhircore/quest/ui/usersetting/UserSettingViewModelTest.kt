@@ -95,7 +95,12 @@ class UserSettingViewModelTest : RobolectricTest() {
   private val navController = mockk<NavController>(relaxUnitFun = true)
 
   init {
-    sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
+    sharedPreferencesHelper =
+      SharedPreferencesHelper(
+        context = context,
+        gson = mockk(),
+        secureSharedPreference = SecureSharedPreference(context),
+      )
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
   }

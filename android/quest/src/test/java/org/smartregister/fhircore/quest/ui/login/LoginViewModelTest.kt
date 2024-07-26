@@ -155,7 +155,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testSuccessfulOfflineLogin() {
     val activity = mockedActivity()
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, this.thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, this.thisPassword.toCharArray())
 
     every {
       accountAuthenticator.validateLoginCredentials(thisUsername, thisPassword.toCharArray())
@@ -177,7 +177,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     val activity = mockedActivity()
 
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, this.thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, this.thisPassword.toCharArray())
 
     every {
       accountAuthenticator.validateLoginCredentials(thisUsername, thisPassword.toCharArray())
@@ -209,7 +209,7 @@ internal class LoginViewModelTest : RobolectricTest() {
           scope = "open_my_guy",
         ),
       )
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     val practitioner =
       practitionerDetails().apply { fhirPractitionerDetails.id = "$thisUsername-practitioner-id" }
     sharedPreferencesHelper.write(
@@ -239,7 +239,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testSuccessfulOnlineLoginForDifferentUserInTheSameLocationWithSyncStrategyLocation() =
     runTest {
       updateCredentials()
-      secureSharedPreference.saveCredentials("nativeUser", "n4t1veP5wd".toCharArray())
+      secureSharedPreference.saveMultiCredentials("nativeUser", "n4t1veP5wd".toCharArray())
       sharedPreferencesHelper.write(ResourceType.Location.name, listOf("test-location"))
       sharedPreferencesHelper.write(
         SharedPreferenceKey.PRACTITIONER_ID.name,
@@ -296,7 +296,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testUnSuccessfulOnlineLoginForDifferentUserInDifferentLocationWithSyncStrategyLocation() {
     updateCredentials()
-    secureSharedPreference.saveCredentials("nativeUser", "n4t1veP5wd".toCharArray())
+    secureSharedPreference.saveMultiCredentials("nativeUser", "n4t1veP5wd".toCharArray())
     sharedPreferencesHelper.write(ResourceType.Location.name, listOf("test-location"))
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_ID.name,
@@ -345,7 +345,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testSuccessfulNewOnlineLoginShouldFetchUserInfoAndPractitioner() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery {
       tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
@@ -395,7 +395,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testUnSuccessfulOnlineLoginUserInfoNotFetched() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery {
       tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
@@ -426,7 +426,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testUnSuccessfulOnlineLoginWhenAccessTokenNotReceived() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery {
       tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
@@ -461,7 +461,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testUnsuccessfulOnlineLoginWithUnknownHostExceptionEmitsError() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery {
       tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
@@ -476,7 +476,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testUnsuccessfulOnlineLoginWithHTTPHostExceptionCode400EmitsErrorFetchingUser() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
 
     coEvery {
@@ -493,7 +493,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testUnsuccessfulOnlineLoginWithHTTPHostExceptionCode401EmitsInvalidCredentialsError() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
 
     coEvery {
@@ -510,7 +510,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun `loginViewModel#fetchPractitioner() should call onFetchUserInfo with exception when SocketTimeoutException is thrown`() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery { keycloakService.fetchUserInfo() }.throws(SocketTimeoutException())
 
@@ -533,7 +533,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun `loginViewModel#fetchPractitioner() should call onFetchUserInfo with exception when UnknownHostException is thrown`() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery { keycloakService.fetchUserInfo() }.throws(UnknownHostException())
 
@@ -556,7 +556,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun `loginViewModel#fetchPractitioner() should call onFetchPractitioner with exception when UnknownHostException is thrown`() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery { keycloakService.fetchUserInfo() } returns
       Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
@@ -585,7 +585,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun `loginViewModel#fetchPractitioner() should call onFetchPractitioner with exception when SocketTimeoutException is thrown`() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery { keycloakService.fetchUserInfo() } returns
       Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
