@@ -77,7 +77,6 @@
     <string name="forgot_password">Mot de passe oublié</string>
     <string name="forgot_password_title">Mot de passe oublié!</string>
     <string name="more">Plus de détails</string>
-    <string name="call_supervisor">Veuillez appeler votre superviseur au %1$s</string>
     <string name="cancel" tools:ignore="ButtonCase">Annuler</string>
     <string name="dial_number">Composer le numéro</string>
     <string name="register">Enregistrer</string>
