@@ -16,16 +16,46 @@
 
 package org.smartregister.fhircore.quest.data
 
+import android.util.Log
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.XFhirQueryResolver
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 
 @Singleton
 class QuestXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) : XFhirQueryResolver {
   override suspend fun resolve(xFhirQuery: String): List<Resource> {
-    return fhirEngine.search(xFhirQuery).map { it.resource }
+    Log.d("FIKRI XFHIRQUERY", xFhirQuery)
+
+    if (xFhirQuery.contains("QuestionnaireResponse")) {
+      val strParams = xFhirQuery.removePrefix("QuestionnaireResponse?")
+      val params = strParams.split("&")
+      val search =
+        Search(ResourceType.QuestionnaireResponse).apply {
+          params.forEach {
+            val paramType = it.split("=").first()
+            val paramValue = it.split("=").last()
+            Log.d("FIKRI PARAM", "$paramType $paramValue")
+
+            if (paramType == QuestionnaireResponse.SP_SUBJECT) {
+              this.filter(QuestionnaireResponse.SUBJECT, { value = paramValue })
+            }
+            if (paramType == QuestionnaireResponse.SP_QUESTIONNAIRE) {
+              this.filter(QuestionnaireResponse.QUESTIONNAIRE, { value = paramValue })
+            }
+          }
+        }
+
+      val lists = fhirEngine.search<QuestionnaireResponse>(search).sortedByDescending { it.resource.meta.lastUpdated }
+      Log.d("FIKRI TOTAL RES", lists.size.toString())
+      return lists.map { it.resource }
+    } else {
+      return fhirEngine.search(xFhirQuery).map { it.resource }
+    }
   }
 }
