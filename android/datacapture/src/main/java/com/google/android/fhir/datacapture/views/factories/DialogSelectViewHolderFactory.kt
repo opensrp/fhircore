@@ -92,7 +92,7 @@ internal object QuestionnaireItemDialogSelectViewHolderFactory :
           View.OnClickListener {
             val fragment =
               OptionSelectDialogFragment(
-                title = questionnaireItem.localizedTextSpanned ?: "",
+                title = questionnaireItem.localizedTextSpanned ?: questionnaireItem.localizedFlyoverSpanned ?: "",
                 config = questionnaireItem.buildConfig(),
                 selectedOptions = selectedOptions,
               )
@@ -141,6 +141,7 @@ internal object QuestionnaireItemDialogSelectViewHolderFactory :
               }
           }
         selectedOptions.otherOptions.map { otherOption ->
+          if (otherOption.isEmpty()) return@map
           answers +=
             QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
               value = StringType(otherOption)

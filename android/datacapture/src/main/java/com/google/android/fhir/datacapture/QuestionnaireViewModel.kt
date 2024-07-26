@@ -30,6 +30,7 @@ import com.google.android.fhir.datacapture.expressions.EnabledAnswerOptionsEvalu
 import com.google.android.fhir.datacapture.extensions.EntryMode
 import com.google.android.fhir.datacapture.extensions.addNestedItemsToAnswer
 import com.google.android.fhir.datacapture.extensions.allItems
+import com.google.android.fhir.datacapture.extensions.calculatedExpression
 import com.google.android.fhir.datacapture.extensions.cqfExpression
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.datacapture.extensions.entryMode
@@ -41,6 +42,8 @@ import com.google.android.fhir.datacapture.extensions.isHelpCode
 import com.google.android.fhir.datacapture.extensions.isHidden
 import com.google.android.fhir.datacapture.extensions.isPaginated
 import com.google.android.fhir.datacapture.extensions.isRepeatedGroup
+import com.google.android.fhir.datacapture.extensions.isExpressionReferencedBy
+import com.google.android.fhir.datacapture.extensions.isEnableWhenReferencedBy
 import com.google.android.fhir.datacapture.extensions.localizedTextSpanned
 import com.google.android.fhir.datacapture.extensions.maxValue
 import com.google.android.fhir.datacapture.extensions.maxValueCqfCalculatedValueExpression
@@ -63,6 +66,7 @@ import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.datacapture.validation.ValidationResult
 import com.google.android.fhir.datacapture.views.QuestionTextConfiguration
 import com.google.android.fhir.datacapture.views.QuestionnaireViewItem
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -281,6 +285,8 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
       }
     }
 
+  private val isLoadingNextPage = MutableStateFlow(true)
+
   /**
    * Contains [QuestionnaireResponseItemComponent]s that have been modified by the user.
    * [QuestionnaireResponseItemComponent]s that have not been modified by the user will not be
@@ -366,9 +372,28 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
       }
       modifiedQuestionnaireResponseItemSet.add(questionnaireResponseItem)
 
-      updateDependentQuestionnaireResponseItems(questionnaireItem, questionnaireResponseItem)
+      viewModelScope.launch(Dispatchers.IO) {
+        var isReferenced = false
+        kotlin.run {
+          isReferenced = questionnaireItem.isExpressionReferencedBy(questionnaire)
+          if (isReferenced) return@run
 
-      modificationCount.update { it + 1 }
+          questionnaire.item.flattened().forEach { item ->
+            isReferenced = questionnaireItem.isEnableWhenReferencedBy(item)
+            if (isReferenced) return@run
+
+            isReferenced = questionnaireItem.isExpressionReferencedBy(item)
+            if (isReferenced) return@run
+          }
+        }
+        if (isReferenced) isLoadingNextPage.value = true
+        modificationCount.update { it + 1 }
+
+        updateDependentQuestionnaireResponseItems(questionnaireItem, questionnaireResponseItem)
+        pages = getQuestionnairePages()
+        isLoadingNextPage.value = false
+        modificationCount.update { it + 1 }
+      }
     }
 
   private val expressionEvaluator: ExpressionEvaluator =
@@ -508,6 +533,7 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
     when (entryMode) {
       EntryMode.PRIOR_EDIT,
       EntryMode.SEQUENTIAL, -> {
+        if (isLoadingNextPage.value) return
         validateCurrentPageItems {
           val nextPageIndex =
             pages!!.indexOfFirst {
@@ -518,6 +544,7 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
         }
       }
       EntryMode.RANDOM -> {
+        if (isLoadingNextPage.value) return
         val nextPageIndex =
           pages!!.indexOfFirst {
             it.index > currentPageIndexFlow.value!! && it.enabled && !it.hidden
@@ -568,14 +595,18 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
       .withIndex()
       .onEach {
         if (it.index == 0) {
-          expressionEvaluator.detectExpressionCyclicDependency(questionnaire.item)
-          questionnaire.item.flattened().forEach { qItem ->
-            updateDependentQuestionnaireResponseItems(
-              qItem,
-              questionnaireResponse.allItems.find { qrItem -> qrItem.linkId == qItem.linkId },
-            )
+          viewModelScope.launch(Dispatchers.IO) {
+            expressionEvaluator.detectExpressionCyclicDependency(questionnaire.item)
+            questionnaire.item.flattened().filter { qItem -> qItem.calculatedExpression != null }.forEach { qItem ->
+              updateQuestionnaireResponseItemWithCalculatedExpression(
+                qItem,
+                questionnaireResponse.allItems.find { qrItem -> qrItem.linkId == qItem.linkId } ?: QuestionnaireResponseItemComponent(),
+              )
+            }
+            pages = getQuestionnairePages()
+            isLoadingNextPage.value = false
+            modificationCount.update { count -> count + 1 }
           }
-          modificationCount.update { count -> count + 1 }
         }
       }
       .map { it.value }
@@ -621,6 +652,25 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
       }
   }
 
+  private suspend fun updateQuestionnaireResponseItemWithCalculatedExpression(
+    questionnaireItem: QuestionnaireItemComponent,
+    questionnaireResponseItem: QuestionnaireResponseItemComponent,
+  ) {
+    val calculatedAnswer = expressionEvaluator
+      .evaluateCalculatedExpression(
+        questionnaireItem,
+        questionnaireResponseItem,
+      )
+    if (calculatedAnswer.second.isEmpty()) return
+    if (modifiedQuestionnaireResponseItemSet.contains(questionnaireResponseItem)) return
+    if (questionnaireResponseItem.answer.hasDifferentAnswerSet(calculatedAnswer.second)) {
+      questionnaireResponseItem.answer =
+        calculatedAnswer.second.map {
+          QuestionnaireResponseItemAnswerComponent().apply { value = it }
+        }
+    }
+  }
+
   private fun removeDisabledAnswers(
     questionnaireItem: QuestionnaireItemComponent,
     questionnaireResponseItem: QuestionnaireResponseItemComponent,
@@ -651,7 +701,6 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
     // display all items.
     val questionnaireItemViewItems =
       if (!isReadOnly && !isInReviewModeFlow.value && questionnaire.isPaginated) {
-        pages = getQuestionnairePages()
         if (currentPageIndexFlow.value == null) {
           currentPageIndexFlow.value = pages!!.first { it.enabled && !it.hidden }.index
         }
@@ -731,6 +780,7 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
           true,
           pages!!,
           currentPageIndexFlow.value!!,
+          isLoadingNextPage.value,
         )
       }
 
@@ -747,6 +797,9 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
           },
         navNext =
           when {
+            questionnairePagination.isPaginated && questionnairePagination.isLoadingNextPage -> {
+              QuestionnaireNavigationViewUIState.Loading
+            }
             questionnairePagination.isPaginated && questionnairePagination.hasNextPage -> {
               QuestionnaireNavigationViewUIState.Enabled { goToNextPage() }
             }
@@ -1025,7 +1078,7 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
    * Gets a list of [QuestionnairePage]s for a paginated questionnaire, or `null` if the
    * questionnaire is not paginated.
    */
-  private suspend fun getQuestionnairePages(): List<QuestionnairePage>? =
+  internal suspend fun getQuestionnairePages(): List<QuestionnairePage>? =
     if (questionnaire.isPaginated) {
       questionnaire.item.zip(questionnaireResponse.item).mapIndexed {
         index,
@@ -1103,6 +1156,7 @@ internal data class QuestionnairePagination(
   val isPaginated: Boolean = false,
   val pages: List<QuestionnairePage>,
   val currentPageIndex: Int,
+  val isLoadingNextPage: Boolean = false,
 )
 
 /** A single page in the questionnaire. This is used for the UI to render pagination controls. */

@@ -376,6 +376,30 @@ val Questionnaire.QuestionnaireItemComponent.localizedTextSpanned: Spanned?
 val Questionnaire.QuestionnaireItemComponent.localizedPrefixSpanned: Spanned?
   get() = prefixElement?.getLocalizedText()?.toSpanned()
 
+val Questionnaire.QuestionnaireItemComponent.textSizeHtml: Float?
+  get() {
+    if (text == null) return null
+    if (!text.contains("style=\"", true)) return null
+    val styleTrimmed = text.substringAfter("style=\"").substringBefore("\"")
+    if (!styleTrimmed.contains("font-size:", true)) return null
+    val fontSizeStyleTrimmed = styleTrimmed.substringAfter("font-size:").substringBefore(";").trim()
+    val onlyTextSize = fontSizeStyleTrimmed.replace(Regex("[^0-9]"), "")
+
+    return onlyTextSize.toFloat()
+  }
+
+val Questionnaire.QuestionnaireItemComponent.prefixSizeHtml: Float?
+  get() {
+    if (prefix == null) return null
+    if (!prefix.contains("style=\"", true)) return null
+    val styleTrimmed = prefix.substringAfter("style=\"").substringBefore("\"")
+    if (!styleTrimmed.contains("font-size:", true)) return null
+    val fontSizeStyleTrimmed = styleTrimmed.substringAfter("font-size:").substringBefore(";").trim()
+    val onlyTextSize = fontSizeStyleTrimmed.replace(Regex("[^0-9]"), "")
+
+    return onlyTextSize.toFloat()
+  }
+
 /**
  * A nested questionnaire item of type display with displayCategory extension with
  * [EXTENSION_DISPLAY_CATEGORY_INSTRUCTIONS] code is used as the instructions of the parent
@@ -689,12 +713,16 @@ internal val Questionnaire.QuestionnaireItemComponent.calculatedExpression: Expr
 internal val Questionnaire.QuestionnaireItemComponent.expressionBasedExtensions
   get() = this.extension.filter { it.value is Expression }
 
+/** Returns list of extensions whose value is of type [Expression] */
+internal val Questionnaire.expressionBasedExtensions
+  get() = this.extension.filter { it.value is Expression }
+
 /**
  * Whether [item] has any expression directly referencing the current questionnaire item by link ID
  * (e.g. if [item] has an expression `%resource.item.where(linkId='this-question')` where
  * `this-question` is the link ID of the current questionnaire item).
  */
-internal fun Questionnaire.QuestionnaireItemComponent.isReferencedBy(
+internal fun Questionnaire.QuestionnaireItemComponent.isExpressionReferencedBy(
   item: Questionnaire.QuestionnaireItemComponent,
 ) =
   item.expressionBasedExtensions.any {
@@ -704,6 +732,27 @@ internal fun Questionnaire.QuestionnaireItemComponent.isReferencedBy(
       .replace(" ", "")
       .contains(Regex(".*linkId='${this.linkId}'.*"))
   }
+
+internal fun Questionnaire.QuestionnaireItemComponent.isExpressionReferencedBy(
+  questionnaire: Questionnaire,
+) =
+  questionnaire.expressionBasedExtensions.any {
+    it
+      .castToExpression(it.value)
+      .expression
+      .replace(" ", "")
+      .contains(Regex(".*linkId='${this.linkId}'.*"))
+  }
+
+/**
+ * Whether [item] has any expression directly referencing the current questionnaire item by link ID
+ * (e.g. if [item] has an expression `%resource.item.where(linkId='this-question')` where
+ * `this-question` is the link ID of the current questionnaire item).
+ */
+internal fun Questionnaire.QuestionnaireItemComponent.isEnableWhenReferencedBy(
+  item: Questionnaire.QuestionnaireItemComponent,
+) =
+  item.enableWhen.any { it.question == this.linkId }
 
 internal val Questionnaire.QuestionnaireItemComponent.answerExpression: Expression?
   get() =

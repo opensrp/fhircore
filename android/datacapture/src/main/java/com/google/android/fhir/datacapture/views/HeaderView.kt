@@ -26,7 +26,10 @@ import com.google.android.fhir.datacapture.extensions.appendAsteriskToQuestionTe
 import com.google.android.fhir.datacapture.extensions.getHeaderViewVisibility
 import com.google.android.fhir.datacapture.extensions.getLocalizedInstructionsSpanned
 import com.google.android.fhir.datacapture.extensions.initHelpViews
+import com.google.android.fhir.datacapture.extensions.isInstructionsCode
 import com.google.android.fhir.datacapture.extensions.localizedPrefixSpanned
+import com.google.android.fhir.datacapture.extensions.prefixSizeHtml
+import com.google.android.fhir.datacapture.extensions.textSizeHtml
 import com.google.android.fhir.datacapture.extensions.updateTextAndVisibility
 import org.hl7.fhir.r4.model.Questionnaire
 
@@ -43,6 +46,10 @@ class HeaderView(context: Context, attrs: AttributeSet?) : LinearLayout(context,
   private val errorTextView = findViewById<TextView>(R.id.error_text_at_header)
   private val requiredOptionalTextView = findViewById<TextView>(R.id.required_optional_text)
 
+  private val defaultTextSizeInSp: Float = question.textSize.div(context.resources.displayMetrics.scaledDensity)
+  private val defaultPrefixSizeInSp: Float = prefix.textSize.div(context.resources.displayMetrics.scaledDensity)
+  private val defaultHintSizeInSp: Float = hint.textSize.div(context.resources.displayMetrics.scaledDensity)
+
   fun bind(questionnaireViewItem: QuestionnaireViewItem) {
     initHelpViews(
       helpButton = findViewById(R.id.helpButton),
@@ -53,13 +60,22 @@ class HeaderView(context: Context, attrs: AttributeSet?) : LinearLayout(context,
       isHelpCardInitiallyVisible = questionnaireViewItem.isHelpCardOpen,
       helpCardStateChangedCallback = questionnaireViewItem.helpCardStateChangedCallback,
     )
-    prefix.updateTextAndVisibility(questionnaireViewItem.questionnaireItem.localizedPrefixSpanned)
+    prefix.updateTextAndVisibility(
+      questionnaireViewItem.questionnaireItem.localizedPrefixSpanned,
+      questionnaireViewItem.questionnaireItem.prefixSizeHtml ?: defaultPrefixSizeInSp,
+    )
     // CQF expression takes precedence over static question text
     question.updateTextAndVisibility(
       appendAsteriskToQuestionText(question.context, questionnaireViewItem),
+      questionnaireViewItem.questionnaireItem.textSizeHtml ?: defaultTextSizeInSp,
     )
+    val hintItem = questionnaireViewItem.enabledDisplayItems.firstOrNull { questionnaireItem ->
+      questionnaireItem.type == Questionnaire.QuestionnaireItemType.DISPLAY &&
+              questionnaireItem.isInstructionsCode
+    }
     hint.updateTextAndVisibility(
       questionnaireViewItem.enabledDisplayItems.getLocalizedInstructionsSpanned(),
+      hintItem?.textSizeHtml ?: defaultHintSizeInSp,
     )
     // Make the entire view GONE if there is nothing to show. This is to avoid an empty row in the
     // questionnaire.

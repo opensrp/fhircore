@@ -26,6 +26,7 @@ android {
     buildConfigField(
       "boolean",
       "IS_NON_PROXY_APK",
+//      "true",
       "${project.hasProperty("isNonProxy") && property("isNonProxy").toString().toBoolean()}",
     )
   }
@@ -178,7 +179,12 @@ dependencies {
     exclude(group = "commons-logging", module = "commons-logging")
     exclude(group = "org.apache.commons", module = "commons-jexl3")
   }
-  api(libs.data.capture) {
+//  api(libs.data.capture) {
+//    isTransitive = true
+//    exclude(group = "ca.uhn.hapi.fhir")
+//    exclude(group = "com.google.android.fhir", module = "engine")
+//  }
+  api(project(":datacapture")) {
     isTransitive = true
     exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "engine")

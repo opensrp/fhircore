@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.datacapture.QuestionnaireNavigationUIState
 import com.google.android.fhir.datacapture.QuestionnaireNavigationViewUIState
 import com.google.android.fhir.datacapture.R
+import com.google.android.material.progressindicator.CircularProgressIndicator
 
 class NavigationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
@@ -34,6 +35,9 @@ class NavigationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
       .updateState(questionnaireNavigationUIState.navPrevious)
     itemView
       .findViewById<Button>(R.id.pagination_next_button)
+      .updateState(questionnaireNavigationUIState.navNext)
+    itemView
+      .findViewById<CircularProgressIndicator>(R.id.pagination_next_button_progress_bar)
       .updateState(questionnaireNavigationUIState.navNext)
     itemView
       .findViewById<Button>(R.id.review_mode_button)
@@ -56,6 +60,25 @@ class NavigationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
       QuestionnaireNavigationViewUIState.Hidden -> {
         visibility = View.GONE
       }
+      QuestionnaireNavigationViewUIState.Loading -> {
+        visibility = View.VISIBLE
+        isEnabled = true
+        text = null
+      }
+    }
+  }
+}
+
+private fun CircularProgressIndicator.updateState(navigationViewState: QuestionnaireNavigationViewUIState) {
+  visibility = when (navigationViewState) {
+    is QuestionnaireNavigationViewUIState.Enabled -> {
+      View.GONE
+    }
+    QuestionnaireNavigationViewUIState.Hidden -> {
+      View.GONE
+    }
+    QuestionnaireNavigationViewUIState.Loading -> {
+      View.VISIBLE
     }
   }
 }

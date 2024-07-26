@@ -24,7 +24,6 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
 import com.google.android.fhir.datacapture.R
 import com.google.android.fhir.datacapture.extensions.MimeType
 import com.google.android.fhir.datacapture.extensions.decodeToBitmap
@@ -91,12 +90,12 @@ class MediaView(context: Context, attrs: AttributeSet?) : LinearLayout(context, 
   }
 
   private fun loadImage(image: Bitmap) {
-    Glide.with(context).load(image).into(imageAttachment)
+    imageAttachment.setImageBitmap(image)
     imageAttachment.visibility = View.VISIBLE
   }
 
   private fun clearImage() {
-    Glide.with(context).clear(imageAttachment)
+    imageAttachment.setImageBitmap(null)
     imageAttachment.visibility = View.GONE
   }
 
