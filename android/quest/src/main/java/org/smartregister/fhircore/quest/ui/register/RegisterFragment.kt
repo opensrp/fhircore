@@ -106,8 +106,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
         val scope = rememberCoroutineScope()
         val scaffoldState = rememberScaffoldState()
         val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
-        val registerUiState: RegisterUiState = registerViewModel.registerUiState.value
-        val appDrawerUIState = registerViewModel.appDrawerUiState.value
         val openDrawer: (Boolean) -> Unit = { open: Boolean ->
           scope.launch {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
@@ -141,8 +139,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
             drawerContent = {
               AppDrawer(
                 appUiState = uiState,
-                registerUiState = registerUiState,
-                appDrawerUIState = appDrawerUIState,
+                appDrawerUIState = appMainViewModel.appDrawerUiState.value,
                 openDrawer = openDrawer,
                 onSideMenuClick = {
                   if (it is AppMainEvent.TriggerWorkflow) {
@@ -176,7 +173,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 onClick = appMainViewModel::onEvent,
                 registerUiState = registerViewModel.registerUiState.value,
                 appUiState = appMainViewModel.appMainUiState.value,
-                appDrawerUIState = registerViewModel.appDrawerUiState.value,
+                appDrawerUIState = appMainViewModel.appDrawerUiState.value,
                 searchText = searchViewModel.searchText,
                 currentPage = registerViewModel.currentPage,
                 pagingItems = pagingItems,
@@ -206,28 +203,34 @@ class RegisterFragment : Fragment(), OnSyncListener {
           val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
           lifecycleScope.launch {
             emitPercentageProgress(inProgressSyncJob, isSyncUpload)
-            registerViewModel.updateAppDrawerUIState(
+            appMainViewModel.updateAppDrawerUIState(
               isSyncUpload,
               syncJobStatus,
-              progressPercentage
+              progressPercentage,
             )
             registerViewModel.updateSyncStatus(syncJobStatus)
           }
         }
       }
       is CurrentSyncJobStatus.Succeeded -> {
-        refreshRegisterData()
         lifecycleScope.launch {
-          registerViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
+          appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
           registerViewModel.updateSyncStatus(syncJobStatus)
         }
+        refreshRegisterData()
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
-        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
+        lifecycleScope.launch {
+          appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
+          registerViewModel.updateSyncStatus(syncJobStatus)
+        }
       }
       else -> {
-        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
+        lifecycleScope.launch {
+          appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
+          registerViewModel.updateSyncStatus(syncJobStatus)
+        }
       }
     }
   }
@@ -270,6 +273,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
           .launchIn(lifecycleScope)
       }
     }
+  }
+
+  override fun onDestroy() {
+    super.onDestroy()
+    appMainViewModel.updateAppDrawerUIState(false, null, 0)
   }
 
   suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {

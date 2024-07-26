@@ -145,7 +145,7 @@ class UserSettingFragment : Fragment(), OnSyncListener {
             registerViewModel.updateAppDrawerUIState(
               isSyncUpload,
               syncJobStatus,
-              progressPercentage
+              progressPercentage,
             )
           }
         }

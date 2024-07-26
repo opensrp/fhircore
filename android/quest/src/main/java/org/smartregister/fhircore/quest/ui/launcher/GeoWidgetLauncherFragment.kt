@@ -75,7 +75,6 @@ import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
-import org.smartregister.fhircore.quest.ui.register.RegisterViewModel
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.viewmodels.SearchViewModel
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -98,7 +97,6 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
   private val navArgs by navArgs<GeoWidgetLauncherFragmentArgs>()
   private val geoWidgetLauncherViewModel by viewModels<GeoWidgetLauncherViewModel>()
   private val appMainViewModel by activityViewModels<AppMainViewModel>()
-  private val registerViewModel by activityViewModels<RegisterViewModel>()
   private val searchViewModel by activityViewModels<SearchViewModel>()
   private val geoWidgetViewModel by activityViewModels<GeoWidgetViewModel>()
 
@@ -116,8 +114,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         val coroutineScope = rememberCoroutineScope()
         val scaffoldState = rememberScaffoldState()
         val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
-        val appDrawerUIState = geoWidgetLauncherViewModel.appDrawerUiState.value
-        val registerUiState by remember { registerViewModel.registerUiState }
+        val appDrawerUIState = appMainViewModel.appDrawerUiState.value
         val openDrawer: (Boolean) -> Unit = { open: Boolean ->
           coroutineScope.launch {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
@@ -145,7 +142,6 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
             drawerContent = {
               AppDrawer(
                 appUiState = uiState,
-                registerUiState = registerUiState,
                 appDrawerUIState = appDrawerUIState,
                 openDrawer = openDrawer,
                 onSideMenuClick = {
@@ -220,30 +216,22 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
           val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
           val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
           lifecycleScope.launch {
-            geoWidgetLauncherViewModel.updateAppDrawerUIState(
+            appMainViewModel.updateAppDrawerUIState(
               isSyncUpload,
               syncJobStatus,
-              progressPercentage
+              progressPercentage,
             )
           }
         }
       }
       is CurrentSyncJobStatus.Succeeded -> {
-        lifecycleScope.launch {
-          geoWidgetLauncherViewModel.updateAppDrawerUIState(false, syncJobStatus, 100)
-        }
+        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 100) }
       }
       is CurrentSyncJobStatus.Failed -> {
-        lifecycleScope.launch {
-          registerViewModel.updateSyncStatus(syncJobStatus)
-          appMainViewModel.updateSyncStatus(syncJobStatus)
-        }
+        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
       }
       else -> {
-        lifecycleScope.launch {
-          registerViewModel.updateSyncStatus(syncJobStatus)
-          appMainViewModel.updateSyncStatus(syncJobStatus)
-        }
+        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
       }
     }
   }

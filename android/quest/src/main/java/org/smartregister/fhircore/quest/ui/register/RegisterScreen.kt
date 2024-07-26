@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.register
 
 import SubsequentSyncDetailsBar
+import android.content.Context
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -43,7 +44,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -72,6 +72,7 @@ import com.google.android.fhir.sync.CurrentSyncJobStatus
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
@@ -133,9 +134,10 @@ fun RegisterScreen(
   var syncNotificationBarExpanded by remember { mutableStateOf(true) }
   val coroutineScope = rememberCoroutineScope()
 
-  var backgroundColor by remember { mutableStateOf(Color(0xFF002B4A)) }
+  var synBarBackgroundColor by remember { mutableStateOf(Color(0xFF002B4A)) }
   var showSyncBar by remember { mutableStateOf(false) }
   var showSyncComplete by remember { mutableStateOf(false) }
+  // keep tra
   var hasShownSyncComplete by rememberSaveable { mutableStateOf(false) }
 
   LaunchedEffect(
@@ -149,7 +151,7 @@ fun RegisterScreen(
       setHasShownSyncComplete = { hasShownSyncComplete = it },
       setShowSyncBar = { showSyncBar = it },
       setShowSyncComplete = { showSyncComplete = it },
-      setBackgroundColor = { backgroundColor = it },
+      setBackgroundColor = { synBarBackgroundColor = it },
     )
   }
 
@@ -208,13 +210,13 @@ fun RegisterScreen(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       if (registerUiState.isFirstTimeSync) {
-        val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
         LoaderDialog(
           modifier = modifier.testTag(FIRST_TIME_SYNC_DIALOG),
-          percentageProgressFlow = registerUiState.progressPercentage,
+          percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress),
           dialogMessage =
             stringResource(
-              id = if (isSyncUpload) R.string.syncing_up else R.string.syncing_down,
+              id =
+                if (appDrawerUIState.isSyncUpload) R.string.syncing_up else R.string.syncing_down,
             ),
           showPercentageProgress = true,
         )
@@ -222,7 +224,7 @@ fun RegisterScreen(
 
       Column(
         modifier =
-          Modifier.background(backgroundColor)
+          Modifier.background(synBarBackgroundColor)
             .background(
               if (showSyncComplete) {
                 Color.White.copy(alpha = 0.83f)
@@ -267,7 +269,7 @@ fun RegisterScreen(
                   .height(20.dp)
                   .width(60.dp)
                   .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                  .background(backgroundColor)
+                  .background(synBarBackgroundColor)
                   .background(
                     if (showSyncComplete) {
                       Color.White.copy(alpha = 0.83f)
@@ -284,7 +286,9 @@ fun RegisterScreen(
                     Icons.Default.KeyboardArrowDown
                   } else Icons.Default.KeyboardArrowUp,
                 contentDescription = null,
-                tint = if (backgroundColor == Color(0xFF002B4A)) Color.White else backgroundColor,
+                tint =
+                  if (synBarBackgroundColor == Color(0xFF002B4A)) Color.White
+                  else synBarBackgroundColor,
                 modifier = Modifier.size(16.dp),
               )
             }
@@ -301,7 +305,7 @@ fun RegisterScreen(
                   } else Dp.Unspecified,
                 )
                 .animateContentSize()
-                .background(backgroundColor)
+                .background(synBarBackgroundColor)
                 .background(
                   if (showSyncComplete) {
                     Color.White.copy(alpha = 0.83f)
@@ -312,53 +316,15 @@ fun RegisterScreen(
                 .testTag(SYNC_SUCCESS_TAG),
           ) {
             val context = LocalContext.current
-            when {
-              currentSyncJobStatus is CurrentSyncJobStatus.Running &&
-                appUiState!!.currentSyncJobStatus !is CurrentSyncJobStatus.Cancelled -> {
-                if (syncNotificationBarExpanded) {
-                  SubsequentSyncDetailsBar(
-                    percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress),
-                    modifier = Modifier.testTag(SYNC_PROGRESS_BAR_TAG),
-                  ) {
-                    onClick(AppMainEvent.CancelSyncData(context))
-                  }
-                } else {
-                  SubsequentSyncDetailsBar(
-                    percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress),
-                    hideExtraInformation = false,
-                    modifier = Modifier.testTag(SYNC_PROGRESS_BAR_TAG),
-                  ) {
-                    onClick(AppMainEvent.CancelSyncData(context))
-                  }
-                }
-              }
-              currentSyncJobStatus is CurrentSyncJobStatus.Failed -> {
-                SyncCompleteStatus(
-                  modifier = modifier.testTag(SYNC_ERROR_TAG),
-                  imageConfig = ImageConfig(type = "local", "ic_sync_fail"),
-                  title = context.getString(R.string.sync_error),
-                  showEndText = false,
-                  showImage = syncNotificationBarExpanded,
-                  syncSuccess = false,
-                ) {
-                  openDrawer(false)
-                  onClick(AppMainEvent.SyncData(context))
-                }
-              }
-              currentSyncJobStatus is CurrentSyncJobStatus.Succeeded && showSyncComplete -> {
-                SyncCompleteStatus(
-                  modifier = modifier,
-                  imageConfig = ImageConfig(type = "local", "ic_sync_success"),
-                  title = context.getString(R.string.sync_completed),
-                  showImage = syncNotificationBarExpanded,
-                  showEndText = false,
-                  onCancelButtonClick = {},
-                )
-              }
-              else -> {
-                //
-              }
-            }
+            SyncStatusView(
+              currentSyncJobStatus = appDrawerUIState.currentSyncJobStatus,
+              appUiState = appUiState,
+              showSyncComplete = showSyncComplete,
+              syncNotificationBarExpanded = syncNotificationBarExpanded,
+              onClick = {},
+              percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress),
+              context = context,
+            ) {}
           }
         }
       }
@@ -411,6 +377,58 @@ private fun updateSyncStatus(
     }
     else -> {
       setShowSyncBar(false)
+    }
+  }
+}
+
+@Composable
+fun SyncStatusView(
+  currentSyncJobStatus: CurrentSyncJobStatus?,
+  appUiState: AppMainUiState?,
+  showSyncComplete: Boolean,
+  syncNotificationBarExpanded: Boolean,
+  onClick: (AppMainEvent) -> Unit,
+  modifier: Modifier = Modifier,
+  percentageProgressFlow: Flow<Int>,
+  context: Context,
+  openDrawer: (Boolean) -> Unit,
+) {
+  when {
+    currentSyncJobStatus is CurrentSyncJobStatus.Running &&
+      appUiState?.currentSyncJobStatus !is CurrentSyncJobStatus.Cancelled -> {
+      SubsequentSyncDetailsBar(
+        percentageProgressFlow = percentageProgressFlow,
+        modifier = modifier.testTag(SYNC_PROGRESS_BAR_TAG),
+        hideExtraInformation = !syncNotificationBarExpanded,
+      ) {
+        onClick(AppMainEvent.CancelSyncData(context))
+      }
+    }
+    currentSyncJobStatus is CurrentSyncJobStatus.Failed -> {
+      SyncCompleteStatus(
+        modifier = modifier.testTag(SYNC_ERROR_TAG),
+        imageConfig = ImageConfig(type = "local", "ic_sync_fail"),
+        title = context.getString(R.string.sync_error),
+        showEndText = false,
+        showImage = syncNotificationBarExpanded,
+        syncSuccess = false,
+      ) {
+        openDrawer(false)
+        onClick(AppMainEvent.SyncData(context))
+      }
+    }
+    currentSyncJobStatus is CurrentSyncJobStatus.Succeeded && showSyncComplete -> {
+      SyncCompleteStatus(
+        modifier = modifier,
+        imageConfig = ImageConfig(type = "local", "ic_sync_success"),
+        title = context.getString(R.string.sync_completed),
+        showImage = syncNotificationBarExpanded,
+        showEndText = false,
+        onCancelButtonClick = {},
+      )
+    }
+    else -> {
+      // Handle any other cases if needed
     }
   }
 }

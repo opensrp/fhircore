@@ -88,7 +88,6 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
-import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -111,7 +110,6 @@ private val DividerColor = MenuItemColor.copy(alpha = 0.2f)
 fun AppDrawer(
   modifier: Modifier = Modifier,
   appUiState: AppMainUiState,
-  registerUiState: RegisterUiState,
   appDrawerUIState: AppDrawerUIState = AppDrawerUIState(),
   navController: NavController,
   openDrawer: (Boolean) -> Unit,
@@ -145,11 +143,10 @@ fun AppDrawer(
       NavBottomSection(
         modifier,
         appUiState,
-        registerUiState,
         appDrawerUIState,
         currentSyncJobStatus,
         onSideMenuClick,
-        openDrawer
+        openDrawer,
       )
     },
     backgroundColor = SideMenuDarkColor,
@@ -221,7 +218,6 @@ fun AppDrawer(
 private fun NavBottomSection(
   modifier: Modifier = Modifier,
   appUiState: AppMainUiState,
-  registerUiState: RegisterUiState,
   appDrawerUIState: AppDrawerUIState,
   currentSyncJobStatus: CurrentSyncJobStatus?,
   onSideMenuClick: (AppMainEvent) -> Unit,
@@ -230,30 +226,28 @@ private fun NavBottomSection(
   val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
 
-  var backgroundColor by remember { mutableStateOf(SideMenuTopItemDarkColor) }
-  var showSyncComplete by remember { mutableStateOf(false) }
-  var showSyncBar by remember { mutableStateOf(false) }
-  var hasShownSyncComplete by rememberSaveable { mutableStateOf(false) }
+  var syncBarBackgroundColor by remember { mutableStateOf(SideMenuTopItemDarkColor) }
+  var showSyncCompleted by remember { mutableStateOf(false) }
+  var hasShownSyncCompletedStatus by rememberSaveable { mutableStateOf(false) }
 
   // Update sync status
   LaunchedEffect(currentSyncJobStatus) {
     updateSyncStatus(
       currentSyncJobStatus,
       coroutineScope,
-      hasShownSyncComplete,
-      { hasShownSyncComplete = it },
-      { showSyncBar = it },
-      { showSyncComplete = it },
-      { backgroundColor = it },
+      hasShownSyncCompletedStatus,
+      { hasShownSyncCompletedStatus = it },
+      { showSyncCompleted = it },
+      { syncBarBackgroundColor = it },
     )
   }
 
   Box(
     modifier =
       modifier
-        .background(backgroundColor)
+        .background(syncBarBackgroundColor)
         .background(
-          if (showSyncComplete) Color.White.copy(alpha = 0.83f) else Color.Transparent,
+          if (showSyncCompleted) Color.White.copy(alpha = 0.83f) else Color.Transparent,
         )
         .then(
           if (
@@ -271,7 +265,7 @@ private fun NavBottomSection(
       currentSyncJobStatus is CurrentSyncJobStatus.Running &&
         appUiState.currentSyncJobStatus !is CurrentSyncJobStatus.Cancelled -> {
         SubsequentSyncDetailsBar(
-          percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress)
+          percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress),
         ) {
           onSideMenuClick(AppMainEvent.CancelSyncData(context))
           openDrawer(false)
@@ -289,7 +283,7 @@ private fun NavBottomSection(
           onSideMenuClick(AppMainEvent.SyncData(context))
         }
       }
-      currentSyncJobStatus is CurrentSyncJobStatus.Succeeded && showSyncComplete -> {
+      currentSyncJobStatus is CurrentSyncJobStatus.Succeeded && showSyncCompleted -> {
         SyncCompleteStatus(
           modifier = modifier,
           imageConfig = ImageConfig(type = "local", "ic_sync_success"),
@@ -320,7 +314,6 @@ private fun updateSyncStatus(
   coroutineScope: CoroutineScope,
   hasShownSyncComplete: Boolean,
   setHasShownSyncComplete: (Boolean) -> Unit,
-  setShowSyncBar: (Boolean) -> Unit,
   setShowSyncComplete: (Boolean) -> Unit,
   setBackgroundColor: (Color) -> Unit,
 ) {
@@ -328,12 +321,10 @@ private fun updateSyncStatus(
     is CurrentSyncJobStatus.Succeeded -> {
       if (!hasShownSyncComplete) {
         setBackgroundColor(Color(0xFF1DB11B))
-        setShowSyncBar(true)
         setShowSyncComplete(true)
         setHasShownSyncComplete(true)
         coroutineScope.launch {
           delay(10.seconds)
-          setShowSyncBar(false)
           setShowSyncComplete(false)
           setBackgroundColor(SideMenuTopItemDarkColor)
         }
@@ -341,22 +332,16 @@ private fun updateSyncStatus(
     }
     is CurrentSyncJobStatus.Failed -> {
       setBackgroundColor(Color(0xFFDF0E1A))
-      setShowSyncBar(true)
       setShowSyncComplete(true)
       setHasShownSyncComplete(true)
     }
     is CurrentSyncJobStatus.Running -> {
-      setShowSyncBar(true)
       setBackgroundColor(SideMenuTopItemDarkColor)
       setShowSyncComplete(false)
       setHasShownSyncComplete(false)
     }
-    is CurrentSyncJobStatus.Cancelled -> {
-      setShowSyncBar(false)
-    }
-    else -> {
-      setShowSyncBar(false)
-    }
+    is CurrentSyncJobStatus.Cancelled -> {}
+    else -> {}
   }
 }
 
@@ -613,18 +598,6 @@ fun AppDrawerPreview() {
             menuActionButton =
               NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
           ),
-      ),
-    registerUiState =
-      RegisterUiState(
-        screenTitle = "Register101",
-        isFirstTimeSync = false,
-        registerId = "register101",
-        totalRecordsCount = 1,
-        filteredRecordsCount = 0,
-        pagesCount = 1,
-        progressPercentage = flowOf(0),
-        isSyncUpload = flowOf(false),
-        params = emptyMap(),
       ),
     navController = rememberNavController(),
     openDrawer = {},

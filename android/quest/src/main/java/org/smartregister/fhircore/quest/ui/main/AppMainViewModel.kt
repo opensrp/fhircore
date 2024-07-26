@@ -74,6 +74,7 @@ import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMonthPeriodWorker
+import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.decodeBinaryResourcesToBitmap
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -105,6 +106,7 @@ constructor(
   private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
 
   private val currentSyncJobStatus by mutableStateOf(null)
+  val appDrawerUiState = mutableStateOf(AppDrawerUIState())
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
@@ -361,6 +363,19 @@ constructor(
       }
 
     return getSyncProgress(currentProgress, currentTotalRecords)
+  }
+
+  fun updateAppDrawerUIState(
+    isSyncUpload: Boolean,
+    currentSyncJobStatus: CurrentSyncJobStatus?,
+    percentageProgress: Int,
+  ) {
+    appDrawerUiState.value =
+      AppDrawerUIState(
+        isSyncUpload = isSyncUpload,
+        currentSyncJobStatus = currentSyncJobStatus,
+        percentageProgress = percentageProgress,
+      )
   }
 
   private fun getSyncProgress(completed: Int, total: Int) =
