@@ -1364,7 +1364,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testLoadCqlInputResourcesFromQuestionnaireConfig() = runBlocking {
+  fun testLoadCqlInputResourcesFromQuestionnaireConfig() = runTest {
     val bundle = Bundle()
 
     // Define the expected CQL input resources
