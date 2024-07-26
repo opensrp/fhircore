@@ -1161,7 +1161,10 @@ constructor(
       fhirEngine
         .search<Location>(
           Search(type = ResourceType.Location).apply {
-            filter(Location.PARTOF, { value = "Location/$locationId" })
+            filter(
+              Location.PARTOF,
+              { value = locationId.asReference(ResourceType.Location).reference },
+            )
           },
         )
         .mapTo(LinkedList()) { it.resource }
