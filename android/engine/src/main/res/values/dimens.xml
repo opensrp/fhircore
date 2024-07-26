@@ -15,5 +15,5 @@
  limitations under the License.
 -->
 <resources>
-    <dimen name="help_header_margin_top">0dp</dimen>
+    <dimen name="help_header_margin_bottom">0dp</dimen>
 </resources>

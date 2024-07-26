@@ -82,6 +82,7 @@
 
     <style name="AppTheme.HelpHeaderStyle" parent="TextAppearance.Material3.TitleSmall">
         <item name="android:visibility">invisible</item>
+        <item name="android:height">0dp</item>
     </style>
 
 </resources>
