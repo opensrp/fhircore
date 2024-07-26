@@ -62,6 +62,22 @@
         <item name="questionnaireMediaImageStyle">@style/AppTheme.MediaImageStyle</item>
         <item name="questionnaireHelpHeaderStyle">@style/AppTheme.HelpHeaderStyle</item>
         <item name="questionnaireCancelButtonStyle">@style/AppTheme.QuestionnaireCancelButtonStyle</item>
+        <!-- Help card container color -->
+        <item
+            name="android:colorBackground"
+            >@color/background_neutral_100</item>
+        <item name="colorOnBackground">@color/onBackground_neutral_10</item>
+
+        <item name="colorSurface">@color/surface_neutral_100</item>
+        <item name="colorOnSurface">@color/onSurface_neutral_10</item>
+
+        <item
+            name="colorSurfaceVariant"
+            >@color/surfaceVariant_neutral_variant_90</item>
+        <item
+            name="colorOnSurfaceVariant"
+            >@color/onSurfaceVariant_neutral_variant_30</item>
+        <!-- /Help card container color -->
     </style>
 
     <style name="AppTheme.QuestionnaireSubmitButtonStyle" parent="Widget.MaterialComponents.Button">
