@@ -9,4 +9,6 @@ object BuildConfigs {
     const val kotlinCompilerExtensionVersion = "1.5.8"
     const val jacocoVersion ="0.8.11"
     const val ktLintVersion = "0.49.0"
+    const val enableUnitTestCoverage = true
+    const val enableAndroidTestCoverage = false
 }

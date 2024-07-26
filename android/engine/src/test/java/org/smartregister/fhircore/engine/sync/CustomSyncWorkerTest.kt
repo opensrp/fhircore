@@ -36,6 +36,7 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -99,7 +100,7 @@ class CustomSyncWorkerTest : RobolectricTest() {
   }
 
   @Test
-  fun `should create sync worker with organization`() = runBlocking {
+  fun `should create sync worker with organization`() = runTest {
     sharedPreferencesHelper =
       SharedPreferencesHelper(ApplicationProvider.getApplicationContext(), Gson())
 
