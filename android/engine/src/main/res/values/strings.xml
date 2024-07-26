@@ -185,5 +185,6 @@
     <string name="add">ADD</string>
     <string name="data_migration_started">Started data migration from version %1$d</string>
     <string name="data_migration_completed">Application data migrated to version %1$d</string>
+    <string name="help"></string>
     <string name="no_data">No data set</string>
 </resources>

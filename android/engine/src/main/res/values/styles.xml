@@ -60,6 +60,7 @@
         <item name="questionnaireSubmitButtonStyle">@style/AppTheme.QuestionnaireSubmitButtonStyle</item>
         <item name="questionnaireButtonStyle">@style/AppTheme.QuestionnaireButtonStyle</item>
         <item name="questionnaireCancelButtonStyle">@style/AppTheme.QuestionnaireCancelButtonStyle</item>
+        <item name="questionnaireHelpHeaderStyle">@style/AppTheme.HelpHeaderStyle</item>
     </style>
 
     <style name="AppTheme.QuestionnaireSubmitButtonStyle" parent="Widget.MaterialComponents.Button">
@@ -77,6 +78,10 @@
     <style name="AppTheme.QuestionnaireCancelButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="AppTheme.HelpHeaderStyle" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:visibility">invisible</item>
     </style>
 
 </resources>
