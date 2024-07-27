@@ -23,24 +23,54 @@ import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.BuildConfig
+import timber.log.Timber
+
+data class ResourceValidationResult(
+  val resource: Resource,
+  val validationResult: ValidationResult,
+) {
+  val errorMessages
+    get() = buildString {
+      val messages =
+        validationResult.messages.filter {
+          it.severity.ordinal >= ResultSeverityEnum.WARNING.ordinal
+        }
+
+      for (validationMsg in messages) {
+        appendLine(
+          "${validationMsg.message} - ${validationMsg.locationString} -- (${validationMsg.severity})",
+        )
+      }
+    }
+}
+
+data class FhirValidatorResultsWrapper(val results: List<ResourceValidationResult> = emptyList()) {
+  val errorMessages = results.map { it.errorMessages }
+}
 
 suspend fun FhirValidator.checkResourceValid(
   vararg resource: Resource,
-  isDebug: Boolean = BuildConfig.BUILD_TYPE.contains("debug", ignoreCase = true),
-): List<ValidationResult> {
-  if (!isDebug) return emptyList()
+  isDebug: Boolean = BuildConfig.DEBUG,
+): FhirValidatorResultsWrapper {
+  if (!isDebug) return FhirValidatorResultsWrapper()
 
   return withContext(coroutineContext) {
-    resource.map { this@checkResourceValid.validateWithResult(it) }
+    FhirValidatorResultsWrapper(
+      results =
+        resource.map {
+          val result = this@checkResourceValid.validateWithResult(it)
+          ResourceValidationResult(it, result)
+        },
+    )
   }
 }
 
-val ValidationResult.errorMessages
-  get() = buildString {
-    for (validationMsg in
-      messages.filter { it.severity.ordinal >= ResultSeverityEnum.WARNING.ordinal }) {
-      appendLine(
-        "${validationMsg.message} - ${validationMsg.locationString} -- (${validationMsg.severity})",
-      )
+fun FhirValidatorResultsWrapper.logErrorMessages() {
+  results.forEach {
+    if (it.errorMessages.isNotBlank()) {
+      Timber.tag("$TAG (${it.resource.referenceValue()})").e(it.errorMessages)
     }
   }
+}
+
+private const val TAG = "FhirValidator"

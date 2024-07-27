@@ -109,7 +109,6 @@ import org.smartregister.fhircore.engine.util.extension.isToday
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.extension.yesterday
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
@@ -239,9 +238,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       val questionnaireResponse = extractionQuestionnaireResponse()
       val actionParameters = emptyList<ActionParameter>()
       val onSuccessfulSubmission =
-        spyk({ idsTypes: List<IdType>, _: QuestionnaireResponse, _: Map<String, String> ->
-          Timber.i(idsTypes.toString())
-        })
+        spyk({ idsTypes: List<IdType>, _: QuestionnaireResponse -> Timber.i(idsTypes.toString()) })
       coEvery {
         ResourceMapper.extract(
           questionnaire = questionnaire,
@@ -293,18 +290,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
-      if (BuildConfig.BUILD_TYPE.contains("debug", ignoreCase = true)) {
-        val errorMessageSlot = slot<Map<String, String>>()
-        verify { onSuccessfulSubmission(any(), any(), capture(errorMessageSlot)) }
-        Assert.assertTrue(
-          errorMessageSlot.captured.values
-            .joinToString("\n")
-            .contains(
-              "The type 'Group' implied by the reference URL Group/1234 is not a valid Target for this element (must be one of [Patient, RelatedPerson]) - Patient.link[0].other",
-              ignoreCase = true,
-            ),
-        )
-      }
+      verify { onSuccessfulSubmission(any(), any()) }
+      coVerify { questionnaireViewModel.validateWithFhirValidator(*anyVararg()) }
       coVerify {
         questionnaireViewModel.saveExtractedResources(
           bundle = any<Bundle>(),
@@ -320,7 +307,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
-      coVerify { onSuccessfulSubmission(any(), questionnaireResponse, any()) }
+      coVerify { onSuccessfulSubmission(any(), questionnaireResponse) }
       unmockkObject(ResourceMapper)
     }
 
@@ -352,8 +339,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         linkIds = listOf(LinkIdConfig(linkId = theLinkId, LinkIdType.LOCATION)),
       )
     val actionParameters = emptyList<ActionParameter>()
-    val onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse, Map<String, String>) -> Unit =
-      spyk()
+    val onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit = spyk()
 
     // Throw ResourceNotFoundException existing QuestionnaireResponse
     coEvery { fhirEngine.get(ResourceType.Patient, patient.logicalId) } returns patient
@@ -487,7 +473,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
         questionnaireConfig = updatedQuestionnaireConfig,
-        validationErrorsMap = any(),
       )
 
       questionnaireViewModel.executeCql(
@@ -495,7 +480,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         bundle = capture(bundleSlot),
         questionnaire = questionnaire,
         questionnaireConfig = updatedQuestionnaireConfig,
-        validationErrorsMap = any(),
       )
 
       fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
@@ -506,7 +490,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
       questionnaireViewModel.softDeleteResources(updatedQuestionnaireConfig)
 
-      onSuccessfulSubmission(capture(idsTypesSlot), questionnaireResponse, any())
+      onSuccessfulSubmission(capture(idsTypesSlot), questionnaireResponse)
     }
 
     // Captured bundle slot should contain QuestionnaireResponse

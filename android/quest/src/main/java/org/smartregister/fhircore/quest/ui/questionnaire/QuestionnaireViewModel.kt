@@ -24,7 +24,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.validation.FhirValidator
-import ca.uhn.fhir.validation.ValidationResult
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
@@ -89,18 +88,17 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.checkResourceValid
 import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
-import org.smartregister.fhircore.engine.util.extension.errorMessages
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.logErrorMessages
 import org.smartregister.fhircore.engine.util.extension.packRepeatedGroups
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForEditing
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
-import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -252,7 +250,7 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
     actionParameters: List<ActionParameter>,
     context: Context,
-    onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse, Map<String, String>) -> Unit,
+    onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit,
   ) {
     viewModelScope.launch(SupervisorJob()) {
       val questionnaireResponseValid =
@@ -301,8 +299,6 @@ constructor(
           IdType(currentQuestionnaireResponse.subject.reference)
         }
 
-      val extractionValidationErrors = mutableMapOf<String, List<ValidationResult>>()
-
       if (subjectIdType != null) {
         val subject =
           loadResource(
@@ -314,15 +310,12 @@ constructor(
           val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
 
           val extractedResources = newBundle.entry.map { it.resource }
-          getValidationFailures(extractedResources)
-            .takeIf { it.isNotEmpty() }
-            ?.let { extractionValidationErrors.putIfAbsent(questionnaire.referenceValue(), it) }
+          validateWithFhirValidator(*extractedResources.toTypedArray())
 
           generateCarePlan(
             subject = subject,
             bundle = newBundle,
             questionnaireConfig = questionnaireConfig,
-            validationErrorsMap = extractionValidationErrors,
           )
 
           withContext(dispatcherProvider.io()) {
@@ -331,7 +324,6 @@ constructor(
               bundle = newBundle,
               questionnaire = questionnaire,
               questionnaireConfig = questionnaireConfig,
-              validationErrorsMap = extractionValidationErrors,
             )
           }
 
@@ -351,22 +343,17 @@ constructor(
         bundle.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
           ?: emptyList()
 
-      val extractionValidationErrorMessages =
-        extractionValidationErrors.mapValues {
-          buildString { it.value.forEach { appendLine(it.errorMessages) } }
-        }
       onSuccessfulSubmission(
         idTypes,
         currentQuestionnaireResponse,
-        extractionValidationErrorMessages,
       )
     }
   }
 
-  suspend fun getValidationFailures(resources: Iterable<Resource>) =
-    resources
-      .flatMap { fhirValidatorProvider.get().checkResourceValid(it) }
-      .filter { it.errorMessages.isNotBlank() }
+  suspend fun validateWithFhirValidator(vararg resource: Resource) {
+    val fhirValidator = fhirValidatorProvider.get()
+    fhirValidator.checkResourceValid(*resource).logErrorMessages()
+  }
 
   suspend fun retireUsedQuestionnaireUniqueId(
     questionnaireConfig: QuestionnaireConfig,
@@ -866,7 +853,6 @@ constructor(
     bundle: Bundle,
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig? = null,
-    validationErrorsMap: MutableMap<String, List<ValidationResult>> = mutableMapOf(),
   ) {
     questionnaireConfig?.cqlInputResources?.forEach { resourceId ->
       val basicResource = defaultRepository.loadResource(resourceId) as Basic?
@@ -916,27 +902,14 @@ constructor(
                     resultParameterResource.isResource
                 ) {
                   defaultRepository.create(true, resultParameterResource as Resource)
-                  resultParameterResource as Resource
+                  resultParameterResource
                 } else {
                   null
                 }
               }
             }
 
-          with(validationErrorsMap) {
-            getValidationFailures(resources)
-              .takeIf { it.isNotEmpty() }
-              ?.let {
-                getValidationFailures(resources)
-                  .takeIf { it.isNotEmpty() }
-                  ?.let {
-                    computeIfPresent(librarySearchResult.resource.referenceValue()) { _, v ->
-                      v + it
-                    }
-                    putIfAbsent(librarySearchResult.resource.referenceValue(), it)
-                  }
-              }
-          }
+          validateWithFhirValidator(*resources.toTypedArray())
         }
     }
   }
@@ -952,7 +925,6 @@ constructor(
     subject: Resource,
     bundle: Bundle,
     questionnaireConfig: QuestionnaireConfig,
-    validationErrorsMap: MutableMap<String, List<ValidationResult>> = mutableMapOf(),
   ) {
     questionnaireConfig.planDefinitions?.forEach { planId ->
       if (planId.isNotEmpty()) {
@@ -966,16 +938,7 @@ constructor(
                 generateCarePlanWithWorkflowApi =
                   questionnaireConfig.generateCarePlanWithWorkflowApi,
               )
-            carePlan?.let {
-              with(validationErrorsMap) {
-                getValidationFailures(listOf(it))
-                  .takeIf { it.isNotEmpty() }
-                  ?.let {
-                    computeIfPresent("PlanDefinition/$planId") { _, v -> v + it }
-                    putIfAbsent("PlanDefinition/$planId", it)
-                  }
-              }
-            }
+            carePlan?.let { validateWithFhirValidator(it) }
           }
           .onFailure { Timber.e(it) }
       }

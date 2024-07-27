@@ -49,8 +49,8 @@ class FhirValidatorExtensionTest : RobolectricTest() {
   fun testCheckResourceValidRunsNoValidationWhenBuildTypeIsNotDebug() = runTest {
     val basicResource = CarePlan()
     val fhirValidatorSpy = spyk(validator)
-    val results = fhirValidatorSpy.checkResourceValid(basicResource, isDebug = false)
-    Assert.assertTrue(results.isEmpty())
+    val resultsWrapper = fhirValidatorSpy.checkResourceValid(basicResource, isDebug = false)
+    Assert.assertTrue(resultsWrapper.results.isEmpty())
     verify(exactly = 0) { fhirValidatorSpy.validateWithResult(any<IBaseResource>()) }
     verify(exactly = 0) { fhirValidatorSpy.validateWithResult(any<String>()) }
   }
@@ -58,19 +58,18 @@ class FhirValidatorExtensionTest : RobolectricTest() {
   @Test
   fun testCheckResourceValidValidatesResourceStructureWhenCarePlanResourceInvalid() = runTest {
     val basicCarePlan = CarePlan()
-    val results = validator.checkResourceValid(basicCarePlan)
-    Assert.assertFalse(results.isEmpty())
+    val resultsWrapper = validator.checkResourceValid(basicCarePlan)
     Assert.assertTrue(
-      results.any {
-        it.errorMessages.contains(
+      resultsWrapper.errorMessages.any {
+        it.contains(
           "CarePlan.status: minimum required = 1, but only found 0",
           ignoreCase = true,
         )
       },
     )
     Assert.assertTrue(
-      results.any {
-        it.errorMessages.contains(
+      resultsWrapper.errorMessages.any {
+        it.contains(
           "CarePlan.intent: minimum required = 1, but only found 0",
           ignoreCase = true,
         )
@@ -86,13 +85,11 @@ class FhirValidatorExtensionTest : RobolectricTest() {
         intent = CarePlan.CarePlanIntent.PLAN
         subject = Reference("Task/unknown")
       }
-    val results = validator.checkResourceValid(carePlan)
-    Assert.assertFalse(results.isEmpty())
-    Assert.assertEquals(1, results.size)
+    val resultsWrapper = validator.checkResourceValid(carePlan)
+    Assert.assertEquals(1, resultsWrapper.errorMessages.size)
     Assert.assertTrue(
-      results
+      resultsWrapper.errorMessages
         .first()
-        .errorMessages
         .contains(
           "The type 'Task' implied by the reference URL Task/unknown is not a valid Target for this element (must be one of [Group, Patient]) - CarePlan.subject",
           ignoreCase = true,
@@ -108,13 +105,11 @@ class FhirValidatorExtensionTest : RobolectricTest() {
         intent = CarePlan.CarePlanIntent.PLAN
         subject = Reference("unknown")
       }
-    val results = validator.checkResourceValid(carePlan)
-    Assert.assertFalse(results.isEmpty())
-    Assert.assertEquals(1, results.size)
+    val resultsWrapper = validator.checkResourceValid(carePlan)
+    Assert.assertEquals(1, resultsWrapper.errorMessages.size)
     Assert.assertTrue(
-      results
+      resultsWrapper.errorMessages
         .first()
-        .errorMessages
         .contains(
           "The syntax of the reference 'unknown' looks incorrect, and it should be checked - CarePlan.subject",
           ignoreCase = true,
@@ -131,9 +126,8 @@ class FhirValidatorExtensionTest : RobolectricTest() {
         intent = CarePlan.CarePlanIntent.PLAN
         subject = Reference(patient)
       }
-    val results = validator.checkResourceValid(carePlan)
-    Assert.assertFalse(results.isEmpty())
-    Assert.assertEquals(1, results.size)
-    Assert.assertTrue(results.first().errorMessages.isBlank())
+    val resultsWrapper = validator.checkResourceValid(carePlan)
+    Assert.assertEquals(1, resultsWrapper.errorMessages.size)
+    Assert.assertTrue(resultsWrapper.errorMessages.first().isBlank())
   }
 }

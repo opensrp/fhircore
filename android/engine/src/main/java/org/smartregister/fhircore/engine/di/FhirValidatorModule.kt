@@ -37,9 +37,7 @@ class FhirValidatorModule {
 
   @Provides
   @Singleton
-  fun provideFhirValidator(): FhirValidator {
-    val fhirContext = FhirContext.forR4()
-
+  fun provideFhirValidator(fhirContext: FhirContext): FhirValidator {
     val validationSupportChain =
       ValidationSupportChain(
         DefaultProfileValidationSupport(fhirContext),
