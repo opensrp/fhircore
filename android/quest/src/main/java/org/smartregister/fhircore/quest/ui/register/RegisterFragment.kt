@@ -177,6 +177,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 currentPage = registerViewModel.currentPage,
                 pagingItems = pagingItems,
                 navController = findNavController(),
+                onCancel = { appMainViewModel.onEvent(it) },
                 toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
               )
             }
@@ -206,29 +207,19 @@ class RegisterFragment : Fragment(), OnSyncListener {
               syncJobStatus,
               progressPercentage,
             )
-            registerViewModel.updateSyncStatus(syncJobStatus)
           }
         }
       }
       is CurrentSyncJobStatus.Succeeded -> {
-        lifecycleScope.launch {
-          appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
-          registerViewModel.updateSyncStatus(syncJobStatus)
-        }
+        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
         refreshRegisterData()
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
-        lifecycleScope.launch {
-          appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
-          registerViewModel.updateSyncStatus(syncJobStatus)
-        }
+        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
       }
       else -> {
-        lifecycleScope.launch {
-          appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
-          registerViewModel.updateSyncStatus(syncJobStatus)
-        }
+        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
       }
     }
   }

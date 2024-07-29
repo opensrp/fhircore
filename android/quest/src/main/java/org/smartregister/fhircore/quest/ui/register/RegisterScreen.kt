@@ -122,6 +122,7 @@ fun RegisterScreen(
   registerUiState: RegisterUiState,
   appDrawerUIState: AppDrawerUIState = AppDrawerUIState(),
   appUiState: AppMainUiState? = null,
+  onCancel: (AppMainEvent) -> Unit,
   searchText: MutableState<String>,
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
@@ -325,7 +326,7 @@ fun RegisterScreen(
               appUiState = appUiState,
               showSyncComplete = showSyncComplete,
               syncNotificationBarExpanded = syncNotificationBarExpanded,
-              onClick = {},
+              onClick = onCancel,
               percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress),
               context = context,
             ) {}
@@ -519,6 +520,7 @@ fun RegisterScreenWithDataPreview() {
       currentPage = currentPage,
       pagingItems = pagingItems,
       navController = rememberNavController(),
+      onCancel = {},
     )
   }
 }
