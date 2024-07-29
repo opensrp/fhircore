@@ -191,4 +191,5 @@
     <string name="minutes_remaining">Calculating minutes remaining...</string>
     <string name="sync_inprogress">Syncing...</string>
     <string name="cancel_sync">CANCEL</string>
+    <string name="default_html_title">file</string>
 </resources>
