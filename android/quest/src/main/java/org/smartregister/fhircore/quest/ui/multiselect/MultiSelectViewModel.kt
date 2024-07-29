@@ -38,6 +38,7 @@ import org.smartregister.fhircore.engine.ui.multiselect.TreeBuilder
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import timber.log.Timber
 
 @HiltViewModel
 class MultiSelectViewModel
@@ -54,24 +55,30 @@ constructor(
   private var _rootTreeNodes: List<TreeNode<String>> = mutableListOf()
 
   fun populateLookupMap(context: Context, multiSelectViewConfig: MultiSelectViewConfig) {
-    // Mark previously selected nodes
     viewModelScope.launch {
       isLoading.postValue(true)
+      // Mark previously selected nodes
       val previouslySelectedNodes = context.syncLocationIdsProtoStore.data.firstOrNull()
       if (!previouslySelectedNodes.isNullOrEmpty()) {
         previouslySelectedNodes.values.forEach { selectedNodes[it.locationId] = it }
       }
 
+      val currentTime = System.currentTimeMillis()
+      val repositoryResourceData =
+        defaultRepository.searchResourcesRecursively(
+          filterByRelatedEntityLocationMetaTag = false,
+          fhirResourceConfig = multiSelectViewConfig.resourceConfig,
+          filterActiveResources = null,
+          secondaryResourceConfigs = null,
+          configRules = null,
+        )
+
       val resourcesMap =
-        defaultRepository
-          .searchResourcesRecursively(
-            filterByRelatedEntityLocationMetaTag = false,
-            fhirResourceConfig = multiSelectViewConfig.resourceConfig,
-            filterActiveResources = null,
-            secondaryResourceConfigs = null,
-            configRules = null,
-          )
-          .associateByTo(mutableMapOf(), { it.resource.logicalId }, { it.resource })
+        repositoryResourceData.associateByTo(
+          mutableMapOf(),
+          { it.resource.logicalId },
+          { it.resource },
+        )
       val rootNodeIds = mutableSetOf<String>()
 
       val lookupItems: List<TreeNode<String>> =
@@ -102,7 +109,6 @@ constructor(
           }
 
           val parentResource = resourcesMap[parentId]
-
           TreeNode(
             id = resource.logicalId,
             parent =
@@ -127,6 +133,9 @@ constructor(
       isLoading.postValue(false)
       _rootTreeNodes = TreeBuilder.buildTrees(lookupItems, rootNodeIds)
       rootTreeNodes.addAll(_rootTreeNodes)
+      Timber.w(
+        "Building tree of resource type ${multiSelectViewConfig.resourceConfig.baseResource.resource} took ${(System.currentTimeMillis() - currentTime) / 1000} second(s)",
+      )
     }
   }
 

@@ -45,7 +45,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
@@ -766,63 +765,63 @@ constructor(
     subject: Resource,
     eventWorkflow: EventWorkflow,
   ) {
-    val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
-    val computedValuesMap =
-      configRulesExecutor.fireRules(rules = configRules, baseResource = subject).mapValues { entry,
-        ->
-        val initialValue = entry.value.toString()
-        if (initialValue.contains('/')) {
-          """${initialValue.substringBefore("/")}/${initialValue.extractLogicalIdUuid()}"""
-        } else {
-          initialValue
+    withContext(dispatcherProvider.io()) {
+      val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
+      val computedValuesMap =
+        configRulesExecutor.fireRules(rules = configRules, baseResource = subject).mapValues {
+          entry,
+          ->
+          val initialValue = entry.value.toString()
+          if (initialValue.contains('/')) {
+            """${initialValue.substringBefore("/")}/${initialValue.extractLogicalIdUuid()}"""
+          } else {
+            initialValue
+          }
         }
-      }
 
-    Timber.i("Computed values map = ${computedValuesMap.values}")
-    val search =
-      Search(resourceConfig.resource).apply {
-        applyConfiguredSortAndFilters(
-          resourceConfig = resourceConfig,
-          sortData = false,
-          filterActiveResources = null,
-          configComputedRuleValues = computedValuesMap,
+      Timber.i("Computed values map = ${computedValuesMap.values}")
+      val search =
+        Search(resourceConfig.resource).apply {
+          applyConfiguredSortAndFilters(
+            resourceConfig = resourceConfig,
+            sortData = false,
+            filterActiveResources = null,
+            configComputedRuleValues = computedValuesMap,
+          )
+        }
+      val resources = fhirEngine.search<Resource>(search).map { it.resource }
+      val filteredResources =
+        filterResourcesByFhirPathExpression(
+          resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
+          resources = resources,
         )
+      filteredResources.forEach {
+        Timber.i("Closing Resource type ${it.resourceType.name} and id ${it.id}")
+        closeResource(resource = it, eventWorkflow = eventWorkflow)
       }
-    val resources = fhirEngine.search<Resource>(search).map { it.resource }
-    val filteredResources =
-      filterResourcesByFhirPathExpression(
-        resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
-        resources = resources,
-      )
-    filteredResources.forEach {
-      Timber.i("Closing Resource type ${it.resourceType.name} and id ${it.id}")
-      closeResource(resource = it, eventWorkflow = eventWorkflow)
-    }
 
-    // recursive related resources
-    val retrievedRelatedResources =
-      withContext(dispatcherProvider.io()) {
+      val retrievedRelatedResources =
         retrieveRelatedResources(
           resources = resources,
           relatedResourcesConfigs = resourceConfig.relatedResources,
           relatedResourceWrapper = RelatedResourceWrapper(),
           configComputedRuleValues = computedValuesMap,
         )
-      }
 
-    retrievedRelatedResources.relatedResourceMap.forEach { resourcesMap ->
-      val filteredRelatedResources =
-        filterResourcesByFhirPathExpression(
-          resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
-          resources = resourcesMap.value,
-        )
+      retrievedRelatedResources.relatedResourceMap.forEach { resourcesMap ->
+        val filteredRelatedResources =
+          filterResourcesByFhirPathExpression(
+            resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
+            resources = resourcesMap.value,
+          )
 
-      filteredRelatedResources.forEach { resource ->
-        Timber.i(
-          "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}",
-        )
-        if (filterRelatedResource(resource, resourceConfig)) {
-          closeResource(resource = resource, eventWorkflow = eventWorkflow)
+        filteredRelatedResources.forEach { resource ->
+          Timber.i(
+            "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}",
+          )
+          if (filterRelatedResource(resource, resourceConfig)) {
+            closeResource(resource = resource, eventWorkflow = eventWorkflow)
+          }
         }
       }
     }
@@ -969,62 +968,64 @@ constructor(
     pageSize: Int? = null,
     configRules: List<RuleConfig>?,
   ): List<RepositoryResourceData> {
-    val baseResourceConfig = fhirResourceConfig.baseResource
-    val relatedResourcesConfig = fhirResourceConfig.relatedResources
-    val configComputedRuleValues = configRules.configRulesComputedValues()
-    val search =
-      Search(type = baseResourceConfig.resource).apply {
-        applyConfiguredSortAndFilters(
-          resourceConfig = baseResourceConfig,
-          filterActiveResources = filterActiveResources,
-          sortData = true,
-          configComputedRuleValues = configComputedRuleValues,
-        )
-        applyFilterByRelatedEntityLocationMetaTag(
-          baseResourceConfig.resource,
-          filterByRelatedEntityLocationMetaTag,
-        )
-        if (currentPage != null && pageSize != null) {
-          count = pageSize
-          from = currentPage * pageSize
-        }
-      }
-
-    val baseFhirResources =
-      kotlin
-        .runCatching {
-          withContext(dispatcherProvider.io()) { fhirEngine.search<Resource>(search) }
-        }
-        .onFailure {
-          Timber.e(
-            it,
-            "Error retrieving resources. Empty list returned by default",
+    return withContext(dispatcherProvider.io()) {
+      val baseResourceConfig = fhirResourceConfig.baseResource
+      val relatedResourcesConfig = fhirResourceConfig.relatedResources
+      val configComputedRuleValues = configRules.configRulesComputedValues()
+      val search =
+        Search(type = baseResourceConfig.resource).apply {
+          applyConfiguredSortAndFilters(
+            resourceConfig = baseResourceConfig,
+            filterActiveResources = filterActiveResources,
+            sortData = true,
+            configComputedRuleValues = configComputedRuleValues,
           )
+          applyFilterByRelatedEntityLocationMetaTag(
+            baseResourceConfig.resource,
+            filterByRelatedEntityLocationMetaTag,
+          )
+          if (currentPage != null && pageSize != null) {
+            count = pageSize
+            from = currentPage * pageSize
+          }
         }
-        .getOrDefault(emptyList())
 
-    return baseFhirResources.map { searchResult ->
-      val retrievedRelatedResources =
-        withContext(dispatcherProvider.io()) {
+      val baseFhirResources =
+        kotlin
+          .runCatching {
+            val searchTime = System.currentTimeMillis()
+            val result = fhirEngine.search<Resource>(search)
+            Timber.w(
+              "It took ${(System.currentTimeMillis() - searchTime) / 1000} second(s) to search resources of type ${baseResourceConfig.resource}",
+            )
+            result
+          }
+          .onFailure {
+            Timber.e(
+              it,
+              "Error retrieving resources. Empty list returned by default",
+            )
+          }
+          .getOrDefault(emptyList())
+
+      baseFhirResources.map { searchResult ->
+        val retrievedRelatedResources =
           retrieveRelatedResources(
             resources = listOf(searchResult.resource),
             relatedResourcesConfigs = relatedResourcesConfig,
             relatedResourceWrapper = RelatedResourceWrapper(),
             configComputedRuleValues = configComputedRuleValues,
           )
-        }
-      RepositoryResourceData(
-        resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
-        resource = searchResult.resource,
-        relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
-        relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
-        secondaryRepositoryResourceData =
-          withContext(dispatcherProvider.io()) {
-            secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(
-              filterActiveResources,
-            )
-          },
-      )
+        val secondaryRepositoryResourceData =
+          secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(filterActiveResources)
+        RepositoryResourceData(
+          resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
+          resource = searchResult.resource,
+          relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
+          relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
+          secondaryRepositoryResourceData = secondaryRepositoryResourceData,
+        )
+      }
     }
   }
 
