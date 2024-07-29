@@ -157,11 +157,9 @@ constructor(
         relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
         relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
         secondaryRepositoryResourceData =
-          withContext(dispatcherProvider.io()) {
-            profileConfiguration.secondaryResources.retrieveSecondaryRepositoryResourceData(
-              profileConfiguration.filterActiveResources,
-            )
-          },
+          profileConfiguration.secondaryResources.retrieveSecondaryRepositoryResourceData(
+            profileConfiguration.filterActiveResources,
+          ),
       )
     }
   }
