@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.ButtonDefaults
@@ -63,22 +65,25 @@ fun SubsequentSyncDetailsBar(
 
   val progress = currentPercentage.toFloat() / MAX_PROGRESS
   val backgroundColor = Color(0xFF002B4A)
+  val syncBarHeight = if (hideExtraInformation) 66.dp else 24.dp
 
   Box(
     modifier =
       modifier
         .fillMaxWidth()
-        .background(color = backgroundColor)
-        .padding(horizontal = 16.dp, vertical = if (hideExtraInformation) 4.dp else 2.dp),
+        .height(syncBarHeight)
+        .animateContentSize()
+        .background(backgroundColor)
+        .padding(horizontal = 16.dp),
     contentAlignment = Alignment.Center,
   ) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.Center,
+      horizontalArrangement = Arrangement.SpaceBetween,
       modifier = Modifier.fillMaxWidth(),
     ) {
       Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.weight(1f),
       ) {
@@ -86,30 +91,31 @@ fun SubsequentSyncDetailsBar(
           Text(
             text = "${(progress * 100).toInt()}% ${context.getString(R.string.sync_inprogress)}",
             color = Color.White,
-            fontSize = 16.sp,
-            modifier = Modifier.padding(bottom = 8.dp).align(Alignment.Start),
+            fontSize = 15.sp,
+            modifier = Modifier.align(Alignment.Start), // Adjust padding
           )
         }
         LinearProgressIndicator(
           progress = progress,
           color = Color(0xFF28B8F9),
           backgroundColor = Color.White,
-          modifier = Modifier.fillMaxWidth(),
+          modifier =
+            Modifier.fillMaxWidth().padding(vertical = 4.dp), // Adjust the padding as needed
         )
         if (hideExtraInformation) {
           Text(
             text = context.getString(R.string.minutes_remaining),
             color = SubtitleTextColor,
-            fontSize = 15.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 6.dp).align(Alignment.Start),
+            fontSize = 13.sp,
+            textAlign = TextAlign.Start,
+            modifier = Modifier.align(Alignment.Start), // Adjust padding
           )
         }
       }
-      Spacer(modifier = Modifier.width(16.dp))
       if (hideExtraInformation) {
+        Spacer(modifier = Modifier.width(16.dp))
         TextButton(
-          onClick = { onCancelButtonClick() },
+          onClick = onCancelButtonClick,
           colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF28B8F9)),
         ) {
           Text(text = context.getString(R.string.cancel_sync))

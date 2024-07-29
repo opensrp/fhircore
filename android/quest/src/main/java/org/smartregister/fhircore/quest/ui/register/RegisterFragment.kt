@@ -170,7 +170,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
               RegisterScreen(
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,
-                onClick = appMainViewModel::onEvent,
                 registerUiState = registerViewModel.registerUiState.value,
                 appUiState = appMainViewModel.appMainUiState.value,
                 appDrawerUIState = appMainViewModel.appDrawerUiState.value,

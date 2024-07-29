@@ -119,7 +119,6 @@ fun RegisterScreen(
   modifier: Modifier = Modifier,
   openDrawer: (Boolean) -> Unit,
   onEvent: (RegisterEvent) -> Unit,
-  onClick: (AppMainEvent) -> Unit,
   registerUiState: RegisterUiState,
   appDrawerUIState: AppDrawerUIState = AppDrawerUIState(),
   appUiState: AppMainUiState? = null,
@@ -137,7 +136,6 @@ fun RegisterScreen(
   var synBarBackgroundColor by remember { mutableStateOf(Color(0xFF002B4A)) }
   var showSyncBar by remember { mutableStateOf(false) }
   var showSyncComplete by remember { mutableStateOf(false) }
-  // keep tra
   var hasShownSyncComplete by rememberSaveable { mutableStateOf(false) }
 
   LaunchedEffect(
@@ -261,7 +259,11 @@ fun RegisterScreen(
               }
             }
           }
-          if (showSyncBar && appUiState!!.currentSyncJobStatus !is CurrentSyncJobStatus.Cancelled) {
+          if (
+            showSyncBar &&
+              appUiState!!.currentSyncJobStatus !is CurrentSyncJobStatus.Cancelled &&
+              !registerUiState.isFirstTimeSync
+          ) {
             Box(
               modifier =
                 Modifier.align(Alignment.BottomStart)
@@ -287,14 +289,17 @@ fun RegisterScreen(
                   } else Icons.Default.KeyboardArrowUp,
                 contentDescription = null,
                 tint =
-                  if (synBarBackgroundColor == Color(0xFF002B4A)) Color.White
-                  else synBarBackgroundColor,
+                  if (synBarBackgroundColor == Color(0xFF002B4A)) {
+                    Color.White
+                  } else {
+                    synBarBackgroundColor
+                  },
                 modifier = Modifier.size(16.dp),
               )
             }
           }
         }
-        if (showSyncBar) {
+        if (showSyncBar && !registerUiState.isFirstTimeSync) {
           val heightDp = if (syncNotificationBarExpanded) 48.dp else 24.dp
           Box(
             modifier =
@@ -398,8 +403,8 @@ fun SyncStatusView(
       appUiState?.currentSyncJobStatus !is CurrentSyncJobStatus.Cancelled -> {
       SubsequentSyncDetailsBar(
         percentageProgressFlow = percentageProgressFlow,
-        modifier = modifier.testTag(SYNC_PROGRESS_BAR_TAG),
-        hideExtraInformation = !syncNotificationBarExpanded,
+        modifier = Modifier.testTag(SYNC_PROGRESS_BAR_TAG),
+        hideExtraInformation = syncNotificationBarExpanded,
       ) {
         onClick(AppMainEvent.CancelSyncData(context))
       }
@@ -510,7 +515,6 @@ fun RegisterScreenWithDataPreview() {
       modifier = Modifier,
       openDrawer = {},
       onEvent = {},
-      onClick = {},
       registerUiState = registerUiState,
       searchText = searchText,
       currentPage = currentPage,

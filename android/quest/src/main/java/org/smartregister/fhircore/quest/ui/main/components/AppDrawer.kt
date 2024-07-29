@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -255,6 +256,7 @@ private fun NavBottomSection(
               appUiState.currentSyncJobStatus is CurrentSyncJobStatus.Cancelled
           ) {
             Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+              .height(48.dp)
               .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
           } else {
             Modifier
@@ -273,11 +275,12 @@ private fun NavBottomSection(
       }
       currentSyncJobStatus is CurrentSyncJobStatus.Failed -> {
         SyncCompleteStatus(
-          modifier = modifier,
+          modifier = Modifier.fillMaxWidth(),
           imageConfig = ImageConfig(type = "local", "ic_sync_fail"),
           title = context.getString(org.smartregister.fhircore.engine.R.string.sync_error),
           syncSuccess = false,
           showEndText = true,
+          applyPadding = false,
         ) {
           openDrawer(false)
           onSideMenuClick(AppMainEvent.SyncData(context))
@@ -285,10 +288,11 @@ private fun NavBottomSection(
       }
       currentSyncJobStatus is CurrentSyncJobStatus.Succeeded && showSyncCompleted -> {
         SyncCompleteStatus(
-          modifier = modifier,
+          modifier = Modifier.fillMaxWidth(),
           imageConfig = ImageConfig(type = "local", "ic_sync_success"),
           title = context.getString(org.smartregister.fhircore.engine.R.string.sync_completed),
           showEndText = false,
+          applyPadding = false,
           onCancelButtonClick = {},
         )
       }
@@ -300,6 +304,7 @@ private fun NavBottomSection(
           endText = appUiState.lastSyncTime,
           showEndText = true,
           endTextColor = SubtitleTextColor,
+          applyPadding = false,
         ) {
           openDrawer(false)
           onSideMenuClick(AppMainEvent.SyncData(context))
@@ -341,7 +346,10 @@ private fun updateSyncStatus(
       setHasShownSyncComplete(false)
     }
     is CurrentSyncJobStatus.Cancelled -> {}
-    else -> {}
+    else -> {
+      setBackgroundColor(SideMenuTopItemDarkColor)
+      setShowSyncComplete(false)
+    }
   }
 }
 
@@ -465,6 +473,7 @@ private fun SideMenuItem(
   imageConfig: ImageConfig? = null,
   title: String,
   endText: String = "",
+  applyPadding: Boolean = true,
   endTextColor: Color = Color.White,
   showEndText: Boolean,
   endImageVector: ImageVector? = null,
@@ -480,7 +489,12 @@ private fun SideMenuItem(
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(
-      modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 16.dp),
+      modifier =
+        modifier
+          .testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG)
+          .then(
+            if (applyPadding) Modifier.padding(vertical = 16.dp) else Modifier.padding(top = 6.dp),
+          ),
       verticalAlignment = Alignment.CenterVertically,
     ) {
       Image(
@@ -514,15 +528,25 @@ fun SyncCompleteStatus(
   showImage: Boolean = true,
   syncSuccess: Boolean = true,
   description: String? = null,
+  applyPadding: Boolean = true,
   onCancelButtonClick: () -> Unit,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
-    modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
+    modifier =
+      modifier
+        .fillMaxWidth()
+        .then(
+          Modifier.padding(horizontal = 16.dp).takeIf { applyPadding } ?: Modifier,
+        ),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(
-      modifier = Modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG),
+      modifier =
+        Modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG)
+          .then(
+            Modifier.padding(vertical = 8.dp).takeIf { showImage } ?: Modifier,
+          ),
       verticalAlignment = Alignment.CenterVertically,
     ) {
       if (showImage) {
@@ -533,19 +557,18 @@ fun SyncCompleteStatus(
           navController = rememberNavController(),
         )
       }
-      Column() {
+      Column {
         Text(
           text = title,
           color = Color(0xFF282828),
-          fontSize = if (showImage) 16.sp else 10.sp,
+          fontSize = if (showImage) 15.sp else 10.sp,
           fontWeight = FontWeight(500),
         )
         if (description != null) {
           Text(
             text = description,
             color = Color.Gray,
-            fontSize = 12.sp,
-            modifier = Modifier.padding(top = 4.dp),
+            fontSize = 10.sp,
           )
         }
       }

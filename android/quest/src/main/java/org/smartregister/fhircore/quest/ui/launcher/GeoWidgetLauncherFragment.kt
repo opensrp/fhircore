@@ -262,6 +262,11 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
     }
   }
 
+  override fun onDestroy() {
+    super.onDestroy()
+    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+  }
+
   private fun buildGeoWidgetFragment() {
     geoWidgetConfiguration =
       configurationRegistry.retrieveConfiguration<GeoWidgetConfiguration>(
