@@ -24,6 +24,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
+import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 import org.junit.Test
@@ -112,19 +113,24 @@ class LoginScreenTest {
       )
     }
 
-    composeRule.onNodeWithTag(PASSWORD_FORGOT_DIALOG).assertExists()
-    composeRule.onNodeWithText(R.string.forgot_password_title.toString()).assertIsDisplayed()
-    composeRule.onNodeWithText(R.string.please_contact_supervisor.toString()).assertIsDisplayed()
-    composeRule
-      .onNodeWithText(applicationConfiguration.loginConfig.contactNumber.toString())
-      .assertIsDisplayed()
-    composeRule.onNodeWithText(R.string.cancel.toString()).assertIsDisplayed()
-    composeRule.onNodeWithText(R.string.dial_number.toString()).assertIsDisplayed()
+    val forgotPasswordTitle = context.getString(R.string.forgot_password_title)
+    val pleaseContactSupervisor = context.getString(R.string.please_contact_supervisor)
+    val cancel = context.getString(R.string.cancel)
+    val dialNumber = context.getString(R.string.dial_number)
+    val contactNumber = applicationConfiguration.loginConfig.contactNumber
+
+    composeRule.onNodeWithTag(PASSWORD_FORGOT_DIALOG).assertExists().assertIsDisplayed()
+    composeRule.onNodeWithText(forgotPasswordTitle).assertIsDisplayed()
+    composeRule.onNodeWithText(pleaseContactSupervisor).assertIsDisplayed()
+    composeRule.onNodeWithText(contactNumber.toString()).assertIsDisplayed()
+    composeRule.onNodeWithText(cancel).assertIsDisplayed()
+    composeRule.onNodeWithText(dialNumber).assertIsDisplayed()
   }
 
   @Test
   fun testForgotPasswordDialog_CancelButton_Click() {
     var dismissDialogClicked = false
+
     composeRule.setContent {
       ForgotPasswordDialog(
         applicationConfiguration = applicationConfiguration,
@@ -132,10 +138,9 @@ class LoginScreenTest {
         onDismissDialog = { dismissDialogClicked = true },
       )
     }
-
-    composeRule.onNodeWithText(R.string.cancel.toString()).performClick()
-
-    assert(dismissDialogClicked)
+    val cancelText = context.getString(R.string.cancel)
+    composeRule.onNodeWithText(cancelText).performClick()
+    assertTrue(dismissDialogClicked)
   }
 
   @Test
@@ -149,7 +154,8 @@ class LoginScreenTest {
         onDismissDialog = { dismissDialogClicked = true },
       )
     }
-    composeRule.onNodeWithText(R.string.dial_number.toString()).performClick()
+    val dialNumber = context.getString(R.string.dial_number)
+    composeRule.onNodeWithText(dialNumber).performClick()
     assert(dismissDialogClicked)
     assert(forgotPasswordClicked)
   }

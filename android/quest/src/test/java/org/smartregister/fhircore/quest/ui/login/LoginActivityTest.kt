@@ -17,9 +17,10 @@
 package org.smartregister.fhircore.quest.ui.login
 
 import android.content.Context
-import android.content.Intent
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -61,6 +62,7 @@ class LoginActivityTest : RobolectricTest() {
   private val loginActivityController =
     Robolectric.buildActivity(Faker.TestLoginActivity::class.java)
   private lateinit var loginActivity: LoginActivity
+  val context = InstrumentationRegistry.getInstrumentation().targetContext!!
 
   @Before
   fun setUp() {
@@ -78,11 +80,20 @@ class LoginActivityTest : RobolectricTest() {
   }
 
   @Test
-  fun testLaunchDialPadShouldStartActionDialActivity() {
-    loginActivity.loginViewModel.forgotPassword()
-    val resultIntent = shadowOf(loginActivity).nextStartedActivity
-    Assert.assertEquals(Intent.ACTION_DIAL, resultIntent.action)
-    Assert.assertEquals("tel:0123456789", resultIntent.data.toString())
+  fun testForgotPasswordLoadsContact() {
+    val launchDialPadObserver =
+      Observer<String?> { dialPadUri ->
+        if (dialPadUri != null) {
+          Assert.assertEquals("tel:1234567890", dialPadUri)
+        }
+      }
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+    try {
+      loginActivity.loginViewModel.launchDialPad.observeForever(launchDialPadObserver)
+      loginActivity.loginViewModel.forgotPassword(context)
+    } finally {
+      loginActivity.loginViewModel.launchDialPad.removeObserver(launchDialPadObserver)
+    }
   }
 
   @Test

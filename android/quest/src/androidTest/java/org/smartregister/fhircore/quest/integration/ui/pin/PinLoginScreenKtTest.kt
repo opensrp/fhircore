@@ -105,7 +105,8 @@ class PinLoginScreenKtTest {
       .assertExists()
       .assertIsDisplayed()
     composeRule.onAllNodesWithTag(PIN_CELL_TEST_TAG).assertCountEquals(4)
-    val forgotPinNode = composeRule.onNodeWithText("Forgot PIN?", ignoreCase = true)
+    val forgotPinNode =
+      composeRule.onNodeWithTag("FORGOT_PIN_TEXT") // <-- Adjusted to use the test tag
     forgotPinNode.assertExists().assertIsDisplayed().assertHasClickAction()
 
     // Clicking forgot pin should launch dialog

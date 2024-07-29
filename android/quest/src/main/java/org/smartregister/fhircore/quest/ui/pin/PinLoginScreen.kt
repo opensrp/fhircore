@@ -185,7 +185,8 @@ fun PinLoginPage(
                     .padding(top = 24.dp)
                     .align(Alignment.CenterHorizontally)
                     .clickable { showForgotPinDialog = !showForgotPinDialog }
-                    .bringIntoViewRequester(bringIntoViewRequester),
+                    .bringIntoViewRequester(bringIntoViewRequester)
+                    .testTag("FORGOT_PIN_TEXT"), // <-- Added test tag here
               )
             }
           } else {
