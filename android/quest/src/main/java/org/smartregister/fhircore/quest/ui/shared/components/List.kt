@@ -18,6 +18,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
@@ -34,6 +35,8 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -67,6 +70,7 @@ fun List(
   viewProperties: ListProperties,
   resourceData: ResourceData,
   navController: NavController,
+  decodedImageMap: SnapshotStateMap<String, Bitmap> = mutableStateMapOf(),
 ) {
   val density = LocalDensity.current
   val currentListResourceData = resourceData.listResourceDataMap?.get(viewProperties.id)
@@ -122,6 +126,7 @@ fun List(
                     viewProperties = viewProperties.registerCard.views,
                     resourceData = listResourceData,
                     navController = navController,
+                    decodedImageMap = decodedImageMap,
                   )
                 }
               }
@@ -138,6 +143,7 @@ fun List(
                 viewProperties = viewProperties.registerCard.views,
                 resourceData = listResourceData,
                 navController = navController,
+                decodedImageMap = mutableStateMapOf(),
               )
             }
           }

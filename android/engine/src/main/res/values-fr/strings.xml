@@ -8,6 +8,7 @@
     <string name="sync_data">Synchronisation des données</string>
     <string name="scan_bar_code">Scan du code-barres</string>
     <string name="empty_client_list_message_title">Aucun résultat</string>
+    <string name="data_migration_version">Version de migration de données %1$s</string>
     <string name="empty_client_list_message_details">Désolé, nous n\'avons pas trouvé de client avec le nom ou l\'identifiant donné.</string>
     <string name="register_new_client">Enregistrer un nouveau client</string>
     <string name="app_logo">Logo de l\'application</string>
