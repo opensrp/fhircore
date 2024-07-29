@@ -176,7 +176,11 @@ constructor(
         return@launch
       }
 
-      currentQuestionnaireResponse.processMetadata(questionnaire, questionnaireConfig, context)
+      currentQuestionnaireResponse.processMetadata(
+        questionnaire,
+        questionnaireConfig,
+        context,
+      )
 
       val bundle =
         performExtraction(
@@ -206,7 +210,10 @@ constructor(
 
       if (subjectIdType != null) {
         val subject =
-          loadResource(ResourceType.valueOf(subjectIdType.resourceType), subjectIdType.idPart)
+          loadResource(
+            ResourceType.valueOf(subjectIdType.resourceType),
+            subjectIdType.idPart,
+          )
 
         if (subject != null && !questionnaireConfig.isReadOnly()) {
           val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
@@ -532,7 +539,9 @@ constructor(
 
   private fun Bundle.copyBundle(currentQuestionnaireResponse: QuestionnaireResponse): Bundle =
     this.copy().apply {
-      addEntry(Bundle.BundleEntryComponent().apply { resource = currentQuestionnaireResponse })
+      addEntry(
+        Bundle.BundleEntryComponent().apply { resource = currentQuestionnaireResponse },
+      )
     }
 
   private fun QuestionnaireResponse.processMetadata(
@@ -647,7 +656,10 @@ constructor(
         }
       if (questionnaireHasAnswer) {
         questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
-        defaultRepository.addOrUpdate(addMandatoryTags = true, resource = questionnaireResponse)
+        defaultRepository.addOrUpdate(
+          addMandatoryTags = true,
+          resource = questionnaireResponse,
+        )
       }
     }
   }
@@ -674,7 +686,11 @@ constructor(
             val valueResourceType = param.value.substringBefore("/")
             val valueResourceId = param.value.substringAfter("/")
             addOrUpdate(
-              resource = loadResource(valueResourceId, ResourceType.valueOf(valueResourceType)),
+              resource =
+                loadResource(
+                  valueResourceId,
+                  ResourceType.valueOf(valueResourceType),
+                ),
             )
           }
         }
@@ -682,7 +698,11 @@ constructor(
         Timber.e("Unable to update resource's _lastUpdated", resourceNotFoundException)
       } catch (illegalArgumentException: IllegalArgumentException) {
         Timber.e(
-          "No enum constant org.hl7.fhir.r4.model.ResourceType.${param.value.substringBefore("/")}",
+          "No enum constant org.hl7.fhir.r4.model.ResourceType.${
+                        param.value.substringBefore(
+                            "/",
+                        )
+                    }",
         )
       }
     }
@@ -1034,7 +1054,7 @@ constructor(
       if (
         resourceType != null &&
           !resourceIdentifier.isNullOrEmpty() &&
-          questionnaireConfig.isEditable()
+          (questionnaireConfig.isEditable() || questionnaireConfig.isReadOnly())
       ) {
         searchLatestQuestionnaireResponse(
             resourceId = resourceIdentifier,

@@ -53,6 +53,7 @@ import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Consent
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
@@ -1260,6 +1261,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testAddPractitionerInfoAppendedCorrectlyOnConsentResource() {
+    val consent = Consent().apply { this.id = "123456" }
+    consent.appendPractitionerInfo("12345")
+    Assert.assertEquals("Practitioner/12345", consent.performer.first().reference)
+  }
+
+  @Test
   fun testSaveExtractedResourcesForEditedQuestionnaire() = runTest {
     val questionnaire = extractionQuestionnaire()
     val questionnaireResponse =
@@ -1367,7 +1375,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testLoadCqlInputResourcesFromQuestionnaireConfig() = runBlocking {
+  fun testLoadCqlInputResourcesFromQuestionnaireConfig() = runTest {
     val bundle = Bundle()
 
     // Define the expected CQL input resources

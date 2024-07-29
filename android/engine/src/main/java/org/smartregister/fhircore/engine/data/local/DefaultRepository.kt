@@ -807,7 +807,7 @@ constructor(
           resources = resources,
           relatedResourcesConfigs = resourceConfig.relatedResources,
           relatedResourceWrapper = RelatedResourceWrapper(),
-          configComputedRuleValues = emptyMap(),
+          configComputedRuleValues = computedValuesMap,
         )
       }
 
