@@ -55,7 +55,10 @@ fun ViewRenderer(
   areViewPropertiesInterpolated: Boolean = false,
 ) {
   viewProperties.forEach { properties ->
-    val interpolatedProperties = if (areViewPropertiesInterpolated) properties else properties.interpolate(resourceData.computedValuesMap)
+    val interpolatedProperties =
+      if (areViewPropertiesInterpolated) {
+        properties
+      } else properties.interpolate(resourceData.computedValuesMap)
     GenerateView(
       modifier = generateModifier(properties),
       properties = interpolatedProperties,

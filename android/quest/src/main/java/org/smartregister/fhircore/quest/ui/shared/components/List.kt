@@ -106,37 +106,42 @@ fun List(
                 .testTag(VERTICAL_ORIENTATION),
           ) {
             currentListResourceData.forEachIndexed { index, listResourceData ->
-              // Interpolate ViewProperties up-front to hide the child view spacers and divider when the child view is not visible
-              val interpolatedChildViewProperties = viewProperties.registerCard.views.map { viewProperty ->
-                viewProperty.interpolate(listResourceData.computedValuesMap)
-              }
+              // Interpolate ViewProperties up-front to hide the child view spacers and divider when
+              // the child view is not visible
+              val interpolatedChildViewProperties =
+                viewProperties.registerCard.views.map { viewProperty ->
+                  viewProperty.interpolate(listResourceData.computedValuesMap)
+                }
               // At least 1 child view must be visible in order to show the spacers and divider
-              val areChildViewsVisible = interpolatedChildViewProperties.any { viewProperty ->
-                viewProperty.visible.toBooleanStrict()
-              }
+              val areChildViewsVisible =
+                interpolatedChildViewProperties.any { viewProperty ->
+                  viewProperty.visible.toBooleanStrict()
+                }
               if (areChildViewsVisible) {
                 Spacer(modifier = modifier.height(6.dp))
                 Column(
                   modifier =
-                  Modifier.padding(
-                    horizontal = viewProperties.padding.dp,
-                    vertical = viewProperties.padding.div(4).dp,
-                  ),
+                    Modifier.padding(
+                      horizontal = viewProperties.padding.dp,
+                      vertical = viewProperties.padding.div(4).dp,
+                    ),
                 ) {
                   AnimatedVisibility(
                     visible = true,
                     enter =
-                    slideInVertically {
-                      // Slide in from 40 dp from the top.
-                      with(density) { -40.dp.roundToPx() }
-                    },
+                      slideInVertically {
+                        // Slide in from 40 dp from the top.
+                        with(density) { -40.dp.roundToPx() }
+                      },
                   ) {
                     ViewRenderer(
                       viewProperties = interpolatedChildViewProperties,
                       resourceData = listResourceData,
                       navController = navController,
                       decodedImageMap = decodedImageMap,
-                      areViewPropertiesInterpolated = true // Prevents double interpolation (in this function and inside the ViewRenderer) which is a waste
+                      areViewPropertiesInterpolated =
+                        true, // Prevents double interpolation (in this function and inside the
+                      // ViewRenderer) which is a waste
                     )
                   }
                 }
