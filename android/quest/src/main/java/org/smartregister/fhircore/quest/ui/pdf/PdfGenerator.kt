@@ -14,23 +14,31 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.pdf
+package org.smartregister.fhircore.quest.ui.pdf
 
 import android.content.Context
 import android.print.PrintAttributes
 import android.print.PrintManager
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import android.webkit.WebViewClient
+import org.jetbrains.annotations.VisibleForTesting
 
 /**
  * PdfGenerator creates PDF files from HTML content using Android's WebView and PrintManager. Must
  * be initialized on the Main thread.
  *
  * @param context Application context for initializing WebView and PrintManager.
- * @param webView Optional WebView for testing purposes.
+ * @param webView WebView instance for loading HTML content (Visible for testing).
  */
-class PdfGenerator(context: Context, private val webView: WebView = WebView(context)) {
+class PdfGenerator(
+  private val context: Context,
+  @VisibleForTesting private val webView: WebView = WebView(context),
+) {
 
-  private val printManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
+  private var mWebView: WebView? = null
+  private val printManager: PrintManager =
+    context.getSystemService(Context.PRINT_SERVICE) as PrintManager
 
   /**
    * Generates a PDF file from the provided HTML content.
@@ -47,10 +55,26 @@ class PdfGenerator(context: Context, private val webView: WebView = WebView(cont
    *
    * @param html The HTML content to be converted into a PDF.
    * @param pdfTitle The title of the PDF document.
+   * @param onPdfPrinted Callback to be invoked when the PDF is printed.
    */
-  fun generatePdfWithHtml(html: String, pdfTitle: String) {
+  fun generatePdfWithHtml(html: String, pdfTitle: String, onPdfPrinted: () -> Unit) {
+    webView.webViewClient =
+      object : WebViewClient() {
+
+        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) = false
+
+        override fun onPageFinished(view: WebView, url: String) {
+          printPdf(view, pdfTitle)
+          mWebView = null
+          onPdfPrinted.invoke()
+        }
+      }
     webView.loadDataWithBaseURL(null, html, "text/HTML", "UTF-8", null)
-    val printAdapter = webView.createPrintDocumentAdapter(pdfTitle)
+    mWebView = webView
+  }
+
+  private fun printPdf(view: WebView, pdfTitle: String) {
+    val printAdapter = view.createPrintDocumentAdapter(pdfTitle)
     printManager.print(
       pdfTitle,
       printAdapter,
