@@ -141,6 +141,8 @@ fun List(
                   }
                 }
                 Spacer(modifier = modifier.height(6.dp))
+                // viewProperties in this case belongs to the List, setting the showDivider will
+                // apply to all child items under the List
                 if (index < currentListResourceData.lastIndex && viewProperties.showDivider) {
                   Divider(color = DividerColor, thickness = 0.5.dp)
                 }
