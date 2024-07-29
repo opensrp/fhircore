@@ -45,6 +45,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 class PdfLauncherFragment : DialogFragment() {
 
   private val pdfLauncherViewModel by viewModels<PdfLauncherViewModel>()
+
   @VisibleForTesting lateinit var pdfGenerator: PdfGenerator
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -122,9 +123,7 @@ class PdfLauncherFragment : DialogFragment() {
      */
     fun launch(appCompatActivity: AppCompatActivity, questionnaireConfigJson: String) {
       PdfLauncherFragment()
-        .apply {
-          arguments = bundleOf(EXTRA_QUESTIONNAIRE_CONFIG_KEY to questionnaireConfigJson)
-        }
+        .apply { arguments = bundleOf(EXTRA_QUESTIONNAIRE_CONFIG_KEY to questionnaireConfigJson) }
         .show(appCompatActivity.supportFragmentManager, PdfLauncherFragment::class.java.simpleName)
     }
 
