@@ -59,4 +59,7 @@ enum class ApplicationWorkflow {
 
   /** A workflow that launches location selector widget * */
   LAUNCH_LOCATION_SELECTOR,
+
+  /** A workflow to launch pdf generation */
+  LAUNCH_PDF_GENERATION,
 }
