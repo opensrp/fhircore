@@ -28,6 +28,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Library
@@ -60,7 +61,7 @@ class FhirEngineExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun searchCompositionByIdentifier() = runBlocking {
+  fun searchCompositionByIdentifier() = runTest {
     coEvery { fhirEngine.search<Composition>(any()) } returns
       listOf(SearchResult(resource = Composition().apply { id = "123" }, null, null))
 
