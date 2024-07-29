@@ -58,9 +58,11 @@ import org.smartregister.fhircore.quest.ui.register.NoRegisterDataView
 import org.smartregister.fhircore.quest.ui.register.REGISTER_CARD_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.RegisterScreen
 import org.smartregister.fhircore.quest.ui.register.RegisterUiState
+import org.smartregister.fhircore.quest.ui.register.SYNC_ERROR_TAG
 import org.smartregister.fhircore.quest.ui.register.SYNC_PROGRESS_BAR_TAG
 import org.smartregister.fhircore.quest.ui.register.SYNC_SUCCESS_TAG
 import org.smartregister.fhircore.quest.ui.register.TOP_REGISTER_SCREEN_TEST_TAG
+import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 
 @HiltAndroidTest
 class RegisterScreenTest {
@@ -137,7 +139,6 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-        onClick = {},
       )
     }
     composeTestRule.waitUntil(5_000) { true }
@@ -178,7 +179,6 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-        onClick = {},
       )
     }
 
@@ -222,7 +222,6 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-        onClick = {},
       )
     }
 
@@ -263,7 +262,6 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-        onClick = {},
       )
     }
     composeTestRule.onNodeWithTag(FIRST_TIME_SYNC_DIALOG, useUnmergedTree = true)
@@ -303,7 +301,6 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-        onClick = {},
       )
     }
     composeTestRule.waitUntil(5_000) { true }
@@ -391,11 +388,19 @@ class RegisterScreenTest {
                 ),
               ),
           ),
+        appDrawerUIState =
+          AppDrawerUIState(
+            currentSyncJobStatus =
+              CurrentSyncJobStatus.Running(
+                SyncJobStatus.InProgress(
+                  syncOperation = SyncOperation.UPLOAD,
+                ),
+              ),
+          ),
         searchText = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-        onClick = {},
       )
     }
 
@@ -406,7 +411,7 @@ class RegisterScreenTest {
   }
 
   @Test
-  fun testSyncSucceeded() {
+  fun testSyncStatusShowsWhenSucceeded() {
     val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
     val registerUiState =
       RegisterUiState(
@@ -439,16 +444,70 @@ class RegisterScreenTest {
           appUiState.copy(
             currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
           ),
+        appDrawerUIState =
+          AppDrawerUIState(
+            currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
+          ),
         searchText = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-        onClick = {},
       )
     }
 
     composeTestRule
       .onNodeWithTag(SYNC_SUCCESS_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
+
+  @Test
+  fun testSyncStatusShowsWhenFailed() {
+    val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+    val registerUiState =
+      RegisterUiState(
+        screenTitle = "Register101",
+        isFirstTimeSync = false,
+        registerConfiguration =
+          configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
+        registerId = "register101",
+        totalRecordsCount = 1,
+        filteredRecordsCount = 0,
+        pagesCount = 0,
+        progressPercentage = flowOf(100),
+        isSyncUpload = flowOf(false),
+        currentSyncJobStatus = flowOf(CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())),
+        params = emptyMap(),
+      )
+    val searchText = mutableStateOf("")
+    val currentPage = mutableStateOf(0)
+
+    composeTestRule.setContent {
+      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
+      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
+
+      RegisterScreen(
+        modifier = Modifier,
+        openDrawer = {},
+        onEvent = {},
+        registerUiState = registerUiState,
+        appUiState =
+          appUiState.copy(
+            currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
+          ),
+        appDrawerUIState =
+          AppDrawerUIState(
+            currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
+          ),
+        searchText = searchText,
+        currentPage = currentPage,
+        pagingItems = pagingItems,
+        navController = rememberNavController(),
+      )
+    }
+
+    composeTestRule
+      .onNodeWithTag(SYNC_ERROR_TAG, useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
   }

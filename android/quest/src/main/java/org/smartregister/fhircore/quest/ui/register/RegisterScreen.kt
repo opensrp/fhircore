@@ -317,8 +317,7 @@ fun RegisterScreen(
                   } else {
                     Color.Transparent
                   },
-                )
-                .testTag(SYNC_SUCCESS_TAG),
+                ),
           ) {
             val context = LocalContext.current
             SyncStatusView(
@@ -424,7 +423,7 @@ fun SyncStatusView(
     }
     currentSyncJobStatus is CurrentSyncJobStatus.Succeeded && showSyncComplete -> {
       SyncCompleteStatus(
-        modifier = modifier,
+        modifier = modifier.testTag(SYNC_SUCCESS_TAG),
         imageConfig = ImageConfig(type = "local", "ic_sync_success"),
         title = context.getString(R.string.sync_completed),
         showImage = syncNotificationBarExpanded,

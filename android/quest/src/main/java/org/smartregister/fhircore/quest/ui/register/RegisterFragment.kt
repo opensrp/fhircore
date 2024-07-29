@@ -201,7 +201,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
           val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
           val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
           lifecycleScope.launch {
-            emitPercentageProgress(inProgressSyncJob, isSyncUpload)
             appMainViewModel.updateAppDrawerUIState(
               isSyncUpload,
               syncJobStatus,
