@@ -204,8 +204,8 @@ class GeoWidgetFragment : Fragment() {
               setTint(
                 ContextCompat.getColor(
                   requireContext(),
-                  org.smartregister.fhircore.engine.R.color.white
-                )
+                  org.smartregister.fhircore.engine.R.color.white,
+                ),
               )
             },
         )
