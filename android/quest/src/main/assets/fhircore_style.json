@@ -12416,7 +12416,6 @@
           "hsl(0, 0%, 64%)",
           "hsl(100, 100%, 100%)"
         ],
-        "circle-stroke-width": 2,
         "circle-opacity": 1
       }
     },
