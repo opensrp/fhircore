@@ -73,7 +73,7 @@ interface ConfigService {
   /**
    * Provide a list of custom search parameters.
    *
-   * @return list of predefined custom group search parameters.
+   * @return list of predefined custom search parameters.
    */
   fun provideCustomSearchParameters(): List<SearchParameter> {
     val activeGroupSearchParameter =
@@ -87,11 +87,23 @@ interface ConfigService {
         description = "Search the active field"
       }
 
-    return listOf(activeGroupSearchParameter)
+    val flagStatusSearchParameter =
+      SearchParameter().apply {
+        url = "http://smartregister.org/SearchParameter/flag-status"
+        addBase("Flag")
+        name = STATUS_SEARCH_PARAM
+        code = STATUS_SEARCH_PARAM
+        type = Enumerations.SearchParamType.TOKEN
+        expression = "Flag.status"
+        description = "Search the status field"
+      }
+
+    return listOf(activeGroupSearchParameter, flagStatusSearchParameter)
   }
 
   companion object {
     const val ACTIVE_SEARCH_PARAM = "active"
     const val APP_VERSION = "AppVersion"
+    const val STATUS_SEARCH_PARAM = "status"
   }
 }
