@@ -196,10 +196,18 @@ class GeoWidgetFragment : Fragment() {
       val icon: Bitmap? =
         ResourceUtils.drawableToBitmap(
           ResourcesCompat.getDrawable(
-            resources,
-            servicePointType.drawableId,
-            requireContext().theme,
-          )!!.apply { setTint(ContextCompat.getColor(requireContext(), org.smartregister.fhircore.engine.R.color.white)) },
+              resources,
+              servicePointType.drawableId,
+              requireContext().theme,
+            )!!
+            .apply {
+              setTint(
+                ContextCompat.getColor(
+                  requireContext(),
+                  org.smartregister.fhircore.engine.R.color.white
+                )
+              )
+            },
         )
       icon?.let {
         mMapboxMapStyle.addImage(key, icon)
@@ -213,7 +221,7 @@ class GeoWidgetFragment : Fragment() {
           PropertyFactory.iconSize(dynamicIconSize),
           PropertyFactory.iconIgnorePlacement(false),
           PropertyFactory.iconAllowOverlap(true),
-          PropertyFactory.symbolSortKey(2f)
+          PropertyFactory.symbolSortKey(2f),
         )
         symbolLayer.setFilter(
           Expression.eq(
@@ -242,7 +250,7 @@ class GeoWidgetFragment : Fragment() {
           Expression.linear(),
           Expression.zoom(),
           Expression.literal(0.7f),
-          Expression.literal(0.67f)
+          Expression.literal(0.67f),
         )
 
       val baseKey = "base-image"
@@ -257,7 +265,7 @@ class GeoWidgetFragment : Fragment() {
         PropertyFactory.iconSize(dynamicBaseIconSize),
         PropertyFactory.iconAllowOverlap(true),
         PropertyFactory.symbolSortKey(1f),
-        PropertyFactory.iconOffset(arrayOf(0f, 8.5f))
+        PropertyFactory.iconOffset(arrayOf(0f, 8.5f)),
       )
       mMapboxMapStyle.addLayerBelow(symbolLayer, getString(R.string.quest_data_points))
     }
