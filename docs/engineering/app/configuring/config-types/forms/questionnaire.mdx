@@ -556,14 +556,39 @@ QR Code widget can be set up for a Questionnaire by adding `qr_code-widget` exte
 
 ```json
     {
-      "url": "https://github.com/opensrp/android-fhir/StructureDefinition/questionnaire-itemControl",
-      "valueCodeableConcept": {
-        "coding": [
-          {
-            "system": "https://github.com/opensrp/android-fhir/questionnaire-item-control",
-            "code": "qr_code-widget"
-          }
-        ]
-      }
+      "url": "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+      "extension": []
+    }
+```
+The QR Code widget can also be configured to allow only setting the QR code and then have the field as readOnly by using `qr-code-entry-mode` extension
+
+```json
+    {
+      "url": "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+      "extension": [
+        {
+          "url": "qr-code-entry-mode",
+          "valueString": "set-only-readonly"
+        }
+      ]
+    }
+```
+Other option for the `qr-code-entry-mode` extension is `"normal"` whereby the widget would allow a new scan to repopulate the field
+
+The QR code widget supports adding an arbitrary number of QR codes by setting QuestionnaireItem to `"repeats": true`
+
+```json
+      "repeats": true,
+      "extension": [
+        {
+          "url": "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+          "extension": [
+            {
+              "url": "qr-code-entry-mode",
+              "valueString": "set-only-readonly"
+            }
+          ]
+        }
+      ]
     }
 ```

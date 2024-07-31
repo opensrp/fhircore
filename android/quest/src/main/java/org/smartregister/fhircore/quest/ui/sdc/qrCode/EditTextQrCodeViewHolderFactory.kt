@@ -16,110 +16,153 @@
 
 package org.smartregister.fhircore.quest.ui.sdc.qrCode
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.text.Editable
-import android.text.InputType
-import android.view.MotionEvent
 import android.view.View
-import com.google.android.fhir.datacapture.extensions.getValidationErrorMessage
-import com.google.android.fhir.datacapture.extensions.tryUnwrapContext
+import android.view.ViewGroup
+import android.widget.Button
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.datacapture.views.QuestionnaireViewItem
-import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemEditTextViewHolderDelegate
+import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolder
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolderDelegate
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolderFactory
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
-import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.util.QrCodeScanUtils
 
 object EditTextQrCodeViewHolderFactory :
-  QuestionnaireItemViewHolderFactory(R.layout.edit_text_single_line_qr_code_view) {
+  QuestionnaireItemViewHolderFactory(R.layout.edit_text_qr_code_view) {
   override fun getQuestionnaireItemViewHolderDelegate(): QuestionnaireItemViewHolderDelegate =
-    object :
-      QuestionnaireItemEditTextViewHolderDelegate(
-        InputType.TYPE_NULL,
-      ) {
-      @SuppressLint("ClickableViewAccessibility")
+    object : QuestionnaireItemViewHolderDelegate {
+      override lateinit var questionnaireViewItem: QuestionnaireViewItem
+
+      private val canHaveMultipleAnswers
+        get() = questionnaireViewItem.questionnaireItem.repeats
+
+      private lateinit var qrCodesRecyclerView: RecyclerView
+      private lateinit var addQrCodeButton: Button
+      private lateinit var qrCodeViewItemsAdapter: QrCodeViewItemAdapter
+      private lateinit var questionnaireViewItemAnswers:
+        List<QuestionnaireResponseItemAnswerComponent>
+
       override fun init(itemView: View) {
-        super.init(itemView)
+        qrCodesRecyclerView = itemView.findViewById(R.id.recycler_view_qr_codes)
+        addQrCodeButton = itemView.findViewById(R.id.add_qr_code)
 
-        val onQrCodeIconClickListener: (Context) -> Unit = {
-          it.tryUnwrapContext()?.let { appCompatActivity ->
-            QrCodeScanUtils.scanQrCode(appCompatActivity) { code ->
-              itemView.findViewById<TextInputEditText>(R.id.text_input_edit_text).setText(code)
+        qrCodeViewItemsAdapter = QrCodeViewItemAdapter { previousAnswer, newAnswer ->
+          val prevAnswerEmpty = previousAnswer == null || previousAnswer.value.isEmpty
+          val newAnswerEmpty = newAnswer == null || newAnswer.value.isEmpty
+          when {
+            prevAnswerEmpty && !newAnswerEmpty -> {
+              questionnaireViewItem.addAnswer(newAnswer!!)
+            }
+            !prevAnswerEmpty && newAnswerEmpty -> {
+              questionnaireViewItem.removeAnswer(newAnswer!!)
+            }
+            !prevAnswerEmpty && !newAnswerEmpty -> {
+              previousAnswer!!.value = newAnswer!!.value
+              questionnaireViewItem.setAnswer(*questionnaireViewItemAnswers.toTypedArray())
             }
           }
         }
-
-        itemView.findViewById<TextInputLayout>(R.id.text_input_layout).apply {
-          setEndIconOnClickListener { onQrCodeIconClickListener.invoke(it.context) }
-          findViewById<TextInputEditText>(R.id.text_input_edit_text).setOnTouchListener { v, event,
-            ->
-            if (event.action == MotionEvent.ACTION_UP) {
-              onQrCodeIconClickListener(v.context)
-            }
-            return@setOnTouchListener false
-          }
-        }
+        qrCodesRecyclerView.adapter = qrCodeViewItemsAdapter
+        val linearLayoutManager = LinearLayoutManager(itemView.context)
+        qrCodesRecyclerView.layoutManager = linearLayoutManager
+        qrCodesRecyclerView.itemAnimator = null
       }
 
-      override suspend fun handleInput(
-        editable: Editable,
-        questionnaireViewItem: QuestionnaireViewItem,
-      ) {
-        val answer =
-          editable.toString().let {
-            if (it.isBlank()) {
-              null
-            } else
-              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
-                .setValue(StringType(it))
-          }
-
-        if (answer != null) {
-          questionnaireViewItem.setAnswer(answer)
-        } else questionnaireViewItem.clearAnswer()
-      }
-
-      override fun updateInputTextUI(
-        questionnaireViewItem: QuestionnaireViewItem,
-        textInputEditText: TextInputEditText,
-      ) {
-        val text = questionnaireViewItem.answers.singleOrNull()?.valueStringType?.value ?: ""
-        if ((text != textInputEditText.text.toString())) {
-          textInputEditText.text?.clear()
-          textInputEditText.append(text)
-        }
-      }
-
-      override fun updateValidationTextUI(
-        questionnaireViewItem: QuestionnaireViewItem,
-        textInputLayout: TextInputLayout,
-      ) {
-        textInputLayout.error =
-          getValidationErrorMessage(
-            textInputLayout.context,
-            questionnaireViewItem,
-            questionnaireViewItem.validationResult,
+      override fun bind(questionnaireViewItem: QuestionnaireViewItem) {
+        questionnaireViewItemAnswers = questionnaireViewItem.answers
+        val subQuestionnaireViewItems =
+          questionnaireViewItemAnswers
+            .filterNot { it.isEmpty }
+            .map { getSubQuestionnaireViewItem(it) }
+            .toMutableList()
+        if (subQuestionnaireViewItems.isEmpty() && !canHaveMultipleAnswers) {
+          subQuestionnaireViewItems.add(
+            getSubQuestionnaireViewItem(QuestionnaireResponseItemAnswerComponent()),
           )
+        }
+        qrCodeViewItemsAdapter.submitList(subQuestionnaireViewItems)
+
+        addQrCodeButton.visibility = if (canHaveMultipleAnswers) View.VISIBLE else View.GONE
+        if (canHaveMultipleAnswers) {
+          addQrCodeButton.setOnClickListener {
+            qrCodeViewItemsAdapter.submitList(
+              subQuestionnaireViewItems +
+                getSubQuestionnaireViewItem(QuestionnaireResponseItemAnswerComponent()),
+            )
+          }
+        }
+      }
+
+      override fun setReadOnly(isReadOnly: Boolean) {
+        if (isReadOnly) {
+          addQrCodeButton.visibility = View.GONE
+        }
+      }
+
+      fun getSubQuestionnaireViewItem(
+        answer: QuestionnaireResponseItemAnswerComponent,
+      ): QuestionnaireViewItem {
+        val newQrResponseItem = questionnaireViewItem.getQuestionnaireResponseItem().copy()
+        newQrResponseItem.answer = listOf(answer)
+        return questionnaireViewItem.copy(questionnaireResponseItem = newQrResponseItem)
       }
     }
 
   fun matcher(questionnaireItem: Questionnaire.QuestionnaireItemComponent): Boolean {
-    val codeableConcept =
-      questionnaireItem.getExtensionByUrl(EXTENSION_URL)?.value as? CodeableConcept
-    return codeableConcept?.coding?.firstOrNull { it.system == EXTENSION_CONTROL_SYSTEM }?.code ==
-      EXTENSION_VALUE
+    return questionnaireItem.getExtensionByUrl(QR_CODE_WIDGET_URL) != null
+  }
+}
+
+internal class QrCodeViewItemAdapter(private val qrCodeAnswerChangeListener: QrCodeChangeListener) :
+  ListAdapter<QuestionnaireViewItem, QuestionnaireItemViewHolder>(
+    object : DiffUtil.ItemCallback<QuestionnaireViewItem>() {
+      override fun areItemsTheSame(
+        oldItem: QuestionnaireViewItem,
+        newItem: QuestionnaireViewItem,
+      ): Boolean = areContentsTheSame(oldItem, newItem)
+
+      override fun areContentsTheSame(
+        oldItem: QuestionnaireViewItem,
+        newItem: QuestionnaireViewItem,
+      ): Boolean {
+        val newItemAnswers = newItem.answers.map { (it.value as? StringType)?.value }
+        val oldItemAnswers = oldItem.answers.map { (it.value as? StringType)?.value }
+        return oldItem == newItem &&
+          oldItemAnswers.size == newItemAnswers.size &&
+          newItemAnswers.all { oldItemAnswers.contains(it) }
+      }
+    },
+  ) {
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QuestionnaireItemViewHolder {
+    return EditTextQrCodeItemViewHolderFactory(qrCodeAnswerChangeListener).create(parent)
   }
 
-  private const val EXTENSION_URL =
-    "https://github.com/opensrp/android-fhir/StructureDefinition/questionnaire-itemControl"
-  private const val EXTENSION_CONTROL_SYSTEM =
-    "https://github.com/opensrp/android-fhir/questionnaire-item-control"
-  private const val EXTENSION_VALUE = "qr_code-widget"
+  override fun onBindViewHolder(holder: QuestionnaireItemViewHolder, position: Int) {
+    holder.bind(getItem(position))
+  }
 }
+
+internal fun interface QrCodeChangeListener {
+  suspend fun onQrCodeChanged(
+    previous: QuestionnaireResponseItemAnswerComponent?,
+    newAnswer: QuestionnaireResponseItemAnswerComponent?,
+  )
+}
+
+internal val QuestionnaireViewItem.isSetOnceReadOnly: Boolean
+  get() {
+    val qrCodeExtension = questionnaireItem.getExtensionByUrl(QR_CODE_WIDGET_URL)
+    val qrCodeEntryModeValue =
+      qrCodeExtension?.getExtensionByUrl(QR_CODE_SET_ONCE_READONLY_URL)?.value as? BooleanType
+    return qrCodeEntryModeValue?.value == true
+  }
+
+private const val QR_CODE_WIDGET_URL =
+  "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget"
+private const val QR_CODE_SET_ONCE_READONLY_URL = "set-only-readonly"
