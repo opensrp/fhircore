@@ -61,6 +61,8 @@
         <item name="questionnaireButtonStyle">@style/AppTheme.QuestionnaireButtonStyle</item>
         <item name="questionnaireMediaImageStyle">@style/AppTheme.MediaImageStyle</item>
         <item name="questionnaireCancelButtonStyle">@style/AppTheme.QuestionnaireCancelButtonStyle</item>
+        <item name="questionnaireGroupTypeQuestionTextStyle">@style/TextAppearance.Material3.HeadlineMedium</item>
+        <item name="questionnaireQuestionTextStyle">@style/TextAppearance.Material3.BodyLarge</item>
         <!-- Help card container color -->
         <item
             name="android:colorBackground"
