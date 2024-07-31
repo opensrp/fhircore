@@ -55,6 +55,8 @@ import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchMode
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val NO_REGISTER_VIEW_COLUMN_TEST_TAG = "noRegisterViewColumnTestTag"
@@ -74,7 +76,7 @@ fun RegisterScreen(
   openDrawer: (Boolean) -> Unit,
   onEvent: (RegisterEvent) -> Unit,
   registerUiState: RegisterUiState,
-  searchText: MutableState<String>,
+  searchQuery: MutableState<UiSearchQuery>,
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
@@ -92,16 +94,19 @@ fun RegisterScreen(
             registerUiState.screenTitle.ifEmpty {
               registerUiState.registerConfiguration?.topScreenSection?.title ?: ""
             },
-          searchText = searchText.value,
+          searchQuery = searchQuery.value,
           filteredRecordsCount = registerUiState.filteredRecordsCount,
           isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           showSearchByQrCode =
-            registerUiState.registerConfiguration?.searchBar?.searchByQrCode ?: false,
+            registerUiState.registerConfiguration?.let {
+              !it.onSearchByQrSingleResultValidActions.isNullOrEmpty() ||
+                it.searchBar?.searchByQrCode == true
+            } ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
-          onSearchTextChanged = { text ->
-            searchText.value = text
-            onEvent(RegisterEvent.SearchRegister(searchText = text))
+          onSearchTextChanged = { uiSearchQuery ->
+            searchQuery.value = uiSearchQuery
+            onEvent(RegisterEvent.SearchRegister(searchQuery = uiSearchQuery))
           },
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
           topScreenSection = registerUiState.registerConfiguration?.topScreenSection,
@@ -125,7 +130,7 @@ fun RegisterScreen(
           }
         }
 
-        if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
+        if (!searchQuery.value.isBlank()) RegisterHeader(resultCount = pagingItems.itemCount)
       }
     },
     floatingActionButton = {
@@ -166,7 +171,13 @@ fun RegisterScreen(
           onEvent = onEvent,
           registerUiState = registerUiState,
           currentPage = currentPage,
-          showPagination = searchText.value.isEmpty(),
+          showPagination = searchQuery.value.isEmpty(),
+          onSearchByQrSingleResultActions =
+            if (!searchQuery.value.isBlank() && searchQuery.value.mode == UiSearchMode.QrCodeScan) {
+              registerUiState.registerConfiguration.onSearchByQrSingleResultValidActions
+            } else {
+              null
+            },
         )
       } else {
         registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->

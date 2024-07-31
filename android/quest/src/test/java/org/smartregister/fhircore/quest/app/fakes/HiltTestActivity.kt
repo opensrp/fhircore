@@ -14,17 +14,9 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.register
+package org.smartregister.fhircore.quest.app.fakes
 
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import androidx.appcompat.app.AppCompatActivity
+import dagger.hilt.android.AndroidEntryPoint
 
-@Serializable
-data class RegisterContentConfig(
-  val separator: String? = null,
-  val display: String? = null,
-  val rules: List<RuleConfig>? = null,
-  val visible: Boolean? = null,
-  val computedRules: List<String>? = null,
-  val searchByQrCode: Boolean? = null,
-)
+@AndroidEntryPoint class HiltTestActivity : AppCompatActivity()

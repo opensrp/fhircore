@@ -60,6 +60,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
 
 @HiltAndroidTest
 class RegisterViewModelTest : RobolectricTest() {
@@ -157,11 +158,11 @@ class RegisterViewModelTest : RobolectricTest() {
     every { registerViewModel.registerUiState } returns
       mutableStateOf(RegisterUiState(registerId = registerId))
     // Search with empty string should paginate the data
-    registerViewModel.onEvent(RegisterEvent.SearchRegister(""))
+    registerViewModel.onEvent(RegisterEvent.SearchRegister(UiSearchQuery.emptyText))
     verify { registerViewModel.paginateRegisterData(any(), any()) }
 
     // Search for the word 'Khan' should call the filterRegisterData function
-    registerViewModel.onEvent(RegisterEvent.SearchRegister("Khan"))
+    registerViewModel.onEvent(RegisterEvent.SearchRegister(UiSearchQuery("Khan")))
     verify { registerViewModel.filterRegisterData(any()) }
   }
 

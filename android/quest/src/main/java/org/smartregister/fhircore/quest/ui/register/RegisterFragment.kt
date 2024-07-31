@@ -68,6 +68,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
 import org.smartregister.fhircore.quest.ui.shared.viewmodels.SearchViewModel
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
@@ -145,7 +146,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 openDrawer = openDrawer,
                 onSideMenuClick = {
                   if (it is AppMainEvent.TriggerWorkflow) {
-                    searchViewModel.searchText.value = ""
+                    searchViewModel.searchQuery.value = UiSearchQuery.emptyText
                   }
                   appMainViewModel.onEvent(it)
                 },
@@ -173,7 +174,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,
                 registerUiState = registerViewModel.registerUiState.value,
-                searchText = searchViewModel.searchText,
+                searchQuery = searchViewModel.searchQuery,
                 currentPage = registerViewModel.currentPage,
                 pagingItems = pagingItems,
                 navController = findNavController(),
