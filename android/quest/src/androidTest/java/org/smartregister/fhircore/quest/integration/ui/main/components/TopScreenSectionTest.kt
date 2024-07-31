@@ -126,11 +126,11 @@ class TopScreenSectionTest {
   }
 
   @Test
-  fun thatTopScreenSectionHideQrCodeIconWhenShowSearchByQrCodeIsTrueAndSearchTextIsNotBlank() {
+  fun thatTopScreenSectionHideQrCodeIconWhenShowSearchByQrCodeIsTrueAndSearchQueryIsNotBlank() {
     composeTestRule.setContent {
       TopScreenSection(
         title = "All Clients",
-        searchText = "search text",
+        searchQuery = UiSearchQuery("search text"),
         showSearchByQrCode = true,
         navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
@@ -141,11 +141,11 @@ class TopScreenSectionTest {
   }
 
   @Test
-  fun thatTopScreenSectionShowsQrCodeIconWhenShowSearchByQrCodeIsTrueAndSearchTextIsBlank() {
+  fun thatTopScreenSectionShowsQrCodeIconWhenShowSearchByQrCodeIsTrueAndSearchQueryIsBlank() {
     composeTestRule.setContent {
       TopScreenSection(
         title = "All Clients",
-        searchText = "",
+        searchQuery = UiSearchQuery(""),
         showSearchByQrCode = true,
         navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
