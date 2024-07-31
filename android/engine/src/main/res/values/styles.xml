@@ -60,6 +60,8 @@
         <item name="questionnaireSubmitButtonStyle">@style/AppTheme.QuestionnaireSubmitButtonStyle</item>
         <item name="questionnaireButtonStyle">@style/AppTheme.QuestionnaireButtonStyle</item>
         <item name="questionnaireCancelButtonStyle">@style/AppTheme.QuestionnaireCancelButtonStyle</item>
+        <item name="questionnaireGroupTypeQuestionTextStyle">@style/TextAppearance.Material3.HeadlineMedium</item>
+        <item name="questionnaireQuestionTextStyle">@style/TextAppearance.Material3.BodyLarge</item>
         <item name="questionnaireMediaImageStyle">@style/AppTheme.MediaImageStyle</item>
         <item name="questionnaireHelpHeaderStyle">@style/AppTheme.HelpHeaderStyle</item>
         <!-- Help card container color -->
