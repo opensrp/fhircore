@@ -73,6 +73,8 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.shared.components.Image
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchMode
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
 import org.smartregister.fhircore.quest.util.QrCodeScanUtils
 
 const val DRAWER_MENU = "Drawer Menu"
@@ -98,12 +100,12 @@ fun TopScreenSection(
   title: String,
   navController: NavController,
   isSearchBarVisible: Boolean,
-  searchText: String,
+  searchQuery: UiSearchQuery,
   showSearchByQrCode: Boolean = false,
   filteredRecordsCount: Long? = null,
   searchPlaceholder: String? = null,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
-  onSearchTextChanged: (String) -> Unit = {},
+  onSearchTextChanged: (UiSearchQuery) -> Unit = {},
   isFilterIconEnabled: Boolean = false,
   topScreenSection: TopScreenSectionConfig? = null,
   onClick: (ToolbarClickEvent) -> Unit = {},
@@ -112,8 +114,8 @@ fun TopScreenSection(
 
   // Trigger search automatically on launch if text is not empty
   LaunchedEffect(Unit) {
-    if (searchText.isNotEmpty()) {
-      onSearchTextChanged(searchText)
+    if (!searchQuery.isBlank()) {
+      onSearchTextChanged(searchQuery)
     }
   }
 
@@ -184,8 +186,10 @@ fun TopScreenSection(
     if (isSearchBarVisible) {
       OutlinedTextField(
         colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
-        value = searchText,
-        onValueChange = { onSearchTextChanged(it) },
+        value = searchQuery.query,
+        onValueChange = {
+          onSearchTextChanged(UiSearchQuery(it, mode = UiSearchMode.KeyboardInput))
+        },
         maxLines = 1,
         singleLine = true,
         placeholder = {
@@ -212,9 +216,9 @@ fun TopScreenSection(
         trailingIcon = {
           Box(contentAlignment = Alignment.CenterEnd) {
             when {
-              searchText.isNotBlank() -> {
+              !searchQuery.isBlank() -> {
                 IconButton(
-                  onClick = { onSearchTextChanged("") },
+                  onClick = { onSearchTextChanged(UiSearchQuery.emptyText) },
                   modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
                 ) {
                   Icon(
@@ -229,12 +233,15 @@ fun TopScreenSection(
                 IconButton(
                   onClick = {
                     currentContext.getActivity()?.let {
-                      QrCodeScanUtils.scanQrCode(it) { code -> onSearchTextChanged(code ?: "") }
+                      QrCodeScanUtils.scanQrCode(it) { code ->
+                        onSearchTextChanged(
+                          UiSearchQuery(code ?: "", mode = UiSearchMode.QrCodeScan),
+                        )
+                      }
                     }
                   },
                   modifier = modifier.testTag(TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG),
                 ) {
-                  navController.context
                   Icon(
                     painter =
                       painterResource(id = org.smartregister.fhircore.quest.R.drawable.ic_qr_code),
@@ -312,7 +319,7 @@ fun RenderMenuIcons(
 fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
   TopScreenSection(
     title = "All Clients",
-    searchText = "Eddy",
+    searchQuery = UiSearchQuery("Eddy"),
     filteredRecordsCount = 120,
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
@@ -340,7 +347,7 @@ fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
 fun TopScreenSectionWithFilterCountNinetyNinePreview() {
   TopScreenSection(
     title = "All Clients",
-    searchText = "Eddy",
+    searchQuery = UiSearchQuery("Eddy"),
     filteredRecordsCount = 99,
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
@@ -356,7 +363,7 @@ fun TopScreenSectionWithFilterCountNinetyNinePreview() {
 fun TopScreenSectionNoFilterIconPreview() {
   TopScreenSection(
     title = "All Clients",
-    searchText = "Eddy",
+    searchQuery = UiSearchQuery("Eddy"),
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = false,
@@ -380,7 +387,7 @@ fun TopScreenSectionNoFilterIconPreview() {
 fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
   TopScreenSection(
     title = "All Clients",
-    searchText = "Eddy",
+    searchQuery = UiSearchQuery("Eddy"),
     filteredRecordsCount = 120,
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
@@ -405,7 +412,7 @@ fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
 fun TopScreenSectionWithToggleIconPreview() {
   TopScreenSection(
     title = "All Clients",
-    searchText = "Eddy",
+    searchQuery = UiSearchQuery("Eddy"),
     filteredRecordsCount = 120,
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,

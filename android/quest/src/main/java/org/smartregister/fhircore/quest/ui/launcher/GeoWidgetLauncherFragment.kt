@@ -70,6 +70,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
 import org.smartregister.fhircore.quest.ui.shared.viewmodels.SearchViewModel
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
@@ -136,7 +137,7 @@ class GeoWidgetLauncherFragment : Fragment() {
                 openDrawer = openDrawer,
                 onSideMenuClick = {
                   if (it is AppMainEvent.TriggerWorkflow) {
-                    searchViewModel.searchText.value = ""
+                    searchViewModel.searchQuery.value = UiSearchQuery.emptyText
                   }
                   appMainViewModel.onEvent(it)
                 },
@@ -162,7 +163,7 @@ class GeoWidgetLauncherFragment : Fragment() {
                 fragmentManager = childFragmentManager,
                 geoWidgetFragment = fragment,
                 geoWidgetConfiguration = geoWidgetConfiguration,
-                searchText = searchViewModel.searchText,
+                searchQuery = searchViewModel.searchQuery,
                 search = { searchText ->
                   coroutineScope.launch {
                     val geoJsonFeatures =
@@ -195,11 +196,11 @@ class GeoWidgetLauncherFragment : Fragment() {
     showSetLocationDialog()
     lifecycleScope.launch(dispatcherProvider.io()) {
       // Retrieve if searchText is null; filter will be triggered automatically if text is not empty
-      if (searchViewModel.searchText.value.isEmpty()) {
+      if (searchViewModel.searchQuery.value.isEmpty()) {
         val geoJsonFeatures =
           geoWidgetLauncherViewModel.retrieveLocations(
             geoWidgetConfig = geoWidgetConfiguration,
-            searchText = searchViewModel.searchText.value,
+            searchText = searchViewModel.searchQuery.value.query,
           )
         if (geoJsonFeatures.isNotEmpty()) {
           geoWidgetViewModel.features.postValue(geoJsonFeatures)

@@ -16,8 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
+
 sealed class RegisterEvent {
-  data class SearchRegister(val searchText: String = "") : RegisterEvent()
+  data class SearchRegister(val searchQuery: UiSearchQuery = UiSearchQuery.emptyText) :
+    RegisterEvent()
 
   data object MoveToNextPage : RegisterEvent()
 
