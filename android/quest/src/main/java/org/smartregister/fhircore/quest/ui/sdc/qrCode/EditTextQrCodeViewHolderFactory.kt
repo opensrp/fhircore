@@ -27,6 +27,7 @@ import com.google.android.fhir.datacapture.views.QuestionnaireViewItem
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolder
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolderDelegate
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolderFactory
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
 import org.hl7.fhir.r4.model.StringType
@@ -158,15 +159,10 @@ internal val QuestionnaireViewItem.isSetOnceReadOnly: Boolean
   get() {
     val qrCodeExtension = questionnaireItem.getExtensionByUrl(QR_CODE_WIDGET_URL)
     val qrCodeEntryModeValue =
-      qrCodeExtension?.getExtensionByUrl(QR_CODE_ENTRY_MODE_URL)?.value as? StringType
-    return qrCodeEntryModeValue?.value == QrCodeEntryMode.SET_ONCE_READ_ONLY.code
+      qrCodeExtension?.getExtensionByUrl(QR_CODE_SET_ONCE_READONLY_URL)?.value as? BooleanType
+    return qrCodeEntryModeValue?.value == true
   }
 
 private const val QR_CODE_WIDGET_URL =
   "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget"
-private const val QR_CODE_ENTRY_MODE_URL = "qr-code-entry-mode"
-
-enum class QrCodeEntryMode(val code: String) {
-  SET_ONCE_READ_ONLY(code = "set-only-readonly"),
-  NORMAL(code = "normal"),
-}
+private const val QR_CODE_SET_ONCE_READONLY_URL = "set-only-readonly"

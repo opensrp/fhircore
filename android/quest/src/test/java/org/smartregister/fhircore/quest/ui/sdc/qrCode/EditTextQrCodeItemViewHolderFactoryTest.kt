@@ -150,29 +150,4 @@ class EditTextQrCodeItemViewHolderFactoryTest : RobolectricTest() {
       }
     }
   }
-
-  @Test
-  fun matcherCorrectlyMatchesQuestionnaireItem() {
-    val questionnaireItem =
-      Questionnaire.QuestionnaireItemComponent().apply {
-        addExtension(
-          Extension().apply {
-            url =
-              "https://github.com/opensrp/android-fhir/StructureDefinition/questionnaire-itemControl"
-            setValue(
-              CodeableConcept()
-                .addCoding(
-                  Coding().apply {
-                    system = "https://github.com/opensrp/android-fhir/questionnaire-item-control"
-                    code = "qr_code-widget"
-                  },
-                ),
-            )
-          },
-        )
-      }
-    TODO("Fix and move to the correct class")
-
-    //    Assert.assertTrue(EditTextQrCodeItemViewHolderFactory.matcher(questionnaireItem))
-  }
 }
