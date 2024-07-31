@@ -126,7 +126,8 @@ constructor(
   }
 
   private var questionnaireItemParentMap:
-          Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent> = mutableMapOf()
+    Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent> =
+    mutableMapOf()
 
   private val questionnaireLaunchContextMap: Map<String, Resource>? = null
 
@@ -458,12 +459,12 @@ constructor(
 
     questionnaireConfig.planDefinitions?.forEach { planId ->
       if (planId.isNotEmpty())
-          kotlin
-            .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
-            .onFailure {
-              Timber.e(it)
-              extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
-            }
+        kotlin
+          .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
+          .onFailure {
+            Timber.e(it)
+            extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
+          }
     }
 
     fhirCarePlanGenerator.conditionallyUpdateResourceStatus(questionnaireConfig, subject, data)
@@ -801,7 +802,20 @@ constructor(
       }
     }
 
-    return questionnaireResponse ?: QuestionnaireResponse()
+    // Generate questionnaireResponse with items present in current questionnaire
+    val newQuestionnaireResponseItems:
+      MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent> =
+      mutableListOf()
+    val questionnaireItemsMap = questionnaire.item.associateBy { it.linkId }
+
+    questionnaireResponse?.item?.forEach {
+      if (questionnaireItemsMap.containsKey(it.linkId)) {
+        newQuestionnaireResponseItems.add(it)
+      }
+    }
+
+    return questionnaireResponse?.apply { item = newQuestionnaireResponseItems }
+      ?: QuestionnaireResponse()
   }
 
   /**
