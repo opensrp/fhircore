@@ -59,19 +59,18 @@
         <item name="android:textColorSecondary">@color/white</item>
         <item name="questionnaireSubmitButtonStyle">@style/AppTheme.QuestionnaireSubmitButtonStyle</item>
         <item name="questionnaireButtonStyle">@style/AppTheme.QuestionnaireButtonStyle</item>
-        <item name="questionnaireMediaImageStyle">@style/AppTheme.MediaImageStyle</item>
         <item name="questionnaireCancelButtonStyle">@style/AppTheme.QuestionnaireCancelButtonStyle</item>
         <item name="questionnaireGroupTypeQuestionTextStyle">@style/TextAppearance.Material3.HeadlineMedium</item>
         <item name="questionnaireQuestionTextStyle">@style/TextAppearance.Material3.BodyLarge</item>
+        <item name="questionnaireMediaImageStyle">@style/AppTheme.MediaImageStyle</item>
+        <item name="questionnaireHelpHeaderStyle">@style/AppTheme.HelpHeaderStyle</item>
         <!-- Help card container color -->
         <item
             name="android:colorBackground"
             >@color/background_neutral_100</item>
         <item name="colorOnBackground">@color/onBackground_neutral_10</item>
-
         <item name="colorSurface">@color/surface_neutral_100</item>
         <item name="colorOnSurface">@color/onSurface_neutral_10</item>
-
         <item
             name="colorSurfaceVariant"
             >@color/surfaceVariant_neutral_variant_90</item>
@@ -106,6 +105,11 @@
         <item
             name="android:layout_marginBottom"
             >@dimen/item_media_image_margin_vertical</item>
+    </style>
+
+    <style name="AppTheme.HelpHeaderStyle" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:visibility">invisible</item>
+        <item name="android:height">0dp</item>
     </style>
 
 </resources>
