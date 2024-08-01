@@ -55,7 +55,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -171,13 +170,12 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,
                 registerUiState = registerViewModel.registerUiState.value,
-                appUiState = appMainViewModel.appMainUiState.value,
                 appDrawerUIState = appMainViewModel.appDrawerUiState.value,
+                onAppMainEvent = { appMainViewModel.onEvent(it) },
                 searchText = searchViewModel.searchText,
                 currentPage = registerViewModel.currentPage,
                 pagingItems = pagingItems,
                 navController = findNavController(),
-                onCancel = { appMainViewModel.onEvent(it) },
                 toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
               )
             }
@@ -195,9 +193,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
       is CurrentSyncJobStatus.Running -> {
-        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
-          lifecycleScope.launch {}
-        } else {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
           val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
           val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
           val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
@@ -288,49 +284,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
     } else {
       refreshRegisterData(questionnaireSubmission.questionnaireResponse)
     }
-  }
-
-  fun emitPercentageProgress(
-    progressSyncJobStatus: SyncJobStatus.InProgress,
-    isUploadSync: Boolean,
-  ) {
-    lifecycleScope.launch {
-      val percentageProgress: Int = calculateActualPercentageProgress(progressSyncJobStatus)
-      registerViewModel.emitPercentageProgressState(percentageProgress, isUploadSync)
-    }
-  }
-
-  private fun getSyncProgress(completed: Int, total: Int) =
-    completed * 100 / if (total > 0) total else 1
-
-  private fun calculateActualPercentageProgress(
-    progressSyncJobStatus: SyncJobStatus.InProgress,
-  ): Int {
-    val totalRecordsOverall =
-      registerViewModel.sharedPreferencesHelper.read(
-        SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
-          progressSyncJobStatus.syncOperation.name,
-        1L,
-      )
-    val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
-    val currentProgress: Int
-    val currentTotalRecords =
-      if (isProgressTotalLess) {
-        currentProgress =
-          totalRecordsOverall.toInt() - progressSyncJobStatus.total +
-            progressSyncJobStatus.completed
-        totalRecordsOverall.toInt()
-      } else {
-        registerViewModel.sharedPreferencesHelper.write(
-          SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
-            progressSyncJobStatus.syncOperation.name,
-          progressSyncJobStatus.total.toLong(),
-        )
-        currentProgress = progressSyncJobStatus.completed
-        progressSyncJobStatus.total
-      }
-
-    return getSyncProgress(currentProgress, currentTotalRecords)
   }
 
   companion object {

@@ -507,9 +507,4 @@ constructor(
   ) {
     _currentSyncJobStatusFlow.emit(currentSyncJobStatus)
   }
-
-  suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {
-    _percentageProgress.emit(progress)
-    _isUploadSync.emit(isUploadSync)
-  }
 }

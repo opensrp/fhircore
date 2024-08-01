@@ -16,9 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
-import SubsequentSyncDetailsBar
-import android.content.Context
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,7 +46,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,7 +56,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -70,15 +65,12 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
-import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
@@ -88,15 +80,16 @@ import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.ui.theme.SideMenuTopItemDarkColor
+import org.smartregister.fhircore.engine.ui.theme.DangerColor
+import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.ui.theme.SyncBarBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
-import org.smartregister.fhircore.quest.ui.main.AppMainUiState
-import org.smartregister.fhircore.quest.ui.main.components.SyncCompleteStatus
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
+import org.smartregister.fhircore.quest.ui.shared.components.SyncStatusView
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
@@ -121,38 +114,23 @@ fun RegisterScreen(
   onEvent: (RegisterEvent) -> Unit,
   registerUiState: RegisterUiState,
   appDrawerUIState: AppDrawerUIState = AppDrawerUIState(),
-  appUiState: AppMainUiState? = null,
-  onCancel: (AppMainEvent) -> Unit,
+  onAppMainEvent: (AppMainEvent) -> Unit,
   searchText: MutableState<String>,
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
 ) {
-  val currentSyncJobStatus: CurrentSyncJobStatus? = appDrawerUIState.currentSyncJobStatus
+  val currentSyncJobStatus = appDrawerUIState.currentSyncJobStatus
   val lazyListState: LazyListState = rememberLazyListState()
   var syncNotificationBarExpanded by remember { mutableStateOf(true) }
-  val coroutineScope = rememberCoroutineScope()
-
-  var synBarBackgroundColor by remember { mutableStateOf(Color(0xFF002B4A)) }
-  var showSyncBar by remember { mutableStateOf(false) }
-  var showSyncComplete by remember { mutableStateOf(false) }
-  var hasShownSyncComplete by rememberSaveable { mutableStateOf(false) }
-
-  LaunchedEffect(
-    currentSyncJobStatus,
-    hasShownSyncComplete,
-  ) {
-    updateSyncStatus(
-      currentSyncJobStatus = currentSyncJobStatus,
-      coroutineScope = coroutineScope,
-      hasShownSyncComplete = hasShownSyncComplete,
-      setHasShownSyncComplete = { hasShownSyncComplete = it },
-      setShowSyncBar = { showSyncBar = it },
-      setShowSyncComplete = { showSyncComplete = it },
-      setBackgroundColor = { synBarBackgroundColor = it },
-    )
-  }
+  val syncBackgroundColor =
+    when (currentSyncJobStatus) {
+      is CurrentSyncJobStatus.Failed -> DangerColor.copy(alpha = 0.2f)
+      is CurrentSyncJobStatus.Succeeded -> SuccessColor.copy(alpha = 0.2f)
+      is CurrentSyncJobStatus.Running -> SyncBarBackgroundColor
+      else -> Color.Transparent
+    }
 
   Scaffold(
     topBar = {
@@ -207,6 +185,20 @@ fun RegisterScreen(
       }
     },
   ) { innerPadding ->
+    val coroutineScope = rememberCoroutineScope()
+    var hideSyncCompleteStatus: Boolean? by remember { mutableStateOf(false) }
+    if (currentSyncJobStatus is CurrentSyncJobStatus.Succeeded) {
+      LaunchedEffect(Unit) {
+        coroutineScope.launch {
+          delay(10.seconds)
+          hideSyncCompleteStatus = true
+        }
+      }
+    }
+
+    // Do not apply border radius when sync complete is not displayed
+    val bottomRadius = if (hideSyncCompleteStatus == true) 0.dp else 16.dp
+
     Box(modifier = modifier.padding(innerPadding)) {
       if (registerUiState.isFirstTimeSync) {
         LoaderDialog(
@@ -220,22 +212,11 @@ fun RegisterScreen(
           showPercentageProgress = true,
         )
       }
-
-      Column(
-        modifier =
-          Modifier.background(synBarBackgroundColor)
-            .background(
-              if (showSyncComplete) {
-                Color.White.copy(alpha = 0.83f)
-              } else {
-                Color.Transparent
-              },
-            ),
-      ) {
+      Column(modifier = Modifier.fillMaxSize().background(syncBackgroundColor)) {
         Box(
           modifier =
             Modifier.weight(1f)
-              .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
+              .clip(RoundedCornerShape(bottomStart = bottomRadius, bottomEnd = bottomRadius))
               .background(Color.White),
         ) {
           if (
@@ -260,11 +241,7 @@ fun RegisterScreen(
               }
             }
           }
-          if (
-            showSyncBar &&
-              appUiState!!.currentSyncJobStatus !is CurrentSyncJobStatus.Cancelled &&
-              !registerUiState.isFirstTimeSync
-          ) {
+          if (!registerUiState.isFirstTimeSync && hideSyncCompleteStatus != true) {
             Box(
               modifier =
                 Modifier.align(Alignment.BottomStart)
@@ -272,14 +249,7 @@ fun RegisterScreen(
                   .height(20.dp)
                   .width(60.dp)
                   .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                  .background(synBarBackgroundColor)
-                  .background(
-                    if (showSyncComplete) {
-                      Color.White.copy(alpha = 0.83f)
-                    } else {
-                      Color.Transparent
-                    },
-                  )
+                  .background(syncBackgroundColor)
                   .clickable { syncNotificationBarExpanded = !syncNotificationBarExpanded },
               contentAlignment = Alignment.Center,
             ) {
@@ -290,150 +260,53 @@ fun RegisterScreen(
                   } else Icons.Default.KeyboardArrowUp,
                 contentDescription = null,
                 tint =
-                  if (synBarBackgroundColor == Color(0xFF002B4A)) {
-                    Color.White
-                  } else {
-                    synBarBackgroundColor
+                  when (currentSyncJobStatus) {
+                    is CurrentSyncJobStatus.Failed -> DangerColor
+                    is CurrentSyncJobStatus.Succeeded -> SuccessColor
+                    else -> Color.White
                   },
                 modifier = Modifier.size(16.dp),
               )
             }
           }
         }
-        if (showSyncBar && !registerUiState.isFirstTimeSync) {
-          val heightDp = if (syncNotificationBarExpanded) 48.dp else 24.dp
-          Box(
-            modifier =
-              Modifier.fillMaxWidth()
-                .height(
-                  if (currentSyncJobStatus !is CurrentSyncJobStatus.Running) {
-                    heightDp
-                  } else Dp.Unspecified,
+        Box(
+          modifier = Modifier.fillMaxWidth(),
+        ) {
+          val context = LocalContext.current
+          when (currentSyncJobStatus) {
+            is CurrentSyncJobStatus.Running -> {
+              SyncStatusView(
+                currentSyncJobStatus = currentSyncJobStatus,
+                minimized = !syncNotificationBarExpanded,
+                progressPercentage = appDrawerUIState.percentageProgress,
+                onCancel = { onAppMainEvent(AppMainEvent.CancelSyncData(context)) },
+              )
+            }
+            is CurrentSyncJobStatus.Failed -> {
+              SyncStatusView(
+                currentSyncJobStatus = currentSyncJobStatus,
+                minimized = !syncNotificationBarExpanded,
+                onRetry = {
+                  openDrawer(false)
+                  onAppMainEvent(AppMainEvent.SyncData(context))
+                },
+              )
+            }
+            is CurrentSyncJobStatus.Succeeded -> {
+              if (hideSyncCompleteStatus != true) {
+                SyncStatusView(
+                  currentSyncJobStatus = currentSyncJobStatus,
+                  minimized = !syncNotificationBarExpanded,
                 )
-                .animateContentSize()
-                .background(synBarBackgroundColor)
-                .background(
-                  if (showSyncComplete) {
-                    Color.White.copy(alpha = 0.83f)
-                  } else {
-                    Color.Transparent
-                  },
-                ),
-          ) {
-            val context = LocalContext.current
-            SyncStatusView(
-              currentSyncJobStatus = appDrawerUIState.currentSyncJobStatus,
-              appUiState = appUiState,
-              showSyncComplete = showSyncComplete,
-              syncNotificationBarExpanded = syncNotificationBarExpanded,
-              onClick = onCancel,
-              percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress),
-              context = context,
-            ) {}
+              }
+            }
+            else -> {
+              // No render required
+            }
           }
         }
       }
-    }
-  }
-}
-
-private fun updateSyncStatus(
-  currentSyncJobStatus: CurrentSyncJobStatus?,
-  coroutineScope: CoroutineScope,
-  hasShownSyncComplete: Boolean,
-  setHasShownSyncComplete: (Boolean) -> Unit,
-  setShowSyncBar: (Boolean) -> Unit,
-  setShowSyncComplete: (Boolean) -> Unit,
-  setBackgroundColor: (Color) -> Unit,
-) {
-  when (currentSyncJobStatus) {
-    is CurrentSyncJobStatus.Succeeded -> {
-      if (!hasShownSyncComplete) {
-        setBackgroundColor(Color(0xFF1DB11B))
-        setShowSyncBar(true)
-        setShowSyncComplete(true)
-        setHasShownSyncComplete(true)
-
-        coroutineScope.launch {
-          delay(10.seconds)
-          setShowSyncBar(false)
-          setShowSyncComplete(false)
-          setBackgroundColor(SideMenuTopItemDarkColor)
-        }
-      }
-    }
-    is CurrentSyncJobStatus.Failed -> {
-      setBackgroundColor(Color(0xFFDF0E1A))
-      setShowSyncBar(true)
-      setShowSyncComplete(true)
-      setHasShownSyncComplete(false)
-      coroutineScope.launch {
-        delay(10.seconds)
-        setShowSyncBar(false)
-        setShowSyncComplete(false)
-        setBackgroundColor(SideMenuTopItemDarkColor)
-      }
-    }
-    is CurrentSyncJobStatus.Running -> {
-      setShowSyncBar(true)
-      setBackgroundColor(Color(0xFF002B4A))
-      setShowSyncComplete(false)
-      setHasShownSyncComplete(false)
-    }
-    else -> {
-      setShowSyncBar(false)
-    }
-  }
-}
-
-@Composable
-fun SyncStatusView(
-  currentSyncJobStatus: CurrentSyncJobStatus?,
-  appUiState: AppMainUiState?,
-  showSyncComplete: Boolean,
-  syncNotificationBarExpanded: Boolean,
-  onClick: (AppMainEvent) -> Unit,
-  modifier: Modifier = Modifier,
-  percentageProgressFlow: Flow<Int>,
-  context: Context,
-  openDrawer: (Boolean) -> Unit,
-) {
-  when {
-    currentSyncJobStatus is CurrentSyncJobStatus.Running &&
-      appUiState?.currentSyncJobStatus !is CurrentSyncJobStatus.Cancelled -> {
-      SubsequentSyncDetailsBar(
-        percentageProgressFlow = percentageProgressFlow,
-        modifier = Modifier.testTag(SYNC_PROGRESS_BAR_TAG),
-        hideExtraInformation = syncNotificationBarExpanded,
-      ) {
-        onClick(AppMainEvent.CancelSyncData(context))
-      }
-    }
-    currentSyncJobStatus is CurrentSyncJobStatus.Failed -> {
-      SyncCompleteStatus(
-        modifier = modifier.testTag(SYNC_ERROR_TAG),
-        imageConfig = ImageConfig(type = "local", "ic_sync_fail"),
-        title = context.getString(R.string.sync_error),
-        showEndText = false,
-        showImage = syncNotificationBarExpanded,
-        syncSuccess = false,
-      ) {
-        openDrawer(false)
-        onClick(AppMainEvent.SyncData(context))
-      }
-    }
-    currentSyncJobStatus is CurrentSyncJobStatus.Succeeded && showSyncComplete -> {
-      SyncCompleteStatus(
-        modifier = modifier.testTag(SYNC_SUCCESS_TAG),
-        imageConfig = ImageConfig(type = "local", "ic_sync_success"),
-        title = context.getString(R.string.sync_completed),
-        showImage = syncNotificationBarExpanded,
-        showEndText = false,
-        onCancelButtonClick = {},
-      )
-    }
-    else -> {
-      // Handle any other cases if needed
     }
   }
 }
@@ -516,11 +389,11 @@ fun RegisterScreenWithDataPreview() {
       openDrawer = {},
       onEvent = {},
       registerUiState = registerUiState,
+      onAppMainEvent = {},
       searchText = searchText,
       currentPage = currentPage,
       pagingItems = pagingItems,
       navController = rememberNavController(),
-      onCancel = {},
     )
   }
 }

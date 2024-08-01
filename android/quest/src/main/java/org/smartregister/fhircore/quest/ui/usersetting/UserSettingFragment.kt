@@ -136,17 +136,15 @@ class UserSettingFragment : Fragment(), OnSyncListener {
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
       is CurrentSyncJobStatus.Running ->
-        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
-          lifecycleScope.launch {}
-        } else {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
           val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
           val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
           val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
           lifecycleScope.launch {
             registerViewModel.updateAppDrawerUIState(
-              isSyncUpload,
-              syncJobStatus,
-              progressPercentage,
+              isSyncUpload = isSyncUpload,
+              currentSyncJobStatus = syncJobStatus,
+              percentageProgress = progressPercentage,
             )
           }
         }

@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.main.components
 
-import SubsequentSyncDetailsBar
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,30 +24,27 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,10 +61,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
+import java.time.OffsetDateTime
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
@@ -76,13 +74,17 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationConf
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
+import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.MenuActionButtonTextColor
 import org.smartregister.fhircore.engine.ui.theme.MenuItemColor
+import org.smartregister.fhircore.engine.ui.theme.SideMenuBottomItemDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuTopItemDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.ui.theme.SyncBarBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
 import org.smartregister.fhircore.quest.R
@@ -90,9 +92,10 @@ import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 import org.smartregister.fhircore.quest.ui.shared.components.Image
+import org.smartregister.fhircore.quest.ui.shared.components.SyncStatusView
+import org.smartregister.fhircore.quest.ui.shared.components.TRANSPARENCY
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
-import timber.log.Timber
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
 const val NAV_TOP_SECTION_TEST_TAG = "navTopSectionTestTag"
@@ -117,9 +120,6 @@ fun AppDrawer(
   onSideMenuClick: (AppMainEvent) -> Unit,
   appVersionPair: Pair<Int, String>? = null,
 ) {
-  val currentSyncJobStatus: CurrentSyncJobStatus? = appDrawerUIState.currentSyncJobStatus
-
-  Timber.d("Current job status in the  app drawer is : $currentSyncJobStatus")
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
   val navigationConfiguration = appUiState.navigationConfiguration
@@ -142,20 +142,19 @@ fun AppDrawer(
     },
     bottomBar = { // Display bottom section of the nav (sync)
       NavBottomSection(
-        modifier,
-        appUiState,
-        appDrawerUIState,
-        currentSyncJobStatus,
-        onSideMenuClick,
-        openDrawer,
+        appUiState = appUiState,
+        appDrawerUIState = appDrawerUIState,
+        onSideMenuClick = onSideMenuClick,
+        openDrawer = openDrawer,
       )
     },
-    backgroundColor = SideMenuDarkColor,
   ) { innerPadding ->
-    Box(modifier = modifier.padding(innerPadding)) {
+    Box(
+      modifier = modifier.padding(innerPadding).background(SideMenuDarkColor).fillMaxSize(),
+    ) {
       LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
         item {
-          Column(modifier = modifier.background(SideMenuDarkColor)) {
+          Column {
             if (navigationConfiguration.clientRegisters.isNotEmpty()) {
               Text(
                 text = stringResource(id = R.string.registers).uppercase(),
@@ -174,6 +173,7 @@ fun AppDrawer(
             title = navigationMenu.display,
             endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
             showEndText = navigationMenu.showCount,
+            endTextColor = MenuItemColor,
           ) {
             openDrawer(false)
             onSideMenuClick(
@@ -203,6 +203,7 @@ fun AppDrawer(
             title = navigationMenu.display,
             endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
             showEndText = navigationMenu.showCount,
+            endTextColor = MenuItemColor,
           ) {
             openDrawer(false)
             onSideMenuClick(
@@ -217,138 +218,105 @@ fun AppDrawer(
 
 @Composable
 private fun NavBottomSection(
-  modifier: Modifier = Modifier,
   appUiState: AppMainUiState,
   appDrawerUIState: AppDrawerUIState,
-  currentSyncJobStatus: CurrentSyncJobStatus?,
   onSideMenuClick: (AppMainEvent) -> Unit,
   openDrawer: (Boolean) -> Unit,
 ) {
+  val currentSyncJobStatus = appDrawerUIState.currentSyncJobStatus
   val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
-
-  var syncBarBackgroundColor by remember { mutableStateOf(SideMenuTopItemDarkColor) }
-  var showSyncCompleted by remember { mutableStateOf(false) }
-  var hasShownSyncCompletedStatus by rememberSaveable { mutableStateOf(false) }
-
-  // Update sync status
-  LaunchedEffect(currentSyncJobStatus) {
-    updateSyncStatus(
-      currentSyncJobStatus,
-      coroutineScope,
-      hasShownSyncCompletedStatus,
-      { hasShownSyncCompletedStatus = it },
-      { showSyncCompleted = it },
-      { syncBarBackgroundColor = it },
-    )
-  }
-
+  var showDefaultSyncStatus by remember { mutableStateOf(false) }
+  val syncStatusBackgroundColor =
+    when (currentSyncJobStatus) {
+      is CurrentSyncJobStatus.Failed -> DangerColor.copy(alpha = TRANSPARENCY)
+      is CurrentSyncJobStatus.Running -> SyncBarBackgroundColor
+      is CurrentSyncJobStatus.Succeeded -> SuccessColor.copy(alpha = TRANSPARENCY)
+      else -> Color.Unspecified
+    }
   Box(
-    modifier =
-      modifier
-        .background(syncBarBackgroundColor)
-        .background(
-          if (showSyncCompleted) Color.White.copy(alpha = 0.83f) else Color.Transparent,
-        )
-        .then(
-          if (
-            currentSyncJobStatus !is CurrentSyncJobStatus.Running ||
-              appUiState.currentSyncJobStatus is CurrentSyncJobStatus.Cancelled
-          ) {
-            Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-              .height(48.dp)
-              .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
-          } else {
-            Modifier
-          },
-        ),
+    modifier = Modifier.background(syncStatusBackgroundColor).fillMaxWidth(),
+    contentAlignment = Alignment.Center,
   ) {
-    when {
-      currentSyncJobStatus is CurrentSyncJobStatus.Running &&
-        appUiState.currentSyncJobStatus !is CurrentSyncJobStatus.Cancelled -> {
-        SubsequentSyncDetailsBar(
-          percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress),
-        ) {
-          onSideMenuClick(AppMainEvent.CancelSyncData(context))
-          openDrawer(false)
-        }
+    when (currentSyncJobStatus) {
+      is CurrentSyncJobStatus.Running -> {
+        SyncStatusView(
+          currentSyncJobStatus = currentSyncJobStatus,
+          minimized = false,
+          progressPercentage = appDrawerUIState.percentageProgress,
+          onCancel = {
+            onSideMenuClick(AppMainEvent.CancelSyncData(context))
+            openDrawer(false)
+          },
+        )
       }
-      currentSyncJobStatus is CurrentSyncJobStatus.Failed -> {
-        SyncCompleteStatus(
-          modifier = Modifier.fillMaxWidth(),
-          imageConfig = ImageConfig(type = "local", "ic_sync_fail"),
-          title = context.getString(org.smartregister.fhircore.engine.R.string.sync_error),
-          syncSuccess = false,
-          showEndText = true,
-          applyPadding = false,
+      is CurrentSyncJobStatus.Failed -> {
+        SyncStatusView(
+          currentSyncJobStatus = currentSyncJobStatus,
+          minimized = false,
         ) {
           openDrawer(false)
           onSideMenuClick(AppMainEvent.SyncData(context))
         }
       }
-      currentSyncJobStatus is CurrentSyncJobStatus.Succeeded && showSyncCompleted -> {
-        SyncCompleteStatus(
-          modifier = Modifier.fillMaxWidth(),
-          imageConfig = ImageConfig(type = "local", "ic_sync_success"),
-          title = context.getString(org.smartregister.fhircore.engine.R.string.sync_completed),
-          showEndText = false,
-          applyPadding = false,
-          onCancelButtonClick = {},
-        )
+      is CurrentSyncJobStatus.Succeeded -> {
+        LaunchedEffect(Unit) {
+          coroutineScope.launch {
+            delay(10.seconds)
+            showDefaultSyncStatus = true
+          }
+        }
+        if (showDefaultSyncStatus) {
+          DefaultSyncStatus(
+            appUiState = appUiState,
+            openDrawer = openDrawer,
+            onSideMenuClick = onSideMenuClick,
+            context = context,
+          ) {
+            showDefaultSyncStatus = false
+          }
+        } else {
+          SyncStatusView(
+            currentSyncJobStatus = currentSyncJobStatus,
+            minimized = false,
+          )
+        }
       }
       else -> {
-        SideMenuItem(
-          modifier = modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
-          imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
-          title = stringResource(org.smartregister.fhircore.engine.R.string.sync),
-          endText = appUiState.lastSyncTime,
-          showEndText = true,
-          endTextColor = SubtitleTextColor,
-          applyPadding = false,
+        DefaultSyncStatus(
+          appUiState = appUiState,
+          openDrawer = openDrawer,
+          onSideMenuClick = onSideMenuClick,
+          context = context,
         ) {
-          openDrawer(false)
-          onSideMenuClick(AppMainEvent.SyncData(context))
+          showDefaultSyncStatus = false
         }
       }
     }
   }
 }
 
-private fun updateSyncStatus(
-  currentSyncJobStatus: CurrentSyncJobStatus?,
-  coroutineScope: CoroutineScope,
-  hasShownSyncComplete: Boolean,
-  setHasShownSyncComplete: (Boolean) -> Unit,
-  setShowSyncComplete: (Boolean) -> Unit,
-  setBackgroundColor: (Color) -> Unit,
+@Composable
+private fun DefaultSyncStatus(
+  appUiState: AppMainUiState,
+  openDrawer: (Boolean) -> Unit,
+  onSideMenuClick: (AppMainEvent) -> Unit,
+  context: Context,
+  resetStatus: () -> Unit = {},
 ) {
-  when (currentSyncJobStatus) {
-    is CurrentSyncJobStatus.Succeeded -> {
-      if (!hasShownSyncComplete) {
-        setBackgroundColor(Color(0xFF1DB11B))
-        setShowSyncComplete(true)
-        setHasShownSyncComplete(true)
-        coroutineScope.launch {
-          delay(10.seconds)
-          setShowSyncComplete(false)
-          setBackgroundColor(SideMenuTopItemDarkColor)
-        }
-      }
-    }
-    is CurrentSyncJobStatus.Failed -> {
-      setBackgroundColor(Color(0xFFDF0E1A))
-      setShowSyncComplete(true)
-      setHasShownSyncComplete(true)
-    }
-    is CurrentSyncJobStatus.Running -> {
-      setBackgroundColor(SideMenuTopItemDarkColor)
-      setShowSyncComplete(false)
-      setHasShownSyncComplete(false)
-    }
-    is CurrentSyncJobStatus.Cancelled -> {}
-    else -> {
-      setBackgroundColor(SideMenuTopItemDarkColor)
-      setShowSyncComplete(false)
+  Box(modifier = Modifier.background(SideMenuBottomItemDarkColor).padding(16.dp)) {
+    SideMenuItem(
+      modifier = Modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
+      imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
+      title = stringResource(org.smartregister.fhircore.engine.R.string.sync),
+      endText = appUiState.lastSyncTime,
+      padding = 0,
+      showEndText = true,
+      endTextColor = SubtitleTextColor,
+    ) {
+      openDrawer(false)
+      resetStatus()
+      onSideMenuClick(AppMainEvent.SyncData(context))
     }
   }
 }
@@ -369,7 +337,7 @@ private fun OtherPatientsItem(
       },
     endText = "",
     showEndText = false,
-    endImageVector = Icons.Filled.KeyboardArrowRight,
+    endImageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
     endTextColor = SubtitleTextColor,
   ) {
     openDrawer(false)
@@ -403,10 +371,11 @@ private fun NavTopSection(
         .background(SideMenuTopItemDarkColor)
         .padding(horizontal = 16.dp)
         .testTag(NAV_TOP_SECTION_TEST_TAG),
+    verticalAlignment = Alignment.CenterVertically,
   ) {
     Text(
       text = appUiState.appTitle,
-      fontSize = 22.sp,
+      fontSize = 18.sp,
       color = AppTitleColor,
       modifier = modifier.padding(top = 16.dp, bottom = 16.dp, end = 8.dp),
       maxLines = 1,
@@ -414,7 +383,7 @@ private fun NavTopSection(
     )
     Text(
       text = "$versionCode($versionName)",
-      fontSize = 22.sp,
+      fontSize = 14.sp,
       color = AppTitleColor,
       modifier = modifier.padding(vertical = 16.dp),
       maxLines = 1,
@@ -461,7 +430,7 @@ private fun MenuActionButton(
           navigationConfiguration.menuActionButton?.display?.uppercase()
             ?: stringResource(id = org.smartregister.fhircore.engine.R.string.register_new_client),
         color = MenuActionButtonTextColor,
-        fontSize = 18.sp,
+        fontSize = 16.sp,
       )
     }
   }
@@ -473,8 +442,8 @@ private fun SideMenuItem(
   imageConfig: ImageConfig? = null,
   title: String,
   endText: String = "",
-  applyPadding: Boolean = true,
   endTextColor: Color = Color.White,
+  padding: Int = 10,
   showEndText: Boolean,
   endImageVector: ImageVector? = null,
   onSideMenuClick: () -> Unit,
@@ -484,17 +453,13 @@ private fun SideMenuItem(
     modifier =
       modifier
         .fillMaxWidth()
+        .padding(vertical = padding.dp)
         .clickable { onSideMenuClick() }
         .testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(
-      modifier =
-        modifier
-          .testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG)
-          .then(
-            if (applyPadding) Modifier.padding(vertical = 16.dp) else Modifier.padding(top = 6.dp),
-          ),
+      modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG),
       verticalAlignment = Alignment.CenterVertically,
     ) {
       Image(
@@ -520,76 +485,10 @@ private fun SideMenuItem(
 }
 
 @Composable
-fun SyncCompleteStatus(
-  modifier: Modifier,
-  imageConfig: ImageConfig? = null,
-  title: String,
-  showEndText: Boolean,
-  showImage: Boolean = true,
-  syncSuccess: Boolean = true,
-  description: String? = null,
-  applyPadding: Boolean = true,
-  onCancelButtonClick: () -> Unit,
-) {
-  Row(
-    horizontalArrangement = Arrangement.SpaceBetween,
-    modifier =
-      modifier
-        .fillMaxWidth()
-        .then(
-          Modifier.padding(horizontal = 16.dp).takeIf { applyPadding } ?: Modifier,
-        ),
-    verticalAlignment = Alignment.CenterVertically,
-  ) {
-    Row(
-      modifier =
-        Modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG)
-          .then(
-            Modifier.padding(vertical = 8.dp).takeIf { showImage } ?: Modifier,
-          ),
-      verticalAlignment = Alignment.CenterVertically,
-    ) {
-      if (showImage) {
-        Image(
-          paddingEnd = 10,
-          imageProperties = ImageProperties(imageConfig = imageConfig, size = 40),
-          tint = if (syncSuccess) SuccessColor else Color(0xFFDF0E1A),
-          navController = rememberNavController(),
-        )
-      }
-      Column {
-        Text(
-          text = title,
-          color = Color(0xFF282828),
-          fontSize = if (showImage) 15.sp else 10.sp,
-          fontWeight = FontWeight(500),
-        )
-        if (description != null) {
-          Text(
-            text = description,
-            color = Color.Gray,
-            fontSize = 10.sp,
-          )
-        }
-      }
-    }
-    Spacer(modifier = Modifier.width(16.dp))
-    if (showEndText) {
-      TextButton(
-        onClick = { onCancelButtonClick() },
-        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF0077CC)),
-      ) {
-        Text(text = "RETRY")
-      }
-    }
-  }
-}
-
-@Composable
 private fun SideMenuItemText(
   title: String,
   textColor: Color,
-  textSize: Int = 18,
+  textSize: Int = 16,
   boldText: Boolean = false,
 ) {
   Text(
@@ -604,27 +503,160 @@ private fun SideMenuItemText(
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun AppDrawerPreview() {
-  AppDrawer(
-    appUiState =
-      appMainUiStateOf(
-        appTitle = "MOH VTS",
-        username = "Demo",
-        lastSyncTime = "05:30 PM, Mar 3",
-        currentLanguage = "English",
-        languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-        navigationConfiguration =
-          NavigationConfiguration(
-            appId = "appId",
-            configType = ConfigType.Navigation.name,
-            staticMenu = listOf(),
-            clientRegisters = listOf(),
-            menuActionButton =
-              NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
-          ),
-      ),
-    navController = rememberNavController(),
-    openDrawer = {},
-    onSideMenuClick = {},
-    appVersionPair = Pair(1, "0.0.1"),
-  )
+  AppTheme {
+    AppDrawer(
+      appUiState =
+        appMainUiStateOf(
+          appTitle = "MOH VTS",
+          username = "Demo",
+          lastSyncTime = "05:30 PM, Mar 3",
+          currentLanguage = "English",
+          languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+          navigationConfiguration =
+            NavigationConfiguration(
+              appId = "appId",
+              configType = ConfigType.Navigation.name,
+              staticMenu = listOf(),
+              clientRegisters =
+                listOf(
+                  NavigationMenuConfig(id = "id0", visible = true, display = "Households"),
+                  NavigationMenuConfig(id = "id2", visible = true, display = "PNC"),
+                  NavigationMenuConfig(id = "id3", visible = true, display = "ANC"),
+                  NavigationMenuConfig(id = "id4", visible = true, display = "Family Planning"),
+                ),
+              menuActionButton =
+                NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
+            ),
+        ),
+      navController = rememberNavController(),
+      openDrawer = {},
+      onSideMenuClick = {},
+      appVersionPair = Pair(1, "0.0.1"),
+    )
+  }
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun AppDrawerOnSyncCompletePreview() {
+  AppTheme {
+    AppDrawer(
+      appUiState =
+        appMainUiStateOf(
+          appTitle = "MOH VTS",
+          username = "Demo",
+          lastSyncTime = "05:30 PM, Mar 3",
+          currentLanguage = "English",
+          languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+          navigationConfiguration =
+            NavigationConfiguration(
+              appId = "appId",
+              configType = ConfigType.Navigation.name,
+              staticMenu = listOf(),
+              clientRegisters =
+                listOf(
+                  NavigationMenuConfig(id = "id0", visible = true, display = "Households"),
+                  NavigationMenuConfig(id = "id2", visible = true, display = "PNC"),
+                  NavigationMenuConfig(id = "id3", visible = true, display = "ANC"),
+                  NavigationMenuConfig(id = "id4", visible = true, display = "Family Planning"),
+                ),
+              menuActionButton =
+                NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
+            ),
+          currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
+        ),
+      appDrawerUIState =
+        AppDrawerUIState(
+          currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
+        ),
+      navController = rememberNavController(),
+      openDrawer = {},
+      onSideMenuClick = {},
+      appVersionPair = Pair(1, "0.0.1"),
+    )
+  }
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun AppDrawerOnSyncFailedPreview() {
+  AppTheme {
+    AppDrawer(
+      appUiState =
+        appMainUiStateOf(
+          appTitle = "MOH VTS",
+          username = "Demo",
+          lastSyncTime = "05:30 PM, Mar 3",
+          currentLanguage = "English",
+          languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+          navigationConfiguration =
+            NavigationConfiguration(
+              appId = "appId",
+              configType = ConfigType.Navigation.name,
+              staticMenu = listOf(),
+              clientRegisters =
+                listOf(
+                  NavigationMenuConfig(id = "id0", visible = true, display = "Households"),
+                  NavigationMenuConfig(id = "id2", visible = true, display = "PNC"),
+                  NavigationMenuConfig(id = "id3", visible = true, display = "ANC"),
+                  NavigationMenuConfig(id = "id4", visible = true, display = "Family Planning"),
+                ),
+              menuActionButton =
+                NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
+            ),
+          currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
+        ),
+      appDrawerUIState =
+        AppDrawerUIState(
+          currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
+        ),
+      navController = rememberNavController(),
+      openDrawer = {},
+      onSideMenuClick = {},
+      appVersionPair = Pair(1, "0.0.1"),
+    )
+  }
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun AppDrawerOnSyncRunningPreview() {
+  AppTheme {
+    AppDrawer(
+      appUiState =
+        appMainUiStateOf(
+          appTitle = "MOH VTS",
+          username = "Demo",
+          lastSyncTime = "05:30 PM, Mar 3",
+          currentLanguage = "English",
+          languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+          navigationConfiguration =
+            NavigationConfiguration(
+              appId = "appId",
+              configType = ConfigType.Navigation.name,
+              staticMenu = listOf(),
+              clientRegisters =
+                listOf(
+                  NavigationMenuConfig(id = "id0", visible = true, display = "Households"),
+                  NavigationMenuConfig(id = "id2", visible = true, display = "PNC"),
+                  NavigationMenuConfig(id = "id3", visible = true, display = "ANC"),
+                  NavigationMenuConfig(id = "id4", visible = true, display = "Family Planning"),
+                ),
+              menuActionButton =
+                NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
+            ),
+          currentSyncJobStatus =
+            CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 200, 35)),
+        ),
+      appDrawerUIState =
+        AppDrawerUIState(
+          currentSyncJobStatus =
+            CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 200, 35)),
+        ),
+      navController = rememberNavController(),
+      openDrawer = {},
+      onSideMenuClick = {},
+      appVersionPair = Pair(1, "0.0.1"),
+    )
+  }
 }

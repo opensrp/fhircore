@@ -135,11 +135,11 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
+        onAppMainEvent = {},
         searchText = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-        onCancel = {},
       )
     }
     composeTestRule.waitUntil(5_000) { true }
@@ -176,11 +176,11 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
+        onAppMainEvent = {},
         searchText = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-        onCancel = {},
       )
     }
 
@@ -220,11 +220,11 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
+        onAppMainEvent = {},
         searchText = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-        onCancel = {},
       )
     }
 
@@ -261,11 +261,11 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
+        onAppMainEvent = {},
         searchText = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-        onCancel = {},
       )
     }
     composeTestRule.onNodeWithTag(FIRST_TIME_SYNC_DIALOG, useUnmergedTree = true)
@@ -301,11 +301,11 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
+        onAppMainEvent = {},
         searchText = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-        onCancel = {},
       )
     }
     composeTestRule.waitUntil(5_000) { true }
@@ -384,15 +384,6 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
-        appUiState =
-          appUiState.copy(
-            currentSyncJobStatus =
-              CurrentSyncJobStatus.Running(
-                SyncJobStatus.InProgress(
-                  syncOperation = SyncOperation.UPLOAD,
-                ),
-              ),
-          ),
         appDrawerUIState =
           AppDrawerUIState(
             currentSyncJobStatus =
@@ -402,11 +393,11 @@ class RegisterScreenTest {
                 ),
               ),
           ),
+        onAppMainEvent = {},
         searchText = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-        onCancel = {},
       )
     }
 
@@ -446,19 +437,15 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
-        appUiState =
-          appUiState.copy(
-            currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
-          ),
         appDrawerUIState =
           AppDrawerUIState(
             currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
           ),
+        onAppMainEvent = {},
         searchText = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-        onCancel = {},
       )
     }
 
@@ -498,19 +485,15 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
-        appUiState =
-          appUiState.copy(
-            currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
-          ),
         appDrawerUIState =
           AppDrawerUIState(
             currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
           ),
+        onAppMainEvent = {},
         searchText = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-        onCancel = {},
       )
     }
 
