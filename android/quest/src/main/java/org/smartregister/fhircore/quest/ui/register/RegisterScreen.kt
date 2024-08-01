@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -197,7 +198,10 @@ fun RegisterScreen(
     }
 
     // Do not apply border radius when sync complete is not displayed
-    val bottomRadius = if (hideSyncCompleteStatus == true) 0.dp else 16.dp
+    val bottomRadius =
+      if (hideSyncCompleteStatus != true || currentSyncJobStatus is CurrentSyncJobStatus.Running) {
+        16.dp
+      } else 0.dp
 
     Box(modifier = modifier.padding(innerPadding)) {
       if (registerUiState.isFirstTimeSync) {
@@ -212,7 +216,9 @@ fun RegisterScreen(
           showPercentageProgress = true,
         )
       }
-      Column(modifier = Modifier.fillMaxSize().background(syncBackgroundColor)) {
+      Column(
+        modifier = Modifier.fillMaxSize().background(syncBackgroundColor),
+      ) {
         Box(
           modifier =
             Modifier.weight(1f)
@@ -241,7 +247,11 @@ fun RegisterScreen(
               }
             }
           }
-          if (!registerUiState.isFirstTimeSync && hideSyncCompleteStatus != true) {
+          if (
+            !registerUiState.isFirstTimeSync &&
+              (hideSyncCompleteStatus != true ||
+                currentSyncJobStatus is CurrentSyncJobStatus.Running)
+          ) {
             Box(
               modifier =
                 Modifier.align(Alignment.BottomStart)
@@ -282,6 +292,7 @@ fun RegisterScreen(
                 progressPercentage = appDrawerUIState.percentageProgress,
                 onCancel = { onAppMainEvent(AppMainEvent.CancelSyncData(context)) },
               )
+              SideEffect { hideSyncCompleteStatus = false }
             }
             is CurrentSyncJobStatus.Failed -> {
               SyncStatusView(
