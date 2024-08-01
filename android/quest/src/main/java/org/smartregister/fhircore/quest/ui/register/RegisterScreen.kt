@@ -191,7 +191,7 @@ fun RegisterScreen(
     if (currentSyncJobStatus is CurrentSyncJobStatus.Succeeded) {
       LaunchedEffect(Unit) {
         coroutineScope.launch {
-          delay(10.seconds)
+          delay(7.seconds)
           hideSyncCompleteStatus = true
         }
       }

@@ -41,6 +41,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -249,6 +250,7 @@ private fun NavBottomSection(
             openDrawer(false)
           },
         )
+        SideEffect { showDefaultSyncStatus = false }
       }
       is CurrentSyncJobStatus.Failed -> {
         SyncStatusView(
@@ -262,7 +264,7 @@ private fun NavBottomSection(
       is CurrentSyncJobStatus.Succeeded -> {
         LaunchedEffect(Unit) {
           coroutineScope.launch {
-            delay(10.seconds)
+            delay(7.seconds)
             showDefaultSyncStatus = true
           }
         }
@@ -272,9 +274,7 @@ private fun NavBottomSection(
             openDrawer = openDrawer,
             onSideMenuClick = onSideMenuClick,
             context = context,
-          ) {
-            showDefaultSyncStatus = false
-          }
+          )
         } else {
           SyncStatusView(
             currentSyncJobStatus = currentSyncJobStatus,
@@ -288,9 +288,7 @@ private fun NavBottomSection(
           openDrawer = openDrawer,
           onSideMenuClick = onSideMenuClick,
           context = context,
-        ) {
-          showDefaultSyncStatus = false
-        }
+        )
       }
     }
   }
@@ -302,9 +300,10 @@ private fun DefaultSyncStatus(
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
   context: Context,
-  resetStatus: () -> Unit = {},
 ) {
-  Box(modifier = Modifier.background(SideMenuBottomItemDarkColor).padding(16.dp)) {
+  Box(
+    modifier = Modifier.background(SideMenuBottomItemDarkColor).padding(16.dp),
+  ) {
     SideMenuItem(
       modifier = Modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
       imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
@@ -315,7 +314,6 @@ private fun DefaultSyncStatus(
       endTextColor = SubtitleTextColor,
     ) {
       openDrawer(false)
-      resetStatus()
       onSideMenuClick(AppMainEvent.SyncData(context))
     }
   }

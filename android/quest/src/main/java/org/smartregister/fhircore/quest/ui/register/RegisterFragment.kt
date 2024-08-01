@@ -260,6 +260,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
     }
   }
 
+  override fun onPause() {
+    super.onPause()
+    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+  }
+
   override fun onDestroy() {
     super.onDestroy()
     appMainViewModel.updateAppDrawerUIState(false, null, 0)

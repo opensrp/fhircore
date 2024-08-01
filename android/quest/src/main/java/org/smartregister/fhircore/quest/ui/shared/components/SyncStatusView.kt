@@ -126,7 +126,7 @@ fun SyncStatusView(
           )
         }
         LinearProgressIndicator(
-          progress = progressPercentage?.toFloat() ?: 0f,
+          progress = (progressPercentage?.toFloat()?.div(100)) ?: 0f,
           color = MaterialTheme.colors.primary,
           backgroundColor = Color.White,
           modifier = Modifier.padding(vertical = 6.dp).fillMaxWidth(),
