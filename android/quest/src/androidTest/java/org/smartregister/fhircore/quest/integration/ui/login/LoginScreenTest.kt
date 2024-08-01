@@ -112,19 +112,22 @@ class LoginScreenTest {
         onDismissDialog = {},
       )
     }
+    assertDialogContent()
+  }
 
-    val forgotPasswordTitle = context.getString(R.string.forgot_password_title)
-    val pleaseContactSupervisor = context.getString(R.string.please_contact_supervisor)
-    val cancel = context.getString(R.string.cancel)
-    val dialNumber = context.getString(R.string.dial_number)
-    val contactNumber = applicationConfiguration.loginConfig.contactNumber
-
+  private fun assertDialogContent() {
     composeRule.onNodeWithTag(PASSWORD_FORGOT_DIALOG).assertExists().assertIsDisplayed()
-    composeRule.onNodeWithText(forgotPasswordTitle).assertIsDisplayed()
-    composeRule.onNodeWithText(pleaseContactSupervisor).assertIsDisplayed()
-    composeRule.onNodeWithText(contactNumber.toString()).assertIsDisplayed()
-    composeRule.onNodeWithText(cancel).assertIsDisplayed()
-    composeRule.onNodeWithText(dialNumber).assertIsDisplayed()
+    composeRule
+      .onNodeWithText(context.getString(R.string.forgot_password_title))
+      .assertIsDisplayed()
+    composeRule
+      .onNodeWithText(context.getString(R.string.please_contact_supervisor))
+      .assertIsDisplayed()
+    composeRule
+      .onNodeWithText(applicationConfiguration.loginConfig.contactNumber.toString())
+      .assertIsDisplayed()
+    composeRule.onNodeWithText(context.getString(R.string.cancel)).assertIsDisplayed()
+    composeRule.onNodeWithText(context.getString(R.string.dial_number)).assertIsDisplayed()
   }
 
   @Test

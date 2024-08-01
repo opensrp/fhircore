@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.login
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
@@ -94,6 +95,17 @@ class LoginActivityTest : RobolectricTest() {
     } finally {
       loginActivity.loginViewModel.launchDialPad.removeObserver(launchDialPadObserver)
     }
+  }
+
+  @Test
+  fun testLaunchDialPadStartsDialIntentWithCorrectPhoneNumber() {
+    val phoneNumber = "tel:1234567890"
+    loginActivity.launchDialPad(phoneNumber)
+
+    val resultIntent = shadowOf(loginActivity).nextStartedActivity
+    Assert.assertNotNull(resultIntent)
+    Assert.assertEquals(Intent.ACTION_DIAL, resultIntent.action)
+    Assert.assertEquals(phoneNumber, resultIntent.data.toString())
   }
 
   @Test

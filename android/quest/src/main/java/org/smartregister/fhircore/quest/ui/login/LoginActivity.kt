@@ -135,7 +135,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  private fun launchDialPad(phone: String) {
+  fun launchDialPad(phone: String) {
     startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
   }
 }
