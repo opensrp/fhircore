@@ -103,7 +103,6 @@ class PinLoginScreenKtTest {
     }
 
     composeRule.onNodeWithText("MOH eCBIS", ignoreCase = true).assertExists().assertIsDisplayed()
-
     composeRule
       .onNodeWithText("Enter PIN for ecbis", ignoreCase = true)
       .assertExists()
