@@ -455,7 +455,7 @@ class RegisterScreenTest {
     composeTestRule
       .onNodeWithText(
         applicationContext.getString(org.smartregister.fhircore.engine.R.string.sync_complete),
-        useUnmergedTree = true
+        useUnmergedTree = true,
       )
       .assertExists()
       .assertIsDisplayed()
@@ -506,7 +506,7 @@ class RegisterScreenTest {
     composeTestRule
       .onNodeWithText(
         applicationContext.getString(org.smartregister.fhircore.engine.R.string.sync_error),
-        useUnmergedTree = true
+        useUnmergedTree = true,
       )
       .assertExists()
       .assertIsDisplayed()
