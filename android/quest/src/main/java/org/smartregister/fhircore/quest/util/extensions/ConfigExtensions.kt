@@ -75,7 +75,11 @@ fun List<ActionConfig>.handleClickEvent(
 ) {
   val onClickAction =
     this.firstOrNull {
-      it.trigger.isIn(ActionTrigger.ON_CLICK, ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION)
+      it.trigger.isIn(
+        ActionTrigger.ON_SEARCH_SINGLE_RESULT,
+        ActionTrigger.ON_CLICK,
+        ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+      )
     }
 
   onClickAction?.handleClickEvent(navController, resourceData, navMenu, context)
@@ -87,7 +91,13 @@ fun ActionConfig.handleClickEvent(
   navMenu: NavigationMenuConfig? = null,
   context: Context? = null,
 ) {
-  this.takeIf { it.trigger.isIn(ActionTrigger.ON_CLICK, ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION) }
+  this.takeIf {
+      it.trigger.isIn(
+        ActionTrigger.ON_SEARCH_SINGLE_RESULT,
+        ActionTrigger.ON_CLICK,
+        ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+      )
+    }
     ?.let { theConfig ->
       val computedValuesMap = resourceData?.computedValuesMap ?: emptyMap()
       val actionConfig = theConfig.interpolate(computedValuesMap)
