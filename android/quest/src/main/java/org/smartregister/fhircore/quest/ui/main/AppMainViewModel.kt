@@ -18,16 +18,16 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,6 +38,7 @@ import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
 import kotlin.time.Duration
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -63,6 +64,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.countUnSyncedResources
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -92,6 +94,7 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val workManager: WorkManager,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
+  val fhirEngine: FhirEngine,
 ) : ViewModel() {
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
@@ -105,8 +108,9 @@ constructor(
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
   private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
 
-  private val currentSyncJobStatus by mutableStateOf(null)
   val appDrawerUiState = mutableStateOf(AppDrawerUIState())
+
+  val unSyncedResourcesCount = mutableIntStateOf(0)
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
@@ -146,7 +150,6 @@ constructor(
           languages = configurationRegistry.fetchLanguages(),
           navigationConfiguration = navigationConfiguration,
           registerCountMap = registerCountMap,
-          currentSyncJobStatus = currentSyncJobStatus,
         )
     }
 
@@ -183,7 +186,7 @@ constructor(
           workManager.cancelUniqueWork(
             "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
           )
-          updateSyncStatus(CurrentSyncJobStatus.Cancelled)
+          updateAppDrawerUIState(currentSyncJobStatus = CurrentSyncJobStatus.Cancelled)
         }
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
@@ -310,13 +313,6 @@ constructor(
     }
   }
 
-  fun updateSyncStatus(currentSyncJobStatus: CurrentSyncJobStatus) {
-    appMainUiState.value =
-      appMainUiState.value.copy(
-        currentSyncJobStatus = currentSyncJobStatus,
-      )
-  }
-
   suspend fun onQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
     questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
       val status: Task.TaskStatus =
@@ -366,9 +362,9 @@ constructor(
   }
 
   fun updateAppDrawerUIState(
-    isSyncUpload: Boolean,
+    isSyncUpload: Boolean? = null,
     currentSyncJobStatus: CurrentSyncJobStatus?,
-    percentageProgress: Int,
+    percentageProgress: Int? = null,
   ) {
     appDrawerUiState.value =
       AppDrawerUIState(
@@ -376,6 +372,12 @@ constructor(
         currentSyncJobStatus = currentSyncJobStatus,
         percentageProgress = percentageProgress,
       )
+  }
+
+  fun updateUnSyncedResourcesCount() {
+    viewModelScope.launch {
+      unSyncedResourcesCount.intValue = async { fhirEngine.countUnSyncedResources() }.await().size
+    }
   }
 
   private fun getSyncProgress(completed: Int, total: Int) =

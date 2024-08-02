@@ -151,6 +151,8 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                   appMainViewModel.onEvent(it)
                 },
                 navController = findNavController(),
+                unSyncedResourceCount = appMainViewModel.unSyncedResourcesCount,
+                onCountUnSyncedResources = appMainViewModel::updateUnSyncedResourcesCount,
               )
             },
             snackbarHost = { snackBarHostState ->
@@ -206,34 +208,18 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
   }
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
-    Timber.d("On sync called inside GeoWidgetLauncherFragment $syncJobStatus")
-    when (syncJobStatus) {
-      is CurrentSyncJobStatus.Running -> {
-        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
-          lifecycleScope.launch {}
-        } else {
-          val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
-          val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
-          val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
-          lifecycleScope.launch {
-            appMainViewModel.updateAppDrawerUIState(
-              isSyncUpload,
-              syncJobStatus,
-              progressPercentage,
-            )
-          }
-        }
+    if (syncJobStatus is CurrentSyncJobStatus.Running) {
+      if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
+        val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
+        val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+        val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
+        appMainViewModel.updateAppDrawerUIState(
+          isSyncUpload = isSyncUpload,
+          currentSyncJobStatus = syncJobStatus,
+          percentageProgress = progressPercentage,
+        )
       }
-      is CurrentSyncJobStatus.Succeeded -> {
-        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 100) }
-      }
-      is CurrentSyncJobStatus.Failed -> {
-        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
-      }
-      else -> {
-        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
-      }
-    }
+    } else appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
