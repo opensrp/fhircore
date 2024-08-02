@@ -154,10 +154,7 @@ fun AppDrawer(
       LazyColumn(modifier = modifier) {
         item {
           Column(modifier = modifier.padding(horizontal = 16.dp)) {
-            if (
-              navigationConfiguration.clientRegisters.isNotEmpty() &&
-                navigationConfiguration.clientRegisters.size > 1
-            ) {
+            if (navigationConfiguration.clientRegisters.size > 1) {
               Text(
                 text = stringResource(id = R.string.registers).uppercase(),
                 fontSize = 14.sp,
@@ -175,7 +172,7 @@ fun AppDrawer(
             title = navigationMenu.display,
             endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
             showEndText = navigationMenu.showCount,
-            endTextColor = AppTitleColor,
+            endTextColor = MenuItemColor,
           ) {
             openDrawer(false)
             onSideMenuClick(
@@ -197,7 +194,7 @@ fun AppDrawer(
             }
           }
         }
-        // Add a divider between clientRegisters and the next section
+
         item { Divider(color = DividerColor) }
 
         // Display list of configurable static menu
@@ -305,11 +302,11 @@ private fun DefaultSyncStatus(
   context: Context,
 ) {
   Box(
-    modifier = Modifier.background(SideMenuBottomItemDarkColor).padding(16.dp),
+    modifier = Modifier.background(SideMenuBottomItemDarkColor).padding(vertical = 16.dp),
   ) {
     SideMenuItem(
       modifier = Modifier,
-      imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
+      imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, reference = "ic_sync"),
       title = stringResource(org.smartregister.fhircore.engine.R.string.sync),
       endText = appUiState.lastSyncTime,
       padding = 0,
@@ -444,7 +441,7 @@ private fun SideMenuItem(
   title: String,
   endText: String = "",
   endTextColor: Color = Color.White,
-  padding: Int = 10,
+  padding: Int = 12,
   showEndText: Boolean,
   endImageVector: ImageVector? = null,
   onSideMenuClick: () -> Unit,
@@ -522,9 +519,6 @@ fun AppDrawerPreview() {
               clientRegisters =
                 listOf(
                   NavigationMenuConfig(id = "id0", visible = true, display = "Households"),
-                  NavigationMenuConfig(id = "id2", visible = true, display = "PNC"),
-                  NavigationMenuConfig(id = "id3", visible = true, display = "ANC"),
-                  NavigationMenuConfig(id = "id4", visible = true, display = "Family Planning"),
                 ),
               menuActionButton =
                 NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
