@@ -22,26 +22,26 @@ import java.io.OutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.SerializationException
-import org.smartregister.fhircore.engine.domain.model.SyncLocationToggleableState
+import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.json
 import timber.log.Timber
 
-object SyncLocationIdDataStoreSerializer : Serializer<List<SyncLocationToggleableState>> {
+object SyncLocationIdDataStoreSerializer : Serializer<Map<String, SyncLocationState>> {
 
-  override val defaultValue: List<SyncLocationToggleableState>
-    get() = emptyList()
+  override val defaultValue: Map<String, SyncLocationState>
+    get() = emptyMap()
 
-  override suspend fun readFrom(input: InputStream): List<SyncLocationToggleableState> {
+  override suspend fun readFrom(input: InputStream): Map<String, SyncLocationState> {
     return try {
-      json.decodeFromString<List<SyncLocationToggleableState>>(input.readBytes().decodeToString())
+      json.decodeFromString<Map<String, SyncLocationState>>(input.readBytes().decodeToString())
     } catch (serializationException: SerializationException) {
       Timber.e(serializationException)
       defaultValue
     }
   }
 
-  override suspend fun writeTo(t: List<SyncLocationToggleableState>, output: OutputStream) {
+  override suspend fun writeTo(t: Map<String, SyncLocationState>, output: OutputStream) {
     withContext(Dispatchers.IO) { output.write(t.encodeJson().encodeToByteArray()) }
   }
 }
