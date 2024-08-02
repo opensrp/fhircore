@@ -151,6 +151,8 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                   appMainViewModel.onEvent(it)
                 },
                 navController = findNavController(),
+                unSyncedResourceCount = appMainViewModel.unSyncedResourcesCount,
+                onCountUnSyncedResources = appMainViewModel::updateUnSyncedResourcesCount,
               )
             },
             snackbarHost = { snackBarHostState ->

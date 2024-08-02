@@ -208,8 +208,9 @@ fun RegisterScreen(
           dialogMessage =
             stringResource(
               id =
-                if (appDrawerUIState.isSyncUpload == true) R.string.syncing_up
-                else R.string.syncing_down,
+                if (appDrawerUIState.isSyncUpload == true) {
+                  R.string.syncing_up
+                } else R.string.syncing_down,
             ),
           showPercentageProgress = true,
         )

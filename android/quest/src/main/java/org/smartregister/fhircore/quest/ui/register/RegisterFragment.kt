@@ -147,6 +147,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
                   appMainViewModel.onEvent(it)
                 },
                 navController = findNavController(),
+                unSyncedResourceCount = appMainViewModel.unSyncedResourcesCount,
+                onCountUnSyncedResources = appMainViewModel::updateUnSyncedResourcesCount,
               )
             },
             bottomBar = {
@@ -235,6 +237,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
         )
       }
     }
+
+    appMainViewModel.updateUnSyncedResourcesCount()
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

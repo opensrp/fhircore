@@ -39,10 +39,13 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -86,6 +89,7 @@ import org.smartregister.fhircore.engine.ui.theme.SideMenuTopItemDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.ui.theme.SyncBarBackgroundColor
+import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
 import org.smartregister.fhircore.quest.R
@@ -118,10 +122,14 @@ fun AppDrawer(
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
   appVersionPair: Pair<Int, String>? = null,
+  unSyncedResourceCount: MutableIntState,
+  onCountUnSyncedResources: () -> Unit,
 ) {
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
   val navigationConfiguration = appUiState.navigationConfiguration
+
+  LaunchedEffect(Unit) { onCountUnSyncedResources() }
 
   Scaffold(
     topBar = {
@@ -143,6 +151,7 @@ fun AppDrawer(
       NavBottomSection(
         appUiState = appUiState,
         appDrawerUIState = appDrawerUIState,
+        unSyncedResourceCount = unSyncedResourceCount,
         onSideMenuClick = onSideMenuClick,
         openDrawer = openDrawer,
       )
@@ -219,6 +228,7 @@ fun AppDrawer(
 private fun NavBottomSection(
   appUiState: AppMainUiState,
   appDrawerUIState: AppDrawerUIState,
+  unSyncedResourceCount: MutableIntState,
   onSideMenuClick: (AppMainEvent) -> Unit,
   openDrawer: (Boolean) -> Unit,
 ) {
@@ -269,9 +279,10 @@ private fun NavBottomSection(
         if (showDefaultSyncStatus) {
           DefaultSyncStatus(
             appUiState = appUiState,
+            context = context,
+            unSyncedResourceCount = unSyncedResourceCount,
             openDrawer = openDrawer,
             onSideMenuClick = onSideMenuClick,
-            context = context,
           )
         } else {
           SyncStatusView(
@@ -283,9 +294,10 @@ private fun NavBottomSection(
       else -> {
         DefaultSyncStatus(
           appUiState = appUiState,
+          context = context,
+          unSyncedResourceCount = unSyncedResourceCount,
           openDrawer = openDrawer,
           onSideMenuClick = onSideMenuClick,
-          context = context,
         )
       }
     }
@@ -295,12 +307,19 @@ private fun NavBottomSection(
 @Composable
 private fun DefaultSyncStatus(
   appUiState: AppMainUiState,
+  context: Context,
+  unSyncedResourceCount: MutableIntState,
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
-  context: Context,
 ) {
+  val noUnsyncedData = unSyncedResourceCount.intValue == 0
   Box(
-    modifier = Modifier.background(SideMenuBottomItemDarkColor).padding(16.dp),
+    modifier =
+      Modifier.background(
+          if (noUnsyncedData) SideMenuBottomItemDarkColor
+          else WarningColor.copy(alpha = TRANSPARENCY)
+        )
+        .padding(16.dp),
   ) {
     SideMenuItem(
       modifier = Modifier,
@@ -309,7 +328,11 @@ private fun DefaultSyncStatus(
       endText = appUiState.lastSyncTime,
       padding = 0,
       showEndText = true,
-      endTextColor = SubtitleTextColor,
+      endTextColor = if (noUnsyncedData) SubtitleTextColor else Color.Unspecified,
+      mainTextColor = if (noUnsyncedData) Color.White else Color.Unspecified,
+      mainTextBold = !noUnsyncedData,
+      startIcon = if (noUnsyncedData) null else Icons.Default.Error,
+      startIconColor = if (noUnsyncedData) null else WarningColor,
     ) {
       openDrawer(false)
       onSideMenuClick(AppMainEvent.SyncData(context))
@@ -436,12 +459,16 @@ private fun MenuActionButton(
 private fun SideMenuItem(
   modifier: Modifier = Modifier,
   imageConfig: ImageConfig? = null,
+  mainTextColor: Color = Color.White,
   title: String,
   endText: String = "",
   endTextColor: Color = Color.White,
   padding: Int = 10,
   showEndText: Boolean,
   endImageVector: ImageVector? = null,
+  mainTextBold: Boolean = false,
+  startIcon: ImageVector? = null,
+  startIconColor: Color? = null,
   onSideMenuClick: () -> Unit,
 ) {
   Row(
@@ -458,13 +485,22 @@ private fun SideMenuItem(
       modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG),
       verticalAlignment = Alignment.CenterVertically,
     ) {
-      Image(
-        paddingEnd = 10,
-        imageProperties = ImageProperties(imageConfig = imageConfig, size = 32),
-        tint = MenuItemColor,
-        navController = rememberNavController(),
-      )
-      SideMenuItemText(title = title, textColor = Color.White)
+      if (startIcon != null) {
+        Icon(
+          imageVector = startIcon,
+          contentDescription = null,
+          tint = startIconColor ?: MenuItemColor,
+          modifier = Modifier.padding(end = 16.dp),
+        )
+      } else {
+        Image(
+          paddingEnd = 10,
+          imageProperties = ImageProperties(imageConfig = imageConfig, size = 32),
+          tint = MenuItemColor,
+          navController = rememberNavController(),
+        )
+      }
+      SideMenuItemText(title = title, textColor = mainTextColor, boldText = mainTextBold)
     }
     if (showEndText) {
       SideMenuItemText(title = endText, textColor = endTextColor)
@@ -528,6 +564,46 @@ fun AppDrawerPreview() {
       openDrawer = {},
       onSideMenuClick = {},
       appVersionPair = Pair(1, "0.0.1"),
+      unSyncedResourceCount = remember { mutableIntStateOf(0) },
+      onCountUnSyncedResources = {},
+    )
+  }
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun AppDrawerWithUnSyncedDataPreview() {
+  AppTheme {
+    AppDrawer(
+      appUiState =
+        appMainUiStateOf(
+          appTitle = "MOH VTS",
+          username = "Demo",
+          lastSyncTime = "05:30 PM, Mar 3",
+          currentLanguage = "English",
+          languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+          navigationConfiguration =
+            NavigationConfiguration(
+              appId = "appId",
+              configType = ConfigType.Navigation.name,
+              staticMenu = listOf(),
+              clientRegisters =
+                listOf(
+                  NavigationMenuConfig(id = "id0", visible = true, display = "Households"),
+                  NavigationMenuConfig(id = "id2", visible = true, display = "PNC"),
+                  NavigationMenuConfig(id = "id3", visible = true, display = "ANC"),
+                  NavigationMenuConfig(id = "id4", visible = true, display = "Family Planning"),
+                ),
+              menuActionButton =
+                NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
+            ),
+        ),
+      navController = rememberNavController(),
+      openDrawer = {},
+      onSideMenuClick = {},
+      appVersionPair = Pair(1, "0.0.1"),
+      unSyncedResourceCount = remember { mutableIntStateOf(10) },
+      onCountUnSyncedResources = {},
     )
   }
 }
@@ -568,6 +644,8 @@ fun AppDrawerOnSyncCompletePreview() {
       openDrawer = {},
       onSideMenuClick = {},
       appVersionPair = Pair(1, "0.0.1"),
+      unSyncedResourceCount = remember { mutableIntStateOf(0) },
+      onCountUnSyncedResources = {},
     )
   }
 }
@@ -608,6 +686,8 @@ fun AppDrawerOnSyncFailedPreview() {
       openDrawer = {},
       onSideMenuClick = {},
       appVersionPair = Pair(1, "0.0.1"),
+      unSyncedResourceCount = remember { mutableIntStateOf(0) },
+      onCountUnSyncedResources = {},
     )
   }
 }
@@ -649,6 +729,8 @@ fun AppDrawerOnSyncRunningPreview() {
       openDrawer = {},
       onSideMenuClick = {},
       appVersionPair = Pair(1, "0.0.1"),
+      unSyncedResourceCount = remember { mutableIntStateOf(0) },
+      onCountUnSyncedResources = {},
     )
   }
 }
