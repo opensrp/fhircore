@@ -12405,18 +12405,17 @@
           [
             "in_progress"
           ],
-          "hsl(45.1,62.5%,50.8%)",
+          "hsl(32, 88%, 44%)",
           [
             "finished"
           ],
-          "hsl(101.6,66.8%,44.9%)",
+          "hsl(119, 74%, 40%)",
           [
             "not_started"
           ],
-          "hsl(0, 0%, 64%)",
+          "hsl(0, 0%, 56%)",
           "hsl(100, 100%, 100%)"
         ],
-        "circle-stroke-width": 2,
         "circle-opacity": 1
       }
     },
