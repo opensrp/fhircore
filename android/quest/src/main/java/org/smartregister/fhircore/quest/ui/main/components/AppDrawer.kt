@@ -88,7 +88,6 @@ import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.ui.theme.SyncBarBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
-import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
@@ -154,9 +153,11 @@ fun AppDrawer(
     ) {
       LazyColumn(modifier = modifier) {
         item {
-          Column (modifier = modifier.padding(horizontal = 16.dp)) {
-            if (navigationConfiguration.clientRegisters.isNotEmpty() &&
-                navigationConfiguration.clientRegisters.size > 1) {
+          Column(modifier = modifier.padding(horizontal = 16.dp)) {
+            if (
+              navigationConfiguration.clientRegisters.isNotEmpty() &&
+                navigationConfiguration.clientRegisters.size > 1
+            ) {
               Text(
                 text = stringResource(id = R.string.registers).uppercase(),
                 fontSize = 14.sp,
