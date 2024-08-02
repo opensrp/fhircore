@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -41,6 +42,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.flow.launchIn
@@ -52,6 +56,8 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
+import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -77,9 +83,11 @@ import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 import timber.log.Timber
 
 @AndroidEntryPoint
-class GeoWidgetLauncherFragment : Fragment() {
+class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   @Inject lateinit var eventBus: EventBus
+
+  @Inject lateinit var syncListenerManager: SyncListenerManager
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
@@ -106,6 +114,7 @@ class GeoWidgetLauncherFragment : Fragment() {
         val coroutineScope = rememberCoroutineScope()
         val scaffoldState = rememberScaffoldState()
         val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
+        val appDrawerUIState = appMainViewModel.appDrawerUiState.value
         val openDrawer: (Boolean) -> Unit = { open: Boolean ->
           coroutineScope.launch {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
@@ -133,6 +142,7 @@ class GeoWidgetLauncherFragment : Fragment() {
             drawerContent = {
               AppDrawer(
                 appUiState = uiState,
+                appDrawerUIState = appDrawerUIState,
                 openDrawer = openDrawer,
                 onSideMenuClick = {
                   if (it is AppMainEvent.TriggerWorkflow) {
@@ -190,6 +200,42 @@ class GeoWidgetLauncherFragment : Fragment() {
     }
   }
 
+  override fun onResume() {
+    super.onResume()
+    syncListenerManager.registerSyncListener(this, lifecycle)
+  }
+
+  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
+    Timber.d("On sync called inside GeoWidgetLauncherFragment $syncJobStatus")
+    when (syncJobStatus) {
+      is CurrentSyncJobStatus.Running -> {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
+          lifecycleScope.launch {}
+        } else {
+          val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
+          val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+          val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
+          lifecycleScope.launch {
+            appMainViewModel.updateAppDrawerUIState(
+              isSyncUpload,
+              syncJobStatus,
+              progressPercentage,
+            )
+          }
+        }
+      }
+      is CurrentSyncJobStatus.Succeeded -> {
+        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 100) }
+      }
+      is CurrentSyncJobStatus.Failed -> {
+        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
+      }
+      else -> {
+        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
+      }
+    }
+  }
+
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     showSetLocationDialog()
@@ -214,6 +260,16 @@ class GeoWidgetLauncherFragment : Fragment() {
         geoWidgetViewModel.features.postValue(geoWidgetViewModel.features.value?.plus(it))
       }
     }
+  }
+
+  override fun onPause() {
+    super.onPause()
+    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+  }
+
+  override fun onDestroy() {
+    super.onDestroy()
+    appMainViewModel.updateAppDrawerUIState(false, null, 0)
   }
 
   private fun buildGeoWidgetFragment() {
