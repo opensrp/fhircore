@@ -160,10 +160,10 @@ fun AppDrawer(
     Box(
       modifier = modifier.padding(innerPadding).background(SideMenuDarkColor).fillMaxSize(),
     ) {
-      LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
+      LazyColumn(modifier = modifier) {
         item {
-          Column {
-            if (navigationConfiguration.clientRegisters.isNotEmpty()) {
+          Column(modifier = modifier.padding(horizontal = 16.dp)) {
+            if (navigationConfiguration.clientRegisters.size > 1) {
               Text(
                 text = stringResource(id = R.string.registers).uppercase(),
                 fontSize = 14.sp,
@@ -192,7 +192,7 @@ fun AppDrawer(
 
         item {
           if (navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true) {
-            Column {
+            Column(modifier = modifier.padding(horizontal = 16.dp)) {
               OtherPatientsItem(
                 navigationConfiguration = navigationConfiguration,
                 onSideMenuClick = onSideMenuClick,
@@ -203,6 +203,8 @@ fun AppDrawer(
             }
           }
         }
+
+        item { Divider(color = DividerColor) }
 
         // Display list of configurable static menu
         items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
@@ -323,11 +325,11 @@ private fun DefaultSyncStatus(
             SideMenuBottomItemDarkColor
           } else WarningColor.copy(alpha = TRANSPARENCY),
         )
-        .padding(16.dp),
+        .padding(vertical = 16.dp),
   ) {
     SideMenuItem(
       modifier = Modifier,
-      imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
+      imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, reference = "ic_sync"),
       title = stringResource(org.smartregister.fhircore.engine.R.string.sync),
       endText = appUiState.lastSyncTime,
       padding = 0,
@@ -467,7 +469,7 @@ private fun SideMenuItem(
   title: String,
   endText: String = "",
   endTextColor: Color = Color.White,
-  padding: Int = 10,
+  padding: Int = 12,
   showEndText: Boolean,
   endImageVector: ImageVector? = null,
   mainTextBold: Boolean = false,
@@ -482,7 +484,8 @@ private fun SideMenuItem(
         .fillMaxWidth()
         .padding(vertical = padding.dp)
         .clickable { onSideMenuClick() }
-        .testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG),
+        .testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG)
+        .padding(horizontal = 16.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(
@@ -556,9 +559,6 @@ fun AppDrawerPreview() {
               clientRegisters =
                 listOf(
                   NavigationMenuConfig(id = "id0", visible = true, display = "Households"),
-                  NavigationMenuConfig(id = "id2", visible = true, display = "PNC"),
-                  NavigationMenuConfig(id = "id3", visible = true, display = "ANC"),
-                  NavigationMenuConfig(id = "id4", visible = true, display = "Family Planning"),
                 ),
               menuActionButton =
                 NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
