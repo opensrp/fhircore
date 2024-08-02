@@ -44,6 +44,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
@@ -83,10 +84,14 @@ class MeasureReportRepositoryTest : RobolectricTest() {
   private lateinit var registerRepository: RegisterRepository
   private val parser = FhirContext.forR4Cached().newJsonParser()
 
+  @Inject lateinit var fhirContext: FhirContext
+  private lateinit var defaultRepository: DefaultRepository
+
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltAndroidRule.inject()
+    defaultRepository = mockk(relaxed = true)
     rulesFactory =
       spyk(
         RulesFactory(
@@ -95,6 +100,8 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           dispatcherProvider = dispatcherProvider,
           locationService = locationService,
+          fhirContext = fhirContext,
+          defaultRepository = defaultRepository,
         ),
       )
     resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)

@@ -20,7 +20,6 @@ import android.content.Context
 import android.database.SQLException
 import android.graphics.Bitmap
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.ui.state.ToggleableState
 import ca.uhn.fhir.context.ConfigurationException
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.DataFormatException
@@ -40,8 +39,6 @@ import java.util.PropertyResourceBundle
 import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -63,7 +60,6 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
@@ -81,6 +77,7 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
+import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationIds
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
@@ -743,7 +740,8 @@ constructor(
     relatedResources.forEach { it.dependentResourceTypes(target) }
   }
 
-  fun loadResourceSearchParams(): Pair<Map<String, Map<String, String>>, ResourceSearchParams> {
+  suspend fun loadResourceSearchParams():
+    Pair<Map<String, Map<String, String>>, ResourceSearchParams> {
     val syncConfig = retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
     val appConfig = retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
     val customResourceSearchParams = mutableMapOf<String, MutableMap<String, String>>()
@@ -752,14 +750,7 @@ constructor(
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
     val mandatoryTags = configService.provideResourceTags(sharedPreferencesHelper)
 
-    // Retrieve REL locationIds otherwise return null
-    val locationIds = runBlocking {
-      context.syncLocationIdsProtoStore.data
-        .firstOrNull()
-        ?.filter { it.toggleableState == ToggleableState.On }
-        ?.map { it.locationId }
-        .takeIf { !it.isNullOrEmpty() }
-    }
+    val locationIds = context.retrieveRelatedEntitySyncLocationIds()
 
     syncConfig.parameter
       .map { it.resource as SearchParameter }
@@ -789,7 +780,9 @@ constructor(
                   .getOrPut(code) { mutableMapOf() }
                   .apply {
                     expressionValue?.let { value -> put(searchParameter.code, value) }
-                    locationIds?.let { ids -> put(SYNC_LOCATION_IDS, ids.joinToString(",")) }
+                    if (locationIds.isNotEmpty()) {
+                      put(SYNC_LOCATION_IDS, locationIds.joinToString(","))
+                    }
                   }
               customResourceSearchParams[code] = resourceQueryParamMap
             } else {
@@ -799,13 +792,14 @@ constructor(
                   .getOrPut(resourceType) { mutableMapOf() }
                   .apply {
                     expressionValue?.let { value -> put(searchParameter.code, value) }
-                    locationIds?.let { ids -> put(SYNC_LOCATION_IDS, ids.joinToString(",")) }
+                    if (locationIds.isNotEmpty()) {
+                      put(SYNC_LOCATION_IDS, locationIds.joinToString(","))
+                    }
                   }
               fhirResourceSearchParams[resourceType] = resourceQueryParamMap
             }
           }
       }
-
     return Pair(customResourceSearchParams, fhirResourceSearchParams)
   }
 

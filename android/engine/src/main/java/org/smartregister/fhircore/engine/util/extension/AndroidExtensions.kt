@@ -32,12 +32,15 @@ import android.os.Parcelable
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.compose.ui.state.ToggleableState
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import java.io.Serializable
 import java.util.Locale
+import kotlinx.coroutines.flow.firstOrNull
+import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
@@ -224,3 +227,14 @@ inline fun <reified T : Parcelable> Intent.parcelableArrayList(key: String): Arr
     SDK_INT >= 33 -> getParcelableArrayListExtra(key, T::class.java)
     else -> @Suppress("DEPRECATION") getParcelableArrayListExtra(key)
   }
+
+suspend fun Context.retrieveRelatedEntitySyncLocationIds(): List<String> {
+  val selectedLocationStateMap = this.syncLocationIdsProtoStore.data.firstOrNull()
+  return selectedLocationStateMap
+    ?.values
+    ?.filter {
+      it.toggleableState == ToggleableState.On &&
+        selectedLocationStateMap[it.parentLocationId]?.toggleableState != ToggleableState.On
+    }
+    ?.map { it.locationId } ?: emptyList()
+}

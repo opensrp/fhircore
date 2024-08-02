@@ -22,8 +22,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.json.JsonPrimitive
@@ -134,18 +132,15 @@ constructor(
     geoWidgetConfig: GeoWidgetConfiguration,
   ): List<RepositoryResourceData> {
     if (!this::repositoryResourceDataList.isInitialized) {
-      repositoryResourceDataList = coroutineScope {
-        async {
-            defaultRepository.searchResourcesRecursively(
-              filterActiveResources = null,
-              fhirResourceConfig = geoWidgetConfig.resourceConfig,
-              configRules = null,
-              secondaryResourceConfigs = null,
-              filterByRelatedEntityLocationMetaTag = false,
-            )
-          }
-          .await()
-      }
+      repositoryResourceDataList =
+        defaultRepository.searchResourcesRecursively(
+          filterActiveResources = null,
+          fhirResourceConfig = geoWidgetConfig.resourceConfig,
+          configRules = null,
+          secondaryResourceConfigs = null,
+          filterByRelatedEntityLocationMetaTag =
+            geoWidgetConfig.filterDataByRelatedEntityLocation == true,
+        )
     }
     return repositoryResourceDataList
   }

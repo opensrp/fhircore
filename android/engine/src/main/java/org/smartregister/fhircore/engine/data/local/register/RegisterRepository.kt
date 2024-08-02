@@ -124,47 +124,44 @@ constructor(
     fhirResourceConfig: FhirResourceConfig?,
     paramsList: Array<ActionParameter>?,
   ): RepositoryResourceData {
-    val paramsMap: Map<String, String> =
-      paramsList
-        ?.asSequence()
-        ?.filter {
-          (it.paramType == ActionParameterType.PARAMDATA ||
-            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
-        }
-        ?.associate { it.key to it.value } ?: emptyMap()
+    return withContext(dispatcherProvider.io()) {
+      val paramsMap: Map<String, String> =
+        paramsList
+          ?.asSequence()
+          ?.filter {
+            (it.paramType == ActionParameterType.PARAMDATA ||
+              it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
+          }
+          ?.associate { it.key to it.value } ?: emptyMap()
 
-    val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
-    val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
-    val baseResourceConfig = resourceConfig.baseResource
+      val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
+      val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
+      val baseResourceConfig = resourceConfig.baseResource
 
-    val baseResource: Resource =
-      withContext(dispatcherProvider.io()) {
+      val baseResource: Resource =
         fhirEngine.get(baseResourceConfig.resource, resourceId.extractLogicalIdUuid())
-      }
 
-    val configComputedRuleValues = profileConfiguration.configRules.configRulesComputedValues()
+      val configComputedRuleValues = profileConfiguration.configRules.configRulesComputedValues()
 
-    val retrievedRelatedResources =
-      withContext(dispatcherProvider.io()) {
+      val retrievedRelatedResources =
         retrieveRelatedResources(
           resources = listOf(baseResource),
           relatedResourcesConfigs = resourceConfig.relatedResources,
           relatedResourceWrapper = RelatedResourceWrapper(),
           configComputedRuleValues = configComputedRuleValues,
         )
-      }
-    return RepositoryResourceData(
-      resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
-      resource = baseResource,
-      relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
-      relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
-      secondaryRepositoryResourceData =
-        withContext(dispatcherProvider.io()) {
+
+      RepositoryResourceData(
+        resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
+        resource = baseResource,
+        relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
+        relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
+        secondaryRepositoryResourceData =
           profileConfiguration.secondaryResources.retrieveSecondaryRepositoryResourceData(
             profileConfiguration.filterActiveResources,
-          )
-        },
-    )
+          ),
+      )
+    }
   }
 
   fun retrieveProfileConfiguration(profileId: String, paramsMap: Map<String, String>) =
