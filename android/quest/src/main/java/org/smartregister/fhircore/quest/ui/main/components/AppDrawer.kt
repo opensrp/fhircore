@@ -250,6 +250,7 @@ private fun NavBottomSection(
     when (currentSyncJobStatus) {
       is CurrentSyncJobStatus.Running -> {
         SyncStatusView(
+          isSyncUpload = appDrawerUIState.isSyncUpload,
           currentSyncJobStatus = currentSyncJobStatus,
           minimized = false,
           progressPercentage = appDrawerUIState.percentageProgress,
@@ -262,6 +263,7 @@ private fun NavBottomSection(
       }
       is CurrentSyncJobStatus.Failed -> {
         SyncStatusView(
+          isSyncUpload = appDrawerUIState.isSyncUpload,
           currentSyncJobStatus = currentSyncJobStatus,
           minimized = false,
         ) {
@@ -286,6 +288,7 @@ private fun NavBottomSection(
           )
         } else {
           SyncStatusView(
+            isSyncUpload = appDrawerUIState.isSyncUpload,
             currentSyncJobStatus = currentSyncJobStatus,
             minimized = false,
           )
@@ -316,8 +319,9 @@ private fun DefaultSyncStatus(
   Box(
     modifier =
       Modifier.background(
-          if (noUnsyncedData) SideMenuBottomItemDarkColor
-          else WarningColor.copy(alpha = TRANSPARENCY)
+          if (noUnsyncedData) {
+            SideMenuBottomItemDarkColor
+          } else WarningColor.copy(alpha = TRANSPARENCY),
         )
         .padding(16.dp),
   ) {

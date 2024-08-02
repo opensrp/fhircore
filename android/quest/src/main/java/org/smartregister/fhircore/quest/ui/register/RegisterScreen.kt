@@ -286,6 +286,7 @@ fun RegisterScreen(
           when (currentSyncJobStatus) {
             is CurrentSyncJobStatus.Running -> {
               SyncStatusView(
+                isSyncUpload = appDrawerUIState.isSyncUpload,
                 currentSyncJobStatus = currentSyncJobStatus,
                 minimized = !syncNotificationBarExpanded,
                 progressPercentage = appDrawerUIState.percentageProgress,
@@ -295,6 +296,7 @@ fun RegisterScreen(
             }
             is CurrentSyncJobStatus.Failed -> {
               SyncStatusView(
+                isSyncUpload = appDrawerUIState.isSyncUpload,
                 currentSyncJobStatus = currentSyncJobStatus,
                 minimized = !syncNotificationBarExpanded,
                 onRetry = {
@@ -306,6 +308,7 @@ fun RegisterScreen(
             is CurrentSyncJobStatus.Succeeded -> {
               if (hideSyncCompleteStatus != true) {
                 SyncStatusView(
+                  isSyncUpload = appDrawerUIState.isSyncUpload,
                   currentSyncJobStatus = currentSyncJobStatus,
                   minimized = !syncNotificationBarExpanded,
                 )

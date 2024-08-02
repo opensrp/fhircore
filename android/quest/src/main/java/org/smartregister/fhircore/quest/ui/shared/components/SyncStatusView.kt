@@ -60,6 +60,7 @@ const val SYNC_PROGRESS_INDICATOR_TEST_TAG = "syncProgressIndicatorTestTag"
 
 @Composable
 fun SyncStatusView(
+  isSyncUpload: Boolean?,
   currentSyncJobStatus: CurrentSyncJobStatus?,
   progressPercentage: Int? = null,
   minimized: Boolean = false,
@@ -119,7 +120,11 @@ fun SyncStatusView(
           SyncStatusTitle(
             text =
               stringResource(
-                org.smartregister.fhircore.engine.R.string.sync_inprogress,
+                if (isSyncUpload == true) {
+                  org.smartregister.fhircore.engine.R.string.sync_up_inprogress
+                } else {
+                  org.smartregister.fhircore.engine.R.string.sync_down_inprogress
+                },
                 progressPercentage ?: 0,
               ),
             minimized = false,
@@ -196,7 +201,10 @@ private fun SyncStatusTitle(
 fun SyncStatusSucceededPreview() {
   AppTheme {
     Column(modifier = Modifier.background(SuccessColor.copy(alpha = TRANSPARENCY))) {
-      SyncStatusView(currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()))
+      SyncStatusView(
+        isSyncUpload = false,
+        currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
+      )
     }
   }
 }
@@ -206,17 +214,42 @@ fun SyncStatusSucceededPreview() {
 fun SyncStatusFailedPreview() {
   AppTheme {
     Column(modifier = Modifier.background(DangerColor.copy(alpha = TRANSPARENCY))) {
-      SyncStatusView(currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()))
+      SyncStatusView(
+        isSyncUpload = false,
+        currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
+      )
     }
   }
 }
 
 @Composable
 @PreviewWithBackgroundExcludeGenerated
-fun SyncStatusRunningPreview() {
+fun SyncStatusInProgressUploadPreview() {
   AppTheme {
     Column(modifier = Modifier.background(SyncBarBackgroundColor)) {
       SyncStatusView(
+        isSyncUpload = true,
+        currentSyncJobStatus =
+          CurrentSyncJobStatus.Running(
+            inProgressSyncJob =
+              SyncJobStatus.InProgress(
+                SyncOperation.DOWNLOAD,
+                187,
+                34,
+              ),
+          ),
+      )
+    }
+  }
+}
+
+@Composable
+@PreviewWithBackgroundExcludeGenerated
+fun SyncStatusInProgressDownloadPreview() {
+  AppTheme {
+    Column(modifier = Modifier.background(SyncBarBackgroundColor)) {
+      SyncStatusView(
+        isSyncUpload = false,
         currentSyncJobStatus =
           CurrentSyncJobStatus.Running(
             inProgressSyncJob =
@@ -237,6 +270,7 @@ fun SyncStatusSucceededMinimizedPreview() {
   AppTheme {
     Column(modifier = Modifier.background(SuccessColor.copy(alpha = TRANSPARENCY))) {
       SyncStatusView(
+        isSyncUpload = false,
         currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
         minimized = true,
       )
@@ -250,6 +284,7 @@ fun SyncStatusFailedMinimizedPreview() {
   AppTheme {
     Column(modifier = Modifier.background(DangerColor.copy(alpha = TRANSPARENCY))) {
       SyncStatusView(
+        isSyncUpload = false,
         currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
         minimized = true,
       )
@@ -263,6 +298,7 @@ fun SyncStatusRunningMinimizedPreview() {
   AppTheme {
     Column(modifier = Modifier.background(SyncBarBackgroundColor)) {
       SyncStatusView(
+        isSyncUpload = false,
         currentSyncJobStatus =
           CurrentSyncJobStatus.Running(
             inProgressSyncJob =
