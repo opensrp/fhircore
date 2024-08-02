@@ -34,7 +34,6 @@ import io.mockk.mockk
 import io.mockk.spyk
 import java.util.UUID
 import javax.inject.Inject
-import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -48,7 +47,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
-import org.smartregister.fhircore.engine.domain.model.SyncLocationToggleableState
+import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -114,9 +113,10 @@ class CustomSyncWorkerTest : RobolectricTest() {
       ResourceType.Organization.name,
       listOf(organizationId1, organizationId2),
     )
+    val locationId = UUID.randomUUID().toString()
     sharedPreferencesHelper.context.syncLocationIdsProtoStore.updateData {
-      listOf(
-        SyncLocationToggleableState(UUID.randomUUID().toString(), ToggleableState.On),
+      mapOf(
+        locationId to SyncLocationState(locationId, null, ToggleableState.On),
       )
     }
     configurationRegistry = Faker.buildTestConfigurationRegistry(sharedPreferencesHelper)
