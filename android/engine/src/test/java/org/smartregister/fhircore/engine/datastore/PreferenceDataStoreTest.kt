@@ -28,6 +28,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import javax.inject.Inject
 
 @HiltAndroidTest
 internal class PreferenceDataStoreTest : RobolectricTest() {
@@ -37,14 +38,14 @@ internal class PreferenceDataStoreTest : RobolectricTest() {
 
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  private lateinit var preferenceDataStore: PreferenceDataStore
+  @Inject
+  lateinit var preferenceDataStore: PreferenceDataStore
 
   private val keys = PreferenceDataStore.Keys
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    preferenceDataStore = PreferenceDataStore(testContext)
   }
 
   @Test

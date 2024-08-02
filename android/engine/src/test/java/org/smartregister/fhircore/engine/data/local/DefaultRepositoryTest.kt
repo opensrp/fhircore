@@ -85,6 +85,7 @@ import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityCon
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.PATIENT_CONDITION_RESOLVED_CODE
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.PATIENT_CONDITION_RESOLVED_DISPLAY
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.SNOMED_SYSTEM
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
@@ -127,6 +128,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private lateinit var dispatcherProvider: DefaultDispatcherProvider
   private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
+  private lateinit var preferenceDataStore: PreferenceDataStore
   private lateinit var defaultRepository: DefaultRepository
 
   @Before
@@ -145,6 +147,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         fhirPathDataExtractor = fhirPathDataExtractor,
         parser = parser,
         context = context,
+        preferenceDataStore = preferenceDataStore
       )
   }
 
@@ -306,7 +309,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertEquals(system, firstTag.system)
 
     coEvery { fhirEngine.create(any()) } returns listOf(resource.id)
-    every { configService.provideResourceTags(sharedPreferenceHelper) } returns
+    every { configService.provideResourceTags(preferenceDataStore, sharedPreferenceHelper) } returns
       listOf(coding, anotherCoding)
     runBlocking { defaultRepository.create(true, resource) }
 
@@ -558,6 +561,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = context,
+          preferenceDataStore = preferenceDataStore
         ),
       )
     coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
@@ -636,6 +640,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = context,
+          preferenceDataStore = preferenceDataStore
         ),
       )
 

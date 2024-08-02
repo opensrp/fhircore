@@ -27,6 +27,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -35,6 +36,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -50,6 +52,8 @@ class SyncBroadcasterTest : RobolectricTest() {
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   @Inject lateinit var configService: ConfigService
 
@@ -67,14 +71,14 @@ class SyncBroadcasterTest : RobolectricTest() {
     hiltAndroidRule.inject()
     MockKAnnotations.init(this)
     configurationRegistry =
-      Faker.buildTestConfigurationRegistry(sharedPreferencesHelper, dispatcherProvider)
+      Faker.buildTestConfigurationRegistry(sharedPreferencesHelper, preferenceDataStore, dispatcherProvider)
     syncListenerManager =
       SyncListenerManager(
         configService = configService,
         configurationRegistry = configurationRegistry,
-        sharedPreferencesHelper = sharedPreferencesHelper,
         context = ApplicationProvider.getApplicationContext(),
         dispatcherProvider = dispatcherProvider,
+        preferenceDataStore = preferenceDataStore
       )
 
     syncBroadcaster =
@@ -92,6 +96,8 @@ class SyncBroadcasterTest : RobolectricTest() {
 
   @Test
   fun testLoadSyncParamsShouldLoadFromConfiguration() {
+    //Todo - Change to pref
+
     sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
     sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
     sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))

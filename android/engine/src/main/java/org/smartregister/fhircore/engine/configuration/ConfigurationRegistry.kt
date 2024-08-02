@@ -752,7 +752,7 @@ constructor(
     val fhirResourceSearchParams = mutableMapOf<ResourceType, MutableMap<String, String>>()
     val organizationResourceTag =
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
-    val mandatoryTags = configService.provideResourceTags(preferenceDataStore, sharedPreferencesHelper) //ToDo: Replace with Datastore
+    val mandatoryTags = configService.provideResourceTags(preferenceDataStore, sharedPreferencesHelper) //ToDo: Replace with Datastore - has an object
 
     // Retrieve REL locationIds otherwise return null
     val locationIds = runBlocking {

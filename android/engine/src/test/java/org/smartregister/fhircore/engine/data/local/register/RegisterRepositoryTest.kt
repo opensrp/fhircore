@@ -117,6 +117,7 @@ class RegisterRepositoryTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
+          preferenceDataStore = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
           configRulesExecutor = mockk(),

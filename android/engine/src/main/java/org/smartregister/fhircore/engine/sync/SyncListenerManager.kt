@@ -45,7 +45,6 @@ class SyncListenerManager
 constructor(
   val configService: ConfigService,
   val configurationRegistry: ConfigurationRegistry,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
   @ApplicationContext val context: Context,
   val dispatcherProvider: DefaultDispatcherProvider,
   val preferenceDataStore: PreferenceDataStore,
