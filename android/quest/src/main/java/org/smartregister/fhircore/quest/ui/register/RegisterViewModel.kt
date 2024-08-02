@@ -56,7 +56,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -73,7 +72,6 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val dispatcherProvider: DispatcherProvider,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
 ) : ViewModel() {
 
@@ -432,7 +430,7 @@ constructor(
   ) {
     if (registerId.isNotEmpty()) {
       val paramsMap: Map<String, String> = params.toParamDataMap()
-      viewModelScope.launch(dispatcherProvider.io()) {
+      viewModelScope.launch {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
 
         _totalRecordsCount.longValue =

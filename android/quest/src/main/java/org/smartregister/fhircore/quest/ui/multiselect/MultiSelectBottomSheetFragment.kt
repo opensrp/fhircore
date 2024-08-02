@@ -83,14 +83,14 @@ class MultiSelectBottomSheetFragment() : BottomSheetDialogFragment() {
         AppTheme {
           MultiSelectBottomSheetView(
             rootTreeNodes = multiSelectViewModel.rootTreeNodes,
-            selectedNodes = multiSelectViewModel.selectedNodes,
+            syncLocationStateMap = multiSelectViewModel.selectedNodes,
             title = bottomSheetArgs.screenTitle,
             onDismiss = { dismiss() },
             searchTextState = multiSelectViewModel.searchTextState,
             onSearchTextChanged = multiSelectViewModel::onTextChanged,
             onSelectionDone = ::onSelectionDone,
             search = multiSelectViewModel::search,
-            isLoading = multiSelectViewModel.flag.observeAsState(),
+            isLoading = multiSelectViewModel.isLoading.observeAsState(),
           )
         }
       }
