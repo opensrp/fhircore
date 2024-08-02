@@ -61,7 +61,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
-import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
@@ -91,7 +90,6 @@ constructor(
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
   private val _currentSyncJobStatusFlow: MutableSharedFlow<CurrentSyncJobStatus?> =
     MutableSharedFlow(0)
-  val appDrawerUiState = mutableStateOf(AppDrawerUIState())
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
   }
@@ -483,26 +481,7 @@ constructor(
     }
   }
 
-  fun updateAppDrawerUIState(
-    isSyncUpload: Boolean,
-    currentSyncJobStatus: CurrentSyncJobStatus,
-    percentageProgress: Int,
-  ) {
-    appDrawerUiState.value =
-      AppDrawerUIState(
-        isSyncUpload = isSyncUpload,
-        currentSyncJobStatus = currentSyncJobStatus,
-        percentageProgress = percentageProgress,
-      )
-  }
-
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
-  }
-
-  suspend fun updateSyncStatus(
-    currentSyncJobStatus: CurrentSyncJobStatus,
-  ) {
-    _currentSyncJobStatusFlow.emit(currentSyncJobStatus)
   }
 }

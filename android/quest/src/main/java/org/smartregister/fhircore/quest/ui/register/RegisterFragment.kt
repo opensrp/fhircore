@@ -207,16 +207,14 @@ class RegisterFragment : Fragment(), OnSyncListener {
         }
       }
       is CurrentSyncJobStatus.Succeeded -> {
-        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
         refreshRegisterData()
+        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
-        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
+        appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
       }
-      else -> {
-        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
-      }
+      else -> appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
     }
   }
 

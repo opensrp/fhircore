@@ -314,7 +314,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
-      is CurrentSyncJobStatus.Succeeded -> {
+      is CurrentSyncJobStatus.Succeeded ->
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
@@ -322,10 +322,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
               lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
             ),
           )
-          appMainViewModel.updateSyncStatus(syncJobStatus)
+          appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
         }
-      }
-      is CurrentSyncJobStatus.Failed -> {
+      is CurrentSyncJobStatus.Failed ->
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
@@ -333,21 +332,18 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
               lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
             ),
           )
-          appMainViewModel.updateSyncStatus(syncJobStatus)
+          updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
         }
-      }
       is CurrentSyncJobStatus.Running ->
         if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
           val isSyncUpload =
             (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
               SyncOperation.UPLOAD
           if (isSyncUpload) {
-            appMainViewModel.updateSyncStatus(syncJobStatus)
+            appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
           }
         }
-      else -> {
-        appMainViewModel.updateSyncStatus(syncJobStatus)
-      }
+      else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
     }
   }
 }

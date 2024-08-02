@@ -19,7 +19,7 @@ package org.smartregister.fhircore.quest.ui.shared.models
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 
 data class AppDrawerUIState(
-  val isSyncUpload: Boolean = false,
+  val isSyncUpload: Boolean? = false,
   val currentSyncJobStatus: CurrentSyncJobStatus? = null,
-  val percentageProgress: Int = 0,
+  val percentageProgress: Int? = 0,
 )

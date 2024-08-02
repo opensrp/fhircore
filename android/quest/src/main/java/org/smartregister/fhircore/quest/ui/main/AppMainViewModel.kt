@@ -21,7 +21,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
@@ -105,7 +104,6 @@ constructor(
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
   private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
 
-  private val currentSyncJobStatus by mutableStateOf(null)
   val appDrawerUiState = mutableStateOf(AppDrawerUIState())
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
@@ -146,7 +144,6 @@ constructor(
           languages = configurationRegistry.fetchLanguages(),
           navigationConfiguration = navigationConfiguration,
           registerCountMap = registerCountMap,
-          currentSyncJobStatus = currentSyncJobStatus,
         )
     }
 
@@ -183,7 +180,7 @@ constructor(
           workManager.cancelUniqueWork(
             "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
           )
-          updateSyncStatus(CurrentSyncJobStatus.Cancelled)
+          updateAppDrawerUIState(currentSyncJobStatus = CurrentSyncJobStatus.Cancelled)
         }
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
@@ -310,13 +307,6 @@ constructor(
     }
   }
 
-  fun updateSyncStatus(currentSyncJobStatus: CurrentSyncJobStatus) {
-    appMainUiState.value =
-      appMainUiState.value.copy(
-        currentSyncJobStatus = currentSyncJobStatus,
-      )
-  }
-
   suspend fun onQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
     questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
       val status: Task.TaskStatus =
@@ -366,9 +356,9 @@ constructor(
   }
 
   fun updateAppDrawerUIState(
-    isSyncUpload: Boolean,
+    isSyncUpload: Boolean? = null,
     currentSyncJobStatus: CurrentSyncJobStatus?,
-    percentageProgress: Int,
+    percentageProgress: Int? = null,
   ) {
     appDrawerUiState.value =
       AppDrawerUIState(

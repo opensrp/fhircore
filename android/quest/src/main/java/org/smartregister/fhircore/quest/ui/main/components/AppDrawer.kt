@@ -559,7 +559,6 @@ fun AppDrawerOnSyncCompletePreview() {
               menuActionButton =
                 NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
             ),
-          currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
         ),
       appDrawerUIState =
         AppDrawerUIState(
@@ -600,7 +599,6 @@ fun AppDrawerOnSyncFailedPreview() {
               menuActionButton =
                 NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
             ),
-          currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
         ),
       appDrawerUIState =
         AppDrawerUIState(
@@ -641,8 +639,6 @@ fun AppDrawerOnSyncRunningPreview() {
               menuActionButton =
                 NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
             ),
-          currentSyncJobStatus =
-            CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 200, 35)),
         ),
       appDrawerUIState =
         AppDrawerUIState(
