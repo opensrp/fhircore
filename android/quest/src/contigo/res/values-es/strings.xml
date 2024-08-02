@@ -1,0 +1,127 @@
+<resources>
+    <string name="back_to_clients">Volver a la lista de clientes</string>
+    <string name="test_results">Resultados de la prueba</string>
+
+    <string name="edit_patient_info">Editar información</string>
+
+    <string name="menu_clients">Clientes</string>
+    <string name="menu_settings">Configuración</string>
+    <string name="cannot_find_parent_questionnaire">¡No se puede encontrar el cuestionario principal!</string>
+
+    <string name="loading_forms">Cargando formularios...</string>
+    <string name="loading_responses">Cargando respuestas...</string>
+    <string name="no_test_results_found">No se encontraron resultados de la prueba</string>
+    <string name="patient_test_results">RESULTADOS DE LA PRUEBA</string>
+    <string name="last_test"> Última prueba: %1$s</string>
+    <string name="sample_distance" translatable="false">2,4 km</string>
+    <string name="hash_sign" translatable="false">#</string>
+    <string name="menu_tasks">Tareas</string>
+    <string name="household">Hogar</string>
+    <string name="routine_visit">Visita de rutina</string>
+    <string name="anc_visit">Visita de ANC</string>
+    <string name="at_risk">En riesgo</string>
+    <string name="no_tasks">Sin tareas</string>
+    <string name="add_member">AGREGAR MIEMBRO</string>
+    <string name="what_to_do">¿Qué desea hacer?</string>
+
+    <!--Overflow menu strings -->
+    <string name="view_profile">Ver perfil</string>
+    <string name="family_details">Detalles de la familia</string>
+    <string name="change_family_head">Cambiar cabeza de familia</string>
+    <string name="change_primary_caregiver">Cambiar cuidador principal</string>
+    <string name="family_activity">Actividad familiar</string>
+    <string name="view_past_encounters">Ver encuentros pasados</string>
+    <string name="remove_family">Eliminar familia</string>
+    <string name="family_suffix">Familia %1$s</string>
+    <string name="remove_this_person">Eliminar esta persona</string>
+    <string name="individual_details">Detalles individuales</string>
+    <string name="view_family">Ver familia</string>
+    <string name="record_sick_child">Registrar niño enfermo</string>
+
+    <!-- SideMenu option strings-->
+    <string name="device_to_device_sync">Sincronización de dispositivo a dispositivo</string>
+    <string name="anc_clients">Clientes de ANC</string>
+    <string name="all_clients">Todos los clientes</string>
+    <string name="pnc_clients">Clientes de PNC</string>
+    <string name="hiv_clients">Lista de clientes</string>
+    <string name="phone_tracing_clients">Rastreo telefónico</string>
+    <string name="home_tracing_clients">Rastreo domiciliario</string>
+    <string name="appointment_clients">Citas</string>
+    <string name="family_planning_clients">Clientes de planificación familiar</string>
+    <string name="households">Hogares</string>
+    <string name="children">Niños</string>
+
+    <!--remove family questionnaire strings-->
+    <string name="remove_family_warning">Si eliminas a %1$s, se eliminará todo su historial médico de tu dispositivo. Esta acción no se puede deshacer.</string>
+
+    <!--remove family member questionnaire strings-->
+    <string name="remove_family_member_warning">%1$s se eliminará de forma permanente de esta familia. Esta acción no se puede deshacer.</string>
+    <string name="remove_member">Eliminar miembro</string>
+
+    <!--Reporting strings -->
+    <string name="date_range">Rango de fechas</string>
+    <string name="change">Cambiar</string>
+    <string name="all">Todos</string>
+    <string name="individual">Individual</string>
+    <string name="please_wait">Por favor, espere…</string>
+    <string name="patient">Paciente</string>
+    <string name="subject">Asunto</string>
+    <string name="generate_report">GENERAR INFORME</string>
+    <string name="select_patient">SELECCIONAR PACIENTE</string>
+    <string name="select_subject">SELECCIONAR ASUNTO</string>
+    <string name="start_date">Fecha de inicio</string>
+    <string name="end_date">Fecha de finalización</string>
+    <string name="select_date">Seleccionar fechas</string>
+
+    <!--Change family head strings -->
+    <string name="no_eligible_family_members">No se encontraron miembros de familia elegibles para el jefe de familia.</string>
+    <string name="label_select_new_head">Seleccionar un nuevo jefe de familia</string>
+    <string name="label_assign_new_family_head">Asignar nuevo jefe de familia</string>
+    <string name="alert_message_abort_operation">¿Está seguro de que desea cancelar esta operación?</string>
+
+    <!-- Dialog alert messages-->
+    <string name="unsaved_changes_message_alert">Si abandona el sitio antes de guardar, se perderán sus modificaciones o cambios</string>
+    <string name="visit_due_on">%1$s vencen el %2$s</string>
+    <string name="visit_due_today">%1$s vencen hoy</string>
+    <string name="visit_overdue">%1$s vencidos hace %2$s</string>
+    <string name="record_as_anc">Registrar como ANC</string>
+    <string name="pregnancy_outcome">Resultado del embarazo</string>
+    <string name="registers">Registros</string>
+    <string name="title_no_location_set">Sin ubicación establecida</string>
+    <string name="message_location_set">Establecer ubicación para sincronizar datos y cargar puntos de servicio</string>
+    <string name="positive_button_location_set">Establecer ubicación</string>
+
+    <string name="questionnaire_response_name" translatable="false">%1$s (%2$s)</string>
+    <string name="due_on">Vence el %1$s</string>
+
+    <string name="geo_widget_fragment_destination" translatable="false">Destino del fragmento de GeoWidget</string>
+
+    <string name="structuremap_failed">No se pudieron extraer los recursos para %1$s</string>
+    <string name="structure_map_missing_message">Falta StructureMap para Questionnaire, QuestionnaireResponse guardado</string>
+    <string name="structure_success">Se extrajeron correctamente los recursos para %1$s</string>
+    <string name="reassigned_managing_entity">Entidad administradora reasignada correctamente</string>
+    <string name="error_fetching_user_details">No se pudieron obtener los detalles del usuario</string>
+    <string name="questionnaire_not_found">No se encontró el cuestionario. Sincronizar todos los cuestionarios para solucionarlo</string>
+    <string name="no_visits">No hay visitas</string>
+    <string name="questionnaire_response_invalid">Respuesta al cuestionario no válida</string>
+    <string name="app_version_tag_url" translatable="false">https://smartregister.org/app-version</string>
+    <string name="application_version" translatable="false">Versión de la aplicación</string>
+    <string name="missing_subject_type">Falta el tipo de tema en el cuestionario. Proporcione Questionnaire.subjectType para solucionarlo.</string>
+    <string name="missing_questionnaire_config">Se requiere QuestionnaireConfig, pero no está disponible.</string>
+    <string name="error_populating_questionnaire">Error al completar algunos campos del cuestionario. Respuesta de cuestionario no válida.</string>
+    <string name="extraction_in_progress">Procesando datos del cuestionario…</string>
+    <string name="loading_questionnaire">Cargando cuestionario…</string>
+    <string name="clear_all">Borrar todo</string>
+    <string name="yes">Sí</string>
+    <string name="no">No</string>
+
+    <string name="location_permissions_denied">Acceso a la ubicación denegado: para capturar las coordenadas GPS, habilite los permisos de ubicación en la configuración de su dispositivo.</string>
+    <string name="location_services_disabled">Los servicios de ubicación están deshabilitados. ¿Desea habilitarlos?</string>
+    <string name="copy_text_success_message">Enlace %1$s copiado correctamente</string>
+    <string name="submit_questionnaire">Enviar</string>
+    <string name="invalid_base_resource">El recurso base para GeoWidgetConfiguration DEBE ser Ubicación</string>
+    <string name="no_search_coonfigs_provided">No se proporcionaron configuraciones para la barra de búsqueda</string>
+    <string name="no_found_locations_matching_text">No se encontró ninguna ubicación que coincida con el texto \"%1$s\"</string>
+    <string name="open_choice_other_hint">Otro</string>
+
+</resources>
