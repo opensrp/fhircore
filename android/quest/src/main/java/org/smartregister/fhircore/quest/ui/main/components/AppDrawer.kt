@@ -152,9 +152,9 @@ fun AppDrawer(
     Box(
       modifier = modifier.padding(innerPadding).background(SideMenuDarkColor).fillMaxSize(),
     ) {
-      LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
+      LazyColumn(modifier = modifier) {
         item {
-          Column {
+          Column (modifier = modifier.padding(horizontal = 16.dp)) {
             if (navigationConfiguration.clientRegisters.isNotEmpty() &&
                 navigationConfiguration.clientRegisters.size > 1) {
               Text(
@@ -174,7 +174,7 @@ fun AppDrawer(
             title = navigationMenu.display,
             endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
             showEndText = navigationMenu.showCount,
-            endTextColor = MenuItemColor,
+            endTextColor = AppTitleColor,
           ) {
             openDrawer(false)
             onSideMenuClick(
@@ -472,7 +472,7 @@ private fun SideMenuItem(
       SideMenuItemText(title = title, textColor = Color.White)
     }
     if (showEndText) {
-      SideMenuItemText(title = endText, textColor = endTextColor, fontSize = endTextFontSize)
+      SideMenuItemText(title = endText, textColor = endTextColor)
     }
     endImageVector?.let { imageVector ->
       Icon(
