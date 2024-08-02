@@ -57,7 +57,9 @@ object EditTextQrCodeViewHolderFactory :
           val newAnswerEmpty = newAnswer == null || newAnswer.value.isEmpty
           when {
             prevAnswerEmpty && !newAnswerEmpty -> {
-              questionnaireViewItem.addAnswer(newAnswer!!)
+              if (canHaveMultipleAnswers) {
+                questionnaireViewItem.addAnswer(newAnswer!!)
+              } else questionnaireViewItem.setAnswer(newAnswer!!)
             }
             !prevAnswerEmpty && newAnswerEmpty -> {
               questionnaireViewItem.removeAnswer(newAnswer!!)
