@@ -32,21 +32,18 @@ import androidx.compose.ui.platform.testTag
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.SettingsOptions
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
-import org.smartregister.fhircore.quest.ui.register.RegisterViewModel
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 
@@ -56,7 +53,6 @@ class UserSettingFragment : Fragment(), OnSyncListener {
 
   val userSettingViewModel by viewModels<UserSettingViewModel>()
   private val appMainViewModel by activityViewModels<AppMainViewModel>()
-  private val registerViewModel by activityViewModels<RegisterViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -134,31 +130,19 @@ class UserSettingFragment : Fragment(), OnSyncListener {
   }
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
-    when (syncJobStatus) {
-      is CurrentSyncJobStatus.Running ->
-        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
-          val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
-          val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
-          val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
-          lifecycleScope.launch {
-            registerViewModel.updateAppDrawerUIState(
-              isSyncUpload = isSyncUpload,
-              currentSyncJobStatus = syncJobStatus,
-              percentageProgress = progressPercentage,
-            )
-          }
-        }
-      is CurrentSyncJobStatus.Succeeded -> {
-        lifecycleScope.launch {
-          registerViewModel.updateAppDrawerUIState(false, syncJobStatus, 100)
-        }
+    if (syncJobStatus is CurrentSyncJobStatus.Running) {
+      if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
+        val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
+        val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+        val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
+        appMainViewModel.updateAppDrawerUIState(
+          isSyncUpload = isSyncUpload,
+          currentSyncJobStatus = syncJobStatus,
+          percentageProgress = progressPercentage,
+        )
       }
-      is CurrentSyncJobStatus.Failed -> {
-        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
-      }
-      else -> {
-        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
-      }
+    } else {
+      appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
     }
   }
 

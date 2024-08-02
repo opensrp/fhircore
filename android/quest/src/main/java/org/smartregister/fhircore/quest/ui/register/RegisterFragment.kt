@@ -147,6 +147,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
                   appMainViewModel.onEvent(it)
                 },
                 navController = findNavController(),
+                unSyncedResourceCount = appMainViewModel.unSyncedResourcesCount,
+                onCountUnSyncedResources = appMainViewModel::updateUnSyncedResourcesCount,
               )
             },
             bottomBar = {
@@ -207,16 +209,14 @@ class RegisterFragment : Fragment(), OnSyncListener {
         }
       }
       is CurrentSyncJobStatus.Succeeded -> {
-        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
         refreshRegisterData()
+        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
-        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
+        appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
       }
-      else -> {
-        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
-      }
+      else -> appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
     }
   }
 
@@ -237,6 +237,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
         )
       }
     }
+
+    appMainViewModel.updateUnSyncedResourcesCount()
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

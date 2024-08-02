@@ -204,11 +204,13 @@ fun RegisterScreen(
       if (registerUiState.isFirstTimeSync) {
         LoaderDialog(
           modifier = modifier.testTag(FIRST_TIME_SYNC_DIALOG),
-          percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress),
+          percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress ?: 0),
           dialogMessage =
             stringResource(
               id =
-                if (appDrawerUIState.isSyncUpload) R.string.syncing_up else R.string.syncing_down,
+                if (appDrawerUIState.isSyncUpload == true) {
+                  R.string.syncing_up
+                } else R.string.syncing_down,
             ),
           showPercentageProgress = true,
         )
@@ -284,6 +286,7 @@ fun RegisterScreen(
           when (currentSyncJobStatus) {
             is CurrentSyncJobStatus.Running -> {
               SyncStatusView(
+                isSyncUpload = appDrawerUIState.isSyncUpload,
                 currentSyncJobStatus = currentSyncJobStatus,
                 minimized = !syncNotificationBarExpanded,
                 progressPercentage = appDrawerUIState.percentageProgress,
@@ -293,6 +296,7 @@ fun RegisterScreen(
             }
             is CurrentSyncJobStatus.Failed -> {
               SyncStatusView(
+                isSyncUpload = appDrawerUIState.isSyncUpload,
                 currentSyncJobStatus = currentSyncJobStatus,
                 minimized = !syncNotificationBarExpanded,
                 onRetry = {
@@ -304,6 +308,7 @@ fun RegisterScreen(
             is CurrentSyncJobStatus.Succeeded -> {
               if (hideSyncCompleteStatus != true) {
                 SyncStatusView(
+                  isSyncUpload = appDrawerUIState.isSyncUpload,
                   currentSyncJobStatus = currentSyncJobStatus,
                   minimized = !syncNotificationBarExpanded,
                 )

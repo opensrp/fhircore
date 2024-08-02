@@ -21,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -224,19 +223,6 @@ constructor(
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
-  }
-
-  fun updateAppDrawerUIState(
-    isSyncUpload: Boolean,
-    currentSyncJobStatus: CurrentSyncJobStatus,
-    percentageProgress: Int,
-  ) {
-    appDrawerUiState.value =
-      AppDrawerUIState(
-        isSyncUpload = isSyncUpload,
-        currentSyncJobStatus = currentSyncJobStatus,
-        percentageProgress = percentageProgress,
-      )
   }
 
   private companion object {

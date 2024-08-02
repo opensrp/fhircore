@@ -46,6 +46,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.countUnSyncedResources
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
@@ -53,7 +54,6 @@ import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBack
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.fhircore.engine.util.extension.spaceByUppercase
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
@@ -208,14 +208,7 @@ constructor(
     viewModelScope.launch {
       withContext(dispatcherProvider.io()) {
         showProgressIndicatorFlow.emit(true)
-        val unsyncedResources =
-          fhirEngine
-            .getUnsyncedLocalChanges()
-            .distinctBy { it.resourceId }
-            .groupingBy { it.resourceType.spaceByUppercase() }
-            .eachCount()
-            .map { it.key to it.value }
-
+        val unsyncedResources = fhirEngine.countUnSyncedResources()
         showProgressIndicatorFlow.emit(false)
         unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
       }
