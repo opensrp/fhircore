@@ -107,8 +107,6 @@ const val SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG = "sideMenuItemMainRowTestTag"
 const val SIDE_MENU_ITEM_INNER_ROW_TEST_TAG = "sideMenuItemInnerRowTestTag"
 const val SIDE_MENU_ITEM_END_ICON_TEST_TAG = "sideMenuItemEndIconTestTag"
 const val SIDE_MENU_ITEM_TEXT_TEST_TAG = "sideMenuItemTextTestTag"
-const val NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG = "navBottomSectionSideMenuItemTestTag"
-const val NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG = "navBottomSectionMainBoxTestTag"
 private val DividerColor = MenuItemColor.copy(alpha = 0.2f)
 
 @Composable
@@ -305,7 +303,7 @@ private fun DefaultSyncStatus(
     modifier = Modifier.background(SideMenuBottomItemDarkColor).padding(16.dp),
   ) {
     SideMenuItem(
-      modifier = Modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
+      modifier = Modifier,
       imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
       title = stringResource(org.smartregister.fhircore.engine.R.string.sync),
       endText = appUiState.lastSyncTime,

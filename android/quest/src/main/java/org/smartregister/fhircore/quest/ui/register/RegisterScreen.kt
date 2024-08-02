@@ -104,9 +104,6 @@ const val REGISTER_CARD_TEST_TAG = "registerCardListTestTag"
 const val FIRST_TIME_SYNC_DIALOG = "firstTimeSyncTestTag"
 const val FAB_BUTTON_REGISTER_TEST_TAG = "fabTestTag"
 const val TOP_REGISTER_SCREEN_TEST_TAG = "topScreenTestTag"
-const val SYNC_SUCCESS_TAG = "syncSuccessTag"
-const val SYNC_ERROR_TAG = "syncErrorTag"
-const val SYNC_PROGRESS_BAR_TAG = "syncProgressBarTag"
 
 @Composable
 fun RegisterScreen(

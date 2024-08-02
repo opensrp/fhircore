@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -55,6 +56,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.util.extensions.conditional
 
 const val TRANSPARENCY = 0.2f
+const val SYNC_PROGRESS_INDICATOR_TEST_TAG = "syncProgressIndicatorTestTag"
 
 @Composable
 fun SyncStatusView(
@@ -129,7 +131,10 @@ fun SyncStatusView(
           progress = (progressPercentage?.toFloat()?.div(100)) ?: 0f,
           color = MaterialTheme.colors.primary,
           backgroundColor = Color.White,
-          modifier = Modifier.padding(vertical = 6.dp).fillMaxWidth(),
+          modifier =
+            Modifier.testTag(SYNC_PROGRESS_INDICATOR_TEST_TAG)
+              .padding(vertical = 6.dp)
+              .fillMaxWidth(),
         )
         if (!minimized) {
           Text(

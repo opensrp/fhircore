@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.integration.ui.register
 
+import android.app.Application
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertCountEquals
@@ -24,6 +25,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onChildAt
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeUp
@@ -31,6 +33,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
@@ -58,10 +61,8 @@ import org.smartregister.fhircore.quest.ui.register.NoRegisterDataView
 import org.smartregister.fhircore.quest.ui.register.REGISTER_CARD_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.RegisterScreen
 import org.smartregister.fhircore.quest.ui.register.RegisterUiState
-import org.smartregister.fhircore.quest.ui.register.SYNC_ERROR_TAG
-import org.smartregister.fhircore.quest.ui.register.SYNC_PROGRESS_BAR_TAG
-import org.smartregister.fhircore.quest.ui.register.SYNC_SUCCESS_TAG
 import org.smartregister.fhircore.quest.ui.register.TOP_REGISTER_SCREEN_TEST_TAG
+import org.smartregister.fhircore.quest.ui.shared.components.SYNC_PROGRESS_INDICATOR_TEST_TAG
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 
 @HiltAndroidTest
@@ -69,6 +70,8 @@ class RegisterScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   private val noResults = NoResultsConfig()
+
+  private val applicationContext = ApplicationProvider.getApplicationContext<Application>()
 
   private val navigationConfiguration =
     NavigationConfiguration(
@@ -402,7 +405,7 @@ class RegisterScreenTest {
     }
 
     composeTestRule
-      .onNodeWithTag(SYNC_PROGRESS_BAR_TAG, useUnmergedTree = true)
+      .onNodeWithTag(SYNC_PROGRESS_INDICATOR_TEST_TAG, useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
   }
@@ -450,7 +453,10 @@ class RegisterScreenTest {
     }
 
     composeTestRule
-      .onNodeWithTag(SYNC_SUCCESS_TAG, useUnmergedTree = true)
+      .onNodeWithText(
+        applicationContext.getString(org.smartregister.fhircore.engine.R.string.sync_complete),
+        useUnmergedTree = true
+      )
       .assertExists()
       .assertIsDisplayed()
   }
@@ -498,7 +504,10 @@ class RegisterScreenTest {
     }
 
     composeTestRule
-      .onNodeWithTag(SYNC_ERROR_TAG, useUnmergedTree = true)
+      .onNodeWithText(
+        applicationContext.getString(org.smartregister.fhircore.engine.R.string.sync_error),
+        useUnmergedTree = true
+      )
       .assertExists()
       .assertIsDisplayed()
   }
