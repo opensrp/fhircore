@@ -89,7 +89,7 @@ constructor(
    * does not support downloading of custom resource, a separate worker is implemented instead to
    * download the custom resources.
    */
-  fun loadResourceSearchParams(): ResourceSearchParams {
+  suspend fun loadResourceSearchParams(): ResourceSearchParams {
     val (_, resourceSearchParams) = configurationRegistry.loadResourceSearchParams()
     Timber.i("FHIR resource sync parameters $resourceSearchParams")
     return resourceSearchParams

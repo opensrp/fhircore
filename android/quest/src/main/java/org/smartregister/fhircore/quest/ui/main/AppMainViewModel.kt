@@ -18,8 +18,10 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
@@ -27,6 +29,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
@@ -71,6 +74,7 @@ import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMonthPeriodWorker
+import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.decodeBinaryResourcesToBitmap
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -98,6 +102,11 @@ constructor(
           ),
       ),
     )
+  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
+  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
+
+  private val currentSyncJobStatus by mutableStateOf(null)
+  val appDrawerUiState = mutableStateOf(AppDrawerUIState())
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
@@ -110,8 +119,6 @@ constructor(
   private val measureReportConfigurations: List<MeasureReportConfiguration> by lazy {
     configurationRegistry.retrieveConfigurations(ConfigType.MeasureReport)
   }
-  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
-  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
 
   fun retrieveIconsAsBitmap() {
     navigationConfiguration.clientRegisters
@@ -139,7 +146,7 @@ constructor(
           languages = configurationRegistry.fetchLanguages(),
           navigationConfiguration = navigationConfiguration,
           registerCountMap = registerCountMap,
-          appVersionFontSize = applicationConfiguration.appVersionFontSize,
+          currentSyncJobStatus = currentSyncJobStatus,
         )
     }
 
@@ -171,6 +178,14 @@ constructor(
           event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
         }
       }
+      is AppMainEvent.CancelSyncData -> {
+        viewModelScope.launch {
+          workManager.cancelUniqueWork(
+            "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
+          )
+          updateSyncStatus(CurrentSyncJobStatus.Cancelled)
+        }
+      }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         if (event.state is CurrentSyncJobStatus.Succeeded) {
@@ -179,6 +194,7 @@ constructor(
             formatLastSyncTimestamp(event.state.timestamp),
           )
           retrieveAppMainUiState()
+          viewModelScope.launch { retrieveAppMainUiState() }
         }
       }
       is AppMainEvent.TriggerWorkflow ->
@@ -294,6 +310,13 @@ constructor(
     }
   }
 
+  fun updateSyncStatus(currentSyncJobStatus: CurrentSyncJobStatus) {
+    appMainUiState.value =
+      appMainUiState.value.copy(
+        currentSyncJobStatus = currentSyncJobStatus,
+      )
+  }
+
   suspend fun onQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
     questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
       val status: Task.TaskStatus =
@@ -311,6 +334,52 @@ constructor(
       }
     }
   }
+
+  fun calculatePercentageProgress(
+    progressSyncJobStatus: SyncJobStatus.InProgress,
+  ): Int {
+    val totalRecordsOverall =
+      sharedPreferencesHelper.read(
+        SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
+          progressSyncJobStatus.syncOperation.name,
+        1L,
+      )
+    val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
+    val currentProgress: Int
+    val currentTotalRecords =
+      if (isProgressTotalLess) {
+        currentProgress =
+          totalRecordsOverall.toInt() - progressSyncJobStatus.total +
+            progressSyncJobStatus.completed
+        totalRecordsOverall.toInt()
+      } else {
+        sharedPreferencesHelper.write(
+          SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
+            progressSyncJobStatus.syncOperation.name,
+          progressSyncJobStatus.total.toLong(),
+        )
+        currentProgress = progressSyncJobStatus.completed
+        progressSyncJobStatus.total
+      }
+
+    return getSyncProgress(currentProgress, currentTotalRecords)
+  }
+
+  fun updateAppDrawerUIState(
+    isSyncUpload: Boolean,
+    currentSyncJobStatus: CurrentSyncJobStatus?,
+    percentageProgress: Int,
+  ) {
+    appDrawerUiState.value =
+      AppDrawerUIState(
+        isSyncUpload = isSyncUpload,
+        currentSyncJobStatus = currentSyncJobStatus,
+        percentageProgress = percentageProgress,
+      )
+  }
+
+  private fun getSyncProgress(completed: Int, total: Int) =
+    completed * 100 / if (total > 0) total else 1
 
   companion object {
     const val SYNC_TIMESTAMP_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"

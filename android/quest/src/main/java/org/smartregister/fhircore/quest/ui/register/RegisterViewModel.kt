@@ -27,6 +27,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.math.ceil
@@ -55,12 +56,12 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
+import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
@@ -71,7 +72,6 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val dispatcherProvider: DispatcherProvider,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
 ) : ViewModel() {
 
@@ -89,7 +89,9 @@ constructor(
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
-
+  private val _currentSyncJobStatusFlow: MutableSharedFlow<CurrentSyncJobStatus?> =
+    MutableSharedFlow(0)
+  val appDrawerUiState = mutableStateOf(AppDrawerUIState())
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
   }
@@ -428,7 +430,7 @@ constructor(
   ) {
     if (registerId.isNotEmpty()) {
       val paramsMap: Map<String, String> = params.toParamDataMap()
-      viewModelScope.launch(dispatcherProvider.io()) {
+      viewModelScope.launch {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
 
         _totalRecordsCount.longValue =
@@ -474,18 +476,33 @@ constructor(
                 .toInt(),
             progressPercentage = _percentageProgress,
             isSyncUpload = _isUploadSync,
+            currentSyncJobStatus = _currentSyncJobStatusFlow,
             params = paramsMap,
           )
       }
     }
   }
 
+  fun updateAppDrawerUIState(
+    isSyncUpload: Boolean,
+    currentSyncJobStatus: CurrentSyncJobStatus,
+    percentageProgress: Int,
+  ) {
+    appDrawerUiState.value =
+      AppDrawerUIState(
+        isSyncUpload = isSyncUpload,
+        currentSyncJobStatus = currentSyncJobStatus,
+        percentageProgress = percentageProgress,
+      )
+  }
+
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
   }
 
-  suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {
-    _percentageProgress.emit(progress)
-    _isUploadSync.emit(isUploadSync)
+  suspend fun updateSyncStatus(
+    currentSyncJobStatus: CurrentSyncJobStatus,
+  ) {
+    _currentSyncJobStatusFlow.emit(currentSyncJobStatus)
   }
 }

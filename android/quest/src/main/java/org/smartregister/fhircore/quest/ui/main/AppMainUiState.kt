@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import java.util.Locale
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.domain.model.Language
@@ -23,9 +24,9 @@ import org.smartregister.fhircore.engine.domain.model.Language
 data class AppMainUiState(
   val appTitle: String,
   val username: String,
-  val appVersionFontSize: Float?,
   val lastSyncTime: String,
   val currentLanguage: String,
+  val currentSyncJobStatus: CurrentSyncJobStatus?,
   val languages: List<Language>,
   val navigationConfiguration: NavigationConfiguration,
   val registerCountMap: Map<String, Long> = emptyMap(),
@@ -39,7 +40,7 @@ fun appMainUiStateOf(
   languages: List<Language> = emptyList(),
   navigationConfiguration: NavigationConfiguration,
   registerCountMap: Map<String, Long> = emptyMap(),
-  appVersionFontSize: Float? = null,
+  currentSyncJobStatus: CurrentSyncJobStatus? = null,
 ): AppMainUiState {
   return AppMainUiState(
     appTitle = appTitle,
@@ -49,6 +50,6 @@ fun appMainUiStateOf(
     languages = languages,
     navigationConfiguration = navigationConfiguration,
     registerCountMap = registerCountMap,
-    appVersionFontSize = appVersionFontSize,
+    currentSyncJobStatus = currentSyncJobStatus,
   )
 }
