@@ -22,6 +22,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -179,6 +180,8 @@ class GeoWidgetFragment : Fragment() {
   }
 
   private fun addIconsLayer(mMapboxMapStyle: Style) {
+    addIconBaseImage(mMapboxMapStyle)
+
     val dynamicIconSize =
       Expression.interpolate(
         Expression.linear(),
@@ -193,10 +196,18 @@ class GeoWidgetFragment : Fragment() {
       val icon: Bitmap? =
         ResourceUtils.drawableToBitmap(
           ResourcesCompat.getDrawable(
-            resources,
-            servicePointType.drawableId,
-            requireContext().theme,
-          )!!,
+              resources,
+              servicePointType.drawableId,
+              requireContext().theme,
+            )!!
+            .apply {
+              setTint(
+                ContextCompat.getColor(
+                  requireContext(),
+                  org.smartregister.fhircore.engine.R.color.white,
+                ),
+              )
+            },
         )
       icon?.let {
         mMapboxMapStyle.addImage(key, icon)
@@ -209,7 +220,8 @@ class GeoWidgetFragment : Fragment() {
           PropertyFactory.iconImage(key),
           PropertyFactory.iconSize(dynamicIconSize),
           PropertyFactory.iconIgnorePlacement(false),
-          PropertyFactory.iconAllowOverlap(false),
+          PropertyFactory.iconAllowOverlap(true),
+          PropertyFactory.symbolSortKey(2f),
         )
         symbolLayer.setFilter(
           Expression.eq(
@@ -219,6 +231,43 @@ class GeoWidgetFragment : Fragment() {
         )
         mMapboxMapStyle.addLayer(symbolLayer)
       }
+    }
+  }
+
+  private fun addIconBaseImage(mMapboxMapStyle: Style) {
+    val baseIcon: Bitmap? =
+      ResourceUtils.drawableToBitmap(
+        ResourcesCompat.getDrawable(
+          resources,
+          org.smartregister.fhircore.engine.R.drawable.base_icon,
+          requireContext().theme,
+        )!!,
+      )
+
+    baseIcon?.let {
+      val dynamicBaseIconSize =
+        Expression.interpolate(
+          Expression.linear(),
+          Expression.zoom(),
+          Expression.literal(0.7f),
+          Expression.literal(0.67f),
+        )
+
+      val baseKey = "base-image"
+      mMapboxMapStyle.addImage(baseKey, it)
+      val symbolLayer =
+        SymbolLayer(
+          String.format("%s.layer", baseKey),
+          getString(R.string.data_set_quest),
+        )
+      symbolLayer.setProperties(
+        PropertyFactory.iconImage(baseKey),
+        PropertyFactory.iconSize(dynamicBaseIconSize),
+        PropertyFactory.iconAllowOverlap(true),
+        PropertyFactory.symbolSortKey(1f),
+        PropertyFactory.iconOffset(arrayOf(0f, 8.5f)),
+      )
+      mMapboxMapStyle.addLayerBelow(symbolLayer, getString(R.string.quest_data_points))
     }
   }
 
