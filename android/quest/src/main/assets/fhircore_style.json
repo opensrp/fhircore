@@ -12421,6 +12421,19 @@
       }
     },
     {
+      "id": "data-quest-polygon-text",
+      "type": "symbol",
+      "source": "quest-data-set",
+      "layout": {
+        "text-field": ["get", "number"],
+        "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+        "text-size": 14
+      },
+      "paint": {
+        "text-color": "#ffffff"
+      }
+    },
+    {
       "id": "select-layer-polygons",
       "type": "fill",
       "source": "select-data",
