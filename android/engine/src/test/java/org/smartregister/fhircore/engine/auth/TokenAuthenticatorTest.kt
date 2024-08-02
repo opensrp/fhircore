@@ -389,6 +389,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
   @Test
   fun testFindAccountShouldReturnAnAccount() {
     secureSharedPreference.saveMultiCredentials(sampleUsername, "sirikali".toCharArray())
+    secureSharedPreference.saveSessionUsername(sampleUsername)
     val account = Account(sampleUsername, PROVIDER)
     every { accountManager.getAccountsByType(any()) } returns arrayOf(account)
     val resultAccount = tokenAuthenticator.findCurrentLoggedInAccount()

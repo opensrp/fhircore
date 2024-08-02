@@ -31,8 +31,8 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.practitionerIdKey
 
 @HiltAndroidTest
 class ConfigServiceTest : RobolectricTest() {
@@ -57,8 +57,10 @@ class ConfigServiceTest : RobolectricTest() {
 
   @Test
   fun testProvideSyncTagsShouldHaveOrganizationId() {
+    val currentUsername = "testUser"
+    secureSharedPreference.saveSessionUsername(currentUsername)
     val practitionerId = "practitioner-id"
-    sharedPreferencesHelper.write(SharedPreferenceKey.PRACTITIONER_ID.name, practitionerId)
+    sharedPreferencesHelper.write(practitionerIdKey(currentUsername), practitionerId)
 
     val resourceTags = configService.provideResourceTags(sharedPreferencesHelper)
     val practitionerTag =
