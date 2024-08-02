@@ -56,7 +56,6 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -68,7 +67,6 @@ class RegisterViewModelTest : RobolectricTest() {
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
 
-  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var registerViewModel: RegisterViewModel
   private lateinit var registerRepository: RegisterRepository
@@ -90,7 +88,6 @@ class RegisterViewModelTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           sharedPreferencesHelper = sharedPreferencesHelper,
           preferenceDataStore = preferenceDataStore,
-          dispatcherProvider = dispatcherProvider,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
         ),
       )

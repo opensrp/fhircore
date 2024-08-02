@@ -23,7 +23,6 @@ import android.view.ViewGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
-import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
@@ -37,17 +36,17 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.BuildConfig
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.SettingsOptions
-import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
+import org.smartregister.fhircore.quest.ui.register.RegisterViewModel
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 
@@ -57,6 +56,7 @@ class UserSettingFragment : Fragment(), OnSyncListener {
 
   val userSettingViewModel by viewModels<UserSettingViewModel>()
   private val appMainViewModel by activityViewModels<AppMainViewModel>()
+  private val registerViewModel by activityViewModels<RegisterViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -136,40 +136,28 @@ class UserSettingFragment : Fragment(), OnSyncListener {
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
       is CurrentSyncJobStatus.Running ->
-        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
+          val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
+          val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+          val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
           lifecycleScope.launch {
-            userSettingViewModel.emitSnackBarState(
-              SnackBarMessageConfig(message = getString(R.string.syncing)),
+            registerViewModel.updateAppDrawerUIState(
+              isSyncUpload = isSyncUpload,
+              currentSyncJobStatus = syncJobStatus,
+              percentageProgress = progressPercentage,
             )
           }
         }
       is CurrentSyncJobStatus.Succeeded -> {
         lifecycleScope.launch {
-          userSettingViewModel.emitSnackBarState(
-            SnackBarMessageConfig(
-              message = getString(R.string.sync_completed),
-              actionLabel = getString(R.string.ok).uppercase(),
-              duration = SnackbarDuration.Long,
-            ),
-          )
+          registerViewModel.updateAppDrawerUIState(false, syncJobStatus, 100)
         }
       }
       is CurrentSyncJobStatus.Failed -> {
-        lifecycleScope.launch {
-          userSettingViewModel.emitSnackBarState(
-            SnackBarMessageConfig(
-              message =
-                getString(
-                  R.string.sync_completed_with_errors,
-                ),
-              duration = SnackbarDuration.Long,
-              actionLabel = getString(R.string.ok).uppercase(),
-            ),
-          )
-        }
+        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
       }
       else -> {
-        // Do nothing
+        lifecycleScope.launch { registerViewModel.updateSyncStatus(syncJobStatus) }
       }
     }
   }

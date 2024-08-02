@@ -17,13 +17,13 @@
 package org.smartregister.fhircore.quest.ui.launcher
 
 import android.content.Context
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.json.JsonPrimitive
@@ -46,6 +46,7 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 
 @HiltViewModel
 class GeoWidgetLauncherViewModel
@@ -59,6 +60,8 @@ constructor(
 
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
+
+  val appDrawerUiState = mutableStateOf(AppDrawerUIState())
 
   private val _noLocationFoundDialog = MutableLiveData<Boolean>()
   val noLocationFoundDialog: LiveData<Boolean>
@@ -134,19 +137,15 @@ constructor(
     geoWidgetConfig: GeoWidgetConfiguration,
   ): List<RepositoryResourceData> {
     if (!this::repositoryResourceDataList.isInitialized) {
-      repositoryResourceDataList = coroutineScope {
-        async {
-            defaultRepository.searchResourcesRecursively(
-              filterActiveResources = null,
-              fhirResourceConfig = geoWidgetConfig.resourceConfig,
-              configRules = null,
-              secondaryResourceConfigs = null,
-              filterByRelatedEntityLocationMetaTag =
-                geoWidgetConfig.filterDataByRelatedEntityLocation == true,
-            )
-          }
-          .await()
-      }
+      repositoryResourceDataList =
+        defaultRepository.searchResourcesRecursively(
+          filterActiveResources = null,
+          fhirResourceConfig = geoWidgetConfig.resourceConfig,
+          configRules = null,
+          secondaryResourceConfigs = null,
+          filterByRelatedEntityLocationMetaTag =
+            geoWidgetConfig.filterDataByRelatedEntityLocation == true,
+        )
     }
     return repositoryResourceDataList
   }
@@ -225,6 +224,19 @@ constructor(
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
+  }
+
+  fun updateAppDrawerUIState(
+    isSyncUpload: Boolean,
+    currentSyncJobStatus: CurrentSyncJobStatus,
+    percentageProgress: Int,
+  ) {
+    appDrawerUiState.value =
+      AppDrawerUIState(
+        isSyncUpload = isSyncUpload,
+        currentSyncJobStatus = currentSyncJobStatus,
+        percentageProgress = percentageProgress,
+      )
   }
 
   private companion object {

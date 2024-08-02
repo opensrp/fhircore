@@ -38,8 +38,6 @@ import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.main.components.MENU_BUTTON_ICON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.MENU_BUTTON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.MENU_BUTTON_TEXT_TEST_TAG
-import org.smartregister.fhircore.quest.ui.main.components.NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG
-import org.smartregister.fhircore.quest.ui.main.components.NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.NAV_TOP_SECTION_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ITEM_INNER_ROW_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG
@@ -110,10 +108,10 @@ class AppDrawerTest {
     setContent("")
     composeTestRule
       .onAllNodesWithTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG, useUnmergedTree = true)
-      .assertCountEquals(3)
+      .assertCountEquals(4)
     composeTestRule
       .onAllNodesWithTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG, useUnmergedTree = true)
-      .assertCountEquals(3)
+      .assertCountEquals(4)
     composeTestRule
       .onAllNodesWithTag(SIDE_MENU_ITEM_TEXT_TEST_TAG, useUnmergedTree = true)
       .assertCountEquals(5)
@@ -124,14 +122,6 @@ class AppDrawerTest {
     setContent("")
     composeTestRule
       .onNodeWithText("Manual Sync", useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
-    composeTestRule
-      .onNodeWithTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG)
-      .assertExists()
-      .assertIsDisplayed()
-    composeTestRule
-      .onNodeWithTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
       .assertExists()
       .assertIsDisplayed()
   }

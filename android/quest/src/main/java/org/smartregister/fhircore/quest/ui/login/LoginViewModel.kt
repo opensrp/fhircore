@@ -32,8 +32,8 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -310,7 +310,6 @@ constructor(
     viewModelScope.launch {
       bundle.entry.forEach { entry ->
         val practitionerDetails = entry.resource as PractitionerDetails
-
         val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
         val organizations = practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()
         val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
@@ -321,42 +320,33 @@ constructor(
           practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
 
         val careTeamId =
-          withContext(dispatcherProvider.io()) {
-            defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
-              careTeams.map { it.id.extractLogicalIdUuid() }
-            }
+          defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
+            careTeams.map { it.id.extractLogicalIdUuid() }
           }
+
         val organizationId =
-          withContext(dispatcherProvider.io()) {
-            defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
-              organizations.map { it.id.extractLogicalIdUuid() }
-            }
+          defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
+            organizations.map { it.id.extractLogicalIdUuid() }
           }
+
         val locationId =
-          withContext(dispatcherProvider.io()) {
-            defaultRepository.createRemote(false, *locations.toTypedArray()).run {
-              locations.map { it.id.extractLogicalIdUuid() }
-            }
+          defaultRepository.createRemote(false, *locations.toTypedArray()).run {
+            locations.map { it.id.extractLogicalIdUuid() }
           }
 
         val location =
-          withContext(dispatcherProvider.io()) {
-            defaultRepository.createRemote(false, *locations.toTypedArray()).run {
-              locations.map { it.name }
-            }
+          defaultRepository.createRemote(false, *locations.toTypedArray()).run {
+            locations.map { it.name }
           }
 
         val careTeam =
-          withContext(dispatcherProvider.io()) {
-            defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
-              careTeams.map { it.name }
-            }
+          defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
+            careTeams.map { it.name }
           }
+
         val organization =
-          withContext(dispatcherProvider.io()) {
-            defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
-              organizations.map { it.name }
-            }
+          defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
+            organizations.map { it.name }
           }
 
         defaultRepository.createRemote(false, *practitioners.toTypedArray())

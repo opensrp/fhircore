@@ -28,7 +28,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.datastore.mockdata.PractitionerDetails
-import org.smartregister.fhircore.engine.datastore.mockdata.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 
@@ -74,15 +73,6 @@ internal class ProtoDataStoreTest : RobolectricTest() {
       protoDataStore.practitioner.map { dataStoreValue ->
         assert(dataStoreValue == expectedPreferencesValue)
       }
-    }
-  }
-
-  @Test
-  fun testWriteUserInfo() {
-    val valueToWrite = UserInfo(name = "Kelvin")
-    runTest {
-      protoDataStore.writeUserInfo(valueToWrite)
-      protoDataStore.userInfo.map { assert(it == valueToWrite) }
     }
   }
 
