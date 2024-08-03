@@ -99,13 +99,14 @@ constructor(
     )
 
   fun practitionerLocation() =
-    sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_LOCATION.name, null)
+    preferenceDataStore.readOnce(PreferenceDataStore.PRACTITIONER_LOCATION, null)
 
   fun retrieveOrganization() =
-    sharedPreferencesHelper.read(SharedPreferenceKey.ORGANIZATION.name, null)
+    preferenceDataStore.readOnce(PreferenceDataStore.ORGANIZATION_NAME, null)
 
-  fun retrieveCareTeam() = sharedPreferencesHelper.read(SharedPreferenceKey.CARE_TEAM.name, null)
+  fun retrieveCareTeam() = preferenceDataStore.readOnce(PreferenceDataStore.CARE_TEAM_NAME, null)
 
+  // TODO: Reads an object type ---> OffsetDateTime
   fun retrieveDataMigrationVersion(): String = runBlocking {
     (preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).firstOrNull() ?: 0).toString()
   }
@@ -119,6 +120,7 @@ constructor(
   fun allowSwitchingLanguages() =
     enableMenuOption(SettingsOptions.SWITCH_LANGUAGES) && languages.size > 1
 
+  // TODO: Reads an object type ---> AppMainEvent
   fun loadSelectedLanguage(): String =
     Locale.forLanguageTag(
         sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
@@ -153,6 +155,7 @@ constructor(
         }
       }
       is UserSettingsEvent.SwitchLanguage -> {
+        // TODO : Write an object type ---> AppMainEvent
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
           configurationRegistry.configCacheMap.clear()
@@ -194,11 +197,13 @@ constructor(
 
       withContext(dispatcherProvider.io()) { fhirEngine.clearDatabase() }
 
+      // TODO: The clear part of datastore should be within the authenticator --->
       accountAuthenticator.invalidateSession {
         sharedPreferencesHelper.resetSharedPrefs()
         secureSharedPreference.resetSharedPrefs()
         context.getActivity()?.launchActivityWithNoBackStackHistory<AppSettingActivity>()
       }
+      preferenceDataStore.clear()
     }
   }
 

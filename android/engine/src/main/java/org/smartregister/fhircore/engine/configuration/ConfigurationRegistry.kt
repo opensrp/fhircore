@@ -60,6 +60,8 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
@@ -91,6 +93,7 @@ constructor(
   val fhirEngine: FhirEngine,
   val fhirResourceDataSource: FhirResourceDataSource,
   val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val dispatcherProvider: DispatcherProvider,
   val configService: ConfigService,
   val json: Json,
@@ -412,7 +415,7 @@ constructor(
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources() {
     configCacheMap.clear()
-    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
+    preferenceDataStore.readOnce(PreferenceDataStore.APP_ID, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val compositionResource = fetchRemoteCompositionByAppId(parsedAppId)
       compositionResource?.let { composition ->
@@ -748,7 +751,7 @@ constructor(
     val fhirResourceSearchParams = mutableMapOf<ResourceType, MutableMap<String, String>>()
     val organizationResourceTag =
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
-    val mandatoryTags = configService.provideResourceTags(sharedPreferencesHelper)
+    val mandatoryTags = configService.provideResourceTags(preferenceDataStore, sharedPreferencesHelper) //ToDo: Replace with Datastore - has an object
 
     val locationIds = context.retrieveRelatedEntitySyncLocationIds()
 

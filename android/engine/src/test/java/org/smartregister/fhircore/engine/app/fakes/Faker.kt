@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -72,6 +73,7 @@ object Faker {
 
   fun buildTestConfigurationRegistry(
     sharedPreferencesHelper: SharedPreferencesHelper = mockk(),
+    preferenceDataStore: PreferenceDataStore = mockk(),
     dispatcherProvider: DispatcherProvider = testDispatcherProvider,
   ): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
@@ -80,7 +82,8 @@ object Faker {
       fhirResourceService,
       fhirResourceDataSource,
       sharedPreferencesHelper,
-      dispatcherProvider,
+      preferenceDataStore,
+      dispatcherProvider
     )
   }
 
@@ -88,6 +91,7 @@ object Faker {
     fhirResourceService: FhirResourceService,
     fhirResourceDataSource: FhirResourceDataSource,
     sharedPreferencesHelper: SharedPreferencesHelper,
+    preferenceDataStore: PreferenceDataStore,
     dispatcherProvider: DispatcherProvider,
   ): ConfigurationRegistry {
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
@@ -102,6 +106,7 @@ object Faker {
           configService = configService,
           json = json,
           context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
+          preferenceDataStore = preferenceDataStore
         ),
       )
 

@@ -30,6 +30,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
@@ -48,6 +49,7 @@ constructor(
   override val fhirEngine: FhirEngine,
   override val dispatcherProvider: DispatcherProvider,
   override val sharedPreferencesHelper: SharedPreferencesHelper,
+  override val preferenceDataStore: PreferenceDataStore,
   override val configurationRegistry: ConfigurationRegistry,
   override val configService: ConfigService,
   override val configRulesExecutor: ConfigRulesExecutor,
@@ -66,6 +68,7 @@ constructor(
     fhirPathDataExtractor = fhirPathDataExtractor,
     parser = parser,
     context = context,
+    preferenceDataStore = preferenceDataStore,
   ) {
 
   override suspend fun loadRegisterData(

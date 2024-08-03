@@ -82,6 +82,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   @Inject lateinit var preferenceDataStore: PreferenceDataStore
   lateinit var fhirEngine: FhirEngine
   private var sharedPreferencesHelper: SharedPreferencesHelper
+  private lateinit var preferenceDataStore: PreferenceDataStore
   private var configService: ConfigService
   private lateinit var syncBroadcaster: SyncBroadcaster
   private lateinit var userSettingViewModel: UserSettingViewModel
@@ -96,6 +97,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   init {
     sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
+    preferenceDataStore = PreferenceDataStore(context = context, dataStore = mockk())
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
   }

@@ -31,6 +31,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -41,7 +42,7 @@ class SyncListenerManagerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   @Inject lateinit var configService: ConfigService
 
@@ -60,10 +61,10 @@ class SyncListenerManagerTest : RobolectricTest() {
     syncListenerManager =
       SyncListenerManager(
         configService = configService,
-        sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         context = ApplicationProvider.getApplicationContext(),
         dispatcherProvider = dispatcherProvider,
+        preferenceDataStore = preferenceDataStore
       )
   }
 
