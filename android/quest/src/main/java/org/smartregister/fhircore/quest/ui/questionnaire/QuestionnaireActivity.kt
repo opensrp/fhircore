@@ -229,7 +229,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(true))
         with(viewBinding) {
           questionnaireToolbar.apply {
-            setNavigationIcon(R.drawable.ic_arrow_back)
+            setNavigationIcon(R.drawable.ic_cancel)
             setNavigationOnClickListener { handleBackPress() }
           }
           questionnaireTitle.apply { text = questionnaireConfig.title }
