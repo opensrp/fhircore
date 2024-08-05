@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.sdc.qrCode
 
 import android.view.MotionEvent
 import android.widget.FrameLayout
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentManager
 import androidx.test.core.view.MotionEventBuilder
@@ -30,8 +31,8 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockkConstructor
 import io.mockk.unmockkConstructor
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -40,6 +41,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.Robolectric
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.hiltActivityForTestScenario
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -50,13 +52,25 @@ class EditTextQrCodeItemViewHolderFactoryTest : RobolectricTest() {
 
   @get:Rule(order = 0) var hiltAndroidRule = HiltAndroidRule(this)
 
+  private val parentView =
+    FrameLayout(
+      Robolectric.buildActivity(AppCompatActivity::class.java).create().get().apply {
+        /**
+         * Using style 'com.google.android.material.R.style.Theme_Material3_DayNight' to prevent
+         * Robolectric [UnsupportedOperationException] error for 'attr/colorSurfaceVariant'
+         * https://github.com/robolectric/robolectric/issues/4961#issuecomment-488517645
+         */
+        setTheme(com.google.android.material.R.style.Theme_Material3_DayNight)
+      },
+    )
+
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
   }
 
   @Test
-  fun getQuestionnaireItemViewHolderDelegateShouldUpdateTextCorrectlyWhenScanQrCodeReceived() {
+  fun shouldUpdateTextCorrectlyWhenScanQrCodeReceived() {
     mockkConstructor(QrCodeCameraDialogFragment::class)
     val sampleQrCode = "d84fbd12-4f22-423a-8645-5525504e1bcb"
     /**
@@ -96,58 +110,192 @@ class EditTextQrCodeItemViewHolderFactoryTest : RobolectricTest() {
   }
 
   @Test
-  fun getQuestionnaireItemViewHolderDelegateShouldSetCorrectAnswerText() {
+  fun shouldSetCorrectAnswerText() {
     val sampleQrCode = "d84fbd12-4f22-423a-8645-5525504e1bcb"
-    /**
-     * Using style 'com.google.android.material.R.style.Theme_Material3_DayNight' to prevent
-     * Robolectric [UnsupportedOperationException] error for 'attr/colorSurfaceVariant'
-     * https://github.com/robolectric/robolectric/issues/4961#issuecomment-488517645
-     */
-    hiltActivityForTestScenario(com.google.android.material.R.style.Theme_Material3_DayNight).use {
-      scenario ->
-      scenario.onActivity { activity ->
-        val parentView = FrameLayout(activity)
-        val viewHolder = EditTextQrCodeItemViewHolderFactory { _, _ -> }.create(parentView)
-        viewHolder.bind(
-          QuestionnaireViewItem(
-            questionnaireItem =
-              Questionnaire.QuestionnaireItemComponent().apply {
-                linkId = "sample-text"
-                type = Questionnaire.QuestionnaireItemType.STRING
-                addExtension(
-                  Extension().apply {
-                    url =
-                      "https://github.com/opensrp/android-fhir/StructureDefinition/questionnaire-itemControl"
-                    setValue(
-                      CodeableConcept()
-                        .addCoding(
-                          Coding().apply {
-                            system =
-                              "https://github.com/opensrp/android-fhir/questionnaire-item-control"
-                            code = "qr_code-widget"
-                          },
-                        ),
-                    )
-                  },
-                )
+    val viewHolder = EditTextQrCodeItemViewHolderFactory { _, _ -> }.create(parentView)
+    viewHolder.bind(
+      QuestionnaireViewItem(
+        questionnaireItem =
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = "sample-text"
+            type = Questionnaire.QuestionnaireItemType.STRING
+            addExtension(
+              Extension(
+                "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+              ),
+            )
+          },
+        questionnaireResponseItem =
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            linkId = "sample-text"
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                value = StringType(sampleQrCode)
               },
-            questionnaireResponseItem =
-              QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
-                linkId = "sample-text"
-                addAnswer(
-                  QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
-                    value = StringType(sampleQrCode)
-                  },
-                )
-              },
-            validationResult = NotValidated,
-            answersChangedCallback = { _, _, _, _ -> },
-          ),
-        )
-        val textInputEditText =
-          viewHolder.itemView.findViewById<TextInputEditText>(R.id.text_input_edit_text)
-        Assert.assertEquals(sampleQrCode, textInputEditText.text.toString())
-      }
+            )
+          },
+        validationResult = NotValidated,
+        answersChangedCallback = { _, _, _, _ -> },
+      ),
+    )
+    val textInputEditText =
+      viewHolder.itemView.findViewById<TextInputEditText>(R.id.text_input_edit_text)
+    Assert.assertEquals(sampleQrCode, textInputEditText.text.toString())
+  }
+
+  @Test
+  fun shouldSetInputDisabledWhenQuestionViewItemHasAnswerAndQuestionnaireItemIsReadOnly() {
+    val viewHolder = EditTextQrCodeItemViewHolderFactory { _, _ -> }.create(parentView)
+    viewHolder.bind(
+      QuestionnaireViewItem(
+        questionnaireItem =
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = "linkid-a"
+            readOnly = true
+            type = Questionnaire.QuestionnaireItemType.STRING
+            addExtension(
+              Extension(
+                "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+              ),
+            )
+          },
+        questionnaireResponseItem =
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply { linkId = "linkid-a" },
+        validationResult = NotValidated,
+        answersChangedCallback = { _, _, _, _ -> },
+      ),
+    )
+
+    viewHolder.itemView.findViewById<TextInputEditText>(R.id.text_input_edit_text).apply {
+      Assert.assertTrue(this.isEnabled)
+      Assert.assertTrue(this.text.isNullOrBlank())
     }
+
+    viewHolder.bind(
+      QuestionnaireViewItem(
+        questionnaireItem =
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = "linkid-a"
+            readOnly = true
+            type = Questionnaire.QuestionnaireItemType.STRING
+            addExtension(
+              Extension(
+                "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+              ),
+            )
+          },
+        questionnaireResponseItem =
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            linkId = "linkid-a"
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                value = StringType("d84fbd12-4f22-423a-8645-5525504e1bcb")
+              },
+            )
+          },
+        validationResult = NotValidated,
+        answersChangedCallback = { _, _, _, _ -> },
+      ),
+    )
+
+    viewHolder.itemView.findViewById<TextInputEditText>(R.id.text_input_edit_text).apply {
+      Assert.assertFalse(this.isEnabled)
+      Assert.assertEquals("d84fbd12-4f22-423a-8645-5525504e1bcb", this.text.toString())
+    }
+  }
+
+  @Test
+  fun shouldSetInputDisabledWhenQuestionViewItemHasAnswerAndIsSetOnceReadOnly() {
+    val viewHolder = EditTextQrCodeItemViewHolderFactory { _, _ -> }.create(parentView)
+    viewHolder.bind(
+      QuestionnaireViewItem(
+        questionnaireItem =
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = "linkid-a"
+            type = Questionnaire.QuestionnaireItemType.STRING
+            addExtension(
+              Extension(
+                  "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+                )
+                .apply { addExtension("set-only-readonly", BooleanType(true)) },
+            )
+          },
+        questionnaireResponseItem =
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply { linkId = "linkid-a" },
+        validationResult = NotValidated,
+        answersChangedCallback = { _, _, _, _ -> },
+      ),
+    )
+
+    viewHolder.itemView.findViewById<TextInputEditText>(R.id.text_input_edit_text).apply {
+      Assert.assertTrue(this.isEnabled)
+      Assert.assertTrue(this.text.isNullOrBlank())
+    }
+
+    viewHolder.bind(
+      QuestionnaireViewItem(
+        questionnaireItem =
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = "linkid-a"
+            type = Questionnaire.QuestionnaireItemType.STRING
+            addExtension(
+              Extension(
+                  "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+                )
+                .apply { addExtension("set-only-readonly", BooleanType(true)) },
+            )
+          },
+        questionnaireResponseItem =
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            linkId = "linkid-a"
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                value = StringType("d84fbd12-4f22-423a-8645-5525504e1bcb")
+              },
+            )
+          },
+        validationResult = NotValidated,
+        answersChangedCallback = { _, _, _, _ -> },
+      ),
+    )
+
+    viewHolder.itemView.findViewById<TextInputEditText>(R.id.text_input_edit_text).apply {
+      Assert.assertFalse(this.isEnabled)
+      Assert.assertEquals("d84fbd12-4f22-423a-8645-5525504e1bcb", this.text.toString())
+    }
+  }
+
+  @Test
+  fun shouldCallOnQrCodeChangedWhenNewTextIsSet() = runTest {
+    var qrCode: String? = null
+    val viewHolder =
+      EditTextQrCodeItemViewHolderFactory { _, qrAnswer ->
+          qrCode = (qrAnswer?.value as? StringType)?.value
+        }
+        .create(parentView)
+    viewHolder.bind(
+      QuestionnaireViewItem(
+        questionnaireItem =
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = "linkid-a"
+            type = Questionnaire.QuestionnaireItemType.STRING
+            addExtension(
+              Extension(
+                "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+              ),
+            )
+          },
+        questionnaireResponseItem = QuestionnaireResponse.QuestionnaireResponseItemComponent(),
+        validationResult = NotValidated,
+        answersChangedCallback = { _, _, _, _ -> },
+      ),
+    )
+    val sampleCode = "d84fbd12-4f22-423a-8645-5525504e1bcb"
+    viewHolder.itemView
+      .findViewById<TextInputEditText>(R.id.text_input_edit_text)
+      .setText(sampleCode)
+
+    Assert.assertNotNull(qrCode)
+    Assert.assertEquals(sampleCode, qrCode)
   }
 }
