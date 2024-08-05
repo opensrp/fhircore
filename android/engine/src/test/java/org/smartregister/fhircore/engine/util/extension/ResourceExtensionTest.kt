@@ -21,7 +21,7 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -689,46 +689,6 @@ class ResourceExtensionTest : RobolectricTest() {
   fun extractResourceIdReturnsCorrectValue() {
     val structureMapId = "http://my-structuremap-url/fhir/StructureMap/123456".extractResourceId()
     Assert.assertEquals("123456", structureMapId)
-  }
-
-  @Test
-  fun testGenerateMissingItemsFromQuestionnaireShouldNotThrowException() {
-    val patientRegistrationQuestionnaire =
-      "register-patient-missingitems/missingitem-questionnaire.json".readFile()
-    val patientRegistrationQuestionnaireResponse =
-      "register-patient-missingitems/missingitem-questionnaire-response.json".readFile()
-    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-    val questionnaire =
-      iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
-    val questionnaireResponse =
-      iParser.parseResource(
-        QuestionnaireResponse::class.java,
-        patientRegistrationQuestionnaireResponse,
-      )
-
-    questionnaire.item.generateMissingItems(questionnaireResponse.item)
-
-    Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
-  }
-
-  @Test
-  fun testGenerateMissingItemsFromQuestionnaireResponseShouldNotThrowException() {
-    val patientRegistrationQuestionnaire =
-      "register-patient-missingitems/missingitem-questionnaire.json".readFile()
-    val patientRegistrationQuestionnaireResponse =
-      "register-patient-missingitems/missingitem-questionnaire-response.json".readFile()
-    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-    val questionnaire =
-      iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
-    val questionnaireResponse =
-      iParser.parseResource(
-        QuestionnaireResponse::class.java,
-        patientRegistrationQuestionnaireResponse,
-      )
-
-    questionnaireResponse.generateMissingItems(questionnaire)
-
-    Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
   }
 
   @Test

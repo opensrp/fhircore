@@ -60,6 +60,7 @@ android {
   defaultConfig {
     applicationId = BuildConfigs.applicationId
     minSdk = BuildConfigs.minSdk
+    targetSdk = BuildConfigs.targetSdk
     versionCode = BuildConfigs.versionCode
     versionName = BuildConfigs.versionName
     multiDexEnabled = true

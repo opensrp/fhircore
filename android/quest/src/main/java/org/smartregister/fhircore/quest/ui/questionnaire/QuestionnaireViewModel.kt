@@ -29,7 +29,7 @@ import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
@@ -116,6 +116,7 @@ constructor(
   val fhirOperator: FhirOperator,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val configurationRegistry: ConfigurationRegistry,
+  private val simpleWorkerContext: SimpleWorkerContext
 ) : ViewModel() {
   private val parser = FhirContext.forR4Cached().newJsonParser()
 
@@ -559,7 +560,7 @@ constructor(
   ): Bundle =
     kotlin
       .runCatching {
-        val workerContext = SimpleWorkerContext()
+        val workerContext = simpleWorkerContext
         workerContext.isAllowLoadingDuplicates = true
         if (extractByStructureMap) {
           ResourceMapper.extract(

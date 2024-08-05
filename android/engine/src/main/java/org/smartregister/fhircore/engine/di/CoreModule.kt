@@ -27,11 +27,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import org.hl7.fhir.instance.model.api.IBaseResource
 import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import java.io.File
+import java.io.FileInputStream
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -43,6 +47,11 @@ class CoreModule {
     SimpleWorkerContext().apply {
       setExpansionProfile(Parameters())
       isCanRunWithoutTerminology = true
+      context.filesDir.resolve("km").list()?.forEach {resourceFolder ->
+        context.filesDir.resolve("km/$resourceFolder").list()?.forEach {file ->
+        cacheResource(FhirContext.forR4Cached().newJsonParser().parseResource(FileInputStream(File(context.filesDir.resolve("km/$resourceFolder/$file").toString()))) as Resource)
+        }
+      }
     }
 
   @Singleton

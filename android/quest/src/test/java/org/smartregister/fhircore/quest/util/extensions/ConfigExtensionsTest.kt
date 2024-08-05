@@ -25,7 +25,7 @@ import android.widget.Toast
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot

@@ -16,10 +16,11 @@
 
 package org.smartregister.fhircore.engine.data.remote.fhir.resource
 
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.ExternalAnswerValueSetResolver
 import com.google.android.fhir.search.search
-import com.google.android.fhir.testing.jsonParser
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
@@ -54,7 +55,7 @@ constructor(val fhirEngine: FhirEngine, private val workerContext: SimpleWorkerC
 
   private suspend fun fetchValuesSetFromWorkerContext(uri: String): List<Coding> {
     val valueSets = fhirEngine.search<ValueSet> { filter(ValueSet.URL, { value = uri }) }
-    println("ValueSets found: ${jsonParser.encodeResourceToString(valueSets.first().resource)}")
+    println("ValueSets found: ${FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(valueSets.first().resource)}")
 
     // Ideally, loop over include then if concept generate coding with include system, if no
     // concept use the codesystem + filter
