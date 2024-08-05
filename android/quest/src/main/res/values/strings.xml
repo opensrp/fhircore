@@ -123,5 +123,4 @@
     <string name="no_search_coonfigs_provided">No configs provided for search bar</string>
     <string name="no_found_locations_matching_text">No location found matching text \"%1$s\"</string>
     <string name="open_choice_other_hint">Other</string>
-
 </resources>
