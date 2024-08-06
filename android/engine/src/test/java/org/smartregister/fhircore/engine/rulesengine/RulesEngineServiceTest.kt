@@ -318,7 +318,7 @@ class RulesEngineServiceTest : RobolectricTest() {
 
     taskList.add(taskOver)
     Assert.assertTrue(
-      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.OVERDUE.name)
+      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.OVERDUE.name),
     )
   }
 
@@ -351,7 +351,7 @@ class RulesEngineServiceTest : RobolectricTest() {
     taskList.add(task3)
 
     Assert.assertTrue(
-      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.UPCOMING.name)
+      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.UPCOMING.name),
     )
   }
 
@@ -379,7 +379,7 @@ class RulesEngineServiceTest : RobolectricTest() {
     taskList.add(task3)
 
     Assert.assertTrue(
-      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.EXPIRED.name)
+      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.EXPIRED.name),
     )
   }
 
@@ -390,7 +390,7 @@ class RulesEngineServiceTest : RobolectricTest() {
     taskList.add(task2)
 
     Assert.assertTrue(
-      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.COMPLETED.name)
+      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.COMPLETED.name),
     )
   }
 
