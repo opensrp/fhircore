@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.sdc.qrCode
 
+import android.annotation.SuppressLint
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -62,7 +63,7 @@ object EditTextQrCodeViewHolderFactory :
               } else questionnaireViewItem.setAnswer(newAnswer!!)
             }
             !prevAnswerEmpty && newAnswerEmpty -> {
-              questionnaireViewItem.removeAnswer(newAnswer!!)
+              questionnaireViewItem.removeAnswer(previousAnswer!!)
             }
             !prevAnswerEmpty && !newAnswerEmpty -> {
               previousAnswer!!.value = newAnswer!!.value
@@ -82,6 +83,7 @@ object EditTextQrCodeViewHolderFactory :
           questionnaireViewItemAnswers
             .filterNot { it.isEmpty }
             .map { getSubQuestionnaireViewItem(it) }
+            .filterIndexed { index, _ -> canHaveMultipleAnswers || index == 0 }
             .toMutableList()
         if (subQuestionnaireViewItems.isEmpty() && !canHaveMultipleAnswers) {
           subQuestionnaireViewItems.add(
@@ -107,7 +109,7 @@ object EditTextQrCodeViewHolderFactory :
         }
       }
 
-      fun getSubQuestionnaireViewItem(
+      private fun getSubQuestionnaireViewItem(
         answer: QuestionnaireResponseItemAnswerComponent,
       ): QuestionnaireViewItem {
         val newQrResponseItem = questionnaireViewItem.getQuestionnaireResponseItem().copy()
@@ -121,25 +123,9 @@ object EditTextQrCodeViewHolderFactory :
   }
 }
 
-internal class QrCodeViewItemAdapter(private val qrCodeAnswerChangeListener: QrCodeChangeListener) :
+internal class QrCodeViewItemAdapter(val qrCodeAnswerChangeListener: QrCodeChangeListener) :
   ListAdapter<QuestionnaireViewItem, QuestionnaireItemViewHolder>(
-    object : DiffUtil.ItemCallback<QuestionnaireViewItem>() {
-      override fun areItemsTheSame(
-        oldItem: QuestionnaireViewItem,
-        newItem: QuestionnaireViewItem,
-      ): Boolean = areContentsTheSame(oldItem, newItem)
-
-      override fun areContentsTheSame(
-        oldItem: QuestionnaireViewItem,
-        newItem: QuestionnaireViewItem,
-      ): Boolean {
-        val newItemAnswers = newItem.answers.map { (it.value as? StringType)?.value }
-        val oldItemAnswers = oldItem.answers.map { (it.value as? StringType)?.value }
-        return oldItem == newItem &&
-          oldItemAnswers.size == newItemAnswers.size &&
-          newItemAnswers.all { oldItemAnswers.contains(it) }
-      }
-    },
+    QR_CODE_DIFF_ITEMCallBack,
   ) {
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QuestionnaireItemViewHolder {
     return EditTextQrCodeItemViewHolderFactory(qrCodeAnswerChangeListener).create(parent)
@@ -156,6 +142,26 @@ internal fun interface QrCodeChangeListener {
     newAnswer: QuestionnaireResponseItemAnswerComponent?,
   )
 }
+
+internal val QR_CODE_DIFF_ITEMCallBack =
+  object : DiffUtil.ItemCallback<QuestionnaireViewItem>() {
+    override fun areItemsTheSame(
+      oldItem: QuestionnaireViewItem,
+      newItem: QuestionnaireViewItem,
+    ): Boolean = areContentsTheSame(oldItem, newItem)
+
+    @SuppressLint("DiffUtilEquals")
+    override fun areContentsTheSame(
+      oldItem: QuestionnaireViewItem,
+      newItem: QuestionnaireViewItem,
+    ): Boolean {
+      val newItemAnswers = newItem.answers.map { (it.value as? StringType)?.value }
+      val oldItemAnswers = oldItem.answers.map { (it.value as? StringType)?.value }
+      return oldItem.questionnaireItem === newItem.questionnaireItem &&
+        oldItemAnswers.size == newItemAnswers.size &&
+        newItemAnswers.all { oldItemAnswers.contains(it) }
+    }
+  }
 
 internal val QuestionnaireViewItem.isSetOnceReadOnly: Boolean
   get() {
