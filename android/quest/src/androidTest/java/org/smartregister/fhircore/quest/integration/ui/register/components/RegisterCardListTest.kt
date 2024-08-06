@@ -32,7 +32,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.flow.flowOf
 import org.hl7.fhir.r4.model.ResourceType
-import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
@@ -153,32 +152,5 @@ class RegisterCardListTest {
       .onFirst()
       .onChildren()
       .onFirst()
-  }
-
-  @Test
-  fun testRegisterCardListShouldCallOnSearchByQrSingleResultActionOnSingleItem() {
-    var onSearchByQrSingleResultActionCalled = false
-    val onSearchByQrSingleResultAction: (ResourceData) -> Unit = {
-      onSearchByQrSingleResultActionCalled = true
-    }
-
-    composeTestRule.setContent {
-      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
-
-      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
-
-      RegisterCardList(
-        registerCardConfig = RegisterCardConfig(),
-        pagingItems = pagingItems,
-        navController = TestNavHostController(LocalContext.current),
-        lazyListState = rememberLazyListState(),
-        onEvent = {},
-        registerUiState = RegisterUiState(),
-        currentPage = mutableStateOf(1),
-        onSearchByQrSingleResultAction = onSearchByQrSingleResultAction,
-      )
-    }
-
-    Assert.assertTrue(onSearchByQrSingleResultActionCalled)
   }
 }

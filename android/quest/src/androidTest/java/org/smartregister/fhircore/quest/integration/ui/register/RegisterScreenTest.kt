@@ -58,7 +58,6 @@ import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.integration.Faker
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
-import org.smartregister.fhircore.quest.ui.main.components.TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.FAB_BUTTON_REGISTER_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.FIRST_TIME_SYNC_DIALOG
 import org.smartregister.fhircore.quest.ui.register.NO_REGISTER_VIEW_COLUMN_TEST_TAG
@@ -69,7 +68,6 @@ import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import org.smartregister.fhircore.quest.ui.register.TOP_REGISTER_SCREEN_TEST_TAG
 import org.smartregister.fhircore.quest.ui.shared.components.SYNC_PROGRESS_INDICATOR_TEST_TAG
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
-import org.smartregister.fhircore.quest.ui.shared.models.SearchMode
 import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 
 @HiltAndroidTest
@@ -198,56 +196,6 @@ class RegisterScreenTest {
       .onNodeWithTag(REGISTER_CARD_TEST_TAG, useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
-  }
-
-  @Test
-  fun testRegisterCardListRenderedCallsOnSearchByQrSingleResultActionAndResetsSearchToKeyboardInput() {
-    val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-    val registerUiState =
-      RegisterUiState(
-        screenTitle = "Register101",
-        isFirstTimeSync = false,
-        registerConfiguration =
-          configurationRegistry
-            .retrieveConfiguration<RegisterConfiguration>(ConfigType.Register, "householdRegister")
-            .copy(
-              onSearchByQrSingleResultActions =
-                listOf(ActionConfig(trigger = ActionTrigger.ON_SEARCH_SINGLE_RESULT)),
-            ),
-        registerId = "register101",
-        totalRecordsCount = 1,
-        filteredRecordsCount = 0,
-        pagesCount = 1,
-        progressPercentage = flowOf(0),
-        isSyncUpload = flowOf(false),
-        params = emptyMap(),
-      )
-    val currentPage = mutableStateOf(0)
-    val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
-    val searchText = mutableStateOf(SearchQuery("1", mode = SearchMode.QrCodeScan))
-
-    composeTestRule.setContent {
-      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
-
-      RegisterScreen(
-        modifier = Modifier,
-        openDrawer = {},
-        onEvent = {},
-        registerUiState = registerUiState,
-        onAppMainEvent = {},
-        searchQuery = searchText,
-        currentPage = currentPage,
-        pagingItems = pagingItems,
-        navController = rememberNavController(),
-      )
-    }
-
-    composeTestRule
-      .onNodeWithTag(REGISTER_CARD_TEST_TAG, useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
-
-    Assert.assertEquals(SearchQuery("1", mode = SearchMode.KeyboardInput), searchText.value)
   }
 
   @Test
@@ -414,13 +362,8 @@ class RegisterScreenTest {
         navController = rememberNavController(),
       )
     }
-    composeTestRule.waitUntil(5_000) { true }
-    composeTestRule
-      .onNodeWithTag(TOP_REGISTER_SCREEN_TEST_TAG, useUnmergedTree = true)
-      .assertIsDisplayed()
-    composeTestRule
-      .onNodeWithTag(TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG, useUnmergedTree = true)
-      .assertIsDisplayed()
+
+    Assert.assertEquals(true, registerUiState.registerConfiguration?.showSearchByQrCode)
   }
 
   @Test

@@ -21,12 +21,10 @@ import androidx.fragment.app.FragmentManager
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
 import io.mockk.mockkConstructor
-import io.mockk.runs
 import io.mockk.unmockkConstructor
-import io.mockk.verify
+import org.junit.After
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -41,17 +39,23 @@ class QrCodeScanUtilsTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
+    mockkConstructor(QrCodeCameraDialogFragment::class)
+  }
+
+  @After
+  override fun tearDown() {
+    super.tearDown()
+    unmockkConstructor(QrCodeCameraDialogFragment::class)
   }
 
   @Test
   fun scanQrCodeShouldInvokeOnQrCodeResultWithTheQrCode() {
-    val sampleQrCodeResult = "d84fbd12-4f22-423a-8645-5525504e1bcb"
-    val onScanResultMockk =
-      mockk<(String?) -> Unit> { every { this@mockk.invoke(any<String>()) } just runs }
-    mockkConstructor(QrCodeCameraDialogFragment::class)
+    var qrCodeScanResult: String? = null
+    val onQrCodeScanListener: (String?) -> Unit = { code -> qrCodeScanResult = code }
 
     hiltActivityForTestScenario().use { scenario ->
       scenario.onActivity { activity ->
+        val sampleQrCode = "d84fbd12-4f22-423a-8645-5525504e1bcb"
         every {
           anyConstructed<QrCodeCameraDialogFragment>()
             .show(any<FragmentManager>(), QrCodeScanUtils.QR_CODE_SCAN_UTILS_TAG)
@@ -59,14 +63,12 @@ class QrCodeScanUtilsTest : RobolectricTest() {
           {
             activity.supportFragmentManager.setFragmentResult(
               QrCodeCameraDialogFragment.RESULT_REQUEST_KEY,
-              bundleOf(QrCodeCameraDialogFragment.RESULT_REQUEST_KEY to sampleQrCodeResult),
+              bundleOf(QrCodeCameraDialogFragment.RESULT_REQUEST_KEY to sampleQrCode),
             )
           }
-        QrCodeScanUtils.scanQrCode(activity, onScanResultMockk)
-        verify { onScanResultMockk(sampleQrCodeResult) }
+        QrCodeScanUtils.scanQrCode(activity, onQrCodeScanListener)
+        Assert.assertEquals(sampleQrCode, qrCodeScanResult)
       }
     }
-
-    unmockkConstructor(QrCodeCameraDialogFragment::class)
   }
 }

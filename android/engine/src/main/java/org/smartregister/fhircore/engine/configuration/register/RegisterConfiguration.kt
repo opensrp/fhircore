@@ -53,4 +53,7 @@ data class RegisterConfiguration(
 ) : Configuration() {
   val onSearchByQrSingleResultValidActions =
     onSearchByQrSingleResultActions?.filter { it.trigger == ActionTrigger.ON_SEARCH_SINGLE_RESULT }
+
+  val showSearchByQrCode =
+    !onSearchByQrSingleResultValidActions.isNullOrEmpty() || searchBar?.searchByQrCode == true
 }
