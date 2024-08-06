@@ -74,7 +74,7 @@ fun List<ActionConfig>.handleClickEvent(
   context: Context? = null,
 ) {
   val onClickAction =
-    this.firstOrNull {
+    this.find {
       it.trigger.isIn(
         ActionTrigger.ON_SEARCH_SINGLE_RESULT,
         ActionTrigger.ON_CLICK,
