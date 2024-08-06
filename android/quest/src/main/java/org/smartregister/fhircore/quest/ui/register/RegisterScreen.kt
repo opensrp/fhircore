@@ -245,14 +245,17 @@ fun RegisterScreen(
               registerUiState = registerUiState,
               currentPage = currentPage,
               showPagination = searchQuery.value.isBlank(),
-              onSearchByQrSingleResultActions =
+              onSearchByQrSingleResultAction = { resourceData ->
                 if (
                   !searchQuery.value.isBlank() && searchQuery.value.mode == SearchMode.QrCodeScan
                 ) {
                   registerUiState.registerConfiguration.onSearchByQrSingleResultValidActions
-                } else {
-                  null
-                },
+                    ?.apply {
+                      handleClickEvent(navController, resourceData, context = navController.context)
+                      searchQuery.value = searchQuery.value.copy(mode = SearchMode.KeyboardInput)
+                    }
+                }
+              },
             )
           } else {
             registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
