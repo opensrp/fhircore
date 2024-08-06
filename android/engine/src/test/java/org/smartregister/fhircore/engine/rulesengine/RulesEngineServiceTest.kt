@@ -37,7 +37,6 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.extension.plusDays
 
 @HiltAndroidTest
 class RulesEngineServiceTest : RobolectricTest() {
@@ -318,10 +317,8 @@ class RulesEngineServiceTest : RobolectricTest() {
       }
 
     taskList.add(taskOver)
-
-    Assert.assertEquals(
-      ServiceStatus.OVERDUE.name,
-      rulesEngineService.generateListTaskServiceStatus(taskList),
+    Assert.assertTrue(
+      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.OVERDUE.name)
     )
   }
 
@@ -339,14 +336,11 @@ class RulesEngineServiceTest : RobolectricTest() {
     taskList.add(task3)
     taskList.add(task4)
 
-    Assert.assertEquals(
-      ServiceStatus.DUE.name,
-      rulesEngineService.generateListTaskServiceStatus(taskList),
-    )
+    Assert.assertTrue(rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.DUE.name))
   }
 
   @Test
-  fun `generateListTaskServiceStatus() should return UPCOMING when list have Task#status is REQUESTED`() {
+  fun testGenerateListTaskServiceStatusShouldReturnUPCOMINGWhenListHaveTaskStatusIsREQUESTED() {
     val taskList = ArrayList<Task>()
     val task0 = Task().apply { status = Task.TaskStatus.REQUESTED }
     val task2 = Task().apply { status = Task.TaskStatus.COMPLETED }
@@ -356,14 +350,13 @@ class RulesEngineServiceTest : RobolectricTest() {
     taskList.add(task2)
     taskList.add(task3)
 
-    Assert.assertEquals(
-      ServiceStatus.UPCOMING.name,
-      rulesEngineService.generateListTaskServiceStatus(taskList),
+    Assert.assertTrue(
+      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.UPCOMING.name)
     )
   }
 
   @Test
-  fun `generateListTaskServiceStatus() should return INPROGRESS when list have Task#status is INPROGRESS`() {
+  fun testGenerateListTaskServiceStatusShouldReturnINPROGRESSWhenListHaveTaskStatusIsINPROGRESS() {
     val taskList = ArrayList<Task>()
     val task1 = Task().apply { status = Task.TaskStatus.INPROGRESS }
     val task2 = Task().apply { status = Task.TaskStatus.COMPLETED }
@@ -372,35 +365,32 @@ class RulesEngineServiceTest : RobolectricTest() {
     taskList.add(task2)
     taskList.add(task3)
 
-    Assert.assertEquals(
-      ServiceStatus.IN_PROGRESS.name,
-      rulesEngineService.generateListTaskServiceStatus(taskList),
+    Assert.assertTrue(
+      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.IN_PROGRESS.name),
     )
   }
 
   @Test
-  fun `generateListTaskServiceStatus() should return EXPIRED when list have Task#status is EXPIRED`() {
+  fun testGenerateListTaskServiceStatusShouldReturnEXPIREDWhenListHaveTaskStatusIsEXPIRED() {
     val taskList = ArrayList<Task>()
     val task2 = Task().apply { status = Task.TaskStatus.COMPLETED }
     val task3 = Task().apply { status = Task.TaskStatus.CANCELLED }
     taskList.add(task2)
     taskList.add(task3)
 
-    Assert.assertEquals(
-      ServiceStatus.EXPIRED.name,
-      rulesEngineService.generateListTaskServiceStatus(taskList),
+    Assert.assertTrue(
+      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.EXPIRED.name)
     )
   }
 
   @Test
-  fun `generateListTaskServiceStatus() should return COMPLETED when list have Task#status is COMPLETED`() {
+  fun testGenerateListTaskServiceStatusShouldReturnCOMPLETEDWhenListHaveTaskStatusIsCOMPLETED() {
     val taskList = ArrayList<Task>()
     val task2 = Task().apply { status = Task.TaskStatus.COMPLETED }
     taskList.add(task2)
 
-    Assert.assertEquals(
-      ServiceStatus.COMPLETED.name,
-      rulesEngineService.generateListTaskServiceStatus(taskList),
+    Assert.assertTrue(
+      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.COMPLETED.name)
     )
   }
 

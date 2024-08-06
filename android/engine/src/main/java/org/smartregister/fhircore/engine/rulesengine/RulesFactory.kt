@@ -62,7 +62,6 @@ import org.smartregister.fhircore.engine.util.extension.extractBirthDate
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
-import org.smartregister.fhircore.engine.util.extension.isDue
 import org.smartregister.fhircore.engine.util.extension.isOverDue
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
@@ -691,20 +690,15 @@ constructor(
       }
     }
 
-    fun generateListTaskServiceStatus(tasks: List<Task>): String {
-      val finalTaskForStatus =
-        tasks.find { task -> task.isOverDue() }
-          ?: tasks.find { task ->
-            (task.status == Task.TaskStatus.REQUESTED ||
-              task.status == Task.TaskStatus.NULL ||
-              task.status == Task.TaskStatus.RECEIVED)
-          }
-            ?: tasks.find { task -> task.isDue() }
-            ?: tasks.find { task -> task.status == Task.TaskStatus.INPROGRESS }
-            ?: tasks.find { task -> task.status == Task.TaskStatus.CANCELLED }
-            ?: tasks.find { task -> task.status == Task.TaskStatus.COMPLETED } ?: Task()
-
-      return generateTaskServiceStatus(finalTaskForStatus)
+    fun taskServiceStatusExist(tasks: List<Task>, vararg serviceStatus: String): Boolean {
+      return tasks.any {
+        val status = generateTaskServiceStatus(it)
+        if (status.isNotBlank()) {
+          ServiceStatus.valueOf(status) in serviceStatus.map { item -> ServiceStatus.valueOf(item) }
+        } else {
+          false
+        }
+      }
     }
   }
 
