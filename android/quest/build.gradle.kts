@@ -47,14 +47,14 @@ sonar {
 }
 
 android {
-  compileSdk = 33
+  compileSdk = 34
 
   defaultConfig {
     applicationId = "org.smartregister.opensrp"
     minSdk = 26
-    targetSdk = 33
-    versionCode = 13
-    versionName = "1.0.10"
+    targetSdk = 34
+    versionCode = 14
+    versionName = "1.0.11"
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
