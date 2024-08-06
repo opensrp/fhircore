@@ -16,19 +16,20 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
@@ -37,27 +38,22 @@ import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
 import kotlin.time.Duration
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.Binary
-import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.domain.model.ActionParameter
-import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.sync.CustomSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
@@ -68,7 +64,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
+import org.smartregister.fhircore.engine.util.extension.countUnSyncedResources
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -80,8 +76,9 @@ import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMonthPeriodWorker
-import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import org.smartregister.fhircore.quest.util.extensions.decodeBinaryResourcesToBitmap
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
 
@@ -97,6 +94,7 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val workManager: WorkManager,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
+  val fhirEngine: FhirEngine,
 ) : ViewModel() {
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
@@ -107,9 +105,12 @@ constructor(
           ),
       ),
     )
-
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
   private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
+
+  val appDrawerUiState = mutableStateOf(AppDrawerUIState())
+
+  val unSyncedResourcesCount = mutableIntStateOf(0)
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
@@ -131,17 +132,14 @@ constructor(
           it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
           !it.menuIconConfig!!.reference.isNullOrEmpty()
       }
-      .forEach {
-        val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
-        viewModelScope.launch(dispatcherProvider.io()) {
-          registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-            it.menuIconConfig!!.decodedBitmap = binary.data.decodeToBitmap()
-          }
-        }
-      }
+      .decodeBinaryResourcesToBitmap(
+        viewModelScope,
+        registerRepository,
+        configurationRegistry.decodedImageMap,
+      )
   }
 
-  suspend fun retrieveAppMainUiState(refreshAll: Boolean = true) {
+  fun retrieveAppMainUiState(refreshAll: Boolean = true) {
     if (refreshAll) {
       appMainUiState.value =
         appMainUiStateOf(
@@ -155,7 +153,10 @@ constructor(
         )
     }
 
-    // Count data for configured registers by populating the register count map
+    countRegisterData()
+  }
+
+  fun countRegisterData() {
     viewModelScope.launch {
       navigationConfiguration.run {
         clientRegisters.countRegisterData()
@@ -180,6 +181,14 @@ constructor(
           event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
         }
       }
+      is AppMainEvent.CancelSyncData -> {
+        viewModelScope.launch {
+          workManager.cancelUniqueWork(
+            "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
+          )
+          updateAppDrawerUIState(currentSyncJobStatus = CurrentSyncJobStatus.Cancelled)
+        }
+      }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         if (event.state is CurrentSyncJobStatus.Succeeded) {
@@ -187,6 +196,7 @@ constructor(
             SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
             formatLastSyncTimestamp(event.state.timestamp),
           )
+          retrieveAppMainUiState()
           viewModelScope.launch { retrieveAppMainUiState() }
         }
       }
@@ -222,31 +232,6 @@ constructor(
     }
   }
 
-  fun launchFamilyRegistrationWithLocationId(
-    context: Context,
-    locationId: String,
-    questionnaireConfig: QuestionnaireConfig,
-  ) {
-    viewModelScope.launch {
-      val prePopulateLocationIdParameter =
-        ActionParameter(
-          key = "locationId",
-          paramType = ActionParameterType.PREPOPULATE,
-          dataType = Enumerations.DataType.STRING,
-          resourceType = ResourceType.Location,
-          value = locationId,
-          linkId = "household-location-reference",
-        )
-      if (context is QuestionnaireHandler) {
-        context.launchQuestionnaire(
-          context = context,
-          questionnaireConfig = questionnaireConfig,
-          actionParams = listOf(prePopulateLocationIdParameter),
-        )
-      }
-    }
-  }
-
   private suspend fun List<NavigationMenuConfig>.countRegisterData() {
     // Set count for registerId against its value. Use action Id; otherwise default to menu id
     return this.filter { it.showCount }
@@ -279,26 +264,6 @@ constructor(
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
-  fun launchProfileFromGeoWidget(
-    navController: NavController,
-    geoWidgetConfigId: String,
-    resourceId: String,
-  ) {
-    val geoWidgetConfiguration =
-      configurationRegistry.retrieveConfiguration<GeoWidgetConfiguration>(
-        ConfigType.GeoWidget,
-        geoWidgetConfigId,
-      )
-    onEvent(
-      AppMainEvent.OpenProfile(
-        navController = navController,
-        profileId = geoWidgetConfiguration.profileId,
-        resourceId = resourceId,
-        resourceConfig = geoWidgetConfiguration.resourceConfig,
-      ),
-    )
-  }
-
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
     workManager.run {
@@ -318,6 +283,12 @@ constructor(
         workId = FhirCompleteCarePlanWorker.WORK_ID,
         duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
         requiresNetwork = false,
+      )
+
+      schedulePeriodically<CustomSyncWorker>(
+        workId = CustomSyncWorker.WORK_ID,
+        repeatInterval = applicationConfiguration.syncInterval,
+        initialDelay = 0,
       )
 
       measureReportConfigurations.forEach { measureReportConfig ->
@@ -359,6 +330,58 @@ constructor(
       }
     }
   }
+
+  fun calculatePercentageProgress(
+    progressSyncJobStatus: SyncJobStatus.InProgress,
+  ): Int {
+    val totalRecordsOverall =
+      sharedPreferencesHelper.read(
+        SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
+          progressSyncJobStatus.syncOperation.name,
+        1L,
+      )
+    val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
+    val currentProgress: Int
+    val currentTotalRecords =
+      if (isProgressTotalLess) {
+        currentProgress =
+          totalRecordsOverall.toInt() - progressSyncJobStatus.total +
+            progressSyncJobStatus.completed
+        totalRecordsOverall.toInt()
+      } else {
+        sharedPreferencesHelper.write(
+          SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
+            progressSyncJobStatus.syncOperation.name,
+          progressSyncJobStatus.total.toLong(),
+        )
+        currentProgress = progressSyncJobStatus.completed
+        progressSyncJobStatus.total
+      }
+
+    return getSyncProgress(currentProgress, currentTotalRecords)
+  }
+
+  fun updateAppDrawerUIState(
+    isSyncUpload: Boolean? = null,
+    currentSyncJobStatus: CurrentSyncJobStatus?,
+    percentageProgress: Int? = null,
+  ) {
+    appDrawerUiState.value =
+      AppDrawerUIState(
+        isSyncUpload = isSyncUpload,
+        currentSyncJobStatus = currentSyncJobStatus,
+        percentageProgress = percentageProgress,
+      )
+  }
+
+  fun updateUnSyncedResourcesCount() {
+    viewModelScope.launch {
+      unSyncedResourcesCount.intValue = async { fhirEngine.countUnSyncedResources() }.await().size
+    }
+  }
+
+  private fun getSyncProgress(completed: Int, total: Int) =
+    completed * 100 / if (total > 0) total else 1
 
   companion object {
     const val SYNC_TIMESTAMP_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"

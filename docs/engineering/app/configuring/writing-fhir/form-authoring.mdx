@@ -1,0 +1,72 @@
+# Form Authoring
+
+## Things to consider when writing forms
+- Make sure that the `enableWhen` expressions are accompanied by the `enableBehaviour` attribute in order to avoid form crashes.
+- The `enableBehaviour` defines whether the expressions on the `enableWhen` are to use `and` or `or` logic.
+- The `enableBehaviour` options are `any` for `or` & `all` for `and`.
+
+```json
+{
+  "enableWhen": [
+    {
+      "question": "cf0093a9-1e38-422b-fc81-273caa0bb48a",
+      "operator": "=",
+      "answerCoding": {
+        "system": "urn:uuid:d3051c21-8668-412e-a2dd-105cf274b260",
+        "code": "no"
+      }
+    },
+    {
+      "question": "94357450-e603-49f7-899c-464ecd10ddd1",
+      "operator": "=",
+      "answerCoding": {
+        "system": "urn:uuid:4ae66618-142d-4e2c-dd66-5d63c14b83a9",
+        "code": "no"
+      }
+    },
+    {
+      "question": "14648d8c-c88f-40be-9f25-66d7ba621482",
+      "operator": "=",
+      "answerCoding": {
+        "system": "urn:uuid:08516020-d926-4463-863e-d6f45b0d317b",
+        "code": "no"
+      }
+    }
+  ],
+  "enableBehaviour":"all"
+}
+```
+
+## How to pass answers/data from Questionnaire A to B
+1. Submit Questionnaire A
+2. In Questionnaire B, use X-FHIR-Query variable to search the Questionnaire Response of Questionnaire A that also belongs to the Patient that did the submission
+```
+{
+  "url": "http://hl7.org/fhir/StructureDefinition/variable",
+  "valueExpression": {
+    "name": "qr-search-phq9",
+    "language": "application/x-fhir-query",
+    "expression": "QuestionnaireResponse?subject={{%patient.id.replaceMatches('/_history/.*', '')}}&questionnaire=Questionnaire/57"
+  }
+},
+{
+  "url": "http://hl7.org/fhir/StructureDefinition/variable",
+  "valueExpression": {
+    "name": "qr-phq9",
+    "language": "text/fhirpath",
+    "expression": "%qr-search-phq9.entry.first().resource"
+  }
+}
+```
+3. In Questionnaire B, get the answer of Questionnaire A through the variable that contains Questionnaire Response of Questionnaire A
+```
+{
+  "url": "http://hl7.org/fhir/StructureDefinition/variable",
+  "valueExpression": {
+    "name": "phq9-p1",
+    "language": "text/fhirpath",
+    "expression": "%qr-phq9.item.descendants().where(linkId='f1.3.1').answer.value"
+  }
+}
+```
+4. Call that variable in a calculated-expression so it can be populated into the field

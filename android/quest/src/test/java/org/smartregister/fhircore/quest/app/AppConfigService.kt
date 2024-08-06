@@ -71,8 +71,6 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
       ),
     )
 
-  override fun provideConfigurationSyncPageSize(): String = "100"
-
   companion object {
     const val CARETEAM_SYSTEM = "http://fake.tag.com/CareTeam#system"
     const val CARETEAM_DISPLAY = "Practitioner CareTeam"

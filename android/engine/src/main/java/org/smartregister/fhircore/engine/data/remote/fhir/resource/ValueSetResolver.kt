@@ -55,7 +55,9 @@ constructor(val fhirEngine: FhirEngine, private val workerContext: SimpleWorkerC
 
   private suspend fun fetchValuesSetFromWorkerContext(uri: String): List<Coding> {
     val valueSets = fhirEngine.search<ValueSet> { filter(ValueSet.URL, { value = uri }) }
-    println("ValueSets found: ${FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(valueSets.first().resource)}")
+    println(
+      "ValueSets found: ${FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(valueSets.first().resource)}",
+    )
 
     // Ideally, loop over include then if concept generate coding with include system, if no
     // concept use the codesystem + filter

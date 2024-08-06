@@ -18,6 +18,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
@@ -34,6 +35,8 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -67,6 +70,7 @@ fun List(
   viewProperties: ListProperties,
   resourceData: ResourceData,
   navController: NavController,
+  decodedImageMap: SnapshotStateMap<String, Bitmap> = mutableStateMapOf(),
 ) {
   val density = LocalDensity.current
   val currentListResourceData = resourceData.listResourceDataMap?.get(viewProperties.id)
@@ -102,32 +106,51 @@ fun List(
                 .testTag(VERTICAL_ORIENTATION),
           ) {
             currentListResourceData.forEachIndexed { index, listResourceData ->
-              Spacer(modifier = modifier.height(6.dp))
-              Column(
-                modifier =
-                  Modifier.padding(
-                    horizontal = viewProperties.padding.dp,
-                    vertical = viewProperties.padding.div(4).dp,
-                  ),
-              ) {
-                AnimatedVisibility(
-                  visible = true,
-                  enter =
-                    slideInVertically {
-                      // Slide in from 40 dp from the top.
-                      with(density) { -40.dp.roundToPx() }
-                    },
-                ) {
-                  ViewRenderer(
-                    viewProperties = viewProperties.registerCard.views,
-                    resourceData = listResourceData,
-                    navController = navController,
-                  )
+              // Interpolate ViewProperties up-front to hide the child view spacers and divider when
+              // the child view is not visible
+              val interpolatedChildViewProperties =
+                viewProperties.registerCard.views.map { viewProperty ->
+                  viewProperty.interpolate(listResourceData.computedValuesMap)
                 }
-              }
-              Spacer(modifier = modifier.height(6.dp))
-              if (index < currentListResourceData.lastIndex && viewProperties.showDivider) {
-                Divider(color = DividerColor, thickness = 0.5.dp)
+              // At least 1 child view must be visible in order to show the spacers and divider
+              val areChildViewsVisible =
+                interpolatedChildViewProperties.any { viewProperty ->
+                  viewProperty.visible.toBooleanStrict()
+                }
+              if (areChildViewsVisible) {
+                Spacer(modifier = modifier.height(6.dp))
+                Column(
+                  modifier =
+                    Modifier.padding(
+                      horizontal = viewProperties.padding.dp,
+                      vertical = viewProperties.padding.div(4).dp,
+                    ),
+                ) {
+                  AnimatedVisibility(
+                    visible = true,
+                    enter =
+                      slideInVertically {
+                        // Slide in from 40 dp from the top.
+                        with(density) { -40.dp.roundToPx() }
+                      },
+                  ) {
+                    ViewRenderer(
+                      viewProperties = interpolatedChildViewProperties,
+                      resourceData = listResourceData,
+                      navController = navController,
+                      decodedImageMap = decodedImageMap,
+                      areViewPropertiesInterpolated =
+                        true, // Prevents double interpolation (in this function and inside the
+                      // ViewRenderer) which is a waste
+                    )
+                  }
+                }
+                Spacer(modifier = modifier.height(6.dp))
+                // viewProperties in this case belongs to the List, setting the showDivider will
+                // apply to all child items under the List
+                if (index < currentListResourceData.lastIndex && viewProperties.showDivider) {
+                  Divider(color = DividerColor, thickness = 0.5.dp)
+                }
               }
             }
           }
@@ -138,6 +161,7 @@ fun List(
                 viewProperties = viewProperties.registerCard.views,
                 resourceData = listResourceData,
                 navController = navController,
+                decodedImageMap = mutableStateMapOf(),
               )
             }
           }

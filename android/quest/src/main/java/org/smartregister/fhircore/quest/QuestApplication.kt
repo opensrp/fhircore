@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest
 
+import android.app.Application
 import android.database.CursorWindow
 import android.util.Log
 import androidx.annotation.VisibleForTesting
@@ -32,7 +33,6 @@ import io.sentry.android.core.SentryAndroidOptions
 import io.sentry.android.fragment.FragmentLifecycleIntegration
 import java.net.URL
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ValueSetResolver
 import org.smartregister.fhircore.engine.util.extension.getSubDomain
@@ -41,7 +41,7 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireItemViewHo
 import timber.log.Timber
 
 @HiltAndroidApp
-class QuestApplication : OpenSrpApplication(), DataCaptureConfig.Provider, Configuration.Provider {
+class QuestApplication : Application(), DataCaptureConfig.Provider, Configuration.Provider {
   @EntryPoint
   @InstallIn(SingletonComponent::class)
   interface HiltWorkerFactoryEntryPoint {
@@ -129,9 +129,4 @@ class QuestApplication : OpenSrpApplication(), DataCaptureConfig.Provider, Confi
         EntryPoints.get(this, HiltWorkerFactoryEntryPoint::class.java).workerFactory(),
       )
       .build()
-
-  override fun getFhirServerHost(): URL? {
-    fhirServerHost = fhirServerHost ?: URL(BuildConfig.FHIR_BASE_URL)
-    return fhirServerHost
-  }
 }

@@ -27,6 +27,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.math.ceil
@@ -55,7 +56,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -71,7 +71,6 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val dispatcherProvider: DispatcherProvider,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
 ) : ViewModel() {
 
@@ -79,7 +78,6 @@ constructor(
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
   val registerUiState = mutableStateOf(RegisterUiState())
   val currentPage: MutableState<Int> = mutableIntStateOf(0)
-  val searchText = mutableStateOf("")
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<ResourceData>>> =
     MutableStateFlow(emptyFlow())
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
@@ -90,6 +88,8 @@ constructor(
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
+  private val _currentSyncJobStatusFlow: MutableSharedFlow<CurrentSyncJobStatus?> =
+    MutableSharedFlow(0)
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
@@ -167,11 +167,10 @@ constructor(
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
-        searchText.value = event.searchText
         if (event.searchText.isEmpty()) {
           paginateRegisterData(registerUiState.value.registerId)
         } else {
-          filterRegisterData(event)
+          filterRegisterData(event.searchText)
         }
       }
       is RegisterEvent.MoveToNextPage -> {
@@ -185,7 +184,7 @@ constructor(
       RegisterEvent.ResetFilterRecordsCount -> _filteredRecordsCount.longValue = -1
     }
 
-  fun filterRegisterData(event: RegisterEvent.SearchRegister) {
+  fun filterRegisterData(searchText: String) {
     val searchBar = registerUiState.value.registerConfiguration?.searchBar
     // computedRules (names of pre-computed rules) must be provided for search to work.
     if (searchBar?.computedRules != null) {
@@ -196,7 +195,7 @@ constructor(
             searchBar.computedRules!!.any { ruleName ->
               // if ruleName not found in map return {-1}; check always return false hence no data
               val value = resourceData.computedValuesMap[ruleName]?.toString() ?: "{-1}"
-              value.contains(other = event.searchText, ignoreCase = true)
+              value.contains(other = searchText, ignoreCase = true)
             }
           }
         }
@@ -320,9 +319,7 @@ constructor(
           newFilterCriteria.add(filterCriterionConfig)
         }
       }
-      it.copy(
-        filterCriteria = if (newFilterCriteria.isEmpty()) it.filterCriteria else newFilterCriteria,
-      )
+      it.copy(filterCriteria = newFilterCriteria)
     }
 
   private fun convertAnswerToFilterCriterion(
@@ -388,7 +385,7 @@ constructor(
           computedRule = dateFilterCriterion.computedRule,
           prefix = dateFilterCriterion.prefix,
           valueAsDateTime = true,
-          value = answerComponent.valueDecimalType.asStringValue(),
+          value = answerComponent.valueDateTimeType.asStringValue(),
         )
       }
       answerComponent.hasValueDateType() -> {
@@ -398,7 +395,7 @@ constructor(
           dataType = DataType.DATE,
           computedRule = dateFilterCriterion.computedRule,
           prefix = dateFilterCriterion.prefix,
-          valueAsDateTime = false,
+          valueAsDateTime = dateFilterCriterion.valueAsDateTime,
           value = answerComponent.valueDateType.asStringValue(),
         )
       }
@@ -432,7 +429,7 @@ constructor(
   ) {
     if (registerId.isNotEmpty()) {
       val paramsMap: Map<String, String> = params.toParamDataMap()
-      viewModelScope.launch(dispatcherProvider.io()) {
+      viewModelScope.launch {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
 
         _totalRecordsCount.longValue =
@@ -478,6 +475,7 @@ constructor(
                 .toInt(),
             progressPercentage = _percentageProgress,
             isSyncUpload = _isUploadSync,
+            currentSyncJobStatus = _currentSyncJobStatusFlow,
             params = paramsMap,
           )
       }
@@ -486,10 +484,5 @@ constructor(
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
-  }
-
-  suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {
-    _percentageProgress.emit(progress)
-    _isUploadSync.emit(isUploadSync)
   }
 }

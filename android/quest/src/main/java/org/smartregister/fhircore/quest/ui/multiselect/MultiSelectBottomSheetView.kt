@@ -53,7 +53,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -62,6 +61,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.ui.multiselect.MultiSelectView
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
@@ -69,7 +69,7 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 @Composable
 fun MultiSelectBottomSheetView(
   rootTreeNodes: SnapshotStateList<TreeNode<String>>,
-  selectedNodes: SnapshotStateMap<String, ToggleableState>,
+  syncLocationStateMap: SnapshotStateMap<String, SyncLocationState>,
   title: String?,
   onDismiss: () -> Unit,
   searchTextState: MutableState<String>,
@@ -176,14 +176,14 @@ fun MultiSelectBottomSheetView(
             Column {
               MultiSelectView(
                 rootTreeNode = it,
-                selectedNodes = selectedNodes,
+                syncLocationStateMap = syncLocationStateMap,
               ) { treeNode ->
                 Column { Text(text = treeNode.data) }
               }
             }
           }
           item {
-            if (selectedNodes.isNotEmpty() && rootTreeNodes.isNotEmpty()) {
+            if (syncLocationStateMap.isNotEmpty() && rootTreeNodes.isNotEmpty()) {
               Button(
                 onClick = { onSelectionDone() },
                 modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),

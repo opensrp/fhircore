@@ -180,6 +180,14 @@ class RulesEngineServiceTest : RobolectricTest() {
   }
 
   @Test
+  fun `generateTaskServiceStatus() should return en empty string when Task is NULL`() {
+    Assert.assertEquals(
+      "",
+      rulesEngineService.generateTaskServiceStatus(null),
+    )
+  }
+
+  @Test
   fun `generateMedicationServiceStatus() should return UPCOMING when Task#status is NULL`() {
     val medicationRequest =
       MedicationRequest().apply { status = MedicationRequest.MedicationRequestStatus.DRAFT }
@@ -243,6 +251,16 @@ class RulesEngineServiceTest : RobolectricTest() {
 
     Assert.assertEquals(
       ServiceStatus.EXPIRED.name,
+      rulesEngineService.generateTaskServiceStatus(task),
+    )
+  }
+
+  @Test
+  fun `generateTaskServiceStatus() should return FAILED when Task#status is FAILED`() {
+    val task = Task().apply { status = Task.TaskStatus.FAILED }
+
+    Assert.assertEquals(
+      ServiceStatus.FAILED.name,
       rulesEngineService.generateTaskServiceStatus(task),
     )
   }

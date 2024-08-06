@@ -33,6 +33,7 @@ import io.mockk.verify
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.inject.Inject
+import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import okhttp3.internal.http.RealResponseBody
@@ -636,6 +637,25 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testDownloadNowWorkflowConfigs() {
     loginViewModel.downloadNowWorkflowConfigs()
     verify { workManager.enqueue(any<OneTimeWorkRequest>()) }
+  }
+
+  @Test
+  fun testWritePractitionerDetailsToShredPrefSavesPractitionerLocationId() {
+    val locationId = "ABCD123"
+    loginViewModel.writePractitionerDetailsToShredPref(
+      careTeams = listOf(""),
+      careTeam = listOf(""),
+      organization = listOf(""),
+      organizations = listOf(""),
+      location = listOf(""),
+      locations = listOf(locationId),
+      fhirPractitionerDetails = PractitionerDetails(),
+      locationHierarchies = listOf(LocationHierarchy()),
+    )
+    assertEquals(
+      locationId,
+      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name),
+    )
   }
 
   private fun updateCredentials() {

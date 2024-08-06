@@ -22,8 +22,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.datacapture.extensions.logicalId
+import com.google.android.fhir.db.ResourceNotFoundException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -48,7 +48,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -56,7 +55,9 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
+import org.smartregister.fhircore.quest.util.extensions.decodeBinaryResourcesToBitmap
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import org.smartregister.fhircore.quest.util.extensions.loadRemoteImagesBitmaps
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
@@ -97,14 +98,11 @@ constructor(
       )
     profileConfig.overFlowMenuItems
       .filter { it.icon != null && !it.icon!!.reference.isNullOrEmpty() }
-      .forEach {
-        val resourceId = it.icon!!.reference!!.extractLogicalIdUuid()
-        viewModelScope.launch(dispatcherProvider.io()) {
-          registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-            it.icon!!.decodedBitmap = binary.data.decodeToBitmap()
-          }
-        }
-      }
+      .decodeBinaryResourcesToBitmap(
+        viewModelScope,
+        registerRepository,
+        configurationRegistry.decodedImageMap,
+      )
   }
 
   suspend fun retrieveProfileUiState(
@@ -133,6 +131,7 @@ constructor(
           profileConfiguration = profileConfigs,
           snackBarTheme = applicationConfiguration.snackBarTheme,
           showDataLoadProgressIndicator = false,
+          decodedImageMap = configurationRegistry.decodedImageMap,
         )
 
       profileConfigs.views.retrieveListProperties().forEach { listProperties ->
@@ -142,6 +141,19 @@ constructor(
           computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
           listResourceDataStateMap = listResourceDataStateMap,
         )
+        if (
+          listResourceDataStateMap[listProperties.id] != null &&
+            listResourceDataStateMap[listProperties.id]?.size!! > 0
+        ) {
+          listResourceDataStateMap[listProperties.id]?.forEach { resourceData ->
+            loadRemoteImagesBitmaps(
+              profileConfiguration.views,
+              registerRepository,
+              resourceData.computedValuesMap,
+              configurationRegistry.decodedImageMap,
+            )
+          }
+        }
       }
     }
   }

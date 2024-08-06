@@ -25,9 +25,11 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -49,19 +51,21 @@ class MultiSelectBottomSheetFragment() : BottomSheetDialogFragment() {
   }
 
   private fun onSelectionDone() {
-    multiSelectViewModel.saveSelectedLocations(requireContext())
-    appMainViewModel.run {
-      if (requireContext().isDeviceOnline()) {
-        triggerSync()
-      } else {
-        requireContext()
-          .showToast(
-            getString(org.smartregister.fhircore.engine.R.string.sync_failed),
-            Toast.LENGTH_LONG,
-          )
+    lifecycleScope.launch {
+      multiSelectViewModel.saveSelectedLocations(requireContext())
+      appMainViewModel.run {
+        if (requireContext().isDeviceOnline()) {
+          triggerSync()
+        } else {
+          requireContext()
+            .showToast(
+              getString(org.smartregister.fhircore.engine.R.string.sync_failed),
+              Toast.LENGTH_LONG,
+            )
+        }
       }
+      dismiss()
     }
-    dismiss()
   }
 
   override fun onCreateView(
@@ -74,14 +78,14 @@ class MultiSelectBottomSheetFragment() : BottomSheetDialogFragment() {
         AppTheme {
           MultiSelectBottomSheetView(
             rootTreeNodes = multiSelectViewModel.rootTreeNodes,
-            selectedNodes = multiSelectViewModel.selectedNodes,
+            syncLocationStateMap = multiSelectViewModel.selectedNodes,
             title = bottomSheetArgs.screenTitle,
             onDismiss = { dismiss() },
             searchTextState = multiSelectViewModel.searchTextState,
             onSearchTextChanged = multiSelectViewModel::onTextChanged,
             onSelectionDone = ::onSelectionDone,
             search = multiSelectViewModel::search,
-            isLoading = multiSelectViewModel.flag.observeAsState(),
+            isLoading = multiSelectViewModel.isLoading.observeAsState(),
           )
         }
       }

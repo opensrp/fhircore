@@ -21,13 +21,14 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
-import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.datacapture.extensions.logicalId
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Library
@@ -60,7 +61,7 @@ class FhirEngineExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun searchCompositionByIdentifier() = runBlocking {
+  fun searchCompositionByIdentifier() = runTest {
     coEvery { fhirEngine.search<Composition>(any()) } returns
       listOf(SearchResult(resource = Composition().apply { id = "123" }, null, null))
 

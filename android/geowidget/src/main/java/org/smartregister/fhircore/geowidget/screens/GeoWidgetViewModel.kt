@@ -16,107 +16,53 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
-import android.content.Context
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.get
-import com.google.android.fhir.search.search
-import com.mapbox.geojson.FeatureCollection
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.LinkedList
 import javax.inject.Inject
-import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.Location
-import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.geowidget.KujakuFhirCoreConverter
-import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
-import timber.log.Timber
+import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
+import org.smartregister.fhircore.geowidget.model.ServicePointType
 
 @HiltViewModel
-class GeoWidgetViewModel
-@Inject
-constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: DispatcherProvider) :
+class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherProvider) :
   ViewModel() {
 
-  val geoWidgetEventLiveData = MutableLiveData<GeoWidgetEvent>()
+  val features = MutableLiveData<List<GeoJsonFeature>>(LinkedList())
 
-  suspend fun getFamiliesFeatureCollection(context: Context): FeatureCollection {
-    val families = getFamilies()
-
-    return KujakuFhirCoreConverter()
-      .generateFeatureCollection(context, families.map { listOf(it.first, it.second) })
-  }
-
-  fun getFamiliesFeatureCollectionStream(context: Context): LiveData<FeatureCollection> {
-    val featureCollectionLiveData = MutableLiveData<FeatureCollection>()
-
-    viewModelScope.launch(dispatcherProvider.io()) {
-      val familyFeatures = getFamiliesFeatureCollection(context)
-      featureCollectionLiveData.postValue(familyFeatures)
-    }
-
-    return featureCollectionLiveData
-  }
-
-  suspend fun getFamilies(): List<Pair<Group, Location>> {
-    val coding =
-      Coding().apply {
-        system = "http://hl7.org/fhir/group-type"
-        code = "person"
-      }
-
-    val familiesWithLocations =
-      defaultRepository.fhirEngine
-        .search<Group> { filter(Group.TYPE, { value = of(coding) }) }
-        .asSequence()
-        .map { it.resource }
-        .filter {
-          // it.hasExtension("http://build.fhir.org/extension-location-boundary-geojson.html")
-          it.characteristic.firstOrNull { characteristic ->
-            characteristic.value is Reference &&
-              characteristic.valueReference.reference.contains(ResourceType.Location.name)
-          } != null
-        }
-
-    val familiesList = ArrayList<Pair<Group, Location>>()
-
-    familiesWithLocations.forEach { family ->
-      try {
-        val familyLocation = defaultRepository.fhirEngine.get<Location>(familyLocationId(family))
-
-        familiesList.add(Pair(family, familyLocation))
-      } catch (ex: ResourceNotFoundException) {
-        Timber.e(ex)
-      }
-    }
-
-    return familiesList
-  }
-
-  private fun familyLocationId(family: Group) =
-    family.characteristic
-      .firstOrNull { characteristic ->
-        characteristic.value is Reference &&
-          characteristic.valueReference.reference.contains("Location")
-      }!!
-      .valueReference
-      .referenceElement
-      .idPart
-
-  fun saveLocation(location: Location): LiveData<Boolean> {
-    val liveData = MutableLiveData<Boolean>()
-    viewModelScope.launch(dispatcherProvider.io()) {
-      defaultRepository.create(true, location)
-      liveData.postValue(true)
-    }
-
-    return liveData
+  fun getServicePointKeyToType(): Map<String, ServicePointType> {
+    val map: MutableMap<String, ServicePointType> = HashMap()
+    map[ServicePointType.EPP.name.lowercase()] = ServicePointType.EPP
+    map[ServicePointType.CEG.name.lowercase()] = ServicePointType.CEG
+    map[ServicePointType.CHRD1.name.lowercase()] = ServicePointType.CHRD1
+    map[ServicePointType.CHRD2.name.lowercase()] = ServicePointType.CHRD2
+    map[ServicePointType.DRSP.name.lowercase()] = ServicePointType.DRSP
+    map[ServicePointType.MSP.name.lowercase()] = ServicePointType.MSP
+    map[ServicePointType.SDSP.name.lowercase()] = ServicePointType.SDSP
+    map[ServicePointType.CSB1.name.lowercase()] = ServicePointType.CSB1
+    map[ServicePointType.CSB2.name.lowercase()] = ServicePointType.CSB2
+    map[ServicePointType.CHRR.name.lowercase()] = ServicePointType.CHRR
+    map[ServicePointType.WAREHOUSE.name.lowercase()] = ServicePointType.WAREHOUSE
+    map[ServicePointType.WATER_POINT.name.lowercase()] = ServicePointType.WATER_POINT
+    map[ServicePointType.PRESCO.name.lowercase()] = ServicePointType.PRESCO
+    map[ServicePointType.MEAH.name.lowercase()] = ServicePointType.MEAH
+    map[ServicePointType.DREAH.name.lowercase()] = ServicePointType.DREAH
+    map[ServicePointType.MPPSPF.name.lowercase()] = ServicePointType.MPPSPF
+    map[ServicePointType.DRPPSPF.name.lowercase()] = ServicePointType.DRPPSPF
+    map[ServicePointType.NGO_PARTNER.name.lowercase()] = ServicePointType.NGO_PARTNER
+    map[ServicePointType.SITE_COMMUNAUTAIRE.name.lowercase()] = ServicePointType.SITE_COMMUNAUTAIRE
+    map[ServicePointType.DRJS.name.lowercase()] = ServicePointType.DRJS
+    map[ServicePointType.INSTAT.name.lowercase()] = ServicePointType.INSTAT
+    map[ServicePointType.BSD.name.lowercase()] = ServicePointType.BSD
+    map[ServicePointType.MEN.name.lowercase()] = ServicePointType.MEN
+    map[ServicePointType.DREN.name.lowercase()] = ServicePointType.DREN
+    map[ServicePointType.DISTRICT_PPSPF.name.lowercase()] = ServicePointType.DISTRICT_PPSPF
+    map[ServicePointType.MAIRIE.name.lowercase()] = ServicePointType.MAIRIE
+    map[ServicePointType.ECOLE_COMMUNAUTAIRE.name.lowercase()] =
+      ServicePointType.ECOLE_COMMUNAUTAIRE
+    map[ServicePointType.ECOLE_PRIVÉ.name.lowercase()] = ServicePointType.ECOLE_PRIVÉ
+    map[ServicePointType.LYCÉE.name.lowercase()] = ServicePointType.LYCÉE
+    return map
   }
 }
