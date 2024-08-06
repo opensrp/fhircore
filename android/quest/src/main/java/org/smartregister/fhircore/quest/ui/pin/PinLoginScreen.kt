@@ -126,10 +126,12 @@ fun PinLoginPage(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       if (
-        showForgotPinDialog && !applicationConfiguration.loginConfig.contactNumber.isNullOrEmpty()
+        showForgotPinDialog &&
+          !applicationConfiguration.loginConfig.supervisorContactNumber.isNullOrEmpty()
       ) {
         ForgotPinDialog(
-          applicationConfiguration = applicationConfiguration,
+          supervisorContactNumber =
+            applicationConfiguration.loginConfig.supervisorContactNumber.toString(),
           forgotPin = forgotPin,
           onDismissDialog = { showForgotPinDialog = false },
         )
@@ -277,7 +279,7 @@ private fun PinTopBar(
 
 @Composable
 fun ForgotPinDialog(
-  applicationConfiguration: ApplicationConfiguration,
+  supervisorContactNumber: String?,
   forgotPin: (Context) -> Unit,
   onDismissDialog: () -> Unit,
   modifier: Modifier = Modifier,
@@ -295,8 +297,8 @@ fun ForgotPinDialog(
     },
     text = {
       Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-        Text(text = stringResource(R.string.please_contact_supervisor), fontSize = 16.sp)
-        Text(applicationConfiguration.loginConfig.contactNumber.toString())
+        Text(text = stringResource(R.string.call_supervisor), fontSize = 16.sp)
+        Text(supervisorContactNumber.toString())
       }
     },
     buttons = {

@@ -21,7 +21,8 @@
   ],
   "loginConfig": {
     "showLogo": true,
-    "enablePin": true
+    "enablePin": true,
+    "supervisorContactNumber": "1234567890"
   },
   "deviceToDeviceSync": {
     "resourcesToSync": [

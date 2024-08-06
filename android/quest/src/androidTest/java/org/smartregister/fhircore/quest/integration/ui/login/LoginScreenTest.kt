@@ -62,7 +62,7 @@ class LoginScreenTest {
     ApplicationConfiguration(
       appTitle = "My app",
       appId = "app/debug",
-      loginConfig = LoginConfig(showLogo = true, contactNumber = "123-456-7890"),
+      loginConfig = LoginConfig(showLogo = true, supervisorContactNumber = "123-456-7890"),
     )
 
   private val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -124,7 +124,7 @@ class LoginScreenTest {
       .onNodeWithText(context.getString(R.string.please_contact_supervisor))
       .assertIsDisplayed()
     composeRule
-      .onNodeWithText(applicationConfiguration.loginConfig.contactNumber.toString())
+      .onNodeWithText(applicationConfiguration.loginConfig.supervisorContactNumber.toString())
       .assertIsDisplayed()
     composeRule.onNodeWithText(context.getString(R.string.cancel)).assertIsDisplayed()
     composeRule.onNodeWithText(context.getString(R.string.dial_number)).assertIsDisplayed()

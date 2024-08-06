@@ -24,7 +24,6 @@ import androidx.activity.viewModels
 import androidx.annotation.VisibleForTesting
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
-import androidx.lifecycle.Observer
 import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -56,13 +55,12 @@ open class LoginActivity : BaseMultiLanguageActivity() {
     this.applyWindowInsetListener()
     loginViewModel.launchDialPad.observe(
       this,
-      Observer { dialPadUri ->
-        dialPadUri?.let {
-          val intent = Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(dialPadUri) }
-          startActivity(intent)
-        }
-      },
-    )
+    ) { dialPadUri ->
+      dialPadUri?.let {
+        val intent = Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(dialPadUri) }
+        startActivity(intent)
+      }
+    }
     // Cancel sync background job to get new auth token; login required, refresh token expired
     val cancelBackgroundSync =
       intent.extras?.getBoolean(TokenAuthenticator.CANCEL_BACKGROUND_SYNC, false) ?: false

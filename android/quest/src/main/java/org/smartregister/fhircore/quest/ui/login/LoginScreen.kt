@@ -168,7 +168,8 @@ fun LoginPage(
   ) {
     if (showForgotPasswordDialog) {
       ForgotPasswordDialog(
-        applicationConfiguration = applicationConfiguration,
+        supervisorContactNumber =
+          applicationConfiguration.loginConfig.supervisorContactNumber.toString(),
         forgotPassword = forgotPassword,
         onDismissDialog = { showForgotPasswordDialog = false },
       )
@@ -391,7 +392,7 @@ fun LoginPage(
 
 @Composable
 fun ForgotPasswordDialog(
-  applicationConfiguration: ApplicationConfiguration,
+  supervisorContactNumber: String?,
   forgotPassword: () -> Unit,
   onDismissDialog: () -> Unit,
   modifier: Modifier = Modifier,
@@ -407,8 +408,8 @@ fun ForgotPasswordDialog(
     },
     text = {
       Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-        Text(text = stringResource(R.string.please_contact_supervisor), fontSize = 16.sp)
-        Text(applicationConfiguration.loginConfig.contactNumber.toString())
+        Text(text = stringResource(R.string.call_supervisor), fontSize = 16.sp)
+        Text(supervisorContactNumber.toString())
       }
     },
     buttons = {

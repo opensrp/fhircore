@@ -181,8 +181,8 @@ constructor(
   }
 
   fun forgotPassword(context: Context) {
-    if (!applicationConfiguration.loginConfig.contactNumber.isNullOrEmpty()) {
-      _launchDialPad.value = "tel:${applicationConfiguration.loginConfig.contactNumber}"
+    if (!applicationConfiguration.loginConfig.supervisorContactNumber.isNullOrEmpty()) {
+      _launchDialPad.value = "${applicationConfiguration.loginConfig.supervisorContactNumber}"
     } else {
       Toast.makeText(context, context.getString(R.string.supervisor_contact), Toast.LENGTH_LONG)
         .show()

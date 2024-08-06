@@ -155,7 +155,7 @@ class PinViewModelTest : RobolectricTest() {
   @Test
   fun testForgotPinLaunchesDialer() {
     configurationRegistry.configsJsonMap[ConfigType.Application.name] =
-      "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{\"contactNumber\":\"1234567890\"}}"
+      "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{\"supervisorContactNumber\":\"1234567890\"}}"
     val launchDialPadObserver =
       Observer<String?> { dialPadUri ->
         if (dialPadUri != null) {

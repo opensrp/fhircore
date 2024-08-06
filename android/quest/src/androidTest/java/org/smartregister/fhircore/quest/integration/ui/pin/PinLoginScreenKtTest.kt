@@ -113,8 +113,8 @@ class PinLoginScreenKtTest {
     forgotPinNode.assertExists().assertIsDisplayed().assertHasClickAction()
 
     forgotPinNode.performClick()
-    composeRule.onNodeWithText("CANCEL").assertExists().assertIsDisplayed()
-    composeRule.onNodeWithText("DIAL NUMBER").assertExists().assertIsDisplayed()
+    composeRule.onNodeWithText("CANCEL").assertIsDisplayed().assertHasClickAction()
+    composeRule.onNodeWithText("DIAL NUMBER").assertIsDisplayed().assertHasClickAction()
   }
 
   @Test

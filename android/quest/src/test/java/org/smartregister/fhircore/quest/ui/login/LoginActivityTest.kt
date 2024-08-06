@@ -99,7 +99,7 @@ class LoginActivityTest : RobolectricTest() {
 
   @Test
   fun testLaunchDialPadStartsDialIntentWithCorrectPhoneNumber() {
-    val phoneNumber = "tel:1234567890"
+    val phoneNumber = "1234567890"
     loginActivity.launchDialPad(phoneNumber)
 
     val resultIntent = shadowOf(loginActivity).nextStartedActivity
