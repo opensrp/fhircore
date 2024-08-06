@@ -21,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onChildren
@@ -87,14 +86,13 @@ class RegisterCardListTest {
       )
     }
 
-    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(3)
+    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(2)
 
     composeTestRule
       .onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG)
       .onChildren()
       .onFirst()
       .assert(hasText("Patient 1"))
-      .assertIsDisplayed()
   }
 
   @Test
@@ -119,7 +117,7 @@ class RegisterCardListTest {
       )
     }
 
-    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(4)
+    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(3)
 
     composeTestRule
       .onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG)

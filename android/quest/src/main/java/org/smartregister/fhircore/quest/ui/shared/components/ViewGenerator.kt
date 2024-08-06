@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +34,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,6 +54,7 @@ import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperti
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
 import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
+import org.smartregister.fhircore.engine.configuration.view.StackViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -69,6 +73,7 @@ fun GenerateView(
   properties: ViewProperties,
   resourceData: ResourceData,
   navController: NavController,
+  decodedImageMap: SnapshotStateMap<String, Bitmap> = mutableStateMapOf(),
 ) {
   if (properties.visible.toBoolean()) {
     when (properties.viewType) {
@@ -107,6 +112,7 @@ fun GenerateView(
                 properties = properties,
                 resourceData = resourceData,
                 navController = navController,
+                decodedImageMap = decodedImageMap,
               )
             }
           }
@@ -119,6 +125,9 @@ fun GenerateView(
                 ViewAlignment.END -> Alignment.End
                 ViewAlignment.CENTER -> Alignment.CenterHorizontally
                 ViewAlignment.NONE -> Alignment.Start
+                else -> {
+                  Alignment.Start
+                }
               },
             modifier =
               modifier
@@ -146,6 +155,7 @@ fun GenerateView(
                 properties = child.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
                 navController = navController,
+                decodedImageMap = decodedImageMap,
               )
               if (properties.showDivider.toBoolean() && index < children.lastIndex) {
                 Divider(
@@ -179,6 +189,7 @@ fun GenerateView(
                 properties = properties.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
                 navController = navController,
+                decodedImageMap = decodedImageMap,
               )
             }
           }
@@ -191,6 +202,9 @@ fun GenerateView(
                 ViewAlignment.END -> Alignment.Bottom
                 ViewAlignment.CENTER -> Alignment.CenterVertically
                 ViewAlignment.NONE -> Alignment.CenterVertically
+                else -> {
+                  Alignment.CenterVertically
+                }
               },
             modifier =
               modifier
@@ -218,6 +232,7 @@ fun GenerateView(
                 properties = child.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
                 navController = navController,
+                decodedImageMap = decodedImageMap,
               )
             }
           }
@@ -236,6 +251,7 @@ fun GenerateView(
           viewProperties = properties as CardViewProperties,
           resourceData = resourceData,
           navController = navController,
+          decodedImageMap = decodedImageMap,
         )
       ViewType.PERSONAL_DATA ->
         PersonalDataView(
@@ -254,6 +270,7 @@ fun GenerateView(
           viewProperties = properties as ListProperties,
           resourceData = resourceData,
           navController = navController,
+          decodedImageMap = decodedImageMap,
         )
       ViewType.IMAGE ->
         Image(
@@ -261,6 +278,15 @@ fun GenerateView(
           imageProperties = properties as ImageProperties,
           resourceData = resourceData,
           navController = navController,
+          decodedImageMap = decodedImageMap,
+        )
+      ViewType.STACK ->
+        StackView(
+          modifier = modifier,
+          stackViewProperties = properties as StackViewProperties,
+          resourceData = resourceData,
+          navController = navController,
+          decodedImageMap = decodedImageMap,
         )
     }
   }

@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.integration.ui.shared.components
 
 import android.graphics.Bitmap
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -43,6 +44,7 @@ import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperti
 import org.smartregister.fhircore.engine.configuration.view.RowArrangement
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
+import org.smartregister.fhircore.engine.configuration.view.StackViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
@@ -368,21 +370,55 @@ class ViewGeneratorTest {
   @Test
   fun testImageIsRenderedFromDecodedBitmap() {
     composeRule.setContent {
+      val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+      decodedImageMap["testImageReference"] = Bitmap.createBitmap(100, 16, Bitmap.Config.ARGB_8888)
       GenerateView(
         properties =
           ImageProperties(
             imageConfig =
               ImageConfig(
                 ICON_TYPE_REMOTE,
-                decodedBitmap = Bitmap.createBitmap(100, 16, Bitmap.Config.ARGB_8888),
+                reference = "testImageReference",
               ),
+          ),
+        resourceData = resourceData,
+        navController = TestNavHostController(LocalContext.current),
+        decodedImageMap = decodedImageMap,
+      )
+    }
+    composeRule
+      .onNodeWithTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
+
+  @Test
+  fun testStackViewIsRenderedCorrectlyWhenStackViewPropertiesHasChildren() {
+    composeRule.setContent {
+      GenerateView(
+        properties =
+          StackViewProperties(
+            size = 250,
+            alignment = ViewAlignment.CENTER,
+            children =
+              listOf(
+                ButtonProperties(status = "DUE", text = "Due Task"),
+                ButtonProperties(status = "COMPLETED", text = "Completed Task"),
+                ButtonProperties(status = "READY", text = "Ready Task"),
+              ),
+            viewType = ViewType.STACK,
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
       )
     }
     composeRule
-      .onNodeWithTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG, useUnmergedTree = true)
+      .onNodeWithText("Due Task", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule.onNodeWithText("Completed Task", useUnmergedTree = true).assertExists()
+    composeRule
+      .onNodeWithText("Ready Task", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
   }

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.integration.ui.shared.components
 
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
@@ -44,6 +45,7 @@ class CardViewTest {
         viewProperties = viewProperties,
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodedImageMap = mutableStateMapOf(),
       )
     }
     composeTestRule.onNodeWithText("IMMUNIZATIONS").assertIsDisplayed()

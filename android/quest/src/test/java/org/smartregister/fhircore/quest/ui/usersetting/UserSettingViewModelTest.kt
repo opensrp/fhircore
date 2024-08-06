@@ -48,8 +48,10 @@ import org.robolectric.Shadows
 import org.robolectric.shadows.ShadowLooper
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.app.SettingsOptions
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -77,6 +79,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
   lateinit var fhirEngine: FhirEngine
   private var sharedPreferencesHelper: SharedPreferencesHelper
   private var configService: ConfigService
@@ -112,6 +115,7 @@ class UserSettingViewModelTest : RobolectricTest() {
           fhirEngine = mockk(),
           dispatcherProvider = dispatcherProvider,
           syncListenerManager = mockk(relaxed = true),
+          workManager = workManager,
           context = context,
         ),
       )
@@ -124,6 +128,7 @@ class UserSettingViewModelTest : RobolectricTest() {
           accountAuthenticator = accountAuthenticator,
           secureSharedPreference = secureSharedPreference,
           sharedPreferencesHelper = sharedPreferencesHelper,
+          preferenceDataStore = preferenceDataStore,
           configurationRegistry = configurationRegistry,
           workManager = workManager,
           dispatcherProvider = dispatcherProvider,
@@ -180,10 +185,23 @@ class UserSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun allowSwitchingLanguagesShouldReturnTrueWhenMultipleLanguagesAreConfigured() {
+  fun allowSwitchingLanguagesShouldReturnFalseWhenSwitchLanguagesOptionIsNotSetAndMultipleLanguagesAreConfigured() {
     val languages = listOf(Language("es", "Spanish"), Language("en", "English"))
     userSettingViewModel = spyk(userSettingViewModel)
 
+    every { userSettingViewModel.enableMenuOption(SettingsOptions.SWITCH_LANGUAGES) } returns false
+    every { userSettingViewModel.languages } returns languages
+
+    Assert.assertFalse(userSettingViewModel.allowSwitchingLanguages())
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
+  }
+
+  @Test
+  fun allowSwitchingLanguagesShouldReturnTrueWhenSwitchLanguagesOptionIsSetAndMultipleLanguagesAreConfigured() {
+    val languages = listOf(Language("es", "Spanish"), Language("en", "English"))
+    userSettingViewModel = spyk(userSettingViewModel)
+
+    every { userSettingViewModel.enableMenuOption(SettingsOptions.SWITCH_LANGUAGES) } returns true
     every { userSettingViewModel.languages } returns languages
 
     Assert.assertTrue(userSettingViewModel.allowSwitchingLanguages())
@@ -191,14 +209,15 @@ class UserSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun allowSwitchingLanguagesShouldReturnFalseWhenConfigurationIsFalse() {
-    val languages = listOf(Language("es", "Spanish"))
+  fun allowSwitchingLanguagesShouldReturnFalseWhenSwitchLanguagesOptionIsSetAndOnlyOneLanguageIsConfigured() {
+    val languages = listOf(Language("en", "English"))
     userSettingViewModel = spyk(userSettingViewModel)
 
+    every { userSettingViewModel.enableMenuOption(SettingsOptions.SWITCH_LANGUAGES) } returns true
     every { userSettingViewModel.languages } returns languages
-    Shadows.shadowOf(Looper.getMainLooper()).idle()
 
     Assert.assertFalse(userSettingViewModel.allowSwitchingLanguages())
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
   }
 
   @Test

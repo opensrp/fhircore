@@ -31,7 +31,10 @@ android {
   }
 
   buildTypes {
-    getByName("debug") { enableUnitTestCoverage = true }
+    getByName("debug") {
+      enableUnitTestCoverage = BuildConfigs.enableUnitTestCoverage
+      enableAndroidTestCoverage = BuildConfigs.enableAndroidTestCoverage
+    }
 
     create("debugNonProxy") {
       initWith(getByName("debug"))
@@ -121,6 +124,8 @@ configurations {
 }
 
 dependencies {
+  implementation(libs.play.services.tasks)
+  implementation(libs.gms.play.services.location)
   coreLibraryDesugaring(libs.core.desugar)
 
   // Library dependencies

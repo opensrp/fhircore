@@ -1,3 +1,4 @@
+import android.databinding.tool.ext.capitalizeUS
 import com.android.build.api.variant.FilterConfiguration.FilterType
 import java.io.FileReader
 import java.text.SimpleDateFormat
@@ -29,7 +30,7 @@ sonar {
     property("sonar.kotlin.source.version", libs.kotlin)
     property(
       "sonar.androidLint.reportPaths",
-      "${project.buildDir}/reports/lint-results-opensrpDebug.xml",
+      "${project.layout.buildDirectory.get()}/reports/lint-results-opensrpDebug.xml",
     )
     property("sonar.host.url", System.getenv("SONAR_HOST_URL"))
     property("sonar.login", System.getenv("SONAR_TOKEN"))
@@ -60,6 +61,7 @@ android {
   defaultConfig {
     applicationId = BuildConfigs.applicationId
     minSdk = BuildConfigs.minSdk
+    targetSdk = BuildConfigs.targetSdk
     versionCode = BuildConfigs.versionCode
     versionName = BuildConfigs.versionName
     multiDexEnabled = true
@@ -98,18 +100,25 @@ android {
   }
 
   buildTypes {
-    getByName("debug") { enableUnitTestCoverage = true }
+    getByName("debug") {
+      enableUnitTestCoverage = BuildConfigs.enableUnitTestCoverage
+      enableAndroidTestCoverage = BuildConfigs.enableAndroidTestCoverage
+    }
+
+    create("debugNonProxy") { initWith(getByName("debug")) }
+
     create("benchmark") {
       signingConfig = signingConfigs.getByName("debug")
       matchingFallbacks += listOf("debug")
       isDebuggable = true
     }
 
-    create("debugNonProxy") { initWith(getByName("debug")) }
-
     getByName("release") {
       isMinifyEnabled = false
-      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+      proguardFiles(
+        getDefaultProguardFile("proguard-android-optimize.txt"),
+        "proguard-rules.pro",
+      )
       signingConfig = signingConfigs.getByName("release")
     }
   }
@@ -288,7 +297,7 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".gizeir"
       versionNameSuffix = "-gizeir"
-      manifestPlaceholders["appLabel"] = "GIZ EIR"
+      manifestPlaceholders["appLabel"] = "EIR"
     }
 
     create("engage") {
@@ -325,6 +334,13 @@ android {
       versionNameSuffix = "-demoEir"
       manifestPlaceholders["appLabel"] = "OpenSRP EIR"
     }
+
+    create("contigo") {
+      dimension = "apps"
+      applicationIdSuffix = ".contigo"
+      versionNameSuffix = "-contigo"
+      manifestPlaceholders["appLabel"] = "Contigo"
+    }
   }
 
   applicationVariants.all {
@@ -335,6 +351,11 @@ android {
       "app_name",
       "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"",
     )
+  }
+
+  applicationVariants.all {
+    val variant = this
+    tasks.register("jacocoTestReport${variant.name.capitalizeUS()}")
   }
 
   splits {
@@ -390,7 +411,8 @@ tasks.withType<Test> {
   testLogging { events = setOf(TestLogEvent.FAILED) }
   minHeapSize = "4608m"
   maxHeapSize = "4608m"
-  maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+  // maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+  configure<JacocoTaskExtension> { isIncludeNoLocationClasses = true }
 }
 
 configurations { all { exclude(group = "xpp3") } }
@@ -449,6 +471,8 @@ dependencies {
   // Android Test dependencies
   androidTestImplementation(libs.junit)
   androidTestImplementation(libs.espresso.core)
+  androidTestImplementation(libs.rules)
+  androidTestImplementation(libs.uiautomator)
 
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }

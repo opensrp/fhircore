@@ -87,6 +87,9 @@
     <string name="record_as_anc">Record as ANC</string>
     <string name="pregnancy_outcome">Pregnancy Outcome</string>
     <string name="registers">Registers</string>
+    <string name="title_no_location_set">No Location Set</string>
+    <string name="message_location_set">Set location to sync data and load service points</string>
+    <string name="positive_button_location_set">Set location</string>
 
     <string name="questionnaire_response_name" translatable="false">%1$s (%2$s)</string>
     <string name="due_on">Due on %1$s</string>
@@ -115,5 +118,9 @@
     <string name="location_permissions_denied">Location Access Denied: To capture GPS coordinates, please enable location permissions in your device settings.</string>
     <string name="location_services_disabled">Location services are disabled. Do you want to enable them?</string>
     <string name="copy_text_success_message">Link %1$s copied successfully</string>
-
+    <string name="submit_questionnaire">Submit</string>
+    <string name="invalid_base_resource">The base resource for GeoWidgetConfiguration MUST be Location</string>
+    <string name="no_search_coonfigs_provided">No configs provided for search bar</string>
+    <string name="no_found_locations_matching_text">No location found matching text \"%1$s\"</string>
+    <string name="open_choice_other_hint">Other</string>
 </resources>
