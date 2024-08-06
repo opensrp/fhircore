@@ -135,7 +135,7 @@ constructor(
 
   fun forgotPin(context: Context) {
     if (!applicationConfiguration.loginConfig.supervisorContactNumber.isNullOrEmpty()) {
-      _launchDialPad.value = "tel:${applicationConfiguration.loginConfig.supervisorContactNumber}"
+      _launchDialPad.value = "${applicationConfiguration.loginConfig.supervisorContactNumber}"
     } else {
       Toast.makeText(context, context.getString(R.string.supervisor_contact), Toast.LENGTH_LONG)
         .show()

@@ -85,7 +85,7 @@ class LoginActivityTest : RobolectricTest() {
     val launchDialPadObserver =
       Observer<String?> { dialPadUri ->
         if (dialPadUri != null) {
-          Assert.assertEquals("tel:1234567890", dialPadUri)
+          Assert.assertEquals("1234567890", dialPadUri)
         }
       }
     val context = InstrumentationRegistry.getInstrumentation().targetContext

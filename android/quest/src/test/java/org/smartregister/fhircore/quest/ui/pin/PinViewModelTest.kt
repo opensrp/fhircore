@@ -159,7 +159,7 @@ class PinViewModelTest : RobolectricTest() {
     val launchDialPadObserver =
       Observer<String?> { dialPadUri ->
         if (dialPadUri != null) {
-          Assert.assertEquals("tel:1234567890", dialPadUri)
+          Assert.assertEquals("1234567890", dialPadUri)
         }
       }
 

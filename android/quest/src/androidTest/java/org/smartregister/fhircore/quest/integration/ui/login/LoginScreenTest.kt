@@ -96,7 +96,7 @@ class LoginScreenTest {
     composeRule.setContent {
       ForgotPasswordDialog(
         forgotPassword = {},
-        applicationConfiguration = applicationConfiguration,
+        supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
         onDismissDialog = {},
       )
     }
@@ -107,7 +107,7 @@ class LoginScreenTest {
   fun testForgotPasswordDialog_DisplayedCorrectly() {
     composeRule.setContent {
       ForgotPasswordDialog(
-        applicationConfiguration = applicationConfiguration,
+        supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
         forgotPassword = {},
         onDismissDialog = {},
       )
@@ -136,7 +136,7 @@ class LoginScreenTest {
 
     composeRule.setContent {
       ForgotPasswordDialog(
-        applicationConfiguration = applicationConfiguration,
+        supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
         forgotPassword = {},
         onDismissDialog = { dismissDialogClicked = true },
       )
@@ -152,7 +152,7 @@ class LoginScreenTest {
     var dismissDialogClicked = false
     composeRule.setContent {
       ForgotPasswordDialog(
-        applicationConfiguration = applicationConfiguration,
+        supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
         forgotPassword = { forgotPasswordClicked = true },
         onDismissDialog = { dismissDialogClicked = true },
       )
