@@ -73,8 +73,8 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.shared.components.Image
-import org.smartregister.fhircore.quest.ui.shared.models.UiSearchMode
-import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
+import org.smartregister.fhircore.quest.ui.shared.models.SearchMode
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.util.QrCodeScanUtils
 
 const val DRAWER_MENU = "Drawer Menu"
@@ -100,12 +100,12 @@ fun TopScreenSection(
   title: String,
   navController: NavController,
   isSearchBarVisible: Boolean,
-  searchQuery: UiSearchQuery,
+  searchQuery: SearchQuery,
   showSearchByQrCode: Boolean = false,
   filteredRecordsCount: Long? = null,
   searchPlaceholder: String? = null,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
-  onSearchTextChanged: (UiSearchQuery) -> Unit = {},
+  onSearchTextChanged: (SearchQuery) -> Unit = {},
   isFilterIconEnabled: Boolean = false,
   topScreenSection: TopScreenSectionConfig? = null,
   onClick: (ToolbarClickEvent) -> Unit = {},
@@ -187,9 +187,7 @@ fun TopScreenSection(
       OutlinedTextField(
         colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
         value = searchQuery.query,
-        onValueChange = {
-          onSearchTextChanged(UiSearchQuery(it, mode = UiSearchMode.KeyboardInput))
-        },
+        onValueChange = { onSearchTextChanged(SearchQuery(it, mode = SearchMode.KeyboardInput)) },
         maxLines = 1,
         singleLine = true,
         placeholder = {
@@ -218,7 +216,7 @@ fun TopScreenSection(
             when {
               !searchQuery.isBlank() -> {
                 IconButton(
-                  onClick = { onSearchTextChanged(UiSearchQuery.emptyText) },
+                  onClick = { onSearchTextChanged(SearchQuery.emptyText) },
                   modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
                 ) {
                   Icon(
@@ -235,7 +233,7 @@ fun TopScreenSection(
                     currentContext.getActivity()?.let {
                       QrCodeScanUtils.scanQrCode(it) { code ->
                         onSearchTextChanged(
-                          UiSearchQuery(code ?: "", mode = UiSearchMode.QrCodeScan),
+                          SearchQuery(code ?: "", mode = SearchMode.QrCodeScan),
                         )
                       }
                     }
@@ -319,7 +317,7 @@ fun RenderMenuIcons(
 fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
   TopScreenSection(
     title = "All Clients",
-    searchQuery = UiSearchQuery("Eddy"),
+    searchQuery = SearchQuery("Eddy"),
     filteredRecordsCount = 120,
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
@@ -347,7 +345,7 @@ fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
 fun TopScreenSectionWithFilterCountNinetyNinePreview() {
   TopScreenSection(
     title = "All Clients",
-    searchQuery = UiSearchQuery("Eddy"),
+    searchQuery = SearchQuery("Eddy"),
     filteredRecordsCount = 99,
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
@@ -363,7 +361,7 @@ fun TopScreenSectionWithFilterCountNinetyNinePreview() {
 fun TopScreenSectionNoFilterIconPreview() {
   TopScreenSection(
     title = "All Clients",
-    searchQuery = UiSearchQuery("Eddy"),
+    searchQuery = SearchQuery("Eddy"),
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = false,
@@ -387,7 +385,7 @@ fun TopScreenSectionNoFilterIconPreview() {
 fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
   TopScreenSection(
     title = "All Clients",
-    searchQuery = UiSearchQuery("Eddy"),
+    searchQuery = SearchQuery("Eddy"),
     filteredRecordsCount = 120,
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
@@ -412,7 +410,7 @@ fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
 fun TopScreenSectionWithToggleIconPreview() {
   TopScreenSection(
     title = "All Clients",
-    searchQuery = UiSearchQuery("Eddy"),
+    searchQuery = SearchQuery("Eddy"),
     filteredRecordsCount = 120,
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,

@@ -18,14 +18,14 @@ package org.smartregister.fhircore.quest.ui.shared.viewmodels
 
 import org.junit.Assert
 import org.junit.Test
-import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 
 class SearchViewModelTest {
 
   @Test
   fun testThatSearchViewModelIsProperlyConstructed() {
     val searchViewModel = SearchViewModel()
-    searchViewModel.searchQuery.value = UiSearchQuery(query = "New")
+    searchViewModel.searchQuery.value = SearchQuery(query = "New")
     Assert.assertEquals("New", searchViewModel.searchQuery.value.query)
   }
 }

@@ -18,28 +18,27 @@ package org.smartregister.fhircore.quest.ui.shared.models
 
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 
-sealed class UiSearchMode {
-  data object KeyboardInput : UiSearchMode()
+sealed class SearchMode {
+  data object KeyboardInput : SearchMode()
 
-  data object QrCodeScan : UiSearchMode()
+  data object QrCodeScan : SearchMode()
 }
 
 /**
- * Wrapper class to hold search input [String] and the [UiSearchMode] mode used to initiate the UI
+ * Wrapper class to hold search input [String] and the [SearchMode] mode used to initiate the UI
  * search
  *
- * Depending on the [UiSearchMode], additional [ActionTrigger.ON_SEARCH_SINGLE_RESULT] actions can
- * be triggered a query returns a single result
+ * Depending on the [SearchMode], additional [ActionTrigger.ON_SEARCH_SINGLE_RESULT] actions can be
+ * triggered a query returns a single result
  *
  * @param query Actual search input string
- * @param mode [UiSearchMode] that initiated the search
+ * @param mode [SearchMode] that initiated the search
  */
-data class UiSearchQuery(val query: String, val mode: UiSearchMode = UiSearchMode.KeyboardInput) {
-  fun isEmpty() = query.isEmpty()
+data class SearchQuery(val query: String, val mode: SearchMode = SearchMode.KeyboardInput) {
 
   fun isBlank() = query.isBlank()
 
   companion object {
-    val emptyText = UiSearchQuery(query = "")
+    val emptyText = SearchQuery(query = "")
   }
 }

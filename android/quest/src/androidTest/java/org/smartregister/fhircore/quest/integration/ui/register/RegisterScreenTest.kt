@@ -64,7 +64,7 @@ import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import org.smartregister.fhircore.quest.ui.register.TOP_REGISTER_SCREEN_TEST_TAG
 import org.smartregister.fhircore.quest.ui.shared.components.SYNC_PROGRESS_INDICATOR_TEST_TAG
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
-import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 
 @HiltAndroidTest
 class RegisterScreenTest {
@@ -126,7 +126,7 @@ class RegisterScreenTest {
         isSyncUpload = flowOf(false),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf(UiSearchQuery.emptyText)
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -167,7 +167,7 @@ class RegisterScreenTest {
         isSyncUpload = flowOf(false),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf(UiSearchQuery.emptyText)
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -211,7 +211,7 @@ class RegisterScreenTest {
         isSyncUpload = flowOf(false),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf(UiSearchQuery.emptyText)
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -255,7 +255,7 @@ class RegisterScreenTest {
         isSyncUpload = flowOf(false),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf(UiSearchQuery.emptyText)
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
     val pagingItems = mockk<LazyPagingItems<ResourceData>>().apply {}
 
@@ -292,7 +292,7 @@ class RegisterScreenTest {
         isSyncUpload = flowOf(false),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf(UiSearchQuery.emptyText)
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -377,7 +377,7 @@ class RegisterScreenTest {
           ),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf(UiSearchQuery.emptyText)
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -429,7 +429,7 @@ class RegisterScreenTest {
         currentSyncJobStatus = flowOf(CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf(UiSearchQuery.emptyText)
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -480,7 +480,7 @@ class RegisterScreenTest {
         currentSyncJobStatus = flowOf(CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf(UiSearchQuery.emptyText)
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {

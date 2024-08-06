@@ -38,7 +38,7 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
-import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 @Composable
@@ -50,7 +50,7 @@ fun GeoWidgetLauncherScreen(
   fragmentManager: FragmentManager,
   geoWidgetFragment: Fragment,
   geoWidgetConfiguration: GeoWidgetConfiguration,
-  searchQuery: MutableState<UiSearchQuery>,
+  searchQuery: MutableState<SearchQuery>,
   search: (String) -> Unit,
 ) {
   val context = LocalContext.current
@@ -65,8 +65,8 @@ fun GeoWidgetLauncherScreen(
           showSearchByQrCode =
             geoWidgetConfiguration.topScreenSection?.searchBar?.searchByQrCode ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
-          onSearchTextChanged = { uiSearchQuery: UiSearchQuery ->
-            searchQuery.value = uiSearchQuery
+          onSearchTextChanged = { searchedQuery: SearchQuery ->
+            searchQuery.value = searchedQuery
             val computedRules = geoWidgetConfiguration.topScreenSection?.searchBar?.computedRules
             if (!computedRules.isNullOrEmpty()) {
               search(searchQuery.value.query)

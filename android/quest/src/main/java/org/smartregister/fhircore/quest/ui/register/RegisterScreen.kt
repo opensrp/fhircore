@@ -92,8 +92,8 @@ import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
 import org.smartregister.fhircore.quest.ui.shared.components.SyncStatusView
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
-import org.smartregister.fhircore.quest.ui.shared.models.UiSearchMode
-import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
+import org.smartregister.fhircore.quest.ui.shared.models.SearchMode
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val NO_REGISTER_VIEW_COLUMN_TEST_TAG = "noRegisterViewColumnTestTag"
@@ -115,7 +115,7 @@ fun RegisterScreen(
   registerUiState: RegisterUiState,
   appDrawerUIState: AppDrawerUIState = AppDrawerUIState(),
   onAppMainEvent: (AppMainEvent) -> Unit,
-  searchQuery: MutableState<UiSearchQuery>,
+  searchQuery: MutableState<SearchQuery>,
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
@@ -244,10 +244,10 @@ fun RegisterScreen(
               onEvent = onEvent,
               registerUiState = registerUiState,
               currentPage = currentPage,
-              showPagination = searchQuery.value.isEmpty(),
+              showPagination = searchQuery.value.isBlank(),
               onSearchByQrSingleResultActions =
                 if (
-                  !searchQuery.value.isBlank() && searchQuery.value.mode == UiSearchMode.QrCodeScan
+                  !searchQuery.value.isBlank() && searchQuery.value.mode == SearchMode.QrCodeScan
                 ) {
                   registerUiState.registerConfiguration.onSearchByQrSingleResultValidActions
                 } else {
@@ -406,7 +406,7 @@ fun RegisterScreenWithDataPreview() {
       isSyncUpload = flowOf(false),
       params = emptyMap(),
     )
-  val searchText = remember { mutableStateOf(UiSearchQuery.emptyText) }
+  val searchText = remember { mutableStateOf(SearchQuery.emptyText) }
   val currentPage = remember { mutableIntStateOf(0) }
   val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
   val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()

@@ -38,7 +38,6 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import javax.inject.Inject
-import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Binary
@@ -462,8 +461,8 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     verify {
       context.startActivity(
         withArg {
-          kotlin.test.assertEquals(it.action, Intent.ACTION_DIAL)
-          kotlin.test.assertEquals(it.data, Uri.parse("tel:0700000000"))
+          Assert.assertEquals(it.action, Intent.ACTION_DIAL)
+          Assert.assertEquals(it.data, Uri.parse("tel:0700000000"))
         },
         null,
       )
@@ -576,9 +575,9 @@ class ConfigExtensionsKtTest : RobolectricTest() {
           ),
       )
     val resultOfInterpolatedValues = interpolateActionParamsValue(actionConfig, resourceData)
-    kotlin.test.assertEquals(4, resultOfInterpolatedValues.size)
-    kotlin.test.assertEquals("param2", resultOfInterpolatedValues[1].key)
-    kotlin.test.assertEquals("1235", resultOfInterpolatedValues[1].value)
+    Assert.assertEquals(4, resultOfInterpolatedValues.size)
+    Assert.assertEquals("param2", resultOfInterpolatedValues[1].key)
+    Assert.assertEquals("1235", resultOfInterpolatedValues[1].value)
   }
 
   @Test
@@ -614,7 +613,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     val resourceData =
       ResourceData(baseResourceId = "test", ResourceType.Task, computedValuesMap = emptyMap())
     val resultOfInterpolatedValues = interpolateActionParamsValue(actionConfig, resourceData)
-    kotlin.test.assertEquals("@{practitionerId-4}", resultOfInterpolatedValues[3].value)
+    Assert.assertEquals("@{practitionerId-4}", resultOfInterpolatedValues[3].value)
   }
 
   fun testConvertActionParameterArrayToMapShouldReturnEmptyMapIfNoParamData() {
@@ -683,8 +682,8 @@ class ConfigExtensionsKtTest : RobolectricTest() {
           decodedImageMap,
         )
       }
-      TestCase.assertTrue(decodedImageMap.isNotEmpty())
-      TestCase.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+      Assert.assertTrue(decodedImageMap.isNotEmpty())
+      Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
     }
 
   @Test
@@ -695,8 +694,8 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     runBlocking {
       navigationMenuConfigs.decodeBinaryResourcesToBitmap(this, registerRepository, decodedImageMap)
     }
-    TestCase.assertTrue(decodedImageMap.isNotEmpty())
-    TestCase.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+    Assert.assertTrue(decodedImageMap.isNotEmpty())
+    Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
   }
 
   @Test
@@ -709,8 +708,8 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       computedValuesMap = emptyMap(),
       configurationRegistry.decodedImageMap,
     )
-    TestCase.assertTrue(decodedImageMap.isNotEmpty())
-    TestCase.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+    Assert.assertTrue(decodedImageMap.isNotEmpty())
+    Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
   }
 
   @Test
@@ -724,8 +723,8 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       computedValuesMap = emptyMap(),
       decodedImageMap,
     )
-    TestCase.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
-    TestCase.assertTrue(decodedImageMap.isNotEmpty())
+    Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+    Assert.assertTrue(decodedImageMap.isNotEmpty())
   }
 
   @Test
@@ -739,8 +738,8 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       computedValuesMap = emptyMap(),
       decodedImageMap,
     )
-    TestCase.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
-    TestCase.assertTrue(decodedImageMap.isNotEmpty())
+    Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+    Assert.assertTrue(decodedImageMap.isNotEmpty())
   }
 
   @Test
@@ -755,8 +754,8 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       computedValuesMap = emptyMap(),
       decodedImageMap,
     )
-    TestCase.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
-    TestCase.assertTrue(decodedImageMap.isNotEmpty())
+    Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+    Assert.assertTrue(decodedImageMap.isNotEmpty())
   }
 
   @Test
@@ -772,8 +771,8 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       computedValuesMap = emptyMap(),
       decodedImageMap,
     )
-    TestCase.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
-    TestCase.assertTrue(decodedImageMap.isNotEmpty())
+    Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+    Assert.assertTrue(decodedImageMap.isNotEmpty())
   }
 
   @Test
@@ -803,8 +802,8 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       computedValuesMap = emptyComputedValuesMap,
       decodedImageMap = decodedImageMap,
     )
-    TestCase.assertTrue(decodedImageMap.isEmpty())
-    TestCase.assertTrue(!decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+    Assert.assertTrue(decodedImageMap.isEmpty())
+    Assert.assertTrue(!decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
   }
 
   @Test(expected = Exception::class)
@@ -841,7 +840,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       computedValuesMap = emptyComputedValuesMap,
       decodedImageMap = decodedImageMap,
     )
-    TestCase.assertTrue(decodedImageMap.isEmpty())
-    TestCase.assertTrue(!decodedImageMap.containsKey("null Reference"))
+    Assert.assertTrue(decodedImageMap.isEmpty())
+    Assert.assertTrue(!decodedImageMap.containsKey("null Reference"))
   }
 }

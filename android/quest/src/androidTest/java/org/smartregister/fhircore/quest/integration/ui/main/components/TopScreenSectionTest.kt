@@ -35,10 +35,10 @@ import org.smartregister.fhircore.quest.ui.main.components.TRAILING_ICON_BUTTON_
 import org.smartregister.fhircore.quest.ui.main.components.TRAILING_ICON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
-import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 
 class TopScreenSectionTest {
-  private val listener: (UiSearchQuery) -> Unit = {}
+  private val listener: (SearchQuery) -> Unit = {}
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -47,7 +47,7 @@ class TopScreenSectionTest {
     composeTestRule.setContent {
       TopScreenSection(
         title = "All Clients",
-        searchQuery = UiSearchQuery("search text"),
+        searchQuery = SearchQuery("search text"),
         onSearchTextChanged = listener,
         navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
@@ -78,7 +78,7 @@ class TopScreenSectionTest {
     composeTestRule.setContent {
       TopScreenSection(
         title = "All Clients",
-        searchQuery = UiSearchQuery("search text"),
+        searchQuery = SearchQuery("search text"),
         onSearchTextChanged = listener,
         navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
@@ -111,7 +111,7 @@ class TopScreenSectionTest {
     composeTestRule.setContent {
       TopScreenSection(
         title = "All Clients",
-        searchQuery = UiSearchQuery("search text"),
+        searchQuery = SearchQuery("search text"),
         onSearchTextChanged = { clicked = true },
         navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
@@ -130,7 +130,7 @@ class TopScreenSectionTest {
     composeTestRule.setContent {
       TopScreenSection(
         title = "All Clients",
-        searchQuery = UiSearchQuery("search text"),
+        searchQuery = SearchQuery("search text"),
         showSearchByQrCode = true,
         navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
@@ -145,7 +145,7 @@ class TopScreenSectionTest {
     composeTestRule.setContent {
       TopScreenSection(
         title = "All Clients",
-        searchQuery = UiSearchQuery(""),
+        searchQuery = SearchQuery(""),
         showSearchByQrCode = true,
         navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
