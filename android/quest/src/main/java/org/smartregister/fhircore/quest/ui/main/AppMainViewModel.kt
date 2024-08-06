@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
@@ -109,6 +110,8 @@ constructor(
   private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
 
   val appDrawerUiState = mutableStateOf(AppDrawerUIState())
+
+  val resetRegisterFilters = MutableLiveData(false)
 
   val unSyncedResourcesCount = mutableIntStateOf(0)
 
