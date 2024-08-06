@@ -261,6 +261,14 @@ class RegisterFragment : Fragment(), OnSyncListener {
           .launchIn(lifecycleScope)
       }
     }
+
+    appMainViewModel.resetRegisterFilters.observe(viewLifecycleOwner) { resetFilters ->
+      if (resetFilters) {
+        registerViewModel.registerFilterState.value = RegisterFilterState()
+        refreshRegisterData()
+        appMainViewModel.resetRegisterFilters.value = false
+      }
+    }
   }
 
   override fun onPause() {
