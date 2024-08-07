@@ -482,8 +482,8 @@ private fun SideMenuItem(
     modifier =
       modifier
         .fillMaxWidth()
-        .padding(vertical = padding.dp)
         .clickable { onSideMenuClick() }
+        .padding(vertical = padding.dp)
         .testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG)
         .padding(horizontal = 16.dp),
     verticalAlignment = Alignment.CenterVertically,
