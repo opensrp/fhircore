@@ -22,7 +22,8 @@ import com.google.android.fhir.datacapture.contrib.views.barcode.BarCodeReaderVi
 import com.google.android.fhir.datacapture.contrib.views.locationwidget.LocationGpsCoordinateViewHolderFactory
 import com.google.android.fhir.datacapture.contrib.views.locationwidget.LocationWidgetViewHolderFactory
 import com.google.android.fhir.datacapture.extensions.asStringValue
-import org.smartregister.fhircore.quest.ui.sdc.PasswordViewHolderFactory
+import org.smartregister.fhircore.quest.ui.sdc.password.PasswordViewHolderFactory
+import org.smartregister.fhircore.quest.ui.sdc.qrCode.EditTextQrCodeViewHolderFactory
 
 const val OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER =
   "org.smartregister.fhircore.quest.QuestionnaireItemViewHolderFactoryMatchersProvider"
@@ -64,6 +65,10 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
             if (it == null) false else it.value.asStringValue() == BARCODE_NAME
           }
         },
+        QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
+          factory = EditTextQrCodeViewHolderFactory,
+          matches = EditTextQrCodeViewHolderFactory::matcher,
+        ),
         QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
           factory = LocationGpsCoordinateViewHolderFactory,
           matches = LocationGpsCoordinateViewHolderFactory::matcher,

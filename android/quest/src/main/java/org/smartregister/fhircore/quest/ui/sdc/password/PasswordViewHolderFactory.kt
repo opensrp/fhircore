@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.sdc
+package org.smartregister.fhircore.quest.ui.sdc.password
 
 import android.content.Context
 import android.text.Editable
