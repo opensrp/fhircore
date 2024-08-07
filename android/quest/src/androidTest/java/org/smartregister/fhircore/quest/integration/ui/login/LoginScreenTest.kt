@@ -120,9 +120,7 @@ class LoginScreenTest {
     composeRule
       .onNodeWithText(context.getString(R.string.forgot_password_title))
       .assertIsDisplayed()
-    composeRule
-      .onNodeWithText(context.getString(R.string.please_contact_supervisor))
-      .assertIsDisplayed()
+    composeRule.onNodeWithText(context.getString(R.string.call_supervisor)).assertIsDisplayed()
     composeRule
       .onNodeWithText(applicationConfiguration.loginConfig.supervisorContactNumber.toString())
       .assertIsDisplayed()
