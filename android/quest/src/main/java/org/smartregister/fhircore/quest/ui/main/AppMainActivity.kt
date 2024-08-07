@@ -33,6 +33,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
@@ -184,6 +186,13 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     findNavController(R.id.nav_host).removeOnDestinationChangedListener(sentryNavListener)
   }
 
+  override fun onQuestionnaireLaunched(questionnaireConfig: QuestionnaireConfig) {
+    // Data filter QRs are not persisted; reset filters when questionnaire is launched
+    if (!questionnaireConfig.saveQuestionnaireResponse) {
+      appMainViewModel.resetRegisterFilters.value = true
+    }
+  }
+
   override suspend fun onSubmitQuestionnaire(activityResult: ActivityResult) {
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
@@ -288,7 +297,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     )
   }
 
-  fun fetchLocation() {
+  private fun fetchLocation() {
     val context = this
     lifecycleScope.launch {
       val retrievedLocation =
@@ -312,7 +321,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
-      is CurrentSyncJobStatus.Succeeded -> {
+      is CurrentSyncJobStatus.Succeeded ->
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
@@ -320,9 +329,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
               lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
             ),
           )
+          appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
         }
-      }
-      is CurrentSyncJobStatus.Failed -> {
+      is CurrentSyncJobStatus.Failed ->
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
@@ -330,11 +339,18 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
               lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
             ),
           )
+          updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
         }
-      }
-      else -> {
-        // Do nothing
-      }
+      is CurrentSyncJobStatus.Running ->
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
+          val isSyncUpload =
+            (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
+              SyncOperation.UPLOAD
+          if (isSyncUpload) {
+            appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+          }
+        }
+      else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
     }
   }
 }
