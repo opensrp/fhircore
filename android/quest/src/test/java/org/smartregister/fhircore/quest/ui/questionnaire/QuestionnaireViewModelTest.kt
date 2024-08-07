@@ -71,6 +71,7 @@ import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
@@ -106,7 +107,6 @@ import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isToday
-import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.extension.yesterday
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -166,7 +166,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // Write practitioner and organization to shared preferences
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_ID.name,
-      practitionerDetails().fhirPractitionerDetails.practitionerId.valueToString(),
+      practitionerDetails().fhirPractitionerDetails.id,
     )
 
     sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("105"))
@@ -224,7 +224,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       fhirPractitionerDetails =
         FhirPractitionerDetails().apply {
           id = "12345"
-          practitionerId = StringType("12345")
+          practitioner = Practitioner().apply { id = "12345" }
         }
     }
   }
