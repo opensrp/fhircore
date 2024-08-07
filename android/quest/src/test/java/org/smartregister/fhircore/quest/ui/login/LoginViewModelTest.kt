@@ -621,16 +621,21 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testForgotPasswordLoadsContact() {
     val context = ApplicationProvider.getApplicationContext<Context>()
+    val validContactNumber = "1234567890"
+    val expectedFormattedNumber = "+1-123-456-7890"
+    every { loginViewModel.applicationConfiguration.loginConfig.supervisorContactNumber } returns
+      validContactNumber
+    every { loginViewModel.formatPhoneNumber(validContactNumber) } returns expectedFormattedNumber
+
+    val dialPadUriSlot = slot<String?>()
     val launchDialPadObserver =
-      Observer<String?> { dialPadUri ->
-        if (dialPadUri != null) {
-          Assert.assertEquals("1234567890", dialPadUri)
-        }
-      }
+      Observer<String?> { dialPadUri -> dialPadUriSlot.captured = dialPadUri }
+
+    loginViewModel.launchDialPad.observeForever(launchDialPadObserver)
 
     try {
-      loginViewModel.launchDialPad.observeForever(launchDialPadObserver)
       loginViewModel.forgotPassword(context)
+      Assert.assertEquals(expectedFormattedNumber, dialPadUriSlot.captured)
     } finally {
       loginViewModel.launchDialPad.removeObserver(launchDialPadObserver)
     }
