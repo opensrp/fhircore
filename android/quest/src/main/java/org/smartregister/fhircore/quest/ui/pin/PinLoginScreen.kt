@@ -130,8 +130,7 @@ fun PinLoginPage(
           !applicationConfiguration.loginConfig.supervisorContactNumber.isNullOrEmpty()
       ) {
         ForgotPinDialog(
-          supervisorContactNumber =
-            applicationConfiguration.loginConfig.supervisorContactNumber.toString(),
+          supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
           forgotPin = forgotPin,
           onDismissDialog = { showForgotPinDialog = false },
         )
@@ -296,9 +295,19 @@ fun ForgotPinDialog(
       )
     },
     text = {
-      Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-        Text(text = stringResource(R.string.call_supervisor), fontSize = 16.sp)
-        Text(supervisorContactNumber.toString())
+      Column(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+      ) {
+        Text(
+          text = stringResource(R.string.call_supervisor),
+          fontSize = 16.sp,
+        )
+        Text(
+          text =
+            supervisorContactNumber?.takeIf { it.isNotBlank() }
+              ?: stringResource(R.string.call_supervisor),
+          fontSize = 16.sp,
+        )
       }
     },
     buttons = {

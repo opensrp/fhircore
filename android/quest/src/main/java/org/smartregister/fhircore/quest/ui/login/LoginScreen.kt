@@ -168,8 +168,7 @@ fun LoginPage(
   ) {
     if (showForgotPasswordDialog) {
       ForgotPasswordDialog(
-        supervisorContactNumber =
-          applicationConfiguration.loginConfig.supervisorContactNumber.toString(),
+        supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
         forgotPassword = forgotPassword,
         onDismissDialog = { showForgotPasswordDialog = false },
       )
@@ -407,9 +406,19 @@ fun ForgotPasswordDialog(
       )
     },
     text = {
-      Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-        Text(text = stringResource(R.string.call_supervisor), fontSize = 16.sp)
-        Text(supervisorContactNumber.toString())
+      Column(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+      ) {
+        Text(
+          text = stringResource(R.string.call_supervisor),
+          fontSize = 16.sp,
+        )
+        Text(
+          text =
+            supervisorContactNumber?.takeIf { it.isNotBlank() }
+              ?: stringResource(R.string.call_supervisor),
+          fontSize = 16.sp,
+        )
       }
     },
     buttons = {

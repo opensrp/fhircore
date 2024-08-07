@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.pin
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.telephony.PhoneNumberUtils
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +40,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.clearPasswordInMemory
 import org.smartregister.fhircore.engine.util.toPasswordHash
+import timber.log.Timber
 
 @Suppress("UNUSED_EXPRESSION")
 @HiltViewModel
@@ -134,11 +136,25 @@ constructor(
   }
 
   fun forgotPin(context: Context) {
-    if (!applicationConfiguration.loginConfig.supervisorContactNumber.isNullOrEmpty()) {
-      _launchDialPad.value = "${applicationConfiguration.loginConfig.supervisorContactNumber}"
+    val contactNumber = applicationConfiguration.loginConfig.supervisorContactNumber
+    if (!contactNumber.isNullOrEmpty()) {
+      val formattedNumber = formatPhoneNumber(contactNumber)
+      _launchDialPad.value = formattedNumber
     } else {
       Toast.makeText(context, context.getString(R.string.supervisor_contact), Toast.LENGTH_LONG)
         .show()
+    }
+  }
+
+  @Suppress("DEPRECATION")
+  fun formatPhoneNumber(number: String): String {
+    return try {
+      val cleanedNumber = number.filter { it.isDigit() }
+
+      PhoneNumberUtils.formatNumber(cleanedNumber)
+    } catch (e: Exception) {
+      Timber.tag("PhoneNumberFormatting").e(e, "Error formatting phone number")
+      number
     }
   }
 

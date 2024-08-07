@@ -145,6 +145,19 @@ class LoginScreenTest {
   }
 
   @Test
+  fun testForgotPasswordDialog_DisplaysCorrectContactNumber() {
+    composeRule.setContent {
+      ForgotPasswordDialog(
+        supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
+        forgotPassword = {},
+        onDismissDialog = {},
+      )
+    }
+    val contactNumber = applicationConfiguration.loginConfig.supervisorContactNumber
+    composeRule.onNodeWithText(contactNumber.toString()).assertIsDisplayed()
+  }
+
+  @Test
   fun testForgotPasswordDialog_DialNumberButton_Click() {
     var forgotPasswordClicked = false
     var dismissDialogClicked = false

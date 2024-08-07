@@ -637,6 +637,26 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testForgotPasswordWithValidContactNumber() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val validContactNumber = "1234567890"
+    every { loginViewModel.applicationConfiguration.loginConfig.supervisorContactNumber } returns
+      validContactNumber
+
+    every { loginViewModel.formatPhoneNumber(validContactNumber) } returns "+1-123-456-7890"
+
+    // Observe the _launchDialPad LiveData
+    val launchDialPadObserver = slot<String>()
+    loginViewModel.launchDialPad.observeForever { launchDialPadObserver.captured = it.toString() }
+
+    loginViewModel.forgotPassword(context)
+
+    Assert.assertEquals("+1-123-456-7890", launchDialPadObserver.captured)
+
+    loginViewModel.launchDialPad.removeObserver { launchDialPadObserver.captured = it.toString() }
+  }
+
+  @Test
   fun testUpdateNavigateShouldUpdateLiveData() {
     loginViewModel.updateNavigateHome(true)
     Assert.assertNotNull(loginViewModel.navigateToHome.value)

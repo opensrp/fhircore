@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.login
 
 import android.content.Context
+import android.telephony.PhoneNumberUtils
 import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -181,11 +182,27 @@ constructor(
   }
 
   fun forgotPassword(context: Context) {
-    if (!applicationConfiguration.loginConfig.supervisorContactNumber.isNullOrEmpty()) {
-      _launchDialPad.value = "${applicationConfiguration.loginConfig.supervisorContactNumber}"
+    val contactNumber = applicationConfiguration.loginConfig.supervisorContactNumber
+    if (!contactNumber.isNullOrEmpty()) {
+      val formattedNumber = formatPhoneNumber(contactNumber)
+      _launchDialPad.value = formattedNumber
     } else {
       Toast.makeText(context, context.getString(R.string.supervisor_contact), Toast.LENGTH_LONG)
         .show()
+    }
+  }
+
+  @Suppress("DEPRECATION")
+  fun formatPhoneNumber(number: String): String {
+    return try {
+      // Remove unwanted characters and keep only digits
+      val cleanedNumber = number.filter { it.isDigit() }
+
+      // Format the cleaned number
+      PhoneNumberUtils.formatNumber(cleanedNumber)
+    } catch (e: Exception) {
+      Timber.tag("PhoneNumberFormatting").e(e, "Error formatting phone number")
+      number // Return unformatted number if there's an error
     }
   }
 

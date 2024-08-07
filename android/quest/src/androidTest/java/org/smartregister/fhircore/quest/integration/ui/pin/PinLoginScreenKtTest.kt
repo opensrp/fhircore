@@ -29,14 +29,41 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.LoginConfig
 import org.smartregister.fhircore.engine.ui.components.PIN_CELL_TEST_TAG
 import org.smartregister.fhircore.quest.ui.pin.CIRCULAR_PROGRESS_INDICATOR
+import org.smartregister.fhircore.quest.ui.pin.ForgotPinDialog
 import org.smartregister.fhircore.quest.ui.pin.PIN_LOGO_IMAGE
 import org.smartregister.fhircore.quest.ui.pin.PinLoginPage
 import org.smartregister.fhircore.quest.ui.pin.PinUiState
 
 class PinLoginScreenKtTest {
   @get:Rule(order = 1) val composeRule = createComposeRule()
+
+  private val applicationConfiguration =
+    ApplicationConfiguration(
+      appTitle = "My app",
+      appId = "app/debug",
+      loginConfig = LoginConfig(showLogo = true, supervisorContactNumber = "123-456-7890"),
+    )
+
+  @Test
+  fun testForgotPasswordDialog_DisplaysCorrectContactNumber() {
+    // Set the content for the test
+    composeRule.setContent {
+      ForgotPinDialog(
+        supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
+        forgotPin = {},
+        onDismissDialog = {},
+      )
+    }
+
+    // Retrieve the contact number from the context
+    val contactNumber = applicationConfiguration.loginConfig.supervisorContactNumber
+
+    // Assert that the contact number is displayed correctly in the dialog
+    composeRule.onNodeWithText(contactNumber.toString()).assertIsDisplayed()
+  }
 
   @Test
   fun testThatPinSetupPageIsLaunched() {
