@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.parser.IParser
+import ca.uhn.fhir.validation.FhirValidator
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
 import com.google.android.fhir.datacapture.extensions.logicalId
@@ -39,9 +40,11 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
+import io.mockk.verify
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -70,6 +73,7 @@ import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
@@ -110,6 +114,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
+import timber.log.Timber
 
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
@@ -117,6 +122,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Inject lateinit var fhirValidatorProvider: Provider<FhirValidator>
 
   @Inject lateinit var configService: ConfigService
 
@@ -196,6 +203,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           resourceDataRulesExecutor = resourceDataRulesExecutor,
           transformSupportServices = mockk(),
           sharedPreferencesHelper = sharedPreferencesHelper,
+          fhirValidatorProvider = fhirValidatorProvider,
           fhirOperator = fhirOperator,
           fhirPathDataExtractor = fhirPathDataExtractor,
           configurationRegistry = configurationRegistry,
@@ -221,9 +229,91 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
   }
 
+  @Test
+  fun testHandleQuestionnaireSubmissionHasValidationErrorsExtractedResourcesContainingInvalidWhenInDebug() =
+    runTest {
+      mockkObject(ResourceMapper)
+      val questionnaire =
+        extractionQuestionnaire().apply { extension = samplePatientRegisterQuestionnaire.extension }
+      val questionnaireResponse = extractionQuestionnaireResponse()
+      val actionParameters = emptyList<ActionParameter>()
+      val onSuccessfulSubmission =
+        spyk({ idsTypes: List<IdType>, _: QuestionnaireResponse -> Timber.i(idsTypes.toString()) })
+      coEvery {
+        ResourceMapper.extract(
+          questionnaire = questionnaire,
+          questionnaireResponse = questionnaireResponse,
+          structureMapExtractionContext = any(),
+        )
+      } returns
+        Bundle().apply {
+          addEntry(
+            Bundle.BundleEntryComponent().apply {
+              resource =
+                patient.apply {
+                  addLink().apply {
+                    other = Reference("Group/1234")
+                    type = Patient.LinkType.REFER
+                  }
+                }
+            },
+          )
+        }
+      coEvery { defaultRepository.addOrUpdate(any(Boolean::class), any<Resource>()) } just runs
+      coEvery { defaultRepository.loadResource(any<String>(), ResourceType.Patient) } returns
+        Patient()
+
+      questionnaireViewModel.handleQuestionnaireSubmission(
+        questionnaire = questionnaire,
+        currentQuestionnaireResponse = questionnaireResponse,
+        actionParameters = actionParameters,
+        context = context,
+        questionnaireConfig = questionnaireConfig,
+        onSuccessfulSubmission = onSuccessfulSubmission,
+      )
+
+      // Verify QuestionnaireResponse was validated
+      coVerify {
+        questionnaireViewModel.validateQuestionnaireResponse(
+          questionnaire,
+          questionnaireResponse,
+          context,
+        )
+      }
+      // Verify perform extraction was invoked
+      coVerify {
+        questionnaireViewModel.performExtraction(
+          extractByStructureMap = true,
+          questionnaire = questionnaire,
+          questionnaireResponse = questionnaireResponse,
+          context = context,
+        )
+      }
+
+      verify { onSuccessfulSubmission(any(), any()) }
+      coVerify { questionnaireViewModel.validateWithFhirValidator(*anyVararg()) }
+      coVerify {
+        questionnaireViewModel.saveExtractedResources(
+          bundle = any<Bundle>(),
+          questionnaire = questionnaire,
+          questionnaireConfig = questionnaireConfig,
+          questionnaireResponse = questionnaireResponse,
+          context = context,
+        )
+      }
+      coVerify {
+        questionnaireViewModel.updateResourcesLastUpdatedProperty(
+          actionParameters,
+        )
+      }
+
+      coVerify { onSuccessfulSubmission(any(), questionnaireResponse) }
+      unmockkObject(ResourceMapper)
+    }
+
   // TODO Write integration test for QuestionnaireActivity to compliment this unit test;
   @Test
-  fun testHandleQuestionnaireSubmission() = runTest {
+  fun testHandleQuestionnaireSubmission() {
     mockkObject(ResourceMapper)
     val questionnaire =
       extractionQuestionnaire().apply {
