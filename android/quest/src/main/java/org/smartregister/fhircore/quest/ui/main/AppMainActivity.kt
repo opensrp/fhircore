@@ -186,6 +186,13 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     findNavController(R.id.nav_host).removeOnDestinationChangedListener(sentryNavListener)
   }
 
+  override fun onQuestionnaireLaunched(questionnaireConfig: QuestionnaireConfig) {
+    // Data filter QRs are not persisted; reset filters when questionnaire is launched
+    if (!questionnaireConfig.saveQuestionnaireResponse) {
+      appMainViewModel.resetRegisterFilters.value = true
+    }
+  }
+
   override suspend fun onSubmitQuestionnaire(activityResult: ActivityResult) {
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
