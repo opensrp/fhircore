@@ -23,6 +23,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.validation.FhirValidator
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
@@ -39,6 +40,7 @@ import java.util.Date
 import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -83,6 +85,7 @@ import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.checkResourceValid
 import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
@@ -91,6 +94,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.logErrorMessages
 import org.smartregister.fhircore.engine.util.extension.packRepeatedGroups
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForEditing
@@ -113,6 +117,7 @@ constructor(
   val transformSupportServices: TransformSupportServices,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val fhirOperator: FhirOperator,
+  val fhirValidatorProvider: Provider<FhirValidator>,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val configurationRegistry: ConfigurationRegistry,
 ) : ViewModel() {
@@ -304,6 +309,9 @@ constructor(
         if (subject != null && !questionnaireConfig.isReadOnly()) {
           val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
 
+          val extractedResources = newBundle.entry.map { it.resource }
+          validateWithFhirValidator(*extractedResources.toTypedArray())
+
           generateCarePlan(
             subject = subject,
             bundle = newBundle,
@@ -334,8 +342,17 @@ constructor(
       val idTypes =
         bundle.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
           ?: emptyList()
-      onSuccessfulSubmission(idTypes, currentQuestionnaireResponse)
+
+      onSuccessfulSubmission(
+        idTypes,
+        currentQuestionnaireResponse,
+      )
     }
+  }
+
+  suspend fun validateWithFhirValidator(vararg resource: Resource) {
+    val fhirValidator = fhirValidatorProvider.get()
+    fhirValidator.checkResourceValid(*resource).logErrorMessages()
   }
 
   suspend fun retireUsedQuestionnaireUniqueId(
@@ -866,27 +883,33 @@ constructor(
               null,
             ) as Parameters
 
-          result.parameter.mapNotNull { cqlResultParameterComponent ->
-            (cqlResultParameterComponent.value ?: cqlResultParameterComponent.resource)?.let {
-              resultParameterResource ->
-              if (
-                cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
-                  resultParameterResource.isResource
-              ) {
-                defaultRepository.create(true, resultParameterResource as Resource)
-              }
+          val resources =
+            result.parameter.mapNotNull { cqlResultParameterComponent ->
+              (cqlResultParameterComponent.value ?: cqlResultParameterComponent.resource)?.let {
+                resultParameterResource ->
+                if (BuildConfig.DEBUG) {
+                  Timber.d(
+                    "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${
+                                            getStringRepresentation(
+                                                resultParameterResource,
+                                            )
+                                        }",
+                  )
+                }
 
-              if (BuildConfig.DEBUG) {
-                Timber.d(
-                  "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${
-                                        getStringRepresentation(
-                                            resultParameterResource,
-                                        )
-                                    }",
-                )
+                if (
+                  cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
+                    resultParameterResource.isResource
+                ) {
+                  defaultRepository.create(true, resultParameterResource as Resource)
+                  resultParameterResource
+                } else {
+                  null
+                }
               }
             }
-          }
+
+          validateWithFhirValidator(*resources.toTypedArray())
         }
     }
   }
@@ -907,12 +930,15 @@ constructor(
       if (planId.isNotEmpty()) {
         kotlin
           .runCatching {
-            fhirCarePlanGenerator.generateOrUpdateCarePlan(
-              planDefinitionId = planId,
-              subject = subject,
-              data = bundle,
-              generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
-            )
+            val carePlan =
+              fhirCarePlanGenerator.generateOrUpdateCarePlan(
+                planDefinitionId = planId,
+                subject = subject,
+                data = bundle,
+                generateCarePlanWithWorkflowApi =
+                  questionnaireConfig.generateCarePlanWithWorkflowApi,
+              )
+            carePlan?.let { validateWithFhirValidator(it) }
           }
           .onFailure { Timber.e(it) }
       }
