@@ -38,8 +38,8 @@ jobs:
               tlsSkipVerify: true
               ignoreNotFound: true
               secrets: |
-                kv-v2-fhircore/data/opensrp-shared KEYSTORE_FILE | KEYSTORE_FILE;
-                kv-v2-fhircore/data/opensrp-shared KEYSTORE_PROPERTIES_FILE | KEYSTORE_PROPERTIES_FILE;
+                kv-v2-fhircore/data/opensrp-shared-0.2.5 KEYSTORE_FILE | KEYSTORE_FILE;
+                kv-v2-fhircore/data/opensrp-shared-0.2.5 KEYSTORE_PROPERTIES_FILE | KEYSTORE_PROPERTIES_FILE;
                 kv-v2-fhircore/data/${{ github.event.inputs.flavor }} LOCAL_PROPERTIES_FILE | LOCAL_PROPERTIES_FILE;
    
          - name: Checkout 🛎️
