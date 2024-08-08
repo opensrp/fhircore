@@ -623,9 +623,11 @@ internal class LoginViewModelTest : RobolectricTest() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val validContactNumber = "1234567890"
     val expectedFormattedNumber = "+1-123-456-7890"
+
     every { loginViewModel.applicationConfiguration.loginConfig.supervisorContactNumber } returns
       validContactNumber
-    every { loginViewModel.formatPhoneNumber(validContactNumber) } returns expectedFormattedNumber
+    every { loginViewModel.formatPhoneNumber(context, validContactNumber) } returns
+      expectedFormattedNumber
 
     val dialPadUriSlot = slot<String?>()
     val launchDialPadObserver =
@@ -645,20 +647,21 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testForgotPasswordWithValidContactNumber() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val validContactNumber = "1234567890"
+    val expectedFormattedNumber = "+1-123-456-7890"
+
     every { loginViewModel.applicationConfiguration.loginConfig.supervisorContactNumber } returns
       validContactNumber
+    every { loginViewModel.formatPhoneNumber(context, validContactNumber) } returns
+      expectedFormattedNumber
 
-    every { loginViewModel.formatPhoneNumber(validContactNumber) } returns "+1-123-456-7890"
-
-    // Observe the _launchDialPad LiveData
-    val launchDialPadObserver = slot<String>()
-    loginViewModel.launchDialPad.observeForever { launchDialPadObserver.captured = it.toString() }
+    val launchDialPadObserver = slot<String?>()
+    loginViewModel.launchDialPad.observeForever { launchDialPadObserver.captured = it }
 
     loginViewModel.forgotPassword(context)
 
-    Assert.assertEquals("+1-123-456-7890", launchDialPadObserver.captured)
+    Assert.assertEquals(expectedFormattedNumber, launchDialPadObserver.captured)
 
-    loginViewModel.launchDialPad.removeObserver { launchDialPadObserver.captured = it.toString() }
+    loginViewModel.launchDialPad.removeObserver { launchDialPadObserver.captured = it }
   }
 
   @Test

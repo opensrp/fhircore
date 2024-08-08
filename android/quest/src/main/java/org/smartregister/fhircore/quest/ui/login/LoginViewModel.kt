@@ -184,7 +184,7 @@ constructor(
   fun forgotPassword(context: Context) {
     val contactNumber = applicationConfiguration.loginConfig.supervisorContactNumber
     if (!contactNumber.isNullOrEmpty()) {
-      val formattedNumber = formatPhoneNumber(contactNumber)
+      val formattedNumber = formatPhoneNumber(context, contactNumber)
       _launchDialPad.value = formattedNumber
     } else {
       Toast.makeText(context, context.getString(R.string.supervisor_contact), Toast.LENGTH_LONG)
@@ -193,16 +193,14 @@ constructor(
   }
 
   @Suppress("DEPRECATION")
-  fun formatPhoneNumber(number: String): String {
+  fun formatPhoneNumber(context: Context, number: String): String {
     return try {
-      // Remove unwanted characters and keep only digits
       val cleanedNumber = number.filter { it.isDigit() }
-
-      // Format the cleaned number
-      PhoneNumberUtils.formatNumber(cleanedNumber)
+      val countryCode = context.getString(R.string.country_code)
+      PhoneNumberUtils.formatNumber(cleanedNumber, countryCode)
     } catch (e: Exception) {
       Timber.tag("PhoneNumberFormatting").e(e, "Error formatting phone number")
-      number // Return unformatted number if there's an error
+      number
     }
   }
 
