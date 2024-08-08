@@ -42,6 +42,7 @@ import io.mockk.mockk
 import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.flowOf
 import org.hl7.fhir.r4.model.ResourceType
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -50,6 +51,9 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationBott
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
+import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.integration.Faker
@@ -64,6 +68,7 @@ import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import org.smartregister.fhircore.quest.ui.register.TOP_REGISTER_SCREEN_TEST_TAG
 import org.smartregister.fhircore.quest.ui.shared.components.SYNC_PROGRESS_INDICATOR_TEST_TAG
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 
 @HiltAndroidTest
 class RegisterScreenTest {
@@ -125,7 +130,7 @@ class RegisterScreenTest {
         isSyncUpload = flowOf(false),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf("")
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -139,7 +144,7 @@ class RegisterScreenTest {
         onEvent = {},
         registerUiState = registerUiState,
         onAppMainEvent = {},
-        searchText = searchText,
+        searchQuery = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
@@ -166,7 +171,7 @@ class RegisterScreenTest {
         isSyncUpload = flowOf(false),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf("")
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -180,7 +185,7 @@ class RegisterScreenTest {
         onEvent = {},
         registerUiState = registerUiState,
         onAppMainEvent = {},
-        searchText = searchText,
+        searchQuery = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
@@ -210,7 +215,7 @@ class RegisterScreenTest {
         isSyncUpload = flowOf(false),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf("")
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -224,7 +229,7 @@ class RegisterScreenTest {
         onEvent = {},
         registerUiState = registerUiState,
         onAppMainEvent = {},
-        searchText = searchText,
+        searchQuery = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
@@ -254,7 +259,7 @@ class RegisterScreenTest {
         isSyncUpload = flowOf(false),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf("")
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
     val pagingItems = mockk<LazyPagingItems<ResourceData>>().apply {}
 
@@ -265,7 +270,7 @@ class RegisterScreenTest {
         onEvent = {},
         registerUiState = registerUiState,
         onAppMainEvent = {},
-        searchText = searchText,
+        searchQuery = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
@@ -291,7 +296,7 @@ class RegisterScreenTest {
         isSyncUpload = flowOf(false),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf("")
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -305,7 +310,7 @@ class RegisterScreenTest {
         onEvent = {},
         registerUiState = registerUiState,
         onAppMainEvent = {},
-        searchText = searchText,
+        searchQuery = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
@@ -313,6 +318,52 @@ class RegisterScreenTest {
     }
     composeTestRule.waitUntil(5_000) { true }
     composeTestRule.onNodeWithTag(TOP_REGISTER_SCREEN_TEST_TAG, useUnmergedTree = true)
+  }
+
+  @Test
+  fun testThatTopScreenRenderShowsQrCode() {
+    val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+    val registerUiState =
+      RegisterUiState(
+        screenTitle = "Register101",
+        isFirstTimeSync = false,
+        registerConfiguration =
+          configurationRegistry
+            .retrieveConfiguration<RegisterConfiguration>(ConfigType.Register, "householdRegister")
+            .copy(
+              onSearchByQrSingleResultActions =
+                listOf(ActionConfig(trigger = ActionTrigger.ON_SEARCH_SINGLE_RESULT)),
+            ),
+        registerId = "register101",
+        totalRecordsCount = 1,
+        filteredRecordsCount = 0,
+        pagesCount = 0,
+        progressPercentage = flowOf(0),
+        isSyncUpload = flowOf(false),
+        params = emptyMap(),
+      )
+    val searchText = mutableStateOf(SearchQuery.emptyText)
+    val currentPage = mutableStateOf(0)
+
+    composeTestRule.setContent {
+      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
+
+      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
+
+      RegisterScreen(
+        modifier = Modifier,
+        openDrawer = {},
+        onEvent = {},
+        registerUiState = registerUiState,
+        onAppMainEvent = {},
+        searchQuery = searchText,
+        currentPage = currentPage,
+        pagingItems = pagingItems,
+        navController = rememberNavController(),
+      )
+    }
+
+    Assert.assertEquals(true, registerUiState.registerConfiguration?.showSearchByQrCode)
   }
 
   @Test
@@ -376,7 +427,7 @@ class RegisterScreenTest {
           ),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf("")
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -397,7 +448,7 @@ class RegisterScreenTest {
               ),
           ),
         onAppMainEvent = {},
-        searchText = searchText,
+        searchQuery = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
@@ -428,7 +479,7 @@ class RegisterScreenTest {
         currentSyncJobStatus = flowOf(CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf("")
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -445,7 +496,7 @@ class RegisterScreenTest {
             currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
           ),
         onAppMainEvent = {},
-        searchText = searchText,
+        searchQuery = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
@@ -479,7 +530,7 @@ class RegisterScreenTest {
         currentSyncJobStatus = flowOf(CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())),
         params = emptyMap(),
       )
-    val searchText = mutableStateOf("")
+    val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
 
     composeTestRule.setContent {
@@ -496,7 +547,7 @@ class RegisterScreenTest {
             currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
           ),
         onAppMainEvent = {},
-        searchText = searchText,
+        searchQuery = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),

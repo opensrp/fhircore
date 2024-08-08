@@ -92,6 +92,8 @@ import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
 import org.smartregister.fhircore.quest.ui.shared.components.SyncStatusView
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
+import org.smartregister.fhircore.quest.ui.shared.models.SearchMode
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val NO_REGISTER_VIEW_COLUMN_TEST_TAG = "noRegisterViewColumnTestTag"
@@ -113,7 +115,7 @@ fun RegisterScreen(
   registerUiState: RegisterUiState,
   appDrawerUIState: AppDrawerUIState = AppDrawerUIState(),
   onAppMainEvent: (AppMainEvent) -> Unit,
-  searchText: MutableState<String>,
+  searchQuery: MutableState<SearchQuery>,
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
@@ -140,14 +142,15 @@ fun RegisterScreen(
             registerUiState.screenTitle.ifEmpty {
               registerUiState.registerConfiguration?.topScreenSection?.title ?: ""
             },
-          searchText = searchText.value,
+          searchQuery = searchQuery.value,
           filteredRecordsCount = registerUiState.filteredRecordsCount,
           isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
+          showSearchByQrCode = registerUiState.registerConfiguration?.showSearchByQrCode ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
-          onSearchTextChanged = { text ->
-            searchText.value = text
-            onEvent(RegisterEvent.SearchRegister(searchText = text))
+          onSearchTextChanged = { uiSearchQuery ->
+            searchQuery.value = uiSearchQuery
+            onEvent(RegisterEvent.SearchRegister(searchQuery = uiSearchQuery))
           },
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
           topScreenSection = registerUiState.registerConfiguration?.topScreenSection,
@@ -168,7 +171,7 @@ fun RegisterScreen(
             }
           }
         }
-        if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
+        if (!searchQuery.value.isBlank()) RegisterHeader(resultCount = pagingItems.itemCount)
       }
     },
     floatingActionButton = {
@@ -237,7 +240,18 @@ fun RegisterScreen(
               onEvent = onEvent,
               registerUiState = registerUiState,
               currentPage = currentPage,
-              showPagination = searchText.value.isEmpty(),
+              showPagination = searchQuery.value.isBlank(),
+              onSearchByQrSingleResultAction = { resourceData ->
+                if (
+                  !searchQuery.value.isBlank() && searchQuery.value.mode == SearchMode.QrCodeScan
+                ) {
+                  registerUiState.registerConfiguration.onSearchByQrSingleResultValidActions
+                    ?.apply {
+                      handleClickEvent(navController, resourceData, context = navController.context)
+                      searchQuery.value = searchQuery.value.copy(mode = SearchMode.KeyboardInput)
+                    }
+                }
+              },
             )
           } else {
             registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
@@ -391,7 +405,7 @@ fun RegisterScreenWithDataPreview() {
       isSyncUpload = flowOf(false),
       params = emptyMap(),
     )
-  val searchText = remember { mutableStateOf("") }
+  val searchText = remember { mutableStateOf(SearchQuery.emptyText) }
   val currentPage = remember { mutableIntStateOf(0) }
   val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
   val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
@@ -403,7 +417,7 @@ fun RegisterScreenWithDataPreview() {
       onEvent = {},
       registerUiState = registerUiState,
       onAppMainEvent = {},
-      searchText = searchText,
+      searchQuery = searchText,
       currentPage = currentPage,
       pagingItems = pagingItems,
       navController = rememberNavController(),
