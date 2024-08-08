@@ -166,10 +166,10 @@ constructor(
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
-        if (event.searchText.isEmpty()) {
+        if (event.searchQuery.isBlank()) {
           paginateRegisterData(registerUiState.value.registerId)
         } else {
-          filterRegisterData(event.searchText)
+          filterRegisterData(event.searchQuery.query)
         }
       }
       is RegisterEvent.MoveToNextPage -> {
