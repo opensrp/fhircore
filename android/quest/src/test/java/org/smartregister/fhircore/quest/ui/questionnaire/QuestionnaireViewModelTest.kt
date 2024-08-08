@@ -626,7 +626,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaire =
       questionnaireViewModel.retrieveQuestionnaire(
         questionnaireConfig = questionnaireConfig,
-        actionParameters = emptyList(),
       )
 
     Assert.assertNotNull(questionnaire)
@@ -634,7 +633,19 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testRetrieveQuestionnaireShouldReturnPrePopulatedQuestionnaire() = runTest {
+  fun testPopulateQuestionnaireShouldPrePopulatedQuestionnaireWithComputedValues() = runTest {
+    val questionnaireViewModelInstance =
+      QuestionnaireViewModel(
+        defaultRepository = defaultRepository,
+        dispatcherProvider = defaultRepository.dispatcherProvider,
+        fhirCarePlanGenerator = fhirCarePlanGenerator,
+        resourceDataRulesExecutor = resourceDataRulesExecutor,
+        transformSupportServices = mockk(),
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        fhirOperator = fhirOperator,
+        fhirPathDataExtractor = fhirPathDataExtractor,
+        configurationRegistry = configurationRegistry,
+      )
     val patientAgeLinkId = "patient-age"
     val newQuestionnaireConfig =
       questionnaireConfig.copy(
@@ -677,23 +688,23 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           value = "20",
         ),
       )
-
-    val questionnaire =
-      questionnaireViewModel.retrieveQuestionnaire(
-        questionnaireConfig = newQuestionnaireConfig,
-        actionParameters = actionParameter,
-      )
+    val questionnaire = questionnaireViewModelInstance.retrieveQuestionnaire(newQuestionnaireConfig)
     Assert.assertNotNull(questionnaire)
+    questionnaireViewModelInstance.populateQuestionnaire(
+      questionnaire!!,
+      newQuestionnaireConfig,
+      actionParameter,
+    )
 
     // Questionnaire.item pre-populated
-    val questionnairePatientAgeItem = questionnaire?.find(patientAgeLinkId)
+    val questionnairePatientAgeItem = questionnaire.find(patientAgeLinkId)
     val itemValue: Type? = questionnairePatientAgeItem?.initial?.firstOrNull()?.value
     Assert.assertTrue(itemValue is IntegerType)
     Assert.assertEquals(20, itemValue?.primitiveValue()?.toInt())
 
     // Barcode linkId updated
     val questionnaireBarcodeItem =
-      newQuestionnaireConfig.barcodeLinkId?.let { questionnaire?.find(it) }
+      newQuestionnaireConfig.barcodeLinkId?.let { questionnaire.find(it) }
     val barCodeItemValue: Type? = questionnaireBarcodeItem?.initial?.firstOrNull()?.value
     Assert.assertFalse(barCodeItemValue is StringType)
     Assert.assertNull(
@@ -1771,6 +1782,18 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testThatPopulateQuestionnaireSetInitialDefaultValueForQuestionnaireInitialExpression() =
     runTest {
+      val questionnaireViewModelInstance =
+        QuestionnaireViewModel(
+          defaultRepository = defaultRepository,
+          dispatcherProvider = defaultRepository.dispatcherProvider,
+          fhirCarePlanGenerator = fhirCarePlanGenerator,
+          resourceDataRulesExecutor = resourceDataRulesExecutor,
+          transformSupportServices = mockk(),
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          fhirOperator = fhirOperator,
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          configurationRegistry = configurationRegistry,
+        )
       val questionnaireWithDefaultDate =
         Questionnaire().apply {
           id = questionnaireConfig.id
@@ -1793,7 +1816,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
         questionnaireWithDefaultDate
 
-      questionnaireViewModel.populateQuestionnaire(
+      questionnaireViewModelInstance.populateQuestionnaire(
         questionnaireWithDefaultDate,
         questionnaireConfig,
         emptyList(),
@@ -1809,6 +1832,18 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testThatPopulateQuestionnaireReturnsQuestionnaireResponseWithUnAnsweredRemoved() = runTest {
+    val questionnaireViewModelInstance =
+      QuestionnaireViewModel(
+        defaultRepository = defaultRepository,
+        dispatcherProvider = defaultRepository.dispatcherProvider,
+        fhirCarePlanGenerator = fhirCarePlanGenerator,
+        resourceDataRulesExecutor = resourceDataRulesExecutor,
+        transformSupportServices = mockk(),
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        fhirOperator = fhirOperator,
+        fhirPathDataExtractor = fhirPathDataExtractor,
+        configurationRegistry = configurationRegistry,
+      )
     val questionnaireConfig1 =
       questionnaireConfig.copy(
         resourceType = ResourceType.Patient,
@@ -1893,7 +1928,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     Assert.assertNotNull(questionnaireResponse.find("linkid-1"))
     val result =
-      questionnaireViewModel.populateQuestionnaire(
+      questionnaireViewModelInstance.populateQuestionnaire(
         questionnaireWithInitialValue,
         questionnaireConfig1,
         emptyList(),

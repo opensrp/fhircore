@@ -239,7 +239,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           }
         }
 
-        questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig, actionParameters)
+        questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig)
 
         try {
           val questionnaireFragmentBuilder =
