@@ -57,6 +57,28 @@ object PermissionUtils {
     }
   }
 
+  fun getStoragePermissionLauncher(
+    activity: AppCompatActivity,
+    onWriteExternalStoragePermissionGranted: () -> Unit = {},
+    onReadUserSelectedVisual: () -> Unit = {},
+    onReadUserSelectedVideos: () -> Unit = {},
+    onStoragePermissionDenied: () -> Unit,
+  ): ActivityResultLauncher<Array<String>> {
+    return activity.registerForActivityResult(
+      ActivityResultContracts.RequestMultiplePermissions(),
+    ) { permissions ->
+      if (permissions[Manifest.permission.WRITE_EXTERNAL_STORAGE] == true) {
+        onWriteExternalStoragePermissionGranted()
+      } else if (permissions[Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED] == true) {
+        onReadUserSelectedVisual()
+      } else if (permissions[Manifest.permission.READ_MEDIA_VIDEO] == true) {
+        onReadUserSelectedVideos()
+      } else {
+        onStoragePermissionDenied()
+      }
+    }
+  }
+
   fun getStartActivityForResultLauncher(
     activity: AppCompatActivity,
     onResult: (resultCode: Int, data: Intent?) -> Unit,
