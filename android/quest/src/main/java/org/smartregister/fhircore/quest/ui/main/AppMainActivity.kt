@@ -356,95 +356,96 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     }
   }
 
-  private fun handleStoragePermissions(){
-
-    val isWritePermissionEnabled = PermissionUtils.checkPermissions(
-      this,
-      listOf(
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
+  private fun handleStoragePermissions() {
+    val isWritePermissionEnabled =
+      PermissionUtils.checkPermissions(
+        this,
+        listOf(
+          Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        ),
       )
-    )
-    if(Build.VERSION.SDK_INT <= 32){
-      if(!isWritePermissionEnabled){
-        val storagePermissionLauncher : ActivityResultLauncher<Array<String>> =
-        PermissionUtils.getStoragePermissionLauncher(
-          this,
-          onWriteExternalStoragePermissionGranted = { },
-          onStoragePermissionDenied = {
-            Toast.makeText(
-              this,
-              getString(R.string.location_permissions_denied),
-              Toast.LENGTH_SHORT,
-            )
-              .show()
-          },
-        )
+    if (Build.VERSION.SDK_INT <= 32) {
+      if (!isWritePermissionEnabled) {
+        val storagePermissionLauncher: ActivityResultLauncher<Array<String>> =
+          PermissionUtils.getStoragePermissionLauncher(
+            this,
+            onWriteExternalStoragePermissionGranted = {},
+            onStoragePermissionDenied = {
+              Toast.makeText(
+                  this,
+                  getString(R.string.location_permissions_denied),
+                  Toast.LENGTH_SHORT,
+                )
+                .show()
+            },
+          )
         storagePermissionLauncher.launch(
           arrayOf(
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
           ),
         )
       }
-    }else if(Build.VERSION.SDK_INT == 33){
-      val isReadPermissionEnabled = PermissionUtils.checkPermissions(
-        this,
-        listOf(
-          Manifest.permission.READ_MEDIA_VIDEO,
+    } else if (Build.VERSION.SDK_INT == 33) {
+      val isReadPermissionEnabled =
+        PermissionUtils.checkPermissions(
+          this,
+          listOf(
+            Manifest.permission.READ_MEDIA_VIDEO,
+            Manifest.permission.READ_MEDIA_IMAGES,
+          ),
         )
-      )
-      if(!isReadPermissionEnabled){
-        val storagePermissionLauncher : ActivityResultLauncher<Array<String>> =
+      if (!isReadPermissionEnabled) {
+        val storagePermissionLauncher: ActivityResultLauncher<Array<String>> =
           PermissionUtils.getStoragePermissionLauncher(
             this,
-            onReadUserSelectedVideos = { },
+            onReadUserSelectedVideos = {},
             onStoragePermissionDenied = {
               Toast.makeText(
-                this,
-                getString(R.string.location_permissions_denied),
-                Toast.LENGTH_SHORT,
-              )
+                  this,
+                  getString(R.string.location_permissions_denied),
+                  Toast.LENGTH_SHORT,
+                )
                 .show()
             },
           )
         storagePermissionLauncher.launch(
           arrayOf(
             Manifest.permission.READ_MEDIA_VIDEO,
+            Manifest.permission.READ_MEDIA_IMAGES,
           ),
         )
       }
-
-    } else{
-        val isReadPermissionEnabled = PermissionUtils.checkPermissions(
-        this,
-        listOf(
-          Manifest.permission.READ_MEDIA_VIDEO,
-          Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+    } else {
+      val isReadPermissionEnabled =
+        PermissionUtils.checkPermissions(
+          this,
+          listOf(
+            Manifest.permission.READ_MEDIA_VIDEO,
+            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+          ),
         )
-      )
-      if(!isReadPermissionEnabled){
-        val storagePermissionLauncher : ActivityResultLauncher<Array<String>> =
+      if (!isReadPermissionEnabled) {
+        val storagePermissionLauncher: ActivityResultLauncher<Array<String>> =
           PermissionUtils.getStoragePermissionLauncher(
             this,
             onReadUserSelectedVisual = {},
             onReadUserSelectedVideos = {},
             onStoragePermissionDenied = {
               Toast.makeText(
-                this,
-                getString(R.string.location_permissions_denied),
-                Toast.LENGTH_SHORT,
-              )
+                  this,
+                  getString(R.string.location_permissions_denied),
+                  Toast.LENGTH_SHORT,
+                )
                 .show()
             },
           )
         storagePermissionLauncher.launch(
           arrayOf(
             Manifest.permission.READ_MEDIA_VIDEO,
-            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
           ),
         )
       }
     }
   }
 }
-
-
