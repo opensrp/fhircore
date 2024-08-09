@@ -48,8 +48,11 @@ interface QuestionnaireHandler {
           )
           .putExtras(extraIntentBundle),
       )
+      onQuestionnaireLaunched(questionnaireConfig)
     }
   }
+
+  fun onQuestionnaireLaunched(questionnaireConfig: QuestionnaireConfig)
 
   suspend fun onSubmitQuestionnaire(activityResult: ActivityResult)
 }
