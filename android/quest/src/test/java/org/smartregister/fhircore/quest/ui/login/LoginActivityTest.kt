@@ -61,14 +61,15 @@ class LoginActivityTest : RobolectricTest() {
   private val loginActivityController =
     Robolectric.buildActivity(Faker.TestLoginActivity::class.java)
   private lateinit var loginActivity: LoginActivity
+  private val currentUserName: String = Faker.authCredentials.username
 
   @Before
   fun setUp() {
     hiltRule.inject()
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     every { secureSharedPreference.retrieveSessionPin() } returns null
-    every { secureSharedPreference.retrieveSessionUsername() } returns
-      Faker.authCredentials.username
+    every { secureSharedPreference.retrieveSessionUserPin(any()) } returns null
+    every { secureSharedPreference.retrieveSessionUsername() } returns currentUserName
     loginActivity = loginActivityController.create().resume().get()
   }
 
@@ -127,8 +128,8 @@ class LoginActivityTest : RobolectricTest() {
   @Ignore("Weird: Cannot set session pin")
   fun testNavigateToScreenShouldLaunchPinLoginWithoutSetup() {
     // Return a session pin, login with pin is enabled by default
-    secureSharedPreference.saveSessionPin("1234".toCharArray())
-    every { secureSharedPreference.retrieveSessionPin() } returns "1234"
+    secureSharedPreference.saveSessionPin(currentUserName, "1234".toCharArray())
+    every { secureSharedPreference.retrieveSessionUserPin(currentUserName) } returns "1234"
 
     loginActivity.loginViewModel.updateNavigateHome(true)
 

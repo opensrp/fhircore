@@ -51,15 +51,15 @@ import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
+@OptIn(ExperimentalCoroutinesApi::class)
 class CustomSyncWorkerTest : RobolectricTest() {
 
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   private val resourceService: FhirResourceService = mockk()
 
-  @OptIn(ExperimentalCoroutinesApi::class)
   private var fhirResourceDataSource: FhirResourceDataSource =
     spyk(FhirResourceDataSource(resourceService))
 
@@ -67,29 +67,32 @@ class CustomSyncWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
 
+  private val applicationContext = ApplicationProvider.getApplicationContext<Context>()
+
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+  private lateinit var secureSharedPreference: SecureSharedPreference
 
   private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var customSyncWorker: CustomSyncWorker
 
   @Before
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
+    secureSharedPreference = SecureSharedPreference(applicationContext)
     initializeWorkManager()
   }
 
   @Test
   fun `should create sync worker with expected properties`() {
     sharedPreferencesHelper =
-      SharedPreferencesHelper(ApplicationProvider.getApplicationContext(), Gson())
+      SharedPreferencesHelper(applicationContext, Gson(), secureSharedPreference)
     configurationRegistry = Faker.buildTestConfigurationRegistry(sharedPreferencesHelper)
 
     customSyncWorker =
       TestListenableWorkerBuilder<CustomSyncWorker>(
-          ApplicationProvider.getApplicationContext(),
+          applicationContext,
         )
         .setWorkerFactory(CustomSyncWorkerFactory())
         .build()
@@ -102,7 +105,7 @@ class CustomSyncWorkerTest : RobolectricTest() {
   @Test
   fun `should create sync worker with organization`() = runTest {
     sharedPreferencesHelper =
-      SharedPreferencesHelper(ApplicationProvider.getApplicationContext(), Gson())
+      SharedPreferencesHelper(applicationContext, Gson(), secureSharedPreference)
 
     val organizationId1 = "organization-id1"
     val organizationId2 = "organization-id2"
@@ -120,7 +123,7 @@ class CustomSyncWorkerTest : RobolectricTest() {
 
     customSyncWorker =
       TestListenableWorkerBuilder<CustomSyncWorker>(
-          ApplicationProvider.getApplicationContext(),
+          applicationContext,
         )
         .setWorkerFactory(CustomSyncWorkerFactory())
         .build()
@@ -142,7 +145,7 @@ class CustomSyncWorkerTest : RobolectricTest() {
 
     customSyncWorker =
       TestListenableWorkerBuilder<CustomSyncWorker>(
-          ApplicationProvider.getApplicationContext(),
+          applicationContext,
         )
         .setWorkerFactory(CustomSyncWorkerFactory())
         .build()
@@ -161,7 +164,7 @@ class CustomSyncWorkerTest : RobolectricTest() {
 
     // Initialize WorkManager for instrumentation tests.
     WorkManagerTestInitHelper.initializeTestWorkManager(
-      ApplicationProvider.getApplicationContext(),
+      applicationContext,
       config,
     )
   }

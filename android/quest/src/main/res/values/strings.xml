@@ -129,4 +129,6 @@
     <string name="barcode_camera_permission_denied">Camera permission request denied. Barcode may not work as expected</string>
     <string name="prompt_point_at_a_barcode">Place your camera over the QR Code to start scanning</string>
     <string name="add_qr_code">Add QR code</string>
+    <string name="error_matching_sync_strategy">Error matching sync strategy</string>
+    <string name="unauthorised_user_permissions">Unauthorised user permissions</string>
 </resources>

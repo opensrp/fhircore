@@ -21,7 +21,6 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
 import org.smartregister.fhircore.engine.sync.ResourceTag
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
@@ -43,7 +42,7 @@ interface ConfigService {
     defineResourceTags().forEach { strategy ->
       when (strategy.type) {
         ResourceType.Practitioner.name -> {
-          val id = sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+          val id = sharedPreferencesHelper.retrieveSessionPractitionerId()
           if (id.isNullOrBlank() || id.isEmpty()) {
             strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
           } else {
