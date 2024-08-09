@@ -78,6 +78,7 @@
     <string name="forgot_password">Forgot Password</string>
     <string name="forgot_password_title">Forgot Password!</string>
     <string name="more">More</string>
+    <string name="call_supervisor">Please contact your supervisor.</string>
     <string name="cancel" tools:ignore="ButtonCase">CANCEL</string>
     <string name="dial_number">DIAL NUMBER</string>
     <string name="register">Register</string>
@@ -107,13 +108,11 @@
     <string name="required_constraint_validation_error_msg">There is no response to the required field.</string>
     <string name="set_pin">Set PIN</string>
     <string name="set_pin_message">CHA will use this PIN to login</string>
-    <string name="supervisor_contact">Please contact your project administrator</string>
     <string name="country_code">+1</string>
     <string name="enter_pin_for_user">Enter PIN for %1$s</string>
     <string name="incorrect_pin_please_retry">Incorrect PIN, please try again</string>
     <string name="pin_menu_login">Login</string>
     <string name="forgot_pin">Forgot PIN?</string>
-    <string name="call_supervisor">Please contact your supervisor.</string>
     <string name="percentage" translatable="false">%</string>
     <string name="logging_out">Logging out. Please wait…</string>
     <string name="session_expired">Session has been expired and must login again</string>

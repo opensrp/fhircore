@@ -179,7 +179,7 @@ class PinViewModelTest : RobolectricTest() {
       "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{}}"
 
     val context = ApplicationProvider.getApplicationContext<Context>()
-    val toastMessage = context.getString(R.string.supervisor_contact)
+    val toastMessage = context.getString(R.string.call_supervisor)
 
     // Run the forgotPin method and capture the Toast
     pinViewModel.forgotPin(context)

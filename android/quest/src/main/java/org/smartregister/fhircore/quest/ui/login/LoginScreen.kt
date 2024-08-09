@@ -414,9 +414,7 @@ fun ForgotPasswordDialog(
           fontSize = 16.sp,
         )
         Text(
-          text =
-            supervisorContactNumber?.takeIf { it.isNotBlank() }
-              ?: stringResource(R.string.call_supervisor),
+          text = supervisorContactNumber?.takeIf { it.isNotBlank() } ?: "",
           fontSize = 16.sp,
         )
       }

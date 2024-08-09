@@ -77,6 +77,7 @@
     <string name="forgot_password">Mot de passe oublié</string>
     <string name="forgot_password_title">Mot de passe oublié!</string>
     <string name="more">Plus de détails</string>
+    <string name="call_supervisor">Veuillez appeler votre superviseur au %1$s</string>
     <string name="cancel" tools:ignore="ButtonCase">Annuler</string>
     <string name="dial_number">Composer le numéro</string>
     <string name="register">Enregistrer</string>
@@ -107,7 +108,6 @@
     <string name="incorrect_pin_please_retry">Code PIN incorrect, veuillez réessayer</string>
     <string name="pin_menu_login">Connexion</string>
     <string name="forgot_pin">Code PIN oublié ?</string>
-    <string name="please_contact_supervisor">Veuillez contacter votre superviseur.</string>
     <string name="logging_out">Déconnexion. Veuillez patienter...</string>
     <string name="session_expired">Session expirée, veuillez vous connecter à nouveau</string>
     <string name="sex">Sexe</string>

@@ -187,12 +187,10 @@ constructor(
       val formattedNumber = formatPhoneNumber(context, contactNumber)
       _launchDialPad.value = formattedNumber
     } else {
-      Toast.makeText(context, context.getString(R.string.supervisor_contact), Toast.LENGTH_LONG)
-        .show()
+      Toast.makeText(context, context.getString(R.string.call_supervisor), Toast.LENGTH_LONG).show()
     }
   }
 
-  @Suppress("DEPRECATION")
   fun formatPhoneNumber(context: Context, number: String): String {
     return try {
       val cleanedNumber = number.filter { it.isDigit() }
