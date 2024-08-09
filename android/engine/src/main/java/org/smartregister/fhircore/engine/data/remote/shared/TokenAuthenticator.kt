@@ -28,11 +28,12 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import androidx.core.os.bundleOf
+import com.auth0.jwt.JWT
+import com.auth0.jwt.exceptions.JWTDecodeException
+import com.auth0.jwt.interfaces.DecodedJWT
 import com.google.android.fhir.sync.HttpAuthenticationMethod
 import com.google.android.fhir.sync.HttpAuthenticator as FhirAuthenticator
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.jsonwebtoken.JwtException
-import io.jsonwebtoken.Jwts
 import java.io.IOException
 import java.net.UnknownHostException
 import java.util.Base64
@@ -62,7 +63,6 @@ constructor(
   @ApplicationContext val context: Context,
 ) : FhirAuthenticator {
 
-  private val jwtParser = Jwts.parser()
   private val authConfiguration by lazy { configService.provideAuthConfiguration() }
   private var isLoginPageRendered = false
 
@@ -131,12 +131,11 @@ constructor(
   /** This function checks if token is null or empty or expired */
   fun isTokenActive(authToken: String?): Boolean {
     if (authToken.isNullOrEmpty()) return false
-    val tokenPart = authToken.substringBeforeLast('.').plus(".")
     return try {
-      val body = jwtParser.parseClaimsJwt(tokenPart).body
-      body.expiration.after(today())
-    } catch (jwtException: JwtException) {
-      false
+      val jwt: DecodedJWT? = JWT.decode(authToken)
+      jwt?.expiresAt!!.after(today())
+    } catch (e: JWTDecodeException) {
+      return false
     }
   }
 
