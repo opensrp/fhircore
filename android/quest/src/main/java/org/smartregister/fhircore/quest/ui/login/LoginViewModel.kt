@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.quest.ui.login
 
 import android.content.Context
+import android.telephony.PhoneNumberUtils
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -34,6 +36,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -178,9 +181,25 @@ constructor(
     }
   }
 
-  fun forgotPassword() {
-    // TODO load supervisor contact e.g.
-    _launchDialPad.value = "tel:0123456789"
+  fun forgotPassword(context: Context) {
+    val contactNumber = applicationConfiguration.loginConfig.supervisorContactNumber
+    if (!contactNumber.isNullOrEmpty()) {
+      val formattedNumber = formatPhoneNumber(context, contactNumber)
+      _launchDialPad.value = formattedNumber
+    } else {
+      Toast.makeText(context, context.getString(R.string.call_supervisor), Toast.LENGTH_LONG).show()
+    }
+  }
+
+  fun formatPhoneNumber(context: Context, number: String): String {
+    return try {
+      val cleanedNumber = number.filter { it.isDigit() }
+      val countryCode = context.getString(R.string.country_code)
+      PhoneNumberUtils.formatNumber(cleanedNumber, countryCode)
+    } catch (e: Exception) {
+      Timber.tag("PhoneNumberFormatting").e(e, "Error formatting phone number")
+      number
+    }
   }
 
   fun updateNavigateHome(navigateHome: Boolean = true) {

@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.quest.ui.login
 
+import android.content.Context
+import androidx.lifecycle.Observer
+import androidx.test.core.app.ApplicationProvider
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
@@ -617,8 +620,48 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Test
   fun testForgotPasswordLoadsContact() {
-    loginViewModel.forgotPassword()
-    Assert.assertEquals("tel:0123456789", loginViewModel.launchDialPad.value)
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val validContactNumber = "1234567890"
+    val expectedFormattedNumber = "+1-123-456-7890"
+
+    every { loginViewModel.applicationConfiguration.loginConfig.supervisorContactNumber } returns
+      validContactNumber
+    every { loginViewModel.formatPhoneNumber(context, validContactNumber) } returns
+      expectedFormattedNumber
+
+    val dialPadUriSlot = slot<String?>()
+    val launchDialPadObserver =
+      Observer<String?> { dialPadUri -> dialPadUriSlot.captured = dialPadUri }
+
+    loginViewModel.launchDialPad.observeForever(launchDialPadObserver)
+
+    try {
+      loginViewModel.forgotPassword(context)
+      Assert.assertEquals(expectedFormattedNumber, dialPadUriSlot.captured)
+    } finally {
+      loginViewModel.launchDialPad.removeObserver(launchDialPadObserver)
+    }
+  }
+
+  @Test
+  fun testForgotPasswordWithValidContactNumber() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val validContactNumber = "1234567890"
+    val expectedFormattedNumber = "+1-123-456-7890"
+
+    every { loginViewModel.applicationConfiguration.loginConfig.supervisorContactNumber } returns
+      validContactNumber
+    every { loginViewModel.formatPhoneNumber(context, validContactNumber) } returns
+      expectedFormattedNumber
+
+    val launchDialPadObserver = slot<String?>()
+    loginViewModel.launchDialPad.observeForever { launchDialPadObserver.captured = it }
+
+    loginViewModel.forgotPassword(context)
+
+    Assert.assertEquals(expectedFormattedNumber, launchDialPadObserver.captured)
+
+    loginViewModel.launchDialPad.removeObserver { launchDialPadObserver.captured = it }
   }
 
   @Test

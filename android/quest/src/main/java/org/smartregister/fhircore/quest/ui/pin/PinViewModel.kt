@@ -16,7 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.pin
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.telephony.PhoneNumberUtils
+import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
@@ -37,7 +40,9 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.clearPasswordInMemory
 import org.smartregister.fhircore.engine.util.toPasswordHash
+import timber.log.Timber
 
+@Suppress("UNUSED_EXPRESSION")
 @HiltViewModel
 class PinViewModel
 @Inject
@@ -73,10 +78,11 @@ constructor(
       PinUiState(message = "", appName = "", setupPin = false, pinLength = 0, showLogo = false),
     )
 
-  private val applicationConfiguration: ApplicationConfiguration by lazy {
+  val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
+  @SuppressLint("StringFormatInvalid")
   fun setPinUiState(setupPin: Boolean = false, context: Context) {
     val username = secureSharedPreference.retrieveSessionUsername()
     pinUiState.value =
@@ -129,9 +135,25 @@ constructor(
     }
   }
 
-  fun forgotPin() {
-    // TODO use valid supervisor (Practitioner) telephone number
-    _launchDialPad.value = "tel:####"
+  fun forgotPin(context: Context) {
+    val contactNumber = applicationConfiguration.loginConfig.supervisorContactNumber
+    if (!contactNumber.isNullOrEmpty()) {
+      val formattedNumber = formatPhoneNumber(context, contactNumber)
+      _launchDialPad.value = formattedNumber
+    } else {
+      Toast.makeText(context, context.getString(R.string.call_supervisor), Toast.LENGTH_LONG).show()
+    }
+  }
+
+  fun formatPhoneNumber(context: Context, number: String): String {
+    return try {
+      val cleanedNumber = number.filter { it.isDigit() }
+      val countryCode = context.getString(R.string.country_code)
+      PhoneNumberUtils.formatNumber(cleanedNumber, countryCode)
+    } catch (e: Exception) {
+      Timber.tag("PhoneNumberFormatting").e(e, "Error formatting phone number")
+      number
+    }
   }
 
   fun pinLogin(enteredPin: CharArray, callback: (Boolean) -> Unit) {

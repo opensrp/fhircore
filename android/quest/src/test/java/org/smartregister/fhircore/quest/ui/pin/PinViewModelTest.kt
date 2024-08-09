@@ -17,7 +17,10 @@
 package org.smartregister.fhircore.quest.ui.pin
 
 import android.app.Application
+import android.content.Context
+import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -36,6 +39,8 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.shadows.ShadowToast
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -148,9 +153,38 @@ class PinViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testForgotPin() {
-    pinViewModel.forgotPin()
-    Assert.assertEquals("tel:####", pinViewModel.launchDialPad.value)
+  fun testForgotPinLaunchesDialer() {
+    configurationRegistry.configsJsonMap[ConfigType.Application.name] =
+      "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{\"supervisorContactNumber\":\"1234567890\"}}"
+    val launchDialPadObserver =
+      Observer<String?> { dialPadUri ->
+        if (dialPadUri != null) {
+          Assert.assertEquals("1-234-567-890", dialPadUri)
+        }
+      }
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    try {
+      pinViewModel.launchDialPad.observeForever(launchDialPadObserver)
+      pinViewModel.forgotPin(context)
+    } finally {
+      pinViewModel.launchDialPad.removeObserver(launchDialPadObserver)
+    }
+  }
+
+  @Test
+  fun testForgotPinDisplaysToastWhenNoContactNumber() {
+    configurationRegistry.configsJsonMap[ConfigType.Application.name] =
+      "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{}}"
+
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val toastMessage = context.getString(R.string.call_supervisor)
+
+    // Run the forgotPin method and capture the Toast
+    pinViewModel.forgotPin(context)
+
+    Assert.assertEquals(toastMessage, ShadowToast.getTextOfLatestToast())
   }
 
   @Test

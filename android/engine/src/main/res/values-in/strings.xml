@@ -109,7 +109,6 @@
     <string name="incorrect_pin_please_retry">PIN salah, mohon coba lagi</string>
     <string name="pin_menu_login">Masuk</string>
     <string name="forgot_pin">Lupa PIN?</string>
-    <string name="please_contact_supervisor">Silakan hubungi supervisor Anda.</string>
     <string name="percentage" translatable="false">%</string>
     <string name="logging_out">Sedang keluar (log out). Mohon tunggu…</string>
     <string name="session_expired">Sesi telah kedaluwarsa dan harus login lagi</string>

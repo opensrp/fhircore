@@ -21,8 +21,10 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
+import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 import org.junit.Test
@@ -60,7 +62,7 @@ class LoginScreenTest {
     ApplicationConfiguration(
       appTitle = "My app",
       appId = "app/debug",
-      loginConfig = LoginConfig(showLogo = true),
+      loginConfig = LoginConfig(showLogo = true, supervisorContactNumber = "123-456-7890"),
     )
 
   private val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -91,8 +93,85 @@ class LoginScreenTest {
 
   @Test
   fun testForgotPasswordDialog() {
-    composeRule.setContent { ForgotPasswordDialog(forgotPassword = {}, onDismissDialog = {}) }
+    composeRule.setContent {
+      ForgotPasswordDialog(
+        forgotPassword = {},
+        supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
+        onDismissDialog = {},
+      )
+    }
     composeRule.onNodeWithTag(PASSWORD_FORGOT_DIALOG).assertExists()
+  }
+
+  @Test
+  fun testForgotPasswordDialog_DisplayedCorrectly() {
+    composeRule.setContent {
+      ForgotPasswordDialog(
+        supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
+        forgotPassword = {},
+        onDismissDialog = {},
+      )
+    }
+    assertDialogContent()
+  }
+
+  private fun assertDialogContent() {
+    composeRule.onNodeWithTag(PASSWORD_FORGOT_DIALOG).assertExists().assertIsDisplayed()
+    composeRule
+      .onNodeWithText(context.getString(R.string.forgot_password_title))
+      .assertIsDisplayed()
+    composeRule.onNodeWithText(context.getString(R.string.call_supervisor)).assertIsDisplayed()
+    composeRule
+      .onNodeWithText(applicationConfiguration.loginConfig.supervisorContactNumber.toString())
+      .assertIsDisplayed()
+    composeRule.onNodeWithText(context.getString(R.string.cancel)).assertIsDisplayed()
+    composeRule.onNodeWithText(context.getString(R.string.dial_number)).assertIsDisplayed()
+  }
+
+  @Test
+  fun testForgotPasswordDialog_CancelButton_Click() {
+    var dismissDialogClicked = false
+
+    composeRule.setContent {
+      ForgotPasswordDialog(
+        supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
+        forgotPassword = {},
+        onDismissDialog = { dismissDialogClicked = true },
+      )
+    }
+    val cancelText = context.getString(R.string.cancel)
+    composeRule.onNodeWithText(cancelText).performClick()
+    assertTrue(dismissDialogClicked)
+  }
+
+  @Test
+  fun testForgotPasswordDialog_DisplaysCorrectContactNumber() {
+    composeRule.setContent {
+      ForgotPasswordDialog(
+        supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
+        forgotPassword = {},
+        onDismissDialog = {},
+      )
+    }
+    val contactNumber = applicationConfiguration.loginConfig.supervisorContactNumber
+    composeRule.onNodeWithText(contactNumber.toString()).assertIsDisplayed()
+  }
+
+  @Test
+  fun testForgotPasswordDialog_DialNumberButton_Click() {
+    var forgotPasswordClicked = false
+    var dismissDialogClicked = false
+    composeRule.setContent {
+      ForgotPasswordDialog(
+        supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
+        forgotPassword = { forgotPasswordClicked = true },
+        onDismissDialog = { dismissDialogClicked = true },
+      )
+    }
+    val dialNumber = context.getString(R.string.dial_number)
+    composeRule.onNodeWithText(dialNumber).performClick()
+    assert(dismissDialogClicked)
+    assert(forgotPasswordClicked)
   }
 
   @Test

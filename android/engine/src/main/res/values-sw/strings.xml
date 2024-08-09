@@ -98,7 +98,6 @@
     <string name="incorrect_pin_please_retry">PIN isiyo sahihi, jaribu tena</string>
     <string name="pin_menu_login">Ingia</string>
     <string name="forgot_pin">Umesahau PIN?</string>
-    <string name="please_contact_supervisor">Tafadhali wasiliana na msimamizi wako.</string>
     <string name="logging_out">Tafadhali subiri... Inatoka kwenye mfumo</string>
     <string name="session_expired">Muda wa kipindi chako umeisha. Tafadhali ingia tena.</string>
     <string name="sex">Jinsia</string>
