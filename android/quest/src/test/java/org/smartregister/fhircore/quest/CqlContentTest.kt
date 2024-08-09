@@ -24,6 +24,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import java.io.File
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Resource
@@ -32,6 +33,8 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.skyscreamer.jsonassert.JSONAssert
+import org.skyscreamer.jsonassert.JSONCompareMode
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.valueToString
@@ -233,8 +236,8 @@ class CqlContentTest : RobolectricTest() {
         .replaceTimePart()
 
     println(cqlResultStr)
-    println(expectedResource as String)
+    println(expectedResource)
 
-    Assert.assertEquals(expectedResource, cqlResultStr)
+    JSONAssert.assertEquals(expectedResource, cqlResultStr, JSONCompareMode.STRICT)
   }
 }
