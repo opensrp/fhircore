@@ -269,7 +269,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
     val currentSyncJobStatus = appMainViewModel.appDrawerUiState.value.currentSyncJobStatus
     if (
       currentSyncJobStatus is CurrentSyncJobStatus.Succeeded ||
-      currentSyncJobStatus is CurrentSyncJobStatus.Failed
+        currentSyncJobStatus is CurrentSyncJobStatus.Failed
     ) {
       appMainViewModel.updateAppDrawerUIState(false, null, 0)
     }
@@ -280,7 +280,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
     val currentSyncJobStatus = appMainViewModel.appDrawerUiState.value.currentSyncJobStatus
     if (
       currentSyncJobStatus is CurrentSyncJobStatus.Succeeded ||
-      currentSyncJobStatus is CurrentSyncJobStatus.Failed
+        currentSyncJobStatus is CurrentSyncJobStatus.Failed
     ) {
       appMainViewModel.updateAppDrawerUIState(false, null, 0)
     }
