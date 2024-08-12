@@ -386,6 +386,25 @@ constructor(
   private fun getSyncProgress(completed: Int, total: Int) =
     completed * 100 / if (total > 0) total else 1
 
+  fun getSyncWorkerStatus(): CurrentSyncJobStatus? {
+    val syncStatus =
+      sharedPreferencesHelper.read(
+        SharedPreferencesHelper.PREFS_SYNC_STATUS,
+        "",
+      )
+    return when (syncStatus) {
+      SharedPreferencesHelper.PREFS_SYNC_STATUS_SUCCEEDED -> {
+        CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())
+      }
+      SharedPreferencesHelper.PREFS_SYNC_STATUS_FAILED -> {
+        CurrentSyncJobStatus.Failed(OffsetDateTime.now())
+      }
+      else -> {
+        null
+      }
+    }
+  }
+
   companion object {
     const val SYNC_TIMESTAMP_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"
     const val SYNC_TIMESTAMP_OUTPUT_FORMAT = "MMM d, hh:mm aa"

@@ -191,6 +191,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
   override fun onResume() {
     super.onResume()
     syncListenerManager.registerSyncListener(this, lifecycle)
+
+    val syncStatus = appMainViewModel.getSyncWorkerStatus()
+    if (syncStatus != null) {
+      onSync(syncStatus)
+    }
   }
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
@@ -273,12 +278,24 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
   override fun onPause() {
     super.onPause()
-    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    val currentSyncJobStatus = appMainViewModel.appDrawerUiState.value.currentSyncJobStatus
+    if (
+      currentSyncJobStatus is CurrentSyncJobStatus.Succeeded ||
+      currentSyncJobStatus is CurrentSyncJobStatus.Failed
+    ) {
+      appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    }
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    val currentSyncJobStatus = appMainViewModel.appDrawerUiState.value.currentSyncJobStatus
+    if (
+      currentSyncJobStatus is CurrentSyncJobStatus.Succeeded ||
+      currentSyncJobStatus is CurrentSyncJobStatus.Failed
+    ) {
+      appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    }
   }
 
   suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {

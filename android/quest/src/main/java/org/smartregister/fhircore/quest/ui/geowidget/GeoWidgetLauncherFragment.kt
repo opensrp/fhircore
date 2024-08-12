@@ -266,12 +266,24 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   override fun onPause() {
     super.onPause()
-    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    val currentSyncJobStatus = appMainViewModel.appDrawerUiState.value.currentSyncJobStatus
+    if (
+      currentSyncJobStatus is CurrentSyncJobStatus.Succeeded ||
+      currentSyncJobStatus is CurrentSyncJobStatus.Failed
+    ) {
+      appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    }
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    val currentSyncJobStatus = appMainViewModel.appDrawerUiState.value.currentSyncJobStatus
+    if (
+      currentSyncJobStatus is CurrentSyncJobStatus.Succeeded ||
+      currentSyncJobStatus is CurrentSyncJobStatus.Failed
+    ) {
+      appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    }
   }
 
   private fun buildGeoWidgetFragment() {
