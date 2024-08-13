@@ -68,7 +68,6 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.quest.R
@@ -89,8 +88,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
   private lateinit var questionnaireActivityController: ActivityController<QuestionnaireActivity>
   private lateinit var questionnaireActivity: QuestionnaireActivity
 
-  @Inject lateinit var testDispatcherProvider: DispatcherProvider
-
   @BindValue lateinit var defaultRepository: DefaultRepository
 
   @BindValue
@@ -104,7 +101,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
     }
     defaultRepository =
       mockk(relaxUnitFun = true) {
-        every { dispatcherProvider } returns testDispatcherProvider
         every { fhirEngine } returns spyk(this@QuestionnaireActivityTest.fhirEngine)
       }
     questionnaireConfig =

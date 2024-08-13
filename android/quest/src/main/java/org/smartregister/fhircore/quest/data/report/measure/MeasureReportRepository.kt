@@ -25,7 +25,6 @@ import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
-import kotlinx.coroutines.withContext
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Measure
@@ -36,7 +35,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -47,7 +45,6 @@ class MeasureReportRepository
 @Inject
 constructor(
   override val fhirEngine: FhirEngine,
-  override val dispatcherProvider: DispatcherProvider,
   override val sharedPreferencesHelper: SharedPreferencesHelper,
   override val configurationRegistry: ConfigurationRegistry,
   override val configService: ConfigService,
@@ -60,7 +57,6 @@ constructor(
 ) :
   DefaultRepository(
     fhirEngine = fhirEngine,
-    dispatcherProvider = dispatcherProvider,
     sharedPreferencesHelper = sharedPreferencesHelper,
     configurationRegistry = configurationRegistry,
     configService = configService,
@@ -91,31 +87,29 @@ constructor(
   ): List<MeasureReport> {
     val measureReport = mutableListOf<MeasureReport>()
     try {
-      withContext(dispatcherProvider.io()) {
-        if (subjects.isNotEmpty()) {
-          subjects
-            .map {
-              runMeasureReport(
-                measureUrl = measureUrl,
-                reportType = MeasureReportViewModel.SUBJECT,
-                startDateFormatted = startDateFormatted,
-                endDateFormatted = endDateFormatted,
-                subject = it,
-                practitionerId = practitionerId,
-              )
-            }
-            .forEach { subject -> measureReport.add(subject) }
-        } else {
-          runMeasureReport(
+      if (subjects.isNotEmpty()) {
+        subjects
+          .map {
+            runMeasureReport(
               measureUrl = measureUrl,
-              reportType = MeasureReportViewModel.POPULATION,
+              reportType = MeasureReportViewModel.SUBJECT,
               startDateFormatted = startDateFormatted,
               endDateFormatted = endDateFormatted,
-              subject = null,
+              subject = it,
               practitionerId = practitionerId,
             )
-            .also { measureReport.add(it) }
-        }
+          }
+          .forEach { subject -> measureReport.add(subject) }
+      } else {
+        runMeasureReport(
+            measureUrl = measureUrl,
+            reportType = MeasureReportViewModel.POPULATION,
+            startDateFormatted = startDateFormatted,
+            endDateFormatted = endDateFormatted,
+            subject = null,
+            practitionerId = practitionerId,
+          )
+          .also { measureReport.add(it) }
       }
 
       measureReport.forEach { report ->

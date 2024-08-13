@@ -40,7 +40,6 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -54,7 +53,6 @@ class GeoWidgetLauncherViewModel
 @Inject
 constructor(
   val defaultRepository: DefaultRepository,
-  val dispatcherProvider: DispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   val configurationRegistry: ConfigurationRegistry,
