@@ -343,8 +343,10 @@ constructor(
                 }
               }
 
+            val measureReportPopulationResultList =
+              formatPopulationMeasureReports(result, reportConfigurations)
             _measureReportPopulationResultList.addAll(
-              formatPopulationMeasureReports(result, reportConfigurations),
+              measureReportPopulationResultList,
             )
           }
           .onSuccess {
