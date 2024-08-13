@@ -46,7 +46,6 @@ import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -83,7 +82,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -103,7 +101,6 @@ open class DefaultRepository
 @Inject
 constructor(
   open val fhirEngine: FhirEngine,
-  open val dispatcherProvider: DispatcherProvider,
   open val sharedPreferencesHelper: SharedPreferencesHelper,
   open val configurationRegistry: ConfigurationRegistry,
   open val configService: ConfigService,
@@ -114,17 +111,15 @@ constructor(
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
-    return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
+    return fhirEngine.loadResource(resourceId)
   }
 
   suspend fun loadResource(resourceId: String, resourceType: ResourceType): Resource =
-    withContext(dispatcherProvider.io()) { fhirEngine.get(resourceType, resourceId) }
+    fhirEngine.get(resourceType, resourceId)
 
   suspend fun loadResource(reference: Reference) =
-    withContext(dispatcherProvider.io()) {
-      IdType(reference.reference).let {
-        fhirEngine.get(ResourceType.fromCode(it.resourceType), it.idPart)
-      }
+    IdType(reference.reference).let {
+      fhirEngine.get(ResourceType.fromCode(it.resourceType), it.idPart)
     }
 
   suspend inline fun <reified T : Resource> searchResourceFor(
@@ -134,19 +129,17 @@ constructor(
     dataQueries: List<DataQuery> = listOf(),
     configComputedRuleValues: Map<String, Any>,
   ): List<T> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine
-        .search<T> {
-          filterByResourceTypeId(token, subjectType, subjectId)
-          dataQueries.forEach {
-            filterBy(
-              dataQuery = it,
-              configComputedRuleValues = configComputedRuleValues,
-            )
-          }
+    fhirEngine
+      .search<T> {
+        filterByResourceTypeId(token, subjectType, subjectId)
+        dataQueries.forEach {
+          filterBy(
+            dataQuery = it,
+            configComputedRuleValues = configComputedRuleValues,
+          )
         }
-        .map { it.resource }
-    }
+      }
+      .map { it.resource }
 
   suspend inline fun <reified R : Resource> search(search: Search) =
     fhirEngine.search<R>(search).map { it.resource }
@@ -161,17 +154,13 @@ constructor(
    * param [addResourceTags]
    */
   suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
-    return withContext(dispatcherProvider.io()) {
-      preProcessResources(addResourceTags, *resource)
-      fhirEngine.create(*resource)
-    }
+    preProcessResources(addResourceTags, *resource)
+    return fhirEngine.create(*resource)
   }
 
   suspend fun createRemote(addResourceTags: Boolean = true, vararg resource: Resource) {
-    return withContext(dispatcherProvider.io()) {
-      preProcessResources(addResourceTags, *resource)
-      fhirEngine.create(*resource, isLocalOnly = true)
-    }
+    preProcessResources(addResourceTags, *resource)
+    fhirEngine.create(*resource, isLocalOnly = true)
   }
 
   private fun preProcessResources(addResourceTags: Boolean, vararg resource: Resource) {
@@ -197,23 +186,19 @@ constructor(
     resourceId: String,
     softDelete: Boolean = false,
   ) {
-    withContext(dispatcherProvider.io()) {
-      if (softDelete) {
-        val resource = fhirEngine.get(resourceType, resourceId)
-        softDelete(resource)
-      } else {
-        fhirEngine.delete(resourceType, resourceId)
-      }
+    if (softDelete) {
+      val resource = fhirEngine.get(resourceType, resourceId)
+      softDelete(resource)
+    } else {
+      fhirEngine.delete(resourceType, resourceId)
     }
   }
 
   suspend fun delete(resource: Resource, softDelete: Boolean = false) {
-    withContext(dispatcherProvider.io()) {
-      if (softDelete) {
-        softDelete(resource)
-      } else {
-        fhirEngine.delete(resource.resourceType, resource.logicalId)
-      }
+    if (softDelete) {
+      softDelete(resource)
+    } else {
+      fhirEngine.delete(resource.resourceType, resource.logicalId)
     }
   }
 
@@ -242,24 +227,20 @@ constructor(
    * param [addMandatoryTags]
    */
   suspend fun <R : Resource> addOrUpdate(addMandatoryTags: Boolean = true, resource: R) {
-    return withContext(dispatcherProvider.io()) {
-      resource.updateLastUpdated()
-      try {
-        fhirEngine.get(resource.resourceType, resource.logicalId).run {
-          val updateFrom = updateFrom(resource)
-          fhirEngine.update(updateFrom)
-        }
-      } catch (resourceNotFoundException: ResourceNotFoundException) {
-        create(addMandatoryTags, resource)
+    resource.updateLastUpdated()
+    try {
+      fhirEngine.get(resource.resourceType, resource.logicalId).run {
+        val updateFrom = updateFrom(resource)
+        fhirEngine.update(updateFrom)
       }
+    } catch (resourceNotFoundException: ResourceNotFoundException) {
+      create(addMandatoryTags, resource)
     }
   }
 
   suspend fun <R : Resource> update(resource: R) {
-    return withContext(dispatcherProvider.io()) {
-      resource.updateLastUpdated()
-      fhirEngine.update(resource)
-    }
+    resource.updateLastUpdated()
+    fhirEngine.update(resource)
   }
 
   suspend fun loadManagingEntity(group: Group) =
@@ -557,7 +538,7 @@ constructor(
     },
   ): Long =
     kotlin
-      .runCatching { withContext(dispatcherProvider.io()) { fhirEngine.count(this@count) } }
+      .runCatching { fhirEngine.count(this@count) }
       .onSuccess { count -> onSuccess(count) }
       .onFailure { throwable -> onFailure(throwable) }
       .getOrDefault(0)
@@ -765,63 +746,60 @@ constructor(
     subject: Resource? = null,
     eventWorkflow: EventWorkflow,
   ) {
-    withContext(dispatcherProvider.io()) {
-      val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
-      val computedValuesMap =
-        configRulesExecutor.fireRules(rules = configRules, baseResource = subject).mapValues {
-          entry,
-          ->
-          val initialValue = entry.value.toString()
-          if (initialValue.contains('/')) {
-            """${initialValue.substringBefore("/")}/${initialValue.extractLogicalIdUuid()}"""
-          } else {
-            initialValue
-          }
+    val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
+    val computedValuesMap =
+      configRulesExecutor.fireRules(rules = configRules, baseResource = subject).mapValues { entry,
+        ->
+        val initialValue = entry.value.toString()
+        if (initialValue.contains('/')) {
+          """${initialValue.substringBefore("/")}/${initialValue.extractLogicalIdUuid()}"""
+        } else {
+          initialValue
         }
-
-      Timber.i("Computed values map = ${computedValuesMap.values}")
-      val search =
-        Search(resourceConfig.resource).apply {
-          applyConfiguredSortAndFilters(
-            resourceConfig = resourceConfig,
-            sortData = false,
-            filterActiveResources = null,
-            configComputedRuleValues = computedValuesMap,
-          )
-        }
-      val resources = fhirEngine.search<Resource>(search).map { it.resource }
-      val filteredResources =
-        filterResourcesByFhirPathExpression(
-          resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
-          resources = resources,
-        )
-      filteredResources.forEach {
-        Timber.i("Closing Resource type ${it.resourceType.name} and id ${it.id}")
-        closeResource(resource = it, eventWorkflow = eventWorkflow)
       }
 
-      val retrievedRelatedResources =
-        retrieveRelatedResources(
-          resources = resources,
-          relatedResourcesConfigs = resourceConfig.relatedResources,
-          relatedResourceWrapper = RelatedResourceWrapper(),
+    Timber.i("Computed values map = ${computedValuesMap.values}")
+    val search =
+      Search(resourceConfig.resource).apply {
+        applyConfiguredSortAndFilters(
+          resourceConfig = resourceConfig,
+          sortData = false,
+          filterActiveResources = null,
           configComputedRuleValues = computedValuesMap,
         )
+      }
+    val resources = fhirEngine.search<Resource>(search).map { it.resource }
+    val filteredResources =
+      filterResourcesByFhirPathExpression(
+        resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
+        resources = resources,
+      )
+    filteredResources.forEach {
+      Timber.i("Closing Resource type ${it.resourceType.name} and id ${it.id}")
+      closeResource(resource = it, eventWorkflow = eventWorkflow)
+    }
 
-      retrievedRelatedResources.relatedResourceMap.forEach { resourcesMap ->
-        val filteredRelatedResources =
-          filterResourcesByFhirPathExpression(
-            resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
-            resources = resourcesMap.value,
-          )
+    val retrievedRelatedResources =
+      retrieveRelatedResources(
+        resources = resources,
+        relatedResourcesConfigs = resourceConfig.relatedResources,
+        relatedResourceWrapper = RelatedResourceWrapper(),
+        configComputedRuleValues = computedValuesMap,
+      )
 
-        filteredRelatedResources.forEach { resource ->
-          Timber.i(
-            "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}",
-          )
-          if (filterRelatedResource(resource, resourceConfig)) {
-            closeResource(resource = resource, eventWorkflow = eventWorkflow)
-          }
+    retrievedRelatedResources.relatedResourceMap.forEach { resourcesMap ->
+      val filteredRelatedResources =
+        filterResourcesByFhirPathExpression(
+          resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
+          resources = resourcesMap.value,
+        )
+
+      filteredRelatedResources.forEach { resource ->
+        Timber.i(
+          "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}",
+        )
+        if (filterRelatedResource(resource, resourceConfig)) {
+          closeResource(resource = resource, eventWorkflow = eventWorkflow)
         }
       }
     }
@@ -917,7 +895,7 @@ constructor(
     val updatedResource =
       parser.parseResource(resourceDefinition, updatedResourceDocument.jsonString())
     updatedResource.setId(updatedResource.idElement.idPart)
-    withContext(dispatcherProvider.io()) { fhirEngine.update(updatedResource as Resource) }
+    fhirEngine.update(updatedResource as Resource)
   }
 
   private fun getJsonContent(jsonElement: JsonElement): Any? {
@@ -948,9 +926,7 @@ constructor(
 
   suspend fun purge(resource: Resource, forcePurge: Boolean) {
     try {
-      withContext(dispatcherProvider.io()) {
-        fhirEngine.purge(resource.resourceType, resource.logicalId, forcePurge)
-      }
+      fhirEngine.purge(resource.resourceType, resource.logicalId, forcePurge)
     } catch (resourceNotFoundException: ResourceNotFoundException) {
       Timber.e(
         "Purge failed -> Resource with ID ${resource.logicalId} does not exist",
@@ -968,64 +944,62 @@ constructor(
     pageSize: Int? = null,
     configRules: List<RuleConfig>?,
   ): List<RepositoryResourceData> {
-    return withContext(dispatcherProvider.io()) {
-      val baseResourceConfig = fhirResourceConfig.baseResource
-      val relatedResourcesConfig = fhirResourceConfig.relatedResources
-      val configComputedRuleValues = configRules.configRulesComputedValues()
-      val search =
-        Search(type = baseResourceConfig.resource).apply {
-          applyConfiguredSortAndFilters(
-            resourceConfig = baseResourceConfig,
-            filterActiveResources = filterActiveResources,
-            sortData = true,
-            configComputedRuleValues = configComputedRuleValues,
-          )
-          applyFilterByRelatedEntityLocationMetaTag(
-            baseResourceConfig.resource,
-            filterByRelatedEntityLocationMetaTag,
-          )
-          if (currentPage != null && pageSize != null) {
-            count = pageSize
-            from = currentPage * pageSize
-          }
-        }
-
-      val baseFhirResources =
-        kotlin
-          .runCatching {
-            val searchTime = System.currentTimeMillis()
-            val result = fhirEngine.search<Resource>(search)
-            Timber.w(
-              "It took ${(System.currentTimeMillis() - searchTime) / 1000} second(s) to search resources of type ${baseResourceConfig.resource}",
-            )
-            result
-          }
-          .onFailure {
-            Timber.e(
-              it,
-              "Error retrieving resources. Empty list returned by default",
-            )
-          }
-          .getOrDefault(emptyList())
-
-      baseFhirResources.map { searchResult ->
-        val retrievedRelatedResources =
-          retrieveRelatedResources(
-            resources = listOf(searchResult.resource),
-            relatedResourcesConfigs = relatedResourcesConfig,
-            relatedResourceWrapper = RelatedResourceWrapper(),
-            configComputedRuleValues = configComputedRuleValues,
-          )
-        val secondaryRepositoryResourceData =
-          secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(filterActiveResources)
-        RepositoryResourceData(
-          resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
-          resource = searchResult.resource,
-          relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
-          relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
-          secondaryRepositoryResourceData = secondaryRepositoryResourceData,
+    val baseResourceConfig = fhirResourceConfig.baseResource
+    val relatedResourcesConfig = fhirResourceConfig.relatedResources
+    val configComputedRuleValues = configRules.configRulesComputedValues()
+    val search =
+      Search(type = baseResourceConfig.resource).apply {
+        applyConfiguredSortAndFilters(
+          resourceConfig = baseResourceConfig,
+          filterActiveResources = filterActiveResources,
+          sortData = true,
+          configComputedRuleValues = configComputedRuleValues,
         )
+        applyFilterByRelatedEntityLocationMetaTag(
+          baseResourceConfig.resource,
+          filterByRelatedEntityLocationMetaTag,
+        )
+        if (currentPage != null && pageSize != null) {
+          count = pageSize
+          from = currentPage * pageSize
+        }
       }
+
+    val baseFhirResources =
+      kotlin
+        .runCatching {
+          val searchTime = System.currentTimeMillis()
+          val result = fhirEngine.search<Resource>(search)
+          Timber.w(
+            "It took ${(System.currentTimeMillis() - searchTime) / 1000} second(s) to search resources of type ${baseResourceConfig.resource}",
+          )
+          result
+        }
+        .onFailure {
+          Timber.e(
+            it,
+            "Error retrieving resources. Empty list returned by default",
+          )
+        }
+        .getOrDefault(emptyList())
+
+    return baseFhirResources.map { searchResult ->
+      val retrievedRelatedResources =
+        retrieveRelatedResources(
+          resources = listOf(searchResult.resource),
+          relatedResourcesConfigs = relatedResourcesConfig,
+          relatedResourceWrapper = RelatedResourceWrapper(),
+          configComputedRuleValues = configComputedRuleValues,
+        )
+      val secondaryRepositoryResourceData =
+        secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(filterActiveResources)
+      RepositoryResourceData(
+        resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
+        resource = searchResult.resource,
+        relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
+        relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
+        secondaryRepositoryResourceData = secondaryRepositoryResourceData,
+      )
     }
   }
 
@@ -1159,18 +1133,16 @@ constructor(
   }
 
   private suspend fun retrieveSubLocations(locationId: String) =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine
-        .search<Location>(
-          Search(type = ResourceType.Location).apply {
-            filter(
-              Location.PARTOF,
-              { value = locationId.asReference(ResourceType.Location).reference },
-            )
-          },
-        )
-        .mapTo(LinkedList()) { it.resource }
-    }
+    fhirEngine
+      .search<Location>(
+        Search(type = ResourceType.Location).apply {
+          filter(
+            Location.PARTOF,
+            { value = locationId.asReference(ResourceType.Location).reference },
+          )
+        },
+      )
+      .mapTo(LinkedList()) { it.resource }
 
   /**
    * A wrapper data class to hold search results. All related resources are flattened into one Map

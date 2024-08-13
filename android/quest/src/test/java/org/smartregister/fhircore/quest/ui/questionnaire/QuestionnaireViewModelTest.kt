@@ -175,7 +175,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           configService = configService,
@@ -198,7 +197,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       spyk(
         QuestionnaireViewModel(
           defaultRepository = defaultRepository,
-          dispatcherProvider = defaultRepository.dispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
           transformSupportServices = mockk(),

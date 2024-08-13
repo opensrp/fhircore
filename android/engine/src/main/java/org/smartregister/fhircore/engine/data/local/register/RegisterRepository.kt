@@ -22,7 +22,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
-import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -36,7 +35,6 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -46,7 +44,6 @@ class RegisterRepository
 @Inject
 constructor(
   override val fhirEngine: FhirEngine,
-  override val dispatcherProvider: DispatcherProvider,
   override val sharedPreferencesHelper: SharedPreferencesHelper,
   override val configurationRegistry: ConfigurationRegistry,
   override val configService: ConfigService,
@@ -58,7 +55,6 @@ constructor(
   Repository,
   DefaultRepository(
     fhirEngine = fhirEngine,
-    dispatcherProvider = dispatcherProvider,
     sharedPreferencesHelper = sharedPreferencesHelper,
     configurationRegistry = configurationRegistry,
     configService = configService,
@@ -124,44 +120,42 @@ constructor(
     fhirResourceConfig: FhirResourceConfig?,
     paramsList: Array<ActionParameter>?,
   ): RepositoryResourceData {
-    return withContext(dispatcherProvider.io()) {
-      val paramsMap: Map<String, String> =
-        paramsList
-          ?.asSequence()
-          ?.filter {
-            (it.paramType == ActionParameterType.PARAMDATA ||
-              it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
-          }
-          ?.associate { it.key to it.value } ?: emptyMap()
+    val paramsMap: Map<String, String> =
+      paramsList
+        ?.asSequence()
+        ?.filter {
+          (it.paramType == ActionParameterType.PARAMDATA ||
+            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
+        }
+        ?.associate { it.key to it.value } ?: emptyMap()
 
-      val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
-      val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
-      val baseResourceConfig = resourceConfig.baseResource
+    val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
+    val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
+    val baseResourceConfig = resourceConfig.baseResource
 
-      val baseResource: Resource =
-        fhirEngine.get(baseResourceConfig.resource, resourceId.extractLogicalIdUuid())
+    val baseResource: Resource =
+      fhirEngine.get(baseResourceConfig.resource, resourceId.extractLogicalIdUuid())
 
-      val configComputedRuleValues = profileConfiguration.configRules.configRulesComputedValues()
+    val configComputedRuleValues = profileConfiguration.configRules.configRulesComputedValues()
 
-      val retrievedRelatedResources =
-        retrieveRelatedResources(
-          resources = listOf(baseResource),
-          relatedResourcesConfigs = resourceConfig.relatedResources,
-          relatedResourceWrapper = RelatedResourceWrapper(),
-          configComputedRuleValues = configComputedRuleValues,
-        )
-
-      RepositoryResourceData(
-        resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
-        resource = baseResource,
-        relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
-        relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
-        secondaryRepositoryResourceData =
-          profileConfiguration.secondaryResources.retrieveSecondaryRepositoryResourceData(
-            profileConfiguration.filterActiveResources,
-          ),
+    val retrievedRelatedResources =
+      retrieveRelatedResources(
+        resources = listOf(baseResource),
+        relatedResourcesConfigs = resourceConfig.relatedResources,
+        relatedResourceWrapper = RelatedResourceWrapper(),
+        configComputedRuleValues = configComputedRuleValues,
       )
-    }
+
+    return RepositoryResourceData(
+      resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
+      resource = baseResource,
+      relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
+      relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
+      secondaryRepositoryResourceData =
+        profileConfiguration.secondaryResources.retrieveSecondaryRepositoryResourceData(
+          profileConfiguration.filterActiveResources,
+        ),
+    )
   }
 
   fun retrieveProfileConfiguration(profileId: String, paramsMap: Map<String, String>) =

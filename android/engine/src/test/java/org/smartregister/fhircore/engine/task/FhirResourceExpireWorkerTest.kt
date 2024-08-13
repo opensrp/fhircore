@@ -95,7 +95,7 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
           period = Period().apply { end = DateTime().plusDays(-2).toDate() }
         }
     }
-  val serviceRequest =
+  private val serviceRequest =
     ServiceRequest().apply {
       id = UUID.randomUUID().toString()
       status = ServiceRequest.ServiceRequestStatus.COMPLETED
@@ -112,7 +112,6 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
