@@ -701,15 +701,16 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   @Test
   fun testImageBitmapUpdatedCorrectlyGivenProfileConfiguration(): Unit = runTest {
     defaultRepository.create(addResourceTags = true, binaryImage)
-    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
     loadRemoteImagesBitmaps(
       profileConfiguration.views,
       registerRepository = registerRepository,
       computedValuesMap = emptyMap(),
       configurationRegistry.decodedImageMap,
     )
-    Assert.assertTrue(decodedImageMap.isNotEmpty())
-    Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+    Assert.assertTrue(configurationRegistry.decodedImageMap.isNotEmpty())
+    Assert.assertTrue(
+      configurationRegistry.decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"),
+    )
   }
 
   @Test
@@ -806,7 +807,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     Assert.assertTrue(!decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
   }
 
-  @Test(expected = Exception::class)
+  @Test
   fun testExceptionCaughtOnDecodingBitmap() = runTest {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     val listViewProperties = cardViewProperties.content[0] as ListProperties

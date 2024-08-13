@@ -47,6 +47,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -90,6 +91,7 @@ import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPagingS
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper
 
@@ -146,6 +148,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
           measureReportRepository = measureReportRepository,
         ),
       )
+
+    every { measureReportViewModel.dispatcherProvider.io() } returns Dispatchers.IO
   }
 
   @Test
@@ -326,7 +330,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
         )
 
       coEvery { measureReportViewModel.formatPopulationMeasureReports(any(), any()) } returns
-        emptyList()
+        listOf(MeasureReportPopulationResult())
 
       coEvery {
         fhirEngine.retrievePreviouslyGeneratedMeasureReports(
@@ -336,6 +340,20 @@ class MeasureReportViewModelTest : RobolectricTest() {
           subjects = listOf(),
         )
       } returns listOf(testMeasureReport)
+
+      coEvery {
+        measureReportRepository.evaluatePopulationMeasure(
+          startDateFormatted = any(),
+          endDateFormatted = any(),
+          measureUrl = any(),
+          subjects = any(),
+          existing = any(),
+          practitionerId = any(),
+        )
+      } returns listOf(testMeasureReport)
+
+      coEvery { measureReportRepository.fetchSubjects(any(ReportConfiguration::class)) } returns
+        listOf()
 
       measureReportViewModel.reportTypeSelectorUiState.value =
         ReportTypeSelectorUiState(startDate = "21 Jan, 2022", endDate = "27 Jan, 2022")
