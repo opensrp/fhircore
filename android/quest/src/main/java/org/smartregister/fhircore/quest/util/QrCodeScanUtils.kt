@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.quest.util
 
 import androidx.fragment.app.FragmentActivity
-import org.smartregister.fhircore.quest.ui.sdc.qrCode.QrCodeCameraDialogFragment
+import org.smartregister.fhircore.quest.ui.sdc.qrCode.QrCodeCameraPermissionsDialogFragment
 
 object QrCodeScanUtils {
 
@@ -26,14 +26,14 @@ object QrCodeScanUtils {
   fun scanQrCode(lifecycleOwner: FragmentActivity, onQrCodeScanResult: (String?) -> Unit) {
     lifecycleOwner.supportFragmentManager.apply {
       setFragmentResultListener(
-        QrCodeCameraDialogFragment.RESULT_REQUEST_KEY,
+        QrCodeCameraPermissionsDialogFragment.RESULT_REQUEST_KEY,
         lifecycleOwner,
       ) { _, result ->
-        val barcode = result.getString(QrCodeCameraDialogFragment.RESULT_REQUEST_KEY)
+        val barcode = result.getString(QrCodeCameraPermissionsDialogFragment.RESULT_REQUEST_KEY)
         onQrCodeScanResult.invoke(barcode)
       }
 
-      QrCodeCameraDialogFragment().show(this@apply, QR_CODE_SCAN_UTILS_TAG)
+      QrCodeCameraPermissionsDialogFragment().show(this@apply, QR_CODE_SCAN_UTILS_TAG)
     }
   }
 }

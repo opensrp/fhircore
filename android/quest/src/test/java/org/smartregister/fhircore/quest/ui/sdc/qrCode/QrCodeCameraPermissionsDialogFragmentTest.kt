@@ -43,10 +43,10 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.quest.hiltActivityForTestScenario
 import org.smartregister.fhircore.quest.launchFragmentInHiltContainer
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.sdc.qrCode.QrCodeCameraDialogFragment.Companion.QR_CODE_SCANNER_FRAGMENT_TAG
+import org.smartregister.fhircore.quest.ui.sdc.qrCode.QrCodeCameraPermissionsDialogFragment.Companion.QR_CODE_SCANNER_FRAGMENT_TAG
 
 @HiltAndroidTest
-class QrCodeCameraDialogFragmentTest : RobolectricTest() {
+class QrCodeCameraPermissionsDialogFragmentTest : RobolectricTest() {
   @get:Rule(order = 0) var hiltAndroidRule = HiltAndroidRule(this)
 
   private val applicationContext = ApplicationProvider.getApplicationContext<Application>()
@@ -63,7 +63,7 @@ class QrCodeCameraDialogFragmentTest : RobolectricTest() {
     every {
       anyConstructed<LiveBarcodeScanningFragment>().show(any<FragmentManager>(), any<String>())
     } just runs
-    launchFragmentInHiltContainer<QrCodeCameraDialogFragment> {
+    launchFragmentInHiltContainer<QrCodeCameraPermissionsDialogFragment> {
       verify {
         anyConstructed<LiveBarcodeScanningFragment>()
           .show(
@@ -95,16 +95,19 @@ class QrCodeCameraDialogFragmentTest : RobolectricTest() {
             )
           }
         activityFragmentManager.setFragmentResultListener(
-          QrCodeCameraDialogFragment.RESULT_REQUEST_KEY,
+          QrCodeCameraPermissionsDialogFragment.RESULT_REQUEST_KEY,
           activity,
         ) { _, result ->
-          val code = result.getString(QrCodeCameraDialogFragment.RESULT_REQUEST_KEY)
+          val code = result.getString(QrCodeCameraPermissionsDialogFragment.RESULT_REQUEST_KEY)
           Assert.assertEquals(sampleBarcodeResult, code)
           receivedCode = code
         }
 
         activityFragmentManager.commitNow {
-          add(QrCodeCameraDialogFragment(), QrCodeCameraDialogFragmentTest::class.java.simpleName)
+          add(
+            QrCodeCameraPermissionsDialogFragment(),
+            QrCodeCameraPermissionsDialogFragmentTest::class.java.simpleName,
+          )
         }
 
         Assert.assertNotNull(receivedCode)
@@ -120,7 +123,7 @@ class QrCodeCameraDialogFragmentTest : RobolectricTest() {
     shadowOf(applicationContext).denyPermissions(Manifest.permission.CAMERA)
     hiltActivityForTestScenario().use { scenario ->
       scenario.onActivity { activity ->
-        val qrCodeFragment = QrCodeCameraDialogFragment()
+        val qrCodeFragment = QrCodeCameraPermissionsDialogFragment()
         val cameraPermissionRequestSpy = spyk(qrCodeFragment.cameraPermissionRequest)
         ReflectionHelpers.setField(
           qrCodeFragment,
@@ -129,7 +132,7 @@ class QrCodeCameraDialogFragmentTest : RobolectricTest() {
         )
 
         activity.supportFragmentManager.commitNow {
-          add(qrCodeFragment, QrCodeCameraDialogFragmentTest::class.java.simpleName)
+          add(qrCodeFragment, QrCodeCameraPermissionsDialogFragmentTest::class.java.simpleName)
         }
         verify { cameraPermissionRequestSpy.launch(Manifest.permission.CAMERA) }
       }

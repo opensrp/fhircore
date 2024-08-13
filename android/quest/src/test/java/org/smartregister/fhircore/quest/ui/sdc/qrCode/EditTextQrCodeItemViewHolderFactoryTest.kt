@@ -71,7 +71,7 @@ class EditTextQrCodeItemViewHolderFactoryTest : RobolectricTest() {
 
   @Test
   fun shouldUpdateTextCorrectlyWhenScanQrCodeReceived() {
-    mockkConstructor(QrCodeCameraDialogFragment::class)
+    mockkConstructor(QrCodeCameraPermissionsDialogFragment::class)
     val sampleQrCode = "d84fbd12-4f22-423a-8645-5525504e1bcb"
     /**
      * Using style 'com.google.android.material.R.style.Theme_Material3_DayNight' to prevent
@@ -90,13 +90,13 @@ class EditTextQrCodeItemViewHolderFactoryTest : RobolectricTest() {
           textInputLayout.findViewById<TextInputEditText>(R.id.text_input_edit_text)
         Assert.assertNotNull(textInputEditText)
         every {
-          anyConstructed<QrCodeCameraDialogFragment>()
+          anyConstructed<QrCodeCameraPermissionsDialogFragment>()
             .show(any<FragmentManager>(), QrCodeScanUtils.QR_CODE_SCAN_UTILS_TAG)
         } answers
           {
             activity.supportFragmentManager.setFragmentResult(
-              QrCodeCameraDialogFragment.RESULT_REQUEST_KEY,
-              bundleOf(QrCodeCameraDialogFragment.RESULT_REQUEST_KEY to sampleQrCode),
+              QrCodeCameraPermissionsDialogFragment.RESULT_REQUEST_KEY,
+              bundleOf(QrCodeCameraPermissionsDialogFragment.RESULT_REQUEST_KEY to sampleQrCode),
             )
           }
 
@@ -106,7 +106,7 @@ class EditTextQrCodeItemViewHolderFactoryTest : RobolectricTest() {
         Assert.assertEquals(sampleQrCode, textInputEditText.text.toString())
       }
     }
-    unmockkConstructor(QrCodeCameraDialogFragment::class)
+    unmockkConstructor(QrCodeCameraPermissionsDialogFragment::class)
   }
 
   @Test

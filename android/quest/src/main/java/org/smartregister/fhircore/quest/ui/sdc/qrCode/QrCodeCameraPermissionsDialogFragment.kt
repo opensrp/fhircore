@@ -22,11 +22,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
-import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBarcodeScanningFragment
 import org.smartregister.fhircore.engine.util.location.PermissionUtils
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.sdc.qrCode.scan.QRCodeScannerDialogFragment
 
-class QrCodeCameraDialogFragment : DialogFragment(R.layout.fragment_camera_permission) {
+class QrCodeCameraPermissionsDialogFragment : DialogFragment(R.layout.fragment_camera_permission) {
 
   @VisibleForTesting
   val cameraPermissionRequest =
@@ -60,10 +60,10 @@ class QrCodeCameraDialogFragment : DialogFragment(R.layout.fragment_camera_permi
   private fun showQrCodeScanner() =
     parentFragmentManager.apply {
       setFragmentResultListener(
-        LiveBarcodeScanningFragment.RESULT_REQUEST_KEY,
+        QRCodeScannerDialogFragment.RESULT_REQUEST_KEY,
         requireActivity(),
       ) { _, result ->
-        val qrCode = result.getString(LiveBarcodeScanningFragment.RESULT_REQUEST_KEY)?.trim()
+        val qrCode = result.getString(QRCodeScannerDialogFragment.RESULT_REQUEST_KEY)?.trim()
         this.setFragmentResult(
           RESULT_REQUEST_KEY,
           bundleOf(RESULT_REQUEST_KEY to qrCode),
@@ -72,7 +72,7 @@ class QrCodeCameraDialogFragment : DialogFragment(R.layout.fragment_camera_permi
 
       val qrCodeScannerFragment = this.findFragmentByTag(QR_CODE_SCANNER_FRAGMENT_TAG)
       if (qrCodeScannerFragment == null) {
-        LiveBarcodeScanningFragment()
+        QRCodeScannerDialogFragment()
           .show(
             this@apply,
             QR_CODE_SCANNER_FRAGMENT_TAG,
