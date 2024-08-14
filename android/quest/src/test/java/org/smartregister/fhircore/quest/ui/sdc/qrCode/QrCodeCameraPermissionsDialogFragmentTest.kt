@@ -23,7 +23,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBarcodeScanningFragment
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
@@ -44,6 +43,7 @@ import org.smartregister.fhircore.quest.hiltActivityForTestScenario
 import org.smartregister.fhircore.quest.launchFragmentInHiltContainer
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.sdc.qrCode.QrCodeCameraPermissionsDialogFragment.Companion.QR_CODE_SCANNER_FRAGMENT_TAG
+import org.smartregister.fhircore.quest.ui.sdc.qrCode.scan.QRCodeScannerDialogFragment
 
 @HiltAndroidTest
 class QrCodeCameraPermissionsDialogFragmentTest : RobolectricTest() {
@@ -59,26 +59,26 @@ class QrCodeCameraPermissionsDialogFragmentTest : RobolectricTest() {
   @Test
   fun onResumeShouldShowQrCodeScannerWhenCameraPermissionGranted() {
     shadowOf(applicationContext).grantPermissions(Manifest.permission.CAMERA)
-    mockkConstructor(LiveBarcodeScanningFragment::class)
+    mockkConstructor(QRCodeScannerDialogFragment::class)
     every {
-      anyConstructed<LiveBarcodeScanningFragment>().show(any<FragmentManager>(), any<String>())
+      anyConstructed<QRCodeScannerDialogFragment>().show(any<FragmentManager>(), any<String>())
     } just runs
     launchFragmentInHiltContainer<QrCodeCameraPermissionsDialogFragment> {
       verify {
-        anyConstructed<LiveBarcodeScanningFragment>()
+        anyConstructed<QRCodeScannerDialogFragment>()
           .show(
             this@launchFragmentInHiltContainer.parentFragmentManager,
             QR_CODE_SCANNER_FRAGMENT_TAG,
           )
       }
     }
-    unmockkConstructor(LiveBarcodeScanningFragment::class)
+    unmockkConstructor(QRCodeScannerDialogFragment::class)
   }
 
   @Test
   fun onResumeShouldReturnCorrectCodeReceivedFromQrCodeScanningWhenPermissionGranted() {
     shadowOf(applicationContext).grantPermissions(Manifest.permission.CAMERA)
-    mockkConstructor(LiveBarcodeScanningFragment::class)
+    mockkConstructor(QRCodeScannerDialogFragment::class)
     val sampleBarcodeResult = "13462889"
     var receivedCode: String? = null
 
@@ -86,12 +86,12 @@ class QrCodeCameraPermissionsDialogFragmentTest : RobolectricTest() {
       scenario.onActivity { activity ->
         val activityFragmentManager = activity.supportFragmentManager
         every {
-          anyConstructed<LiveBarcodeScanningFragment>().show(any<FragmentManager>(), any<String>())
+          anyConstructed<QRCodeScannerDialogFragment>().show(any<FragmentManager>(), any<String>())
         } answers
           {
             activityFragmentManager.setFragmentResult(
-              LiveBarcodeScanningFragment.RESULT_REQUEST_KEY,
-              bundleOf(LiveBarcodeScanningFragment.RESULT_REQUEST_KEY to sampleBarcodeResult),
+              QRCodeScannerDialogFragment.RESULT_REQUEST_KEY,
+              bundleOf(QRCodeScannerDialogFragment.RESULT_REQUEST_KEY to sampleBarcodeResult),
             )
           }
         activityFragmentManager.setFragmentResultListener(
@@ -115,7 +115,7 @@ class QrCodeCameraPermissionsDialogFragmentTest : RobolectricTest() {
       }
     }
 
-    unmockkConstructor(LiveBarcodeScanningFragment::class)
+    unmockkConstructor(QRCodeScannerDialogFragment::class)
   }
 
   @Test
