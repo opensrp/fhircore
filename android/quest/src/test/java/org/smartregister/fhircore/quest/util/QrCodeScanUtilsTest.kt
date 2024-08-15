@@ -30,7 +30,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.hiltActivityForTestScenario
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.sdc.qrCode.QrCodeCameraPermissionsDialogFragment
+import org.smartregister.fhircore.quest.ui.sdc.qrCode.scan.QRCodeScannerDialogFragment
 
 @HiltAndroidTest
 class QrCodeScanUtilsTest : RobolectricTest() {
@@ -39,13 +39,13 @@ class QrCodeScanUtilsTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-    mockkConstructor(QrCodeCameraPermissionsDialogFragment::class)
+    mockkConstructor(QRCodeScannerDialogFragment::class)
   }
 
   @After
   override fun tearDown() {
     super.tearDown()
-    unmockkConstructor(QrCodeCameraPermissionsDialogFragment::class)
+    unmockkConstructor(QRCodeScannerDialogFragment::class)
   }
 
   @Test
@@ -57,13 +57,13 @@ class QrCodeScanUtilsTest : RobolectricTest() {
       scenario.onActivity { activity ->
         val sampleQrCode = "d84fbd12-4f22-423a-8645-5525504e1bcb"
         every {
-          anyConstructed<QrCodeCameraPermissionsDialogFragment>()
+          anyConstructed<QRCodeScannerDialogFragment>()
             .show(any<FragmentManager>(), QrCodeScanUtils.QR_CODE_SCAN_UTILS_TAG)
         } answers
           {
             activity.supportFragmentManager.setFragmentResult(
-              QrCodeCameraPermissionsDialogFragment.RESULT_REQUEST_KEY,
-              bundleOf(QrCodeCameraPermissionsDialogFragment.RESULT_REQUEST_KEY to sampleQrCode),
+              QRCodeScannerDialogFragment.RESULT_REQUEST_KEY,
+              bundleOf(QRCodeScannerDialogFragment.RESULT_REQUEST_KEY to sampleQrCode),
             )
           }
         QrCodeScanUtils.scanQrCode(activity, onQrCodeScanListener)

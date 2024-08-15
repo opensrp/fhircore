@@ -17,29 +17,26 @@
 package org.smartregister.fhircore.quest.ui.sdc.qrCode
 
 import android.Manifest
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import org.smartregister.fhircore.engine.util.location.PermissionUtils
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.sdc.qrCode.scan.QRCodeScannerDialogFragment
 
-class QrCodeCameraPermissionsDialogFragment : DialogFragment(R.layout.fragment_camera_permission) {
+class CameraPermissionsDialogFragment : DialogFragment(R.layout.fragment_camera_permission) {
 
   @VisibleForTesting
   val cameraPermissionRequest =
     registerForActivityResult(ActivityResultContracts.RequestPermission()) { permissionGranted ->
+      parentFragmentManager.setFragmentResult(
+        CAMERA_PERMISSION_REQUEST_RESULT_KEY,
+        bundleOf(CAMERA_PERMISSION_REQUEST_RESULT_KEY to permissionGranted),
+      )
+
       if (permissionGranted) {
-        showQrCodeScanner()
+        dismiss()
       } else {
-        Toast.makeText(
-            requireContext(),
-            requireContext().getString(R.string.barcode_camera_permission_denied),
-            Toast.LENGTH_SHORT,
-          )
-          .show()
         dismiss()
       }
     }
@@ -49,7 +46,7 @@ class QrCodeCameraPermissionsDialogFragment : DialogFragment(R.layout.fragment_c
 
     when {
       PermissionUtils.checkPermissions(requireContext(), listOf(Manifest.permission.CAMERA)) -> {
-        showQrCodeScanner()
+        dismiss()
       }
       else -> {
         cameraPermissionRequest.launch(Manifest.permission.CAMERA)
@@ -57,33 +54,8 @@ class QrCodeCameraPermissionsDialogFragment : DialogFragment(R.layout.fragment_c
     }
   }
 
-  private fun showQrCodeScanner() =
-    parentFragmentManager.apply {
-      setFragmentResultListener(
-        QRCodeScannerDialogFragment.RESULT_REQUEST_KEY,
-        requireActivity(),
-      ) { _, result ->
-        val qrCode = result.getString(QRCodeScannerDialogFragment.RESULT_REQUEST_KEY)?.trim()
-        this.setFragmentResult(
-          RESULT_REQUEST_KEY,
-          bundleOf(RESULT_REQUEST_KEY to qrCode),
-        )
-      }
-
-      val qrCodeScannerFragment = this.findFragmentByTag(QR_CODE_SCANNER_FRAGMENT_TAG)
-      if (qrCodeScannerFragment == null) {
-        QRCodeScannerDialogFragment()
-          .show(
-            this@apply,
-            QR_CODE_SCANNER_FRAGMENT_TAG,
-          )
-      }
-
-      dismiss()
-    }
-
   companion object {
-    const val RESULT_REQUEST_KEY = "qr-code-result"
-    const val QR_CODE_SCANNER_FRAGMENT_TAG = "QrCodeCameraDialogFragment"
+    const val CAMERA_PERMISSION_REQUEST_RESULT_KEY =
+      "quest.ui.sdc.qrCode.CameraPermissionsDialogFragment"
   }
 }

@@ -24,13 +24,15 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.annotation.VisibleForTesting
 import androidx.camera.core.ImageAnalysis.COORDINATE_SYSTEM_VIEW_REFERENCED
 import androidx.camera.mlkit.vision.MlKitAnalyzer
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toRect
 import androidx.core.os.bundleOf
-import androidx.fragment.app.setFragmentResult
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.mlkit.vision.barcode.BarcodeScanner
@@ -41,17 +43,36 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import org.smartregister.fhircore.engine.util.location.PermissionUtils
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.sdc.qrCode.QrCodeCameraPermissionsDialogFragment
+import org.smartregister.fhircore.quest.ui.sdc.qrCode.CameraPermissionsDialogFragment
 
 internal class QRCodeScannerDialogFragment :
   BottomSheetDialogFragment(R.layout.fragment_qr_code_scan) {
 
   private lateinit var cameraExecutor: ExecutorService
-  private lateinit var barcodeScanner: BarcodeScanner
+  private lateinit var cameraController: LifecycleCameraController
+  private lateinit var mlKitImageAnalyzer: MlKitAnalyzer
+  private val barcodeScanner: BarcodeScanner by lazy {
+    val options = BarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build()
+    BarcodeScanning.getClient(options)
+  }
+
   private lateinit var previewView: PreviewView
   private lateinit var cancelScanButton: ImageButton
   private lateinit var viewFinderImageView: ImageView
   private lateinit var placeQrCodeScanTextView: TextView
+
+  @VisibleForTesting
+  val viewFinderBounds: RectF
+    get() {
+      val viewFinderImageViewHeight = viewFinderImageView.height
+      val viewFinderImageViewWidth = viewFinderImageView.width
+      return RectF(
+        viewFinderImageView.x,
+        viewFinderImageView.y,
+        viewFinderImageView.x + viewFinderImageViewWidth + 10,
+        viewFinderImageView.y + viewFinderImageViewHeight + 10,
+      )
+    }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
@@ -73,7 +94,44 @@ internal class QRCodeScannerDialogFragment :
     behavior.isDraggable = false
 
     cameraExecutor = Executors.newSingleThreadExecutor()
-    startCamera()
+    cameraController = LifecycleCameraController(requireContext())
+    mlKitImageAnalyzer =
+      MlKitAnalyzer(
+        listOf(barcodeScanner),
+        COORDINATE_SYSTEM_VIEW_REFERENCED,
+        ContextCompat.getMainExecutor(requireActivity()),
+      ) { result: MlKitAnalyzer.Result? ->
+        val barcodeResults = result?.getValue(barcodeScanner)
+        if (
+          (barcodeResults == null) || (barcodeResults.size == 0) || (barcodeResults.first() == null)
+        ) {
+          return@MlKitAnalyzer
+        }
+
+        onQrCodeDetected(barcodeResults[0])
+      }
+
+    cameraController.setImageAnalysisAnalyzer(
+      ContextCompat.getMainExecutor(requireActivity()),
+      mlKitImageAnalyzer,
+    )
+
+    parentFragmentManager.setFragmentResultListener(
+      CameraPermissionsDialogFragment.CAMERA_PERMISSION_REQUEST_RESULT_KEY,
+      this,
+    ) { _, result ->
+      val permissionGranted =
+        result.getBoolean(CameraPermissionsDialogFragment.CAMERA_PERMISSION_REQUEST_RESULT_KEY)
+      if (!permissionGranted) {
+        Toast.makeText(
+            requireActivity(),
+            requireContext().getString(R.string.barcode_camera_permission_denied),
+            Toast.LENGTH_SHORT,
+          )
+          .show()
+        dismiss()
+      }
+    }
   }
 
   override fun onResume() {
@@ -85,67 +143,32 @@ internal class QRCodeScannerDialogFragment :
         listOf(android.Manifest.permission.CAMERA),
       )
     ) {
-      QrCodeCameraPermissionsDialogFragment().show(parentFragmentManager, TAG)
-      dismiss()
+      requestCameraPermissions()
+    } else {
+      bindCamera()
     }
   }
 
-  private fun startCamera() {
-    val cameraController = LifecycleCameraController(requireContext())
+  private fun requestCameraPermissions() {
+    CameraPermissionsDialogFragment().show(parentFragmentManager, TAG)
+  }
 
-    val options = BarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build()
-    barcodeScanner = BarcodeScanning.getClient(options)
-
-    cameraController.setImageAnalysisAnalyzer(
-      ContextCompat.getMainExecutor(requireActivity()),
-      MlKitAnalyzer(
-        listOf(barcodeScanner),
-        COORDINATE_SYSTEM_VIEW_REFERENCED,
-        ContextCompat.getMainExecutor(requireActivity()),
-      ) { result: MlKitAnalyzer.Result? ->
-        val barcodeResults = result?.getValue(barcodeScanner)
-        if (
-          (barcodeResults == null) || (barcodeResults.size == 0) || (barcodeResults.first() == null)
-        ) {
-          previewView.overlay.clear()
-          return@MlKitAnalyzer
-        }
-
-        val barcodeDetected = barcodeResults[0]
-        onQrCodeDetected(barcodeDetected)
-      },
-    )
-
+  private fun bindCamera() {
     cameraController.bindToLifecycle(this)
     previewView.controller = cameraController
   }
 
-  private fun onQrCodeDetected(barcode: Barcode) {
-    val viewFinderImageViewHeight = viewFinderImageView.height
-    val viewFinderImageViewWidth = viewFinderImageView.width
-    val viewFinderImageViewRect =
-      RectF(
-        viewFinderImageView.x,
-        viewFinderImageView.y,
-        viewFinderImageView.x + viewFinderImageViewWidth,
-        viewFinderImageView.y + viewFinderImageViewHeight,
-      )
-    val isWithinBounds =
-      barcode.boundingBox?.let {
-        viewFinderImageViewRect.contains(
-          it.left.toFloat(),
-          it.top.toFloat(),
-          it.right.toFloat(),
-          it.bottom.toFloat(),
-        )
-      } ?: false
+  private fun isBarcodeWithinExpectedBounds(barcode: Barcode): Boolean {
+    return barcode.boundingBox?.let { viewFinderBounds.toRect().contains(it) } ?: false
+  }
 
-    if (isWithinBounds) {
-      QrCodeDrawable(barcode).let {
-        previewView.overlay.clear()
-        previewView.overlay.add(it)
-      }
-      setFragmentResult(RESULT_REQUEST_KEY, bundleOf(RESULT_REQUEST_KEY to barcode.rawValue))
+  @VisibleForTesting
+  fun onQrCodeDetected(barcode: Barcode) {
+    if (isBarcodeWithinExpectedBounds(barcode)) {
+      parentFragmentManager.setFragmentResult(
+        RESULT_REQUEST_KEY,
+        bundleOf(RESULT_REQUEST_KEY to barcode.rawValue),
+      )
       dismiss()
     } else {
       placeQrCodeScanTextView.visibility = View.VISIBLE
