@@ -1,8 +1,8 @@
-<ressources xmlns:tools="http://schemas.android.com/tools" xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
-    <!-- Principal-->
+    <!--    Main-->
     <string name="sync">Synchronisation manuelle</string>
-    <string name="langue">Langue</string>
+    <string name="language">Langue</string>
     <string name="logout_as_user">Se déconnecter en tant que </string>
     <string name="show_overdue">Afficher les retards</string>
     <string name="search_hint">Rechercher le nom ou l'ID</string>
@@ -21,7 +21,7 @@
     <string name="login_text">START</string>
     <string name="login_call_fail_error_message">Impossible de vérifier les informations d'identification du serveur. Vérifiez votre connexion Internet</string>
     <string name="userinfo_call_fail_error_message">Impossible d'obtenir les informations utilisateur du serveur. Vérifiez votre connexion Internet</string>
-    <string name="select_lingual">Sélectionner la langue</string>
+    <string name="select_language">Sélectionner la langue</string>
     <string name="logout_user">Déconnectez-vous en tant que %1$s</string>
     <string name="sync_completed">Synchronisation terminée</string>
     <string name="syncing">Synchronisation</string>
@@ -63,7 +63,7 @@
     <string name="error_loading_config_no_internet">Impossible de charger la configuration. Veuillez vérifier votre connexion Internet</string>
     <string name="error_loading_config_general">Erreur de connexion au serveur. Veuillez contacter votre administrateur système</string>
     <string name="error_loading_form">Erreur de chargement du formulaire</string>
-    <string name="error_ saving_form">Erreur trouvée lors de l'impossibilité d'enregistrer le formulaire</string>
+    <string name="error_saving_form">Erreur trouvée lors de l'impossibilité d'enregistrer le formulaire</string>
     <string name="form_progress_message">Traitement des données. Veuillez patienter</string>
     <string name="questionnaire_alert_back_pressed_message">Êtes-vous sûr de vouloir revenir ?</string>
     <string name="questionnaire_in_progress_alert_back_pressed_message">Êtes-vous sûr de vouloir ignorer les réponses ?</string>
@@ -136,8 +136,8 @@
     <string name="sync_strategy_location_system" translatable="false">https://smartregister.org/location-tag-id</string>
     <string name="sync_strategy_organization_system" translatable="false">https://smartregister.org/organization-tag-id</string>
     <string name="sync_strategy_practitioner_system" translatable="false">https://smartregister.org/practitioner-tag-id</string>
-    <string name="sync_strategy_owned_entity_location_system" translatable="false">https://smartregister.org/rated-entity-location-tag-id</string>
-    <string name="sync_strategy_rated_entity_location_display" translatable="false">Emplacement de l'entité associée</string>
+    <string name="sync_strategy_related_entity_location_system" translatable="false">https://smartregister.org/rated-entity-location-tag-id</string>
+    <string name="sync_strategy_related_entity_location_display" translatable="false">Emplacement de l'entité associée</string>
     <string name="sync_strategy_careteam_display" translatable="false">Équipe de soins professionnels</string>
     <string name="sync_strategy_location_display" translatable="false">Emplacement du praticien</string>
     <string name="sync_strategy_organization_display" translatable="false">Organisation professionnelle</string>
@@ -293,7 +293,7 @@
     <string name="application_version" translationable="false">Version de l'application</string>
     <string name="missing_subject_type">Le type de sujet est absent du questionnaire. Veuillez fournir Questionnaire.subjectType pour résoudre ce problème.</string>
     <string name="missing_questionnaire_config">QuestionnaireConfig est requis, mais n'est pas disponible.</string>
-    <string name="error_populated_questionnaire">Erreur lors du remplissage de certains champs du questionnaire. Réponse au questionnaire non valide.</string>
+    <string name="error_populating_questionnaire">Erreur lors du remplissage de certains champs du questionnaire. Réponse au questionnaire non valide.</string>
     <string name="extraction_in_progress">Traitement des données du questionnaire…</string>
     <string name="loading_questionnaire">Chargement du questionnaire…</string>
     <string name="clear_all">Tout effacer</string>
@@ -307,7 +307,7 @@
     <string name="no_found_locations_matching_text">Aucun emplacement correspondant au texte \"%1$s\"</string> trouvé
 
 
-        <!-- SDK-->
+    <!-- SDK-->
     <!-- 1. Les sections suivantes incluent les chaînes utilisées pour l'interface utilisateur du quiz -->
 
     <!-- 1.1 Navigation -->
@@ -409,4 +409,4 @@
     <string name="repeated_group_title">%1$s. %2$s</string>
     <string name="add_repeated_group_item">Ajouter %1$s</string>
 
-</ressources>
+</resources>
