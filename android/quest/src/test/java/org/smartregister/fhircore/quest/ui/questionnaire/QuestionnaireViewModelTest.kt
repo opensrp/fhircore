@@ -643,6 +643,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         transformSupportServices = mockk(),
         sharedPreferencesHelper = sharedPreferencesHelper,
         fhirOperator = fhirOperator,
+        fhirValidatorProvider = fhirValidatorProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
         configurationRegistry = configurationRegistry,
       )
@@ -1791,6 +1792,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           transformSupportServices = mockk(),
           sharedPreferencesHelper = sharedPreferencesHelper,
           fhirOperator = fhirOperator,
+          fhirValidatorProvider = fhirValidatorProvider,
           fhirPathDataExtractor = fhirPathDataExtractor,
           configurationRegistry = configurationRegistry,
         )
@@ -1841,6 +1843,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         transformSupportServices = mockk(),
         sharedPreferencesHelper = sharedPreferencesHelper,
         fhirOperator = fhirOperator,
+        fhirValidatorProvider = fhirValidatorProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
         configurationRegistry = configurationRegistry,
       )
