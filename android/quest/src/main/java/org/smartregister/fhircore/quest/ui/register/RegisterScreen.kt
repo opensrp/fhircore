@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -124,6 +125,8 @@ fun RegisterScreen(
   val currentSyncJobStatus = appDrawerUIState.currentSyncJobStatus
   val lazyListState: LazyListState = rememberLazyListState()
   var syncNotificationBarExpanded by remember { mutableStateOf(true) }
+  val coroutineScope = rememberCoroutineScope()
+  var hideSyncCompleteStatus: Boolean? by remember { mutableStateOf(false) }
   val syncBackgroundColor =
     when (currentSyncJobStatus) {
       is CurrentSyncJobStatus.Failed -> DangerColor.copy(alpha = 0.2f)
@@ -166,9 +169,7 @@ fun RegisterScreen(
               onEvent(RegisterEvent.ResetFilterRecordsCount)
               filterActions?.handleClickEvent(navController)
             }
-            is ToolbarClickEvent.Actions -> {
-              event.actions.handleClickEvent(navController)
-            }
+            is ToolbarClickEvent.Actions -> event.actions.handleClickEvent(navController)
           }
         }
         if (!searchQuery.value.isBlank()) RegisterHeader(resultCount = pagingItems.itemCount)
@@ -186,8 +187,6 @@ fun RegisterScreen(
       }
     },
   ) { innerPadding ->
-    val coroutineScope = rememberCoroutineScope()
-    var hideSyncCompleteStatus: Boolean? by remember { mutableStateOf(false) }
     if (currentSyncJobStatus is CurrentSyncJobStatus.Succeeded) {
       LaunchedEffect(Unit) {
         coroutineScope.launch {
@@ -200,7 +199,7 @@ fun RegisterScreen(
     // Do not apply border radius when sync complete is not displayed
     val bottomRadius =
       if (hideSyncCompleteStatus != true || currentSyncJobStatus is CurrentSyncJobStatus.Running) {
-        16.dp
+        32.dp
       } else 0.dp
 
     Box(modifier = modifier.padding(innerPadding)) {
@@ -218,21 +217,17 @@ fun RegisterScreen(
           showPercentageProgress = true,
         )
       }
-      Column(
-        modifier = Modifier.fillMaxSize().background(syncBackgroundColor),
-      ) {
+
+      Column(modifier = Modifier.fillMaxSize()) {
         Box(
-          modifier =
-            Modifier.weight(1f)
-              .clip(RoundedCornerShape(bottomStart = bottomRadius, bottomEnd = bottomRadius))
-              .background(Color.White),
+          modifier = Modifier.fillMaxWidth().background(Color.White).weight(1f),
         ) {
           if (
             registerUiState.totalRecordsCount > 0 &&
               registerUiState.registerConfiguration?.registerCard != null
           ) {
             RegisterCardList(
-              modifier = modifier.testTag(REGISTER_CARD_TEST_TAG),
+              modifier = modifier.fillMaxSize().testTag(REGISTER_CARD_TEST_TAG),
               registerCardConfig = registerUiState.registerConfiguration.registerCard,
               pagingItems = pagingItems,
               navController = navController,
@@ -247,7 +242,11 @@ fun RegisterScreen(
                 ) {
                   registerUiState.registerConfiguration.onSearchByQrSingleResultValidActions
                     ?.apply {
-                      handleClickEvent(navController, resourceData, context = navController.context)
+                      handleClickEvent(
+                        navController,
+                        resourceData,
+                        context = navController.context,
+                      )
                       searchQuery.value = searchQuery.value.copy(mode = SearchMode.KeyboardInput)
                     }
                 }
@@ -260,76 +259,99 @@ fun RegisterScreen(
               }
             }
           }
-          if (
-            !registerUiState.isFirstTimeSync &&
-              (hideSyncCompleteStatus != true ||
-                currentSyncJobStatus is CurrentSyncJobStatus.Running)
+        }
+        val height =
+          when {
+            syncNotificationBarExpanded ->
+              if (currentSyncJobStatus is CurrentSyncJobStatus.Running) 114.dp else 80.dp
+            else -> 60.dp
+          }
+        if (
+          !registerUiState.isFirstTimeSync &&
+            (hideSyncCompleteStatus != true || currentSyncJobStatus is CurrentSyncJobStatus.Running)
+        ) {
+          Box(
+            modifier =
+              Modifier.fillMaxWidth()
+                .animateContentSize()
+                .height(height)
+                .background(syncBackgroundColor),
           ) {
             Box(
               modifier =
-                Modifier.align(Alignment.BottomStart)
-                  .padding(start = 16.dp)
-                  .height(20.dp)
-                  .width(60.dp)
-                  .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                  .background(syncBackgroundColor)
-                  .clickable { syncNotificationBarExpanded = !syncNotificationBarExpanded },
-              contentAlignment = Alignment.Center,
+                Modifier.fillMaxWidth()
+                  .align(Alignment.TopStart)
+                  .height(24.dp)
+                  .clip(RoundedCornerShape(bottomStart = bottomRadius, bottomEnd = bottomRadius))
+                  .background(Color.White),
             ) {
-              Icon(
-                imageVector =
-                  if (syncNotificationBarExpanded) {
-                    Icons.Default.KeyboardArrowDown
-                  } else Icons.Default.KeyboardArrowUp,
-                contentDescription = null,
-                tint =
-                  when (currentSyncJobStatus) {
-                    is CurrentSyncJobStatus.Failed -> DangerColor
-                    is CurrentSyncJobStatus.Succeeded -> SuccessColor
-                    else -> Color.White
-                  },
-                modifier = Modifier.size(16.dp),
-              )
-            }
-          }
-        }
-        Box(
-          modifier = Modifier.fillMaxWidth(),
-        ) {
-          val context = LocalContext.current
-          when (currentSyncJobStatus) {
-            is CurrentSyncJobStatus.Running -> {
-              SyncStatusView(
-                isSyncUpload = appDrawerUIState.isSyncUpload,
-                currentSyncJobStatus = currentSyncJobStatus,
-                minimized = !syncNotificationBarExpanded,
-                progressPercentage = appDrawerUIState.percentageProgress,
-                onCancel = { onAppMainEvent(AppMainEvent.CancelSyncData(context)) },
-              )
-              SideEffect { hideSyncCompleteStatus = false }
-            }
-            is CurrentSyncJobStatus.Failed -> {
-              SyncStatusView(
-                isSyncUpload = appDrawerUIState.isSyncUpload,
-                currentSyncJobStatus = currentSyncJobStatus,
-                minimized = !syncNotificationBarExpanded,
-                onRetry = {
-                  openDrawer(false)
-                  onAppMainEvent(AppMainEvent.SyncData(context))
-                },
-              )
-            }
-            is CurrentSyncJobStatus.Succeeded -> {
-              if (hideSyncCompleteStatus != true) {
-                SyncStatusView(
-                  isSyncUpload = appDrawerUIState.isSyncUpload,
-                  currentSyncJobStatus = currentSyncJobStatus,
-                  minimized = !syncNotificationBarExpanded,
+              Box(
+                modifier =
+                  Modifier.align(Alignment.BottomStart)
+                    .padding(start = 16.dp)
+                    .height(20.dp)
+                    .width(60.dp)
+                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                    .background(syncBackgroundColor)
+                    .clickable { syncNotificationBarExpanded = !syncNotificationBarExpanded },
+                contentAlignment = Alignment.Center,
+              ) {
+                Icon(
+                  imageVector =
+                    if (syncNotificationBarExpanded) {
+                      Icons.Default.KeyboardArrowDown
+                    } else Icons.Default.KeyboardArrowUp,
+                  contentDescription = null,
+                  tint =
+                    when (currentSyncJobStatus) {
+                      is CurrentSyncJobStatus.Failed -> DangerColor
+                      is CurrentSyncJobStatus.Succeeded -> SuccessColor
+                      else -> Color.White
+                    },
+                  modifier = Modifier.size(16.dp),
                 )
               }
             }
-            else -> {
-              // No render required
+            Box(
+              modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth(),
+              contentAlignment = Alignment.Center,
+            ) {
+              val context = LocalContext.current
+              when (currentSyncJobStatus) {
+                is CurrentSyncJobStatus.Running -> {
+                  SyncStatusView(
+                    isSyncUpload = appDrawerUIState.isSyncUpload,
+                    currentSyncJobStatus = currentSyncJobStatus,
+                    minimized = !syncNotificationBarExpanded,
+                    progressPercentage = appDrawerUIState.percentageProgress,
+                    onCancel = { onAppMainEvent(AppMainEvent.CancelSyncData(context)) },
+                  )
+                  SideEffect { hideSyncCompleteStatus = false }
+                }
+                is CurrentSyncJobStatus.Failed -> {
+                  SyncStatusView(
+                    isSyncUpload = appDrawerUIState.isSyncUpload,
+                    currentSyncJobStatus = currentSyncJobStatus,
+                    minimized = !syncNotificationBarExpanded,
+                    onRetry = {
+                      openDrawer(false)
+                      onAppMainEvent(AppMainEvent.SyncData(context))
+                    },
+                  )
+                }
+                is CurrentSyncJobStatus.Succeeded -> {
+                  if (hideSyncCompleteStatus != true) {
+                    SyncStatusView(
+                      isSyncUpload = appDrawerUIState.isSyncUpload,
+                      currentSyncJobStatus = currentSyncJobStatus,
+                      minimized = !syncNotificationBarExpanded,
+                    )
+                  }
+                }
+                else -> {
+                  // No render required
+                }
+              }
             }
           }
         }

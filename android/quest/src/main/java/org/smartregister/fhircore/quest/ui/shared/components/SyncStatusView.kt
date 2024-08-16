@@ -70,7 +70,7 @@ fun SyncStatusView(
   val height =
     if (minimized) {
       36.dp
-    } else if (currentSyncJobStatus is CurrentSyncJobStatus.Running) 92.dp else 56.dp
+    } else if (currentSyncJobStatus is CurrentSyncJobStatus.Running) 88.dp else 56.dp
   Row(
     modifier =
       Modifier.height(height)
@@ -138,13 +138,12 @@ fun SyncStatusView(
           backgroundColor = Color.White,
           modifier =
             Modifier.testTag(SYNC_PROGRESS_INDICATOR_TEST_TAG)
-              .padding(vertical = 6.dp)
+              .padding(vertical = 4.dp)
               .fillMaxWidth(),
         )
         if (!minimized) {
           Text(
-            text =
-              stringResource(id = org.smartregister.fhircore.engine.R.string.minutes_remaining),
+            text = stringResource(id = org.smartregister.fhircore.engine.R.string.please_wait),
             color = SubtitleTextColor,
             fontSize = 14.sp,
             textAlign = TextAlign.Start,
