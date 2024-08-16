@@ -202,7 +202,11 @@ fun RegisterScreen(
         }
       if (
         !registerUiState.isFirstTimeSync &&
-          (hideSyncCompleteStatus != true || currentSyncJobStatus is CurrentSyncJobStatus.Running)
+          currentSyncJobStatus != null &&
+          (currentSyncJobStatus is CurrentSyncJobStatus.Running ||
+            currentSyncJobStatus is CurrentSyncJobStatus.Failed ||
+            (hideSyncCompleteStatus == false &&
+              currentSyncJobStatus is CurrentSyncJobStatus.Succeeded))
       ) {
         Box(
           modifier =
