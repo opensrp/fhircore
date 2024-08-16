@@ -552,7 +552,7 @@ Below is the specific extension for this. The extension is validated in this cla
 
 ## QR Code Support
 
-QR Code widget can be set up for a Questionnaire by adding `qr_code-widget` extension to a QuestionnaireItem
+QR Code widget can be set up for a Questionnaire by adding `qr_code-widget` extension, with url `https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget`, to a QuestionnaireItem
 
 ```json
     {
@@ -560,22 +560,22 @@ QR Code widget can be set up for a Questionnaire by adding `qr_code-widget` exte
       "extension": []
     }
 ```
-The QR Code widget can also be configured to allow only setting the QR code and then have the field as readOnly by using `qr-code-entry-mode` extension
+The QR Code widget extension can be configured to take another extension with url `set-only-readonly` that takes in a value `Boolean`, which when set to `true`, the QR code widget only allows set QR code once and thereafter the field would behave as `readOnly`
 
 ```json
     {
       "url": "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
       "extension": [
         {
-          "url": "qr-code-entry-mode",
-          "valueString": "set-only-readonly"
+          "url": "set-only-readonly",
+          "valueBoolean": true
         }
       ]
     }
 ```
-Other option for the `qr-code-entry-mode` extension is `"normal"` whereby the widget would allow a new scan to repopulate the field
+Normal behaviour of the `qr_code-widget` extension or if the `set-only-readonly` extension has a value of `false`, would be to allow setting QR code multiple times whereby subsequent QR codes would replace current
 
-The QR code widget supports adding an arbitrary number of QR codes by setting QuestionnaireItem to `"repeats": true`
+The QR code widget supports adding an arbitrary number of QR codes, implemented by showing `+Add QR Code` button. This can be configured by setting QuestionnaireItem with the `qr_code-widget` extension to `"repeats": true`
 
 ```json
       "repeats": true,
@@ -584,11 +584,12 @@ The QR code widget supports adding an arbitrary number of QR codes by setting Qu
           "url": "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
           "extension": [
             {
-              "url": "qr-code-entry-mode",
-              "valueString": "set-only-readonly"
+              "url": "set-only-readonly",
+              "valueBoolean": true
             }
           ]
         }
       ]
     }
 ```
+The extension's implementation can be found [here](https://github.com/opensrp/fhircore/blob/main/android/quest/src/main/java/org/smartregister/fhircore/quest/ui/sdc/qrCode/EditTextQrCodeViewHolderFactory.kt)
