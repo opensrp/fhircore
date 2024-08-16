@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-  
+
     <!--    Main-->
     <string name="sync">Synchronisation manuelle</string>
     <string name="language">Langue</string>
