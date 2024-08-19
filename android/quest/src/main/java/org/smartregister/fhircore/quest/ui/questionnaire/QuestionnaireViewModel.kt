@@ -826,7 +826,7 @@ constructor(
     val questionnaireItemsMap = questionnaire.item.associateBy { it.linkId }
 
     // Only validate items that are present on both Questionnaire and the QuestionnaireResponse
-    questionnaireResponse.item.forEach {
+    questionnaireResponse.copy().item.forEach {
       if (questionnaireItemsMap.containsKey(it.linkId)) {
         val questionnaireItem = questionnaireItemsMap.getValue(it.linkId)
         validQuestionnaireResponseItems.add(it)
