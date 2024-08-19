@@ -110,6 +110,7 @@ import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.extension.yesterday
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.assertResourceEquals
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
 import org.smartregister.model.practitioner.FhirPractitionerDetails
@@ -804,7 +805,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testValidateQuestionnaireResponseWithRepeatsGroup() = runTest {
+  fun testValidateQuestionnaireResponseWithRepeatedGroup() = runTest {
     val questionnaireString =
       """
       {
@@ -901,7 +902,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testValidateQuestionnaireResponseWithNestedRepeatsGroup() = runTest {
+  fun testValidateQuestionnaireResponseWithNestedRepeatedGroupShouldNotUpdateTheOriginalQuestionnaireResponse() = runTest {
     val questionnaireString =
       """
       {
@@ -1012,15 +1013,18 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         """
         .trimIndent()
     val questionnaire = parser.parseResource(questionnaireString) as Questionnaire
-    val questionnaireResponse =
+    val actualQuestionnaireResponse =
       parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
     val result =
       questionnaireViewModel.validateQuestionnaireResponse(
         questionnaire,
-        questionnaireResponse,
+        actualQuestionnaireResponse,
         context,
       )
+    val expectedQuestionnaireResponse =
+      parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
     Assert.assertTrue(result)
+    assertResourceEquals(expectedQuestionnaireResponse, actualQuestionnaireResponse)
   }
 
   @Test
