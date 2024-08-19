@@ -54,7 +54,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.launcher.GeoWidgetLauncherViewModel
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
