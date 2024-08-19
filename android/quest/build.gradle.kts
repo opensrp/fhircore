@@ -11,7 +11,7 @@ import org.json.JSONObject
 plugins {
   `jacoco-report`
   `project-properties`
-  `ktlint`
+  ktlint
   id("com.android.application")
   id("kotlin-android")
   id("kotlin-kapt")
@@ -27,7 +27,7 @@ plugins {
 sonar {
   properties {
     property("sonar.projectKey", "fhircore")
-    property("sonar.kotlin.source.version", libs.kotlin)
+    property("sonar.kotlin.source.version", libs.versions.kotlin)
     property(
       "sonar.androidLint.reportPaths",
       "${project.layout.buildDirectory.get()}/reports/lint-results-opensrpDebug.xml",
@@ -429,6 +429,9 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.gms.play.services.location)
+  implementation(libs.mlkit.barcode.scanning)
+
+  implementation(libs.bundles.cameraX)
 
   // Annotation processors
   kapt(libs.hilt.compiler)
