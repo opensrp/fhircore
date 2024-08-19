@@ -16,44 +16,29 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -65,11 +50,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.google.android.fhir.sync.CurrentSyncJobStatus
-import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -82,16 +63,13 @@ import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.ui.theme.DangerColor
-import org.smartregister.fhircore.engine.ui.theme.SuccessColor
-import org.smartregister.fhircore.engine.ui.theme.SyncBarBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
-import org.smartregister.fhircore.quest.ui.shared.components.SyncStatusView
+import org.smartregister.fhircore.quest.ui.shared.components.SyncBottomBar
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.ui.shared.models.SearchMode
 import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
@@ -122,19 +100,7 @@ fun RegisterScreen(
   navController: NavController,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
 ) {
-  val currentSyncJobStatus = appDrawerUIState.currentSyncJobStatus
   val lazyListState: LazyListState = rememberLazyListState()
-  var syncNotificationBarExpanded by remember { mutableStateOf(true) }
-  val coroutineScope = rememberCoroutineScope()
-  var hideSyncCompleteStatus: Boolean? by remember { mutableStateOf(false) }
-  val syncBackgroundColor =
-    when (currentSyncJobStatus) {
-      is CurrentSyncJobStatus.Failed -> DangerColor.copy(alpha = 0.2f)
-      is CurrentSyncJobStatus.Succeeded -> SuccessColor.copy(alpha = 0.2f)
-      is CurrentSyncJobStatus.Running -> SyncBarBackgroundColor
-      else -> Color.Transparent
-    }
-
   Scaffold(
     topBar = {
       Column {
@@ -187,122 +153,14 @@ fun RegisterScreen(
       }
     },
     bottomBar = {
-      // Do not apply border radius when sync complete is not displayed
-      val bottomRadius =
-        if (
-          hideSyncCompleteStatus != true || currentSyncJobStatus is CurrentSyncJobStatus.Running
-        ) {
-          32.dp
-        } else 0.dp
-      val height =
-        when {
-          syncNotificationBarExpanded ->
-            if (currentSyncJobStatus is CurrentSyncJobStatus.Running) 114.dp else 80.dp
-          else -> 60.dp
-        }
-      if (
-        !registerUiState.isFirstTimeSync &&
-          currentSyncJobStatus != null &&
-          (currentSyncJobStatus is CurrentSyncJobStatus.Running ||
-            currentSyncJobStatus is CurrentSyncJobStatus.Failed ||
-            (hideSyncCompleteStatus == false &&
-              currentSyncJobStatus is CurrentSyncJobStatus.Succeeded))
-      ) {
-        Box(
-          modifier =
-            Modifier.fillMaxWidth()
-              .animateContentSize()
-              .height(height)
-              .background(syncBackgroundColor),
-        ) {
-          Box(
-            modifier =
-              Modifier.fillMaxWidth()
-                .align(Alignment.TopStart)
-                .height(24.dp)
-                .clip(RoundedCornerShape(bottomStart = bottomRadius, bottomEnd = bottomRadius))
-                .background(Color.White),
-          ) {
-            Box(
-              modifier =
-                Modifier.align(Alignment.BottomStart)
-                  .padding(start = 16.dp)
-                  .height(20.dp)
-                  .width(60.dp)
-                  .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                  .background(syncBackgroundColor)
-                  .clickable { syncNotificationBarExpanded = !syncNotificationBarExpanded },
-              contentAlignment = Alignment.Center,
-            ) {
-              Icon(
-                imageVector =
-                  if (syncNotificationBarExpanded) {
-                    Icons.Default.KeyboardArrowDown
-                  } else Icons.Default.KeyboardArrowUp,
-                contentDescription = null,
-                tint =
-                  when (currentSyncJobStatus) {
-                    is CurrentSyncJobStatus.Failed -> DangerColor
-                    is CurrentSyncJobStatus.Succeeded -> SuccessColor
-                    else -> Color.White
-                  },
-                modifier = Modifier.size(16.dp),
-              )
-            }
-          }
-          Box(
-            modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth(),
-            contentAlignment = Alignment.Center,
-          ) {
-            val context = LocalContext.current
-            when (currentSyncJobStatus) {
-              is CurrentSyncJobStatus.Running -> {
-                SyncStatusView(
-                  isSyncUpload = appDrawerUIState.isSyncUpload,
-                  currentSyncJobStatus = currentSyncJobStatus,
-                  minimized = !syncNotificationBarExpanded,
-                  progressPercentage = appDrawerUIState.percentageProgress,
-                  onCancel = { onAppMainEvent(AppMainEvent.CancelSyncData(context)) },
-                )
-                SideEffect { hideSyncCompleteStatus = false }
-              }
-              is CurrentSyncJobStatus.Failed -> {
-                SyncStatusView(
-                  isSyncUpload = appDrawerUIState.isSyncUpload,
-                  currentSyncJobStatus = currentSyncJobStatus,
-                  minimized = !syncNotificationBarExpanded,
-                  onRetry = {
-                    openDrawer(false)
-                    onAppMainEvent(AppMainEvent.SyncData(context))
-                  },
-                )
-              }
-              is CurrentSyncJobStatus.Succeeded -> {
-                if (hideSyncCompleteStatus != true) {
-                  SyncStatusView(
-                    isSyncUpload = appDrawerUIState.isSyncUpload,
-                    currentSyncJobStatus = currentSyncJobStatus,
-                    minimized = !syncNotificationBarExpanded,
-                  )
-                }
-              }
-              else -> {
-                // No render required
-              }
-            }
-          }
-        }
-      }
+      SyncBottomBar(
+        isFirstTimeSync = registerUiState.isFirstTimeSync,
+        appDrawerUIState = appDrawerUIState,
+        onAppMainEvent = onAppMainEvent,
+        openDrawer = openDrawer,
+      )
     },
   ) { innerPadding ->
-    if (currentSyncJobStatus is CurrentSyncJobStatus.Succeeded) {
-      LaunchedEffect(Unit) {
-        coroutineScope.launch {
-          delay(7.seconds)
-          hideSyncCompleteStatus = true
-        }
-      }
-    }
     Box(modifier = modifier.padding(innerPadding)) {
       if (registerUiState.isFirstTimeSync) {
         LoaderDialog(

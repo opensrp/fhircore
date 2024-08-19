@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -195,6 +194,9 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                     }
                   }
                 },
+                isFirstTimeSync = geoWidgetLauncherViewModel.isFirstTime(),
+                appDrawerUIState = appDrawerUIState,
+                onAppMainEvent = appMainViewModel::onEvent,
               )
             }
           }

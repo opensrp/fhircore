@@ -37,7 +37,10 @@ import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
+import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
+import org.smartregister.fhircore.quest.ui.shared.components.SyncBottomBar
+import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
@@ -52,6 +55,9 @@ fun GeoWidgetLauncherScreen(
   geoWidgetConfiguration: GeoWidgetConfiguration,
   searchQuery: MutableState<SearchQuery>,
   search: (String) -> Unit,
+  isFirstTimeSync: Boolean,
+  appDrawerUIState: AppDrawerUIState,
+  onAppMainEvent: (AppMainEvent) -> Unit,
 ) {
   val context = LocalContext.current
   Scaffold(
@@ -90,6 +96,14 @@ fun GeoWidgetLauncherScreen(
           }
         }
       }
+    },
+    bottomBar = {
+      SyncBottomBar(
+        isFirstTimeSync = isFirstTimeSync,
+        appDrawerUIState = appDrawerUIState,
+        onAppMainEvent = onAppMainEvent,
+        openDrawer = openDrawer,
+      )
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
