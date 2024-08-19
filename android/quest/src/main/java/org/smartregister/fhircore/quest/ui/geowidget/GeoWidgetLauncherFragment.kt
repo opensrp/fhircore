@@ -211,18 +211,33 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
   }
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
-    if (syncJobStatus is CurrentSyncJobStatus.Running) {
-      if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
-        val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
-        val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
-        val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
-        appMainViewModel.updateAppDrawerUIState(
-          isSyncUpload = isSyncUpload,
-          currentSyncJobStatus = syncJobStatus,
-          percentageProgress = progressPercentage,
-        )
+    when (syncJobStatus) {
+      is CurrentSyncJobStatus.Running -> {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
+          val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
+          val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+          val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
+          appMainViewModel.updateAppDrawerUIState(
+            isSyncUpload = isSyncUpload,
+            currentSyncJobStatus = syncJobStatus,
+            percentageProgress = progressPercentage,
+          )
+        }
       }
-    } else appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+      is CurrentSyncJobStatus.Succeeded,
+      is CurrentSyncJobStatus.Failed -> {
+        lifecycleScope.launch(dispatcherProvider.io()) {
+          val geoJsonFeatures =
+            geoWidgetLauncherViewModel.retrieveLocations(
+              geoWidgetConfig = geoWidgetConfiguration,
+              searchText = searchViewModel.searchQuery.value.query,
+            )
+          geoWidgetViewModel.features.postValue(geoJsonFeatures)
+        }
+        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+      }
+      else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+    }
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
