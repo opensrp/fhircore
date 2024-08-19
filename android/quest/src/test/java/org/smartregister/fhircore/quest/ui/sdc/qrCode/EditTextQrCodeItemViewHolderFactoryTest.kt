@@ -45,6 +45,7 @@ import org.robolectric.Robolectric
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.hiltActivityForTestScenario
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.sdc.qrCode.scan.QRCodeScannerDialogFragment
 import org.smartregister.fhircore.quest.util.QrCodeScanUtils
 
 @HiltAndroidTest
@@ -71,7 +72,7 @@ class EditTextQrCodeItemViewHolderFactoryTest : RobolectricTest() {
 
   @Test
   fun shouldUpdateTextCorrectlyWhenScanQrCodeReceived() {
-    mockkConstructor(QrCodeCameraDialogFragment::class)
+    mockkConstructor(QRCodeScannerDialogFragment::class)
     val sampleQrCode = "d84fbd12-4f22-423a-8645-5525504e1bcb"
     /**
      * Using style 'com.google.android.material.R.style.Theme_Material3_DayNight' to prevent
@@ -90,13 +91,13 @@ class EditTextQrCodeItemViewHolderFactoryTest : RobolectricTest() {
           textInputLayout.findViewById<TextInputEditText>(R.id.text_input_edit_text)
         Assert.assertNotNull(textInputEditText)
         every {
-          anyConstructed<QrCodeCameraDialogFragment>()
+          anyConstructed<QRCodeScannerDialogFragment>()
             .show(any<FragmentManager>(), QrCodeScanUtils.QR_CODE_SCAN_UTILS_TAG)
         } answers
           {
             activity.supportFragmentManager.setFragmentResult(
-              QrCodeCameraDialogFragment.RESULT_REQUEST_KEY,
-              bundleOf(QrCodeCameraDialogFragment.RESULT_REQUEST_KEY to sampleQrCode),
+              QRCodeScannerDialogFragment.RESULT_REQUEST_KEY,
+              bundleOf(QRCodeScannerDialogFragment.RESULT_REQUEST_KEY to sampleQrCode),
             )
           }
 
@@ -106,7 +107,7 @@ class EditTextQrCodeItemViewHolderFactoryTest : RobolectricTest() {
         Assert.assertEquals(sampleQrCode, textInputEditText.text.toString())
       }
     }
-    unmockkConstructor(QrCodeCameraDialogFragment::class)
+    unmockkConstructor(QRCodeScannerDialogFragment::class)
   }
 
   @Test
