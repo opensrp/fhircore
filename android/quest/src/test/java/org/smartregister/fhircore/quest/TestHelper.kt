@@ -26,6 +26,6 @@ private val printer: IParser = FhirContext.forR4().newJsonParser()
 fun <T : IBaseResource> assertResourceEquals(expected: T, actual: T) {
   Assert.assertEquals(
     printer.encodeResourceToString(expected),
-    printer.encodeResourceToString(actual)
+    printer.encodeResourceToString(actual),
   )
 }

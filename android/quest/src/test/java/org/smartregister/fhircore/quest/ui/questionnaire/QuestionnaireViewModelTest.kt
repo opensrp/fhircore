@@ -902,9 +902,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testValidateQuestionnaireResponseWithNestedRepeatedGroupShouldNotUpdateTheOriginalQuestionnaireResponse() = runTest {
-    val questionnaireString =
-      """
+  fun testValidateQuestionnaireResponseWithNestedRepeatedGroupShouldNotUpdateTheOriginalQuestionnaireResponse() =
+    runTest {
+      val questionnaireString =
+        """
       {
         "resourceType": "Questionnaire",
         "item": [
@@ -950,9 +951,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         ]
       }
         """
-        .trimIndent()
-    val questionnaireResponseString =
-      """
+          .trimIndent()
+      val questionnaireResponseString =
+        """
       {
         "resourceType": "QuestionnaireResponse",
         "item": [
@@ -1011,21 +1012,21 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         ]
       }
         """
-        .trimIndent()
-    val questionnaire = parser.parseResource(questionnaireString) as Questionnaire
-    val actualQuestionnaireResponse =
-      parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
-    val result =
-      questionnaireViewModel.validateQuestionnaireResponse(
-        questionnaire,
-        actualQuestionnaireResponse,
-        context,
-      )
-    val expectedQuestionnaireResponse =
-      parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
-    Assert.assertTrue(result)
-    assertResourceEquals(expectedQuestionnaireResponse, actualQuestionnaireResponse)
-  }
+          .trimIndent()
+      val questionnaire = parser.parseResource(questionnaireString) as Questionnaire
+      val actualQuestionnaireResponse =
+        parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
+      val result =
+        questionnaireViewModel.validateQuestionnaireResponse(
+          questionnaire,
+          actualQuestionnaireResponse,
+          context,
+        )
+      val expectedQuestionnaireResponse =
+        parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
+      Assert.assertTrue(result)
+      assertResourceEquals(expectedQuestionnaireResponse, actualQuestionnaireResponse)
+    }
 
   @Test
   fun testExecuteCqlShouldInvokeRunCqlLibrary() = runTest {
