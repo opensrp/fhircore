@@ -60,7 +60,6 @@ import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
@@ -91,7 +90,6 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
-  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
   private lateinit var geoWidgetFragment: GeoWidgetFragment
   private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
   private val navArgs by navArgs<GeoWidgetLauncherFragmentArgs>()
@@ -225,8 +223,8 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         }
       }
       is CurrentSyncJobStatus.Succeeded,
-      is CurrentSyncJobStatus.Failed -> {
-        lifecycleScope.launch(dispatcherProvider.io()) {
+      is CurrentSyncJobStatus.Failed, -> {
+        lifecycleScope.launch {
           val geoJsonFeatures =
             geoWidgetLauncherViewModel.retrieveLocations(
               geoWidgetConfig = geoWidgetConfiguration,
@@ -243,7 +241,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     showSetLocationDialog()
-    lifecycleScope.launch(dispatcherProvider.io()) {
+    lifecycleScope.launch {
       // Retrieve if searchText is null; filter will be triggered automatically if text is not empty
       if (searchViewModel.searchQuery.value.isBlank()) {
         val geoJsonFeatures =
