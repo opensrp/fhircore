@@ -68,8 +68,8 @@ sealed class MainNavigationScreen(
       route = org.smartregister.fhircore.quest.R.id.profileFragment,
     )
 
-  object GeoWidget :
-    MainNavigationScreen(route = org.smartregister.fhircore.geowidget.R.id.geoWidgetFragment)
+  /*object GeoWidget :
+    MainNavigationScreen(route = org.smartregister.fhircore.geowidget.R.id.geoWidgetFragment)*/
 
   object Insight :
     MainNavigationScreen(route = org.smartregister.fhircore.quest.R.id.userInsightScreenFragment)

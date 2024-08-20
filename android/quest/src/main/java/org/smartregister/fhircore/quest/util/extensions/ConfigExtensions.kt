@@ -170,11 +170,11 @@ fun List<ActionConfig>.handleClickEvent(
       ApplicationWorkflow.LAUNCH_INSIGHT_SCREEN ->
         navController.navigate(MainNavigationScreen.Insight.route)
       ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
-      ApplicationWorkflow.LAUNCH_MAP ->
+      /*ApplicationWorkflow.LAUNCH_MAP ->
         navController.navigate(
           MainNavigationScreen.GeoWidget.route,
           bundleOf(NavigationArg.CONFIG_ID to actionConfig.id),
-        )
+        )*/
       ApplicationWorkflow.LAUNCH_DIALLER -> {
         val actionParameter = interpolatedParams.first()
         val patientPhoneNumber = actionParameter.value

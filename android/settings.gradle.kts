@@ -8,6 +8,6 @@ pluginManagement {
 rootProject.name = "fhircore-android"
 include (":engine")
 include (":quest")
-include (":geowidget")
+//include (":geowidget")
 include(":linting")
 include(":macrobenchmark")
