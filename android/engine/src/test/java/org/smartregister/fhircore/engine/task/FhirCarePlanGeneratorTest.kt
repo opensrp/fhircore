@@ -28,7 +28,6 @@ import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -117,6 +116,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.REFERENCE
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -1784,7 +1784,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       }
     val bundle = Bundle().apply { addEntry().resource = patient }
     coEvery {
-      fhirEngine.search<CarePlan> {
+      fhirEngine.batchedSearch<CarePlan> {
         filter(
           CarePlan.INSTANTIATES_CANONICAL,
           { value = "${PlanDefinition().fhirType()}/plandef-1" },
@@ -1836,7 +1836,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       }
     val bundle = Bundle().apply { addEntry().resource = patient }
     coEvery {
-      fhirEngine.search<CarePlan> {
+      fhirEngine.batchedSearch<CarePlan> {
         filter(
           CarePlan.INSTANTIATES_CANONICAL,
           { value = "${PlanDefinition().fhirType()}/plandef-1" },
@@ -2088,7 +2088,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         input = listOf(Task.ParameterComponent(CodeableConcept(), StringType("9")))
       }
     coEvery {
-      fhirEngine.search<Task> {
+      fhirEngine.batchedSearch<Task> {
         filter(
           referenceParameter = ReferenceClientParam("part-of"),
           { value = opv1.id.extractLogicalIdUuid() },
@@ -2104,7 +2104,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         ),
       )
     coEvery {
-      fhirEngine.search<Immunization> {
+      fhirEngine.batchedSearch<Immunization> {
         filter(
           referenceParameter = ReferenceClientParam("part-of"),
           { value = immunizationResource.id.extractLogicalIdUuid() },
@@ -2112,7 +2112,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       }
     } returns listOf(SearchResult(resource = immunizationResource, null, null))
     coEvery {
-      fhirEngine.search<Encounter> {
+      fhirEngine.batchedSearch<Encounter> {
         filter(
           referenceParameter = ReferenceClientParam("part-of"),
           { value = encounter.id.extractLogicalIdUuid() },

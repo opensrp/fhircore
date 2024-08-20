@@ -20,7 +20,6 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.withContext
@@ -33,6 +32,7 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.lastOffset
 import org.smartregister.fhircore.engine.util.getLastOffset
@@ -94,7 +94,7 @@ constructor(
 
   suspend fun getCarePlans(batchSize: Int, lastOffset: Int) =
     defaultRepository.fhirEngine
-      .search<CarePlan> {
+      .batchedSearch<CarePlan> {
         filter(
           CarePlan.STATUS,
           { value = of(CarePlan.CarePlanStatus.DRAFT.toCode()) },

@@ -36,7 +36,6 @@ import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.has
 import com.google.android.fhir.search.include
 import com.google.android.fhir.search.revInclude
-import com.google.android.fhir.search.search
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
@@ -86,6 +85,7 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -136,7 +136,7 @@ constructor(
   ): List<T> =
     withContext(dispatcherProvider.io()) {
       fhirEngine
-        .search<T> {
+        .batchedSearch<T> {
           filterByResourceTypeId(token, subjectType, subjectId)
           dataQueries.forEach {
             filterBy(
@@ -149,7 +149,7 @@ constructor(
     }
 
   suspend inline fun <reified R : Resource> search(search: Search) =
-    fhirEngine.search<R>(search).map { it.resource }
+    fhirEngine.batchedSearch<R>(search).map { it.resource }
 
   suspend inline fun count(search: Search) = fhirEngine.count(search)
 
@@ -265,14 +265,14 @@ constructor(
   suspend fun loadManagingEntity(group: Group) =
     group.managingEntity?.let { reference ->
       fhirEngine
-        .search<RelatedPerson> {
+        .batchedSearch<RelatedPerson> {
           filter(RelatedPerson.RES_ID, { value = of(reference.extractId()) })
         }
         .map { it.resource }
         .firstOrNull()
         ?.let { relatedPerson ->
           fhirEngine
-            .search<Patient> {
+            .batchedSearch<Patient> {
               filter(
                 Patient.RES_ID,
                 { value = of(relatedPerson.patient.extractId()) },
@@ -689,7 +689,7 @@ constructor(
     configComputedRuleValues: Map<String, Any>,
   ) {
     kotlin
-      .runCatching { fhirEngine.search<Resource>(search) }
+      .runCatching { fhirEngine.batchedSearch<Resource>(search) }
       .onSuccess { searchResult ->
         searchResult.forEach { currentSearchResult ->
           val includedResources: Map<ResourceType, List<Resource>>? =
@@ -789,7 +789,7 @@ constructor(
             configComputedRuleValues = computedValuesMap,
           )
         }
-      val resources = fhirEngine.search<Resource>(search).map { it.resource }
+      val resources = fhirEngine.batchedSearch<Resource>(search).map { it.resource }
       val filteredResources =
         filterResourcesByFhirPathExpression(
           resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
@@ -994,7 +994,7 @@ constructor(
         kotlin
           .runCatching {
             val searchTime = System.currentTimeMillis()
-            val result = fhirEngine.search<Resource>(search)
+            val result = fhirEngine.batchedSearch<Resource>(search)
             Timber.w(
               "It took ${(System.currentTimeMillis() - searchTime) / 1000} second(s) to search resources of type ${baseResourceConfig.resource}",
             )
@@ -1161,7 +1161,7 @@ constructor(
   private suspend fun retrieveSubLocations(locationId: String) =
     withContext(dispatcherProvider.io()) {
       fhirEngine
-        .search<Location>(
+        .batchedSearch<Location>(
           Search(type = ResourceType.Location).apply {
             filter(
               Location.PARTOF,

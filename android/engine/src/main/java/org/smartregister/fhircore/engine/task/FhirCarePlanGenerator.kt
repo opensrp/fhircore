@@ -23,7 +23,6 @@ import ca.uhn.fhir.util.TerserUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
-import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
 import javax.inject.Inject
@@ -60,6 +59,7 @@ import org.smartregister.fhircore.engine.configuration.event.EventType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.addResourceParameter
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathDuration
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathPeriod
@@ -120,7 +120,7 @@ constructor(
     // Only one CarePlan per plan, update or init a new one if not exists
     val output =
       fhirEngine
-        .search<CarePlan> {
+        .batchedSearch<CarePlan> {
           filter(
             CarePlan.INSTANTIATES_CANONICAL,
             { value = planDefinition.referenceValue() },
