@@ -110,6 +110,7 @@ import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.extension.yesterday
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.assertResourceEquals
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
 import org.smartregister.model.practitioner.FhirPractitionerDetails
@@ -816,7 +817,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testValidateQuestionnaireResponseWithRepeatsGroup() = runTest {
+  fun testValidateQuestionnaireResponseWithRepeatedGroup() = runTest {
     val questionnaireString =
       """
       {
@@ -913,9 +914,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testValidateQuestionnaireResponseWithNestedRepeatsGroup() = runTest {
-    val questionnaireString =
-      """
+  fun testValidateQuestionnaireResponseWithNestedRepeatedGroupShouldNotUpdateTheOriginalQuestionnaireResponse() =
+    runTest {
+      val questionnaireString =
+        """
       {
         "resourceType": "Questionnaire",
         "item": [
@@ -961,9 +963,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         ]
       }
         """
-        .trimIndent()
-    val questionnaireResponseString =
-      """
+          .trimIndent()
+      val questionnaireResponseString =
+        """
       {
         "resourceType": "QuestionnaireResponse",
         "item": [
@@ -1022,18 +1024,21 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         ]
       }
         """
-        .trimIndent()
-    val questionnaire = parser.parseResource(questionnaireString) as Questionnaire
-    val questionnaireResponse =
-      parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
-    val result =
-      questionnaireViewModel.validateQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse,
-        context,
-      )
-    Assert.assertTrue(result)
-  }
+          .trimIndent()
+      val questionnaire = parser.parseResource(questionnaireString) as Questionnaire
+      val actualQuestionnaireResponse =
+        parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
+      val result =
+        questionnaireViewModel.validateQuestionnaireResponse(
+          questionnaire,
+          actualQuestionnaireResponse,
+          context,
+        )
+      val expectedQuestionnaireResponse =
+        parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
+      Assert.assertTrue(result)
+      assertResourceEquals(expectedQuestionnaireResponse, actualQuestionnaireResponse)
+    }
 
   @Test
   fun testExecuteCqlShouldInvokeRunCqlLibrary() = runTest {
