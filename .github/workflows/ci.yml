@@ -10,6 +10,10 @@ on:
   merge_group:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
  FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
  FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
@@ -22,12 +26,8 @@ jobs:
     strategy:
       matrix:
         api-level: [30]
+        
     steps:
-      - name: Cancel Previous workflow runs
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
-
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
@@ -115,12 +115,8 @@ jobs:
     strategy:
       matrix:
         api-level: [30]
+        
     steps:
-      - name: Cancel Previous workflow runs
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
-
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
@@ -207,11 +203,7 @@ jobs:
     strategy:
       matrix:
         api-level: [30]
-    steps:
-      - name: Cancel Previous workflow runs
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
+        
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
