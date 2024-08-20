@@ -110,7 +110,7 @@ suspend fun <R : Resource> FhirEngine.batchedSearch(search: Search) =
       val searchResults = this.search<R>(search)
       result += searchResults
       offset += searchResults.size
-    } while (searchResults.isNotEmpty())
+    } while (searchResults.size == pageCount)
 
     result
   }
