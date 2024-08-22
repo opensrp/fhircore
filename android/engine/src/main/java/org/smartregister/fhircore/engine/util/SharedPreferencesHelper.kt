@@ -124,8 +124,5 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   companion object {
     const val PREFS_NAME = "params"
     const val PREFS_SYNC_PROGRESS_TOTAL = "sync_progress_total"
-    const val PREFS_SYNC_STATUS = "sync_status"
-    const val PREFS_SYNC_STATUS_SUCCEEDED = "SUCCEEDED"
-    const val PREFS_SYNC_STATUS_FAILED = "FAILED"
   }
 }
