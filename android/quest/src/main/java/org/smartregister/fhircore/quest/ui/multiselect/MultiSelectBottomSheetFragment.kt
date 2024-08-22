@@ -60,7 +60,7 @@ class MultiSelectBottomSheetFragment() : BottomSheetDialogFragment() {
       appMainViewModel.run {
         if (requireContext().isDeviceOnline()) {
           triggerOneTimeSync()
-          triggerSync()
+          schedulePeriodicSync()
         } else {
           requireContext()
             .showToast(
