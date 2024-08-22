@@ -41,11 +41,10 @@ val AppTitleColor = Color(0xFF929496)
 val StatusTextColor = Color(0xFF6F7274)
 val PersonalDataBackgroundColor = Color(0xFFF5F5F5)
 val MenuActionButtonTextColor = Color(0xFF28B8F9)
-val MenuItemColor = Color(0xFFBFBFBF)
+val MenuItemColor = Color(0xFF929496)
 val SearchHeaderColor = Color(0xFFF2F4F7)
 private val PrimaryColor = Color(0xFF0077CC)
 private val SecondaryColor = Color(0xFFF8DF4B)
-private val SurfaceColor = Color(0xFFFFFFFF)
 private val PrimaryVariantColor = Color(0xFF006BBA)
 
 val LightColors =

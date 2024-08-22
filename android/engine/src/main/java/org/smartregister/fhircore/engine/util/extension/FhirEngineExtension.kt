@@ -86,3 +86,10 @@ suspend fun FhirEngine.loadCqlLibraryBundle(fhirOperator: FhirOperator, measureP
   } catch (exception: Exception) {
     Timber.e(exception)
   }
+
+suspend fun FhirEngine.countUnSyncedResources() =
+  this.getUnsyncedLocalChanges()
+    .distinctBy { it.resourceId }
+    .groupingBy { it.resourceType.spaceByUppercase() }
+    .eachCount()
+    .map { it.key to it.value }

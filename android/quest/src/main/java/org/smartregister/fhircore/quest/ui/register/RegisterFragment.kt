@@ -64,6 +64,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.ui.shared.viewmodels.SearchViewModel
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
@@ -142,11 +143,13 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 openDrawer = openDrawer,
                 onSideMenuClick = {
                   if (it is AppMainEvent.TriggerWorkflow) {
-                    searchViewModel.searchText.value = ""
+                    searchViewModel.searchQuery.value = SearchQuery.emptyText
                   }
                   appMainViewModel.onEvent(it)
                 },
                 navController = findNavController(),
+                unSyncedResourceCount = appMainViewModel.unSyncedResourcesCount,
+                onCountUnSyncedResources = appMainViewModel::updateUnSyncedResourcesCount,
               )
             },
             bottomBar = {
@@ -172,7 +175,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 registerUiState = registerViewModel.registerUiState.value,
                 appDrawerUIState = appMainViewModel.appDrawerUiState.value,
                 onAppMainEvent = { appMainViewModel.onEvent(it) },
-                searchText = searchViewModel.searchText,
+                searchQuery = searchViewModel.searchQuery,
                 currentPage = registerViewModel.currentPage,
                 pagingItems = pagingItems,
                 navController = findNavController(),
@@ -207,16 +210,14 @@ class RegisterFragment : Fragment(), OnSyncListener {
         }
       }
       is CurrentSyncJobStatus.Succeeded -> {
-        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
         refreshRegisterData()
+        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
-        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
+        appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
       }
-      else -> {
-        lifecycleScope.launch { appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0) }
-      }
+      else -> appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
     }
   }
 
@@ -237,6 +238,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
         )
       }
     }
+
+    appMainViewModel.updateUnSyncedResourcesCount()
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -256,6 +259,14 @@ class RegisterFragment : Fragment(), OnSyncListener {
             }
           }
           .launchIn(lifecycleScope)
+      }
+    }
+
+    appMainViewModel.resetRegisterFilters.observe(viewLifecycleOwner) { resetFilters ->
+      if (resetFilters) {
+        registerViewModel.registerFilterState.value = RegisterFilterState()
+        refreshRegisterData()
+        appMainViewModel.resetRegisterFilters.value = false
       }
     }
   }

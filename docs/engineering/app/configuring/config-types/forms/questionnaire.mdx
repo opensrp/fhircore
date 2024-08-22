@@ -549,3 +549,47 @@ Below is the specific extension for this. The extension is validated in this cla
     "valueString": "password-widget"
   }
 ```
+
+## QR Code Support
+
+QR Code widget can be set up for a Questionnaire by adding `qr_code-widget` extension, with url `https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget`, to a QuestionnaireItem
+
+```json
+    {
+      "url": "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+      "extension": []
+    }
+```
+The QR Code widget extension can be configured to take another extension with url `set-only-readonly` that takes in a value `Boolean`, which when set to `true`, the QR code widget only allows set QR code once and thereafter the field would behave as `readOnly`
+
+```json
+    {
+      "url": "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+      "extension": [
+        {
+          "url": "set-only-readonly",
+          "valueBoolean": true
+        }
+      ]
+    }
+```
+Normal behaviour of the `qr_code-widget` extension or if the `set-only-readonly` extension has a value of `false`, would be to allow setting QR code multiple times whereby subsequent QR codes would replace current
+
+The QR code widget supports adding an arbitrary number of QR codes, implemented by showing `+Add QR Code` button. This can be configured by setting QuestionnaireItem with the `qr_code-widget` extension to `"repeats": true`
+
+```json
+      "repeats": true,
+      "extension": [
+        {
+          "url": "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+          "extension": [
+            {
+              "url": "set-only-readonly",
+              "valueBoolean": true
+            }
+          ]
+        }
+      ]
+    }
+```
+The extension's implementation can be found [here](https://github.com/opensrp/fhircore/blob/main/android/quest/src/main/java/org/smartregister/fhircore/quest/ui/sdc/qrCode/EditTextQrCodeViewHolderFactory.kt)

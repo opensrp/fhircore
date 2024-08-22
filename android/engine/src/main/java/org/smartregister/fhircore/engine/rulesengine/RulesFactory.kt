@@ -689,6 +689,17 @@ constructor(
         } else defaultRepository.createRemote(resource = arrayOf(updatedResource as Resource))
       }
     }
+
+    fun taskServiceStatusExist(tasks: List<Task>, vararg serviceStatus: String): Boolean {
+      return tasks.any {
+        val status = generateTaskServiceStatus(it)
+        if (status.isNotBlank()) {
+          ServiceStatus.valueOf(status) in serviceStatus.map { item -> ServiceStatus.valueOf(item) }
+        } else {
+          false
+        }
+      }
+    }
   }
 
   companion object {

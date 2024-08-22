@@ -39,10 +39,13 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -86,6 +89,7 @@ import org.smartregister.fhircore.engine.ui.theme.SideMenuTopItemDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.ui.theme.SyncBarBackgroundColor
+import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
 import org.smartregister.fhircore.quest.R
@@ -118,10 +122,14 @@ fun AppDrawer(
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
   appVersionPair: Pair<Int, String>? = null,
+  unSyncedResourceCount: MutableIntState,
+  onCountUnSyncedResources: () -> Unit,
 ) {
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
   val navigationConfiguration = appUiState.navigationConfiguration
+
+  LaunchedEffect(Unit) { onCountUnSyncedResources() }
 
   Scaffold(
     topBar = {
@@ -143,6 +151,7 @@ fun AppDrawer(
       NavBottomSection(
         appUiState = appUiState,
         appDrawerUIState = appDrawerUIState,
+        unSyncedResourceCount = unSyncedResourceCount,
         onSideMenuClick = onSideMenuClick,
         openDrawer = openDrawer,
       )
@@ -151,10 +160,10 @@ fun AppDrawer(
     Box(
       modifier = modifier.padding(innerPadding).background(SideMenuDarkColor).fillMaxSize(),
     ) {
-      LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
+      LazyColumn(modifier = modifier) {
         item {
-          Column {
-            if (navigationConfiguration.clientRegisters.isNotEmpty()) {
+          Column(modifier = modifier.padding(horizontal = 16.dp)) {
+            if (navigationConfiguration.clientRegisters.size > 1) {
               Text(
                 text = stringResource(id = R.string.registers).uppercase(),
                 fontSize = 14.sp,
@@ -183,7 +192,7 @@ fun AppDrawer(
 
         item {
           if (navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true) {
-            Column {
+            Column(modifier = modifier.padding(horizontal = 16.dp)) {
               OtherPatientsItem(
                 navigationConfiguration = navigationConfiguration,
                 onSideMenuClick = onSideMenuClick,
@@ -194,6 +203,8 @@ fun AppDrawer(
             }
           }
         }
+
+        item { Divider(color = DividerColor) }
 
         // Display list of configurable static menu
         items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
@@ -219,6 +230,7 @@ fun AppDrawer(
 private fun NavBottomSection(
   appUiState: AppMainUiState,
   appDrawerUIState: AppDrawerUIState,
+  unSyncedResourceCount: MutableIntState,
   onSideMenuClick: (AppMainEvent) -> Unit,
   openDrawer: (Boolean) -> Unit,
 ) {
@@ -240,6 +252,7 @@ private fun NavBottomSection(
     when (currentSyncJobStatus) {
       is CurrentSyncJobStatus.Running -> {
         SyncStatusView(
+          isSyncUpload = appDrawerUIState.isSyncUpload,
           currentSyncJobStatus = currentSyncJobStatus,
           minimized = false,
           progressPercentage = appDrawerUIState.percentageProgress,
@@ -252,6 +265,7 @@ private fun NavBottomSection(
       }
       is CurrentSyncJobStatus.Failed -> {
         SyncStatusView(
+          isSyncUpload = appDrawerUIState.isSyncUpload,
           currentSyncJobStatus = currentSyncJobStatus,
           minimized = false,
         ) {
@@ -269,12 +283,14 @@ private fun NavBottomSection(
         if (showDefaultSyncStatus) {
           DefaultSyncStatus(
             appUiState = appUiState,
+            context = context,
+            unSyncedResourceCount = unSyncedResourceCount,
             openDrawer = openDrawer,
             onSideMenuClick = onSideMenuClick,
-            context = context,
           )
         } else {
           SyncStatusView(
+            isSyncUpload = appDrawerUIState.isSyncUpload,
             currentSyncJobStatus = currentSyncJobStatus,
             minimized = false,
           )
@@ -283,9 +299,10 @@ private fun NavBottomSection(
       else -> {
         DefaultSyncStatus(
           appUiState = appUiState,
+          context = context,
+          unSyncedResourceCount = unSyncedResourceCount,
           openDrawer = openDrawer,
           onSideMenuClick = onSideMenuClick,
-          context = context,
         )
       }
     }
@@ -295,21 +312,33 @@ private fun NavBottomSection(
 @Composable
 private fun DefaultSyncStatus(
   appUiState: AppMainUiState,
+  context: Context,
+  unSyncedResourceCount: MutableIntState,
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
-  context: Context,
 ) {
+  val noUnsyncedData = unSyncedResourceCount.intValue == 0
   Box(
-    modifier = Modifier.background(SideMenuBottomItemDarkColor).padding(16.dp),
+    modifier =
+      Modifier.background(
+          if (noUnsyncedData) {
+            SideMenuBottomItemDarkColor
+          } else WarningColor.copy(alpha = TRANSPARENCY),
+        )
+        .padding(vertical = 16.dp),
   ) {
     SideMenuItem(
       modifier = Modifier,
-      imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
+      imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, reference = "ic_sync"),
       title = stringResource(org.smartregister.fhircore.engine.R.string.sync),
       endText = appUiState.lastSyncTime,
       padding = 0,
       showEndText = true,
-      endTextColor = SubtitleTextColor,
+      endTextColor = if (noUnsyncedData) SubtitleTextColor else Color.Unspecified,
+      mainTextColor = if (noUnsyncedData) Color.White else Color.Unspecified,
+      mainTextBold = !noUnsyncedData,
+      startIcon = if (noUnsyncedData) null else Icons.Default.Error,
+      startIconColor = if (noUnsyncedData) null else WarningColor,
     ) {
       openDrawer(false)
       onSideMenuClick(AppMainEvent.SyncData(context))
@@ -436,12 +465,16 @@ private fun MenuActionButton(
 private fun SideMenuItem(
   modifier: Modifier = Modifier,
   imageConfig: ImageConfig? = null,
+  mainTextColor: Color = Color.White,
   title: String,
   endText: String = "",
   endTextColor: Color = Color.White,
-  padding: Int = 10,
+  padding: Int = 12,
   showEndText: Boolean,
   endImageVector: ImageVector? = null,
+  mainTextBold: Boolean = false,
+  startIcon: ImageVector? = null,
+  startIconColor: Color? = null,
   onSideMenuClick: () -> Unit,
 ) {
   Row(
@@ -449,22 +482,32 @@ private fun SideMenuItem(
     modifier =
       modifier
         .fillMaxWidth()
-        .padding(vertical = padding.dp)
         .clickable { onSideMenuClick() }
-        .testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG),
+        .padding(vertical = padding.dp)
+        .testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG)
+        .padding(horizontal = 16.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(
       modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG),
       verticalAlignment = Alignment.CenterVertically,
     ) {
-      Image(
-        paddingEnd = 10,
-        imageProperties = ImageProperties(imageConfig = imageConfig, size = 32),
-        tint = MenuItemColor,
-        navController = rememberNavController(),
-      )
-      SideMenuItemText(title = title, textColor = Color.White)
+      if (startIcon != null) {
+        Icon(
+          imageVector = startIcon,
+          contentDescription = null,
+          tint = startIconColor ?: MenuItemColor,
+          modifier = Modifier.padding(end = 16.dp),
+        )
+      } else {
+        Image(
+          paddingEnd = 10,
+          imageProperties = ImageProperties(imageConfig = imageConfig, size = 32),
+          tint = MenuItemColor,
+          navController = rememberNavController(),
+        )
+      }
+      SideMenuItemText(title = title, textColor = mainTextColor, boldText = mainTextBold)
     }
     if (showEndText) {
       SideMenuItemText(title = endText, textColor = endTextColor)
@@ -516,6 +559,41 @@ fun AppDrawerPreview() {
               clientRegisters =
                 listOf(
                   NavigationMenuConfig(id = "id0", visible = true, display = "Households"),
+                ),
+              menuActionButton =
+                NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
+            ),
+        ),
+      navController = rememberNavController(),
+      openDrawer = {},
+      onSideMenuClick = {},
+      appVersionPair = Pair(1, "0.0.1"),
+      unSyncedResourceCount = remember { mutableIntStateOf(0) },
+      onCountUnSyncedResources = {},
+    )
+  }
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun AppDrawerWithUnSyncedDataPreview() {
+  AppTheme {
+    AppDrawer(
+      appUiState =
+        appMainUiStateOf(
+          appTitle = "MOH VTS",
+          username = "Demo",
+          lastSyncTime = "05:30 PM, Mar 3",
+          currentLanguage = "English",
+          languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+          navigationConfiguration =
+            NavigationConfiguration(
+              appId = "appId",
+              configType = ConfigType.Navigation.name,
+              staticMenu = listOf(),
+              clientRegisters =
+                listOf(
+                  NavigationMenuConfig(id = "id0", visible = true, display = "Households"),
                   NavigationMenuConfig(id = "id2", visible = true, display = "PNC"),
                   NavigationMenuConfig(id = "id3", visible = true, display = "ANC"),
                   NavigationMenuConfig(id = "id4", visible = true, display = "Family Planning"),
@@ -528,6 +606,8 @@ fun AppDrawerPreview() {
       openDrawer = {},
       onSideMenuClick = {},
       appVersionPair = Pair(1, "0.0.1"),
+      unSyncedResourceCount = remember { mutableIntStateOf(10) },
+      onCountUnSyncedResources = {},
     )
   }
 }
@@ -559,7 +639,6 @@ fun AppDrawerOnSyncCompletePreview() {
               menuActionButton =
                 NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
             ),
-          currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
         ),
       appDrawerUIState =
         AppDrawerUIState(
@@ -569,6 +648,8 @@ fun AppDrawerOnSyncCompletePreview() {
       openDrawer = {},
       onSideMenuClick = {},
       appVersionPair = Pair(1, "0.0.1"),
+      unSyncedResourceCount = remember { mutableIntStateOf(0) },
+      onCountUnSyncedResources = {},
     )
   }
 }
@@ -600,7 +681,6 @@ fun AppDrawerOnSyncFailedPreview() {
               menuActionButton =
                 NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
             ),
-          currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
         ),
       appDrawerUIState =
         AppDrawerUIState(
@@ -610,6 +690,8 @@ fun AppDrawerOnSyncFailedPreview() {
       openDrawer = {},
       onSideMenuClick = {},
       appVersionPair = Pair(1, "0.0.1"),
+      unSyncedResourceCount = remember { mutableIntStateOf(0) },
+      onCountUnSyncedResources = {},
     )
   }
 }
@@ -641,8 +723,6 @@ fun AppDrawerOnSyncRunningPreview() {
               menuActionButton =
                 NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
             ),
-          currentSyncJobStatus =
-            CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 200, 35)),
         ),
       appDrawerUIState =
         AppDrawerUIState(
@@ -653,6 +733,8 @@ fun AppDrawerOnSyncRunningPreview() {
       openDrawer = {},
       onSideMenuClick = {},
       appVersionPair = Pair(1, "0.0.1"),
+      unSyncedResourceCount = remember { mutableIntStateOf(0) },
+      onCountUnSyncedResources = {},
     )
   }
 }
