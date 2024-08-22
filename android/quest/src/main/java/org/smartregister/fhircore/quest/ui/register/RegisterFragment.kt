@@ -206,12 +206,12 @@ class RegisterFragment : Fragment(), OnSyncListener {
     if (registerViewModel.registerUiState.value.isFirstTimeSync) {
       val syncInfo =
         workManager.getWorkInfosForUniqueWork(
-          "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync"
+          "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
         )
 
       if (syncInfo.get().size > 0) {
         workManager.getWorkInfoByIdLiveData(syncInfo.get().first().id).observe(
-          viewLifecycleOwner
+          viewLifecycleOwner,
         ) { workInfo: WorkInfo ->
           if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
             val outputDataState = workInfo.outputData.getString("State") ?: ""

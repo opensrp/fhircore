@@ -28,7 +28,6 @@ import com.google.android.fhir.sync.upload.UploadStrategy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.runBlocking
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltWorker
 class AppSyncWorker
@@ -39,7 +38,6 @@ constructor(
   val syncListenerManager: SyncListenerManager,
   private val openSrpFhirEngine: FhirEngine,
   private val appTimeStampContext: AppTimeStampContext,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
 ) : FhirSyncWorker(appContext, workerParams) {
 
   override fun getConflictResolver(): ConflictResolver = AcceptLocalConflictResolver
