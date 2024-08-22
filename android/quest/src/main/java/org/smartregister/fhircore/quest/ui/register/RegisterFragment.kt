@@ -45,11 +45,12 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.google.android.fhir.sync.CurrentSyncJobStatus
-import com.google.android.fhir.sync.LastSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.OffsetDateTime
+import java.time.format.DateTimeParseException
 import javax.inject.Inject
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.launchIn
@@ -74,8 +75,6 @@ import org.smartregister.fhircore.quest.ui.shared.viewmodels.SearchViewModel
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
-import java.time.OffsetDateTime
-import java.time.format.DateTimeParseException
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
@@ -206,22 +205,26 @@ class RegisterFragment : Fragment(), OnSyncListener {
   private fun resetFirstTimeSync() {
     if (registerViewModel.registerUiState.value.isFirstTimeSync) {
       val syncInfo =
-        workManager.getWorkInfosForUniqueWork("org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync")
+        workManager.getWorkInfosForUniqueWork(
+          "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync"
+        )
 
       if (syncInfo.get().size > 0) {
-        workManager.getWorkInfoByIdLiveData(syncInfo.get().first().id)
-          .observe(viewLifecycleOwner) { workInfo: WorkInfo ->
-            if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
-              val outputDataState = workInfo.outputData.getString("State") ?: ""
-              val outputData = Gson().fromJson(outputDataState, OutputDataState::class.java)
-              val dateTimestamp = try {
+        workManager.getWorkInfoByIdLiveData(syncInfo.get().first().id).observe(
+          viewLifecycleOwner
+        ) { workInfo: WorkInfo ->
+          if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
+            val outputDataState = workInfo.outputData.getString("State") ?: ""
+            val outputData = Gson().fromJson(outputDataState, OutputDataState::class.java)
+            val dateTimestamp =
+              try {
                 OffsetDateTime.parse(outputData?.timestamp ?: "")
               } catch (e: DateTimeParseException) {
                 OffsetDateTime.now()
               }
-              onSync(CurrentSyncJobStatus.Succeeded(dateTimestamp))
-            }
+            onSync(CurrentSyncJobStatus.Succeeded(dateTimestamp))
           }
+        }
       }
     }
   }
@@ -352,5 +355,4 @@ class RegisterFragment : Fragment(), OnSyncListener {
   }
 }
 
-@Serializable
-data class OutputDataState(val timestamp: String)
+@Serializable data class OutputDataState(val timestamp: String)

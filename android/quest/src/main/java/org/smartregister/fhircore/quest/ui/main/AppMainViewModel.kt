@@ -26,15 +26,10 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.Constraints
-import androidx.work.NetworkType
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.CurrentSyncJobStatus
-import com.google.android.fhir.sync.PeriodicSyncConfiguration
-import com.google.android.fhir.sync.RepeatInterval
-import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -42,6 +37,7 @@ import java.time.OffsetDateTime
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlinx.coroutines.async
@@ -88,8 +84,6 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.decodeBinaryResourcesToBitmap
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
-import java.util.concurrent.TimeUnit
-import kotlin.time.Duration.Companion.minutes
 
 @HiltViewModel
 class AppMainViewModel
@@ -276,9 +270,7 @@ constructor(
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
   fun triggerSync() {
-    viewModelScope.launch {
-      syncBroadcaster.runFirstTimeSync()
-    }
+    viewModelScope.launch { syncBroadcaster.runFirstTimeSync() }
   }
 
   /** This function is used to schedule tasks that are intended to run periodically */
@@ -289,7 +281,7 @@ constructor(
         repeatInterval = applicationConfiguration.syncInterval,
         timeUnit = TimeUnit.MINUTES,
         requiresNetwork = true,
-        initialDelay = applicationConfiguration.syncInterval
+        initialDelay = applicationConfiguration.syncInterval,
       )
 
       schedulePeriodically<FhirTaskStatusUpdateWorker>(

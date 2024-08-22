@@ -29,7 +29,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 class AppSyncWorkerTest : RobolectricTest() {
   @Test
@@ -51,7 +50,7 @@ class AppSyncWorkerTest : RobolectricTest() {
         workerParams,
         syncListenerManager,
         fhirEngine,
-        timeContext
+        timeContext,
       )
 
     appSyncWorker.getDownloadWorkManager()
