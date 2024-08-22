@@ -60,7 +60,8 @@ class ConfigServiceTest : RobolectricTest() {
     val practitionerId = "practitioner-id"
     sharedPreferencesHelper.write(SharedPreferenceKey.PRACTITIONER_ID.name, practitionerId)
 
-    val resourceTags = configService.provideResourceTags(preferenceDataStore, sharedPreferencesHelper)
+    val resourceTags =
+      configService.provideResourceTags(preferenceDataStore, sharedPreferencesHelper)
     val practitionerTag =
       resourceTags.firstOrNull { it.system == AppConfigService.PRACTITIONER_SYSTEM }
 
@@ -73,7 +74,8 @@ class ConfigServiceTest : RobolectricTest() {
     val locationId2 = "location-id2"
     sharedPreferencesHelper.write(ResourceType.Location.name, listOf(locationId1, locationId2))
 
-    val resourceTags = configService.provideResourceTags(preferenceDataStore, sharedPreferencesHelper)
+    val resourceTags =
+      configService.provideResourceTags(preferenceDataStore, sharedPreferencesHelper)
     val locationTags = resourceTags.filter { it.system == AppConfigService.LOCATION_SYSTEM }
 
     Assert.assertTrue(locationTags.any { it.code == locationId1 })
@@ -89,7 +91,8 @@ class ConfigServiceTest : RobolectricTest() {
       listOf(organizationId1, organizationId2),
     )
 
-    val resourceTags = configService.provideResourceTags(preferenceDataStore, sharedPreferencesHelper)
+    val resourceTags =
+      configService.provideResourceTags(preferenceDataStore, sharedPreferencesHelper)
     val organizationTags = resourceTags.filter { it.system == AppConfigService.ORGANIZATION_SYSTEM }
 
     Assert.assertTrue(organizationTags.any { it.code == organizationId1 })
@@ -102,7 +105,8 @@ class ConfigServiceTest : RobolectricTest() {
     val careTeamId2 = "careteam-id2"
     sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf(careTeamId1, careTeamId2))
 
-    val resourceTags = configService.provideResourceTags(preferenceDataStore, sharedPreferencesHelper)
+    val resourceTags =
+      configService.provideResourceTags(preferenceDataStore, sharedPreferencesHelper)
     val organizationTags = resourceTags.filter { it.system == AppConfigService.CARETEAM_SYSTEM }
 
     Assert.assertTrue(organizationTags.any { it.code == careTeamId1 })

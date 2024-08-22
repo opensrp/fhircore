@@ -71,7 +71,6 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
@@ -115,7 +114,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         configService = configService,
         json = json,
         context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
-        preferenceDataStore = preferenceDataStore
+        preferenceDataStore = preferenceDataStore,
       )
   }
 
@@ -275,7 +274,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testFetchNonWorkflowConfigResourcesAppIdExists() {
     coEvery { fhirEngine.search<Composition>(any()) } returns listOf()
     val appId = "theAppId"
-    runTest { configRegistry.preferenceDataStore.write(PreferenceDataStore.APP_ID, appId)}
+    runTest { configRegistry.preferenceDataStore.write(PreferenceDataStore.APP_ID, appId) }
     coEvery {
       fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
     } returns Bundle().apply { addEntry().resource = Composition() }

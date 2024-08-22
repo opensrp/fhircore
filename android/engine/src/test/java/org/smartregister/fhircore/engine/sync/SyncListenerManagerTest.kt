@@ -34,7 +34,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 
 @HiltAndroidTest
@@ -64,7 +63,7 @@ class SyncListenerManagerTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         context = ApplicationProvider.getApplicationContext(),
         dispatcherProvider = dispatcherProvider,
-        preferenceDataStore = preferenceDataStore
+        preferenceDataStore = preferenceDataStore,
       )
   }
 

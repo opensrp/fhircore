@@ -60,13 +60,11 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
@@ -751,7 +749,11 @@ constructor(
     val fhirResourceSearchParams = mutableMapOf<ResourceType, MutableMap<String, String>>()
     val organizationResourceTag =
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
-    val mandatoryTags = configService.provideResourceTags(preferenceDataStore, sharedPreferencesHelper) //ToDo: Replace with Datastore - has an object
+    val mandatoryTags =
+      configService.provideResourceTags(
+        preferenceDataStore,
+        sharedPreferencesHelper
+      ) // ToDo: Replace with Datastore - has an object
 
     val locationIds = context.retrieveRelatedEntitySyncLocationIds()
 

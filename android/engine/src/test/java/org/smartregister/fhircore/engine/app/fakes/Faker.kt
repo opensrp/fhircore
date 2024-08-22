@@ -83,7 +83,7 @@ object Faker {
       fhirResourceDataSource,
       sharedPreferencesHelper,
       preferenceDataStore,
-      dispatcherProvider
+      dispatcherProvider,
     )
   }
 
@@ -106,7 +106,7 @@ object Faker {
           configService = configService,
           json = json,
           context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
-          preferenceDataStore = preferenceDataStore
+          preferenceDataStore = preferenceDataStore,
         ),
       )
 

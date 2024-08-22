@@ -40,7 +40,7 @@ interface ConfigService {
    */
   fun provideResourceTags(
     preferenceDataStore: PreferenceDataStore,
-    sharedPreferencesHelper: SharedPreferencesHelper
+    sharedPreferencesHelper: SharedPreferencesHelper,
   ): List<Coding> {
     val tags = mutableListOf<Coding>()
     defineResourceTags().forEach { strategy ->

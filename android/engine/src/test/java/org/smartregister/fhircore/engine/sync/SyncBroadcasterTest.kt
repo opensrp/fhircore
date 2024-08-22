@@ -71,14 +71,18 @@ class SyncBroadcasterTest : RobolectricTest() {
     hiltAndroidRule.inject()
     MockKAnnotations.init(this)
     configurationRegistry =
-      Faker.buildTestConfigurationRegistry(sharedPreferencesHelper, preferenceDataStore, dispatcherProvider)
+      Faker.buildTestConfigurationRegistry(
+        sharedPreferencesHelper,
+        preferenceDataStore,
+        dispatcherProvider
+      )
     syncListenerManager =
       SyncListenerManager(
         configService = configService,
         configurationRegistry = configurationRegistry,
         context = ApplicationProvider.getApplicationContext(),
         dispatcherProvider = dispatcherProvider,
-        preferenceDataStore = preferenceDataStore
+        preferenceDataStore = preferenceDataStore,
       )
 
     syncBroadcaster =
@@ -96,7 +100,7 @@ class SyncBroadcasterTest : RobolectricTest() {
 
   @Test
   fun testLoadSyncParamsShouldLoadFromConfiguration() = runTest {
-      //Todo - Change to pref
+    // Todo - Change to pref
     sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
     sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
     sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))

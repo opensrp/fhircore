@@ -148,7 +148,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         fhirPathDataExtractor = fhirPathDataExtractor,
         parser = parser,
         context = context,
-        preferenceDataStore = preferenceDataStore
+        preferenceDataStore = preferenceDataStore,
       )
   }
 
@@ -562,7 +562,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = context,
-          preferenceDataStore = preferenceDataStore
+          preferenceDataStore = preferenceDataStore,
         ),
       )
     coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
@@ -641,7 +641,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = context,
-          preferenceDataStore = preferenceDataStore
+          preferenceDataStore = preferenceDataStore,
         ),
       )
 
