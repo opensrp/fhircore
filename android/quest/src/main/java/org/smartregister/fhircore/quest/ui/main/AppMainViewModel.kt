@@ -316,10 +316,6 @@ constructor(
     }
   }
 
-  fun triggerOneTimeSync() {
-    viewModelScope.launch { syncBroadcaster.runOneTimeSync() }
-  }
-
   suspend fun onQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
     questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
       val status: Task.TaskStatus =
