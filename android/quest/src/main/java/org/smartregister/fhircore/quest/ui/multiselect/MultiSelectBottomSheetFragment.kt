@@ -59,6 +59,7 @@ class MultiSelectBottomSheetFragment() : BottomSheetDialogFragment() {
       multiSelectViewModel.saveSelectedLocations(requireContext())
       appMainViewModel.run {
         if (requireContext().isDeviceOnline()) {
+          triggerOneTimeSync()
           triggerSync()
         } else {
           requireContext()
