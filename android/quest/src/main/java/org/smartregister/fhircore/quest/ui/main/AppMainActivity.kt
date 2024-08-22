@@ -21,6 +21,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -41,9 +42,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
 import java.time.Instant
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -106,12 +108,39 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
    */
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setupLocationServices()
     setContentView(R.layout.activity_main)
 
-    val startDestinationConfig =
-      appMainViewModel.applicationConfiguration.navigationStartDestination
-    val startDestinationArgs =
+    syncListenerManager.registerSyncListener(this@AppMainActivity, lifecycle)
+
+    lifecycleScope.launch {
+      val startDestinationArgs: Bundle =
+        withContext(Dispatchers.Default) { getStartDestinationArgs() }
+
+      // Retrieve the navController directly from the NavHostFragment
+      val navController =
+        (supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment).navController
+      val graph =
+        navController.navInflater.inflate(R.navigation.application_nav_graph).apply {
+          val startDestination =
+            when (
+              appMainViewModel.applicationConfiguration.navigationStartDestination.launcherType
+            ) {
+              LauncherType.MAP -> R.id.geoWidgetLauncherFragment
+              LauncherType.REGISTER -> R.id.registerFragment
+            }
+          setStartDestination(startDestination)
+        }
+
+      navController.setGraph(graph, startDestinationArgs)
+
+      runJobs()
+    }
+  }
+
+  private suspend fun getStartDestinationArgs(): Bundle {
+    return withContext(Dispatchers.Default) {
+      val startDestinationConfig =
+        appMainViewModel.applicationConfiguration.navigationStartDestination
       when (startDestinationConfig.launcherType) {
         LauncherType.REGISTER -> {
           val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
@@ -129,51 +158,41 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         }
         LauncherType.MAP -> bundleOf(NavigationArg.GEO_WIDGET_ID to startDestinationConfig.id)
       }
+    }
+  }
 
-    // Retrieve the navController directly from the NavHostFragment
-    val navController =
-      (supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment).navController
+  private suspend fun runJobs() {
+    withContext(Dispatchers.IO) {
+      appMainViewModel.run {
+        retrieveAppMainUiState()
 
-    val graph =
-      navController.navInflater.inflate(R.navigation.application_nav_graph).apply {
-        val startDestination =
-          when (appMainViewModel.applicationConfiguration.navigationStartDestination.launcherType) {
-            LauncherType.MAP -> R.id.geoWidgetLauncherFragment
-            LauncherType.REGISTER -> R.id.registerFragment
-          }
-        setStartDestination(startDestination)
-      }
-
-    navController.setGraph(graph, startDestinationArgs)
-
-    // Register sync listener then run sync in that order
-    syncListenerManager.registerSyncListener(this, lifecycle)
-
-    // Setup the drawer and schedule jobs
-    appMainViewModel.run {
-      retrieveAppMainUiState()
-      if (isDeviceOnline()) {
-        // Do not schedule sync until location selected when strategy is RelatedEntityLocation
-        // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
-        // if we need to trigger sync based on assigned locations or not
-        if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
-          if (
-            applicationConfiguration.usePractitionerAssignedLocationOnSync ||
-              runBlocking { syncLocationIdsProtoStore.data.firstOrNull() }?.isNotEmpty() == true
-          ) {
+        if (isDeviceOnline()) {
+          if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
+            if (
+              applicationConfiguration.usePractitionerAssignedLocationOnSync ||
+                syncLocationIdsProtoStore.data.firstOrNull()?.isNotEmpty() == true
+            ) {
+              triggerSync()
+            }
+          } else {
             triggerSync()
           }
         } else {
-          triggerSync()
+          withContext(Dispatchers.Main) {
+            showToast(
+              getString(org.smartregister.fhircore.engine.R.string.sync_failed),
+              Toast.LENGTH_LONG,
+            )
+          }
         }
-      } else {
-        showToast(
-          getString(org.smartregister.fhircore.engine.R.string.sync_failed),
-          Toast.LENGTH_LONG,
-        )
+        schedulePeriodicJobs()
       }
-      schedulePeriodicJobs()
     }
+  }
+
+  override fun onPostCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
+    super.onPostCreate(savedInstanceState, persistentState)
+    setupLocationServices()
   }
 
   override fun onResume() {
