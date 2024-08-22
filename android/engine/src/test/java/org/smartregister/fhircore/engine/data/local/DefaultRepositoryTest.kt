@@ -1485,7 +1485,8 @@ class DefaultRepositoryTest : RobolectricTest() {
         )
 
       fhirEngine.create(group1, group2)
-      val resource = defaultRepository.retrieveUniqueIdAssignmentResource(uniqueIdAssignmentConfig)
+      val resource =
+        defaultRepository.retrieveUniqueIdAssignmentResource(uniqueIdAssignmentConfig, emptyMap())
       Assert.assertNotNull(resource)
       Assert.assertTrue(resource is Group)
       Assert.assertEquals("1234", (resource as Group).characteristic[0].valueCodeableConcept.text)
