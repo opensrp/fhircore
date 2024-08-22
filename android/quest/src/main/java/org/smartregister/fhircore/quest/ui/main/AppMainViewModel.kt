@@ -41,7 +41,9 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
@@ -49,12 +51,14 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.SyncStrategy
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.sync.AppSyncWorker
 import org.smartregister.fhircore.engine.sync.CustomSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -271,10 +275,7 @@ constructor(
 
   fun triggerSync() {
     viewModelScope.launch { syncBroadcaster.runFirstTimeSync() }
-  }
 
-  /** This function is used to schedule tasks that are intended to run periodically */
-  fun schedulePeriodicJobs() {
     workManager.run {
       schedulePeriodically<AppSyncWorker>(
         workId = AppSyncWorker.WORK_ID,
@@ -283,7 +284,12 @@ constructor(
         requiresNetwork = true,
         initialDelay = applicationConfiguration.syncInterval,
       )
+    }
+  }
 
+  /** This function is used to schedule tasks that are intended to run periodically */
+  fun schedulePeriodicJobs() {
+    workManager.run {
       schedulePeriodically<FhirTaskStatusUpdateWorker>(
         workId = FhirTaskStatusUpdateWorker.WORK_ID,
         duration = Duration.tryParse(applicationConfiguration.taskStatusUpdateJobDuration),
