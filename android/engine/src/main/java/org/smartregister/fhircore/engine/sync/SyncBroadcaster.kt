@@ -80,6 +80,11 @@ constructor(
     )
   }
 
+  suspend fun runFirstTimeSync() = coroutineScope {
+    Timber.i("Running initial sync...")
+    Sync.oneTimeSync<AppSyncWorker>(context).handleOneTimeSyncJobStatus(this)
+  }
+
   /**
    * Schedule periodic sync periodically as defined in the application config interval. The
    * [SyncJobStatus] will be broadcast to all the registered [OnSyncListener]'s

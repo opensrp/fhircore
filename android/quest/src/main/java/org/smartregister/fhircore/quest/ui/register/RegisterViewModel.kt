@@ -449,15 +449,7 @@ constructor(
         registerUiState.value =
           RegisterUiState(
             screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
-            isFirstTimeSync =
-              sharedPreferencesHelper
-                .read(
-                  SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-                  null,
-                )
-                .isNullOrEmpty() &&
-                _totalRecordsCount.longValue == 0L &&
-                applicationConfiguration.usePractitionerAssignedLocationOnSync,
+            isFirstTimeSync = isFirstTimeSync(),
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
             totalRecordsCount = _totalRecordsCount.longValue,
@@ -478,6 +470,17 @@ constructor(
           )
       }
     }
+  }
+
+  fun isFirstTimeSync(): Boolean {
+    return sharedPreferencesHelper
+      .read(
+        SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+        null,
+      )
+      .isNullOrEmpty() &&
+      _totalRecordsCount.longValue == 0L &&
+      applicationConfiguration.usePractitionerAssignedLocationOnSync
   }
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {

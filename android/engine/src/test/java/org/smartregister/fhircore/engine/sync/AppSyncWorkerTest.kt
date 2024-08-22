@@ -40,7 +40,6 @@ class AppSyncWorkerTest : RobolectricTest() {
     val fhirEngine = mockk<FhirEngine>()
     val taskExecutor = mockk<TaskExecutor>()
     val timeContext = mockk<AppTimeStampContext>()
-    val sharedPreferencesHelper = mockk<SharedPreferencesHelper>()
 
     every { taskExecutor.serialTaskExecutor } returns mockk()
     every { workerParams.taskExecutor } returns taskExecutor
@@ -52,8 +51,7 @@ class AppSyncWorkerTest : RobolectricTest() {
         workerParams,
         syncListenerManager,
         fhirEngine,
-        timeContext,
-        sharedPreferencesHelper
+        timeContext
       )
 
     appSyncWorker.getDownloadWorkManager()

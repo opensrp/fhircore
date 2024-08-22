@@ -42,17 +42,6 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
 ) : FhirSyncWorker(appContext, workerParams) {
 
-  override suspend fun doWork(): Result {
-    try {
-      super.doWork()
-      setSyncWorkerStatus(SharedPreferencesHelper.PREFS_SYNC_STATUS_SUCCEEDED)
-      return Result.success()
-    } catch (e: Exception) {
-      setSyncWorkerStatus(SharedPreferencesHelper.PREFS_SYNC_STATUS_FAILED)
-      return Result.failure()
-    }
-  }
-
   override fun getConflictResolver(): ConflictResolver = AcceptLocalConflictResolver
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
@@ -65,10 +54,7 @@ constructor(
 
   override fun getUploadStrategy(): UploadStrategy = UploadStrategy.AllChangesSquashedBundlePut
 
-  private fun setSyncWorkerStatus(syncStatus: String) {
-    sharedPreferencesHelper.write(
-      SharedPreferencesHelper.PREFS_SYNC_STATUS,
-      syncStatus,
-    )
+  companion object {
+    const val WORK_ID = "AppSyncWorker"
   }
 }
