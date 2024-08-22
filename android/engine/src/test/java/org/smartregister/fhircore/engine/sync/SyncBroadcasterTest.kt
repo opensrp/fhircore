@@ -74,7 +74,7 @@ class SyncBroadcasterTest : RobolectricTest() {
       Faker.buildTestConfigurationRegistry(
         sharedPreferencesHelper,
         preferenceDataStore,
-        dispatcherProvider
+        dispatcherProvider,
       )
     syncListenerManager =
       SyncListenerManager(

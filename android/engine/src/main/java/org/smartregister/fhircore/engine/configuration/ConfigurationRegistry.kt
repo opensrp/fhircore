@@ -752,7 +752,7 @@ constructor(
     val mandatoryTags =
       configService.provideResourceTags(
         preferenceDataStore,
-        sharedPreferencesHelper
+        sharedPreferencesHelper,
       ) // ToDo: Replace with Datastore - has an object
 
     val locationIds = context.retrieveRelatedEntitySyncLocationIds()
