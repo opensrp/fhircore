@@ -42,7 +42,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
 import java.time.Instant
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -59,6 +58,7 @@ import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.serializable
@@ -83,6 +83,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   @Inject lateinit var protoDataStore: ProtoDataStore
 
   @Inject lateinit var eventBus: EventBus
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   val appMainViewModel by viewModels<AppMainViewModel>()
   private val sentryNavListener =
     SentryNavigationListener(enableNavigationBreadcrumbs = true, enableNavigationTracing = true)
@@ -112,7 +115,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
     lifecycleScope.launch {
       val startDestinationArgs: Bundle =
-        withContext(Dispatchers.Default) { getStartDestinationArgs() }
+        withContext(dispatcherProvider.default()) { getStartDestinationArgs() }
 
       // Retrieve the navController directly from the NavHostFragment
       val navController =
@@ -138,7 +141,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   }
 
   private suspend fun getStartDestinationArgs(): Bundle {
-    return withContext(Dispatchers.Default) {
+    return withContext(dispatcherProvider.default()) {
       val startDestinationConfig =
         appMainViewModel.applicationConfiguration.navigationStartDestination
       when (startDestinationConfig.launcherType) {
@@ -162,7 +165,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   }
 
   private suspend fun runJobs() {
-    withContext(Dispatchers.IO) {
+    withContext(dispatcherProvider.io()) {
       appMainViewModel.run {
         retrieveAppMainUiState()
 
@@ -178,7 +181,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             triggerSync()
           }
         } else {
-          withContext(Dispatchers.Main) {
+          withContext(dispatcherProvider.main()) {
             showToast(
               getString(org.smartregister.fhircore.engine.R.string.sync_failed),
               Toast.LENGTH_LONG,
