@@ -1067,7 +1067,7 @@ constructor(
         // TODO This will require a new config model for related entity location filter
         val locationIds =
           syncLocationIds
-            .map { retrieveSubLocations(it).map { subLocation -> subLocation.logicalId } }
+            .map { retrieveFlattenedSubLocations(it).map { subLocation -> subLocation.logicalId } }
             .flatten()
             .plus(syncLocationIds)
 
@@ -1104,12 +1104,13 @@ constructor(
 
   suspend fun retrieveUniqueIdAssignmentResource(
     uniqueIdAssignmentConfig: UniqueIdAssignmentConfig?,
+    computedValuesMap: Map<String, Any>,
   ): Resource? {
     if (uniqueIdAssignmentConfig != null) {
       val search =
         Search(uniqueIdAssignmentConfig.resource).apply {
           uniqueIdAssignmentConfig.dataQueries.forEach {
-            filterBy(dataQuery = it, configComputedRuleValues = emptyMap())
+            filterBy(dataQuery = it, configComputedRuleValues = computedValuesMap)
           }
           if (uniqueIdAssignmentConfig.sortConfigs != null) {
             sort(uniqueIdAssignmentConfig.sortConfigs)

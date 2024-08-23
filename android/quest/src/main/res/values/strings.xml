@@ -131,4 +131,6 @@
     <string name="add_qr_code">Add QR code</string>
     <string name="error_matching_sync_strategy">Error matching sync strategy</string>
     <string name="unauthorised_user_permissions">Unauthorised user permissions</string>
+    <string name="scan_qr_code">Scan QR Code</string>
+    <string name="scan_qr_camera_instruction">Place your camera over the entire QR Code to start scanning</string>
 </resources>
