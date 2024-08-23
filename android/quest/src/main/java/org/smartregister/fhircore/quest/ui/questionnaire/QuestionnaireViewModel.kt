@@ -60,6 +60,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComp
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -147,7 +148,18 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
-    return defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)
+    var questionnaire = ContentCache.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id)?.copy()
+    if (questionnaire == null) {
+      questionnaire = defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also { ques ->
+        ContentCache.saveResource(
+          questionnaireConfig.id,
+          ques.copy(),
+        )
+      }
+    }
+
+
+    return questionnaire as Questionnaire
   }
 
   /**
@@ -638,7 +650,7 @@ constructor(
                 transformSupportServices = transformSupportServices,
                 structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
                   structureMapUrl?.substringAfterLast("/")?.let {
-                    defaultRepository.loadResource(it)
+                   fetchStructureMap(it)
                   }
                 },
               ),
@@ -667,6 +679,20 @@ constructor(
         }
       }
       .getOrDefault(Bundle())
+
+
+  private suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
+    var structureMap: Resource? = null
+    structureMapUrl?.substringAfterLast("/")?.run {
+      structureMap = ContentCache.getResource(ResourceType.StructureMap.name + "/" + this) ?.let {
+        defaultRepository.loadResource<StructureMap>(this)?.also {
+          it.let { ContentCache.saveResource(this, it) }
+        }
+      }
+    }
+    return structureMap as StructureMap?
+  }
+
 
   /**
    * This function saves [QuestionnaireResponse] as draft if any of the [QuestionnaireResponse.item]
