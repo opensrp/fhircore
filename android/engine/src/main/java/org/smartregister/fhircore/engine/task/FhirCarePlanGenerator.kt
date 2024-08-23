@@ -214,7 +214,7 @@ constructor(
               }
             source.setParameter(Task.SP_PERIOD, period)
             source.setParameter(ActivityDefinition.SP_VERSION, IntegerType(index))
-
+            //need to cache these SM too
             val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
             structureMapUtilities.transform(
               transformSupportServices.simpleWorkerContext,
