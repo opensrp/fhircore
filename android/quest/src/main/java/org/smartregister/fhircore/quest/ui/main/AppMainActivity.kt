@@ -21,7 +21,6 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -29,6 +28,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.runtime.getValue
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
@@ -110,8 +110,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
 
-    syncListenerManager.registerSyncListener(this@AppMainActivity, lifecycle)
-
     lifecycleScope.launch {
       val startDestinationArgs: Bundle =
         withContext(Dispatchers.Default) { getStartDestinationArgs() }
@@ -132,9 +130,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         }
 
       navController.setGraph(graph, startDestinationArgs)
-
       runJobs()
     }
+
+    syncListenerManager.registerSyncListener(this@AppMainActivity, lifecycle)
+    setupLocationServices()
   }
 
   private suspend fun getStartDestinationArgs(): Bundle {
@@ -188,11 +188,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         schedulePeriodicJobs()
       }
     }
-  }
-
-  override fun onPostCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-    super.onPostCreate(savedInstanceState, persistentState)
-    setupLocationServices()
   }
 
   override fun onResume() {
