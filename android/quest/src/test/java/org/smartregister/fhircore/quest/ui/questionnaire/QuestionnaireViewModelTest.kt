@@ -163,7 +163,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
-
     // Write practitioner and organization to shared preferences
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_ID.name,
@@ -1835,6 +1834,92 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           .first()
           .value as DateType
       Assert.assertTrue(initialValueDate.isToday)
+    }
+
+  @Test
+  fun testThatPopulateQuestionnaireSetInitialDefaultValueButExcludesFieldFromResponse() =
+    runTest(timeout = 90.seconds) {
+      val thisQuestionnaireConfig =
+        questionnaireConfig.copy(
+          resourceType = ResourceType.Patient,
+          resourceIdentifier = patient.logicalId,
+          type = QuestionnaireType.EDIT.name,
+          linkIds =
+            listOf(
+              LinkIdConfig("dateToday", LinkIdType.PREPOPULATION_EXCLUSION),
+            ),
+        )
+      val questionnaireViewModelInstance =
+        QuestionnaireViewModel(
+          defaultRepository = defaultRepository,
+          dispatcherProvider = defaultRepository.dispatcherProvider,
+          fhirCarePlanGenerator = fhirCarePlanGenerator,
+          resourceDataRulesExecutor = resourceDataRulesExecutor,
+          transformSupportServices = mockk(),
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          fhirOperator = fhirOperator,
+          fhirValidatorProvider = fhirValidatorProvider,
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          configurationRegistry = configurationRegistry,
+        )
+      val questionnaireWithDefaultDate =
+        Questionnaire().apply {
+          id = thisQuestionnaireConfig.id
+          addItem(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "dateToday"
+              type = Questionnaire.QuestionnaireItemType.DATE
+              addExtension(
+                Extension(
+                  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  Expression().apply {
+                    language = "text/fhirpath"
+                    expression = "today()"
+                  },
+                ),
+              )
+            },
+          )
+        }
+
+      val questionnaireResponse =
+        QuestionnaireResponse().apply {
+          addItem(
+            QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+              linkId = "dateToday"
+              addAnswer(
+                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                  value = DateType(Date())
+                },
+              )
+            },
+          )
+          setQuestionnaire(
+            thisQuestionnaireConfig.id.asReference(ResourceType.Questionnaire).reference,
+          )
+        }
+
+      coEvery {
+        fhirEngine.get(
+          thisQuestionnaireConfig.resourceType!!,
+          thisQuestionnaireConfig.resourceIdentifier!!,
+        )
+      } returns patient
+
+      coEvery { fhirEngine.search<QuestionnaireResponse>(any<Search>()) } returns
+        listOf(
+          SearchResult(questionnaireResponse, included = null, revIncluded = null),
+        )
+
+      val (result, _) =
+        questionnaireViewModelInstance.populateQuestionnaire(
+          questionnaire = questionnaireWithDefaultDate,
+          questionnaireConfig = thisQuestionnaireConfig,
+          actionParameters = emptyList(),
+        )
+
+      Assert.assertNotNull(result?.item)
+      Assert.assertTrue(result!!.item.isEmpty())
     }
 
   @Test

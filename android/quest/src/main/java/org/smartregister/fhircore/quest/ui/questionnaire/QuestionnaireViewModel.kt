@@ -65,6 +65,7 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
+import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.CodingSystemUsage
@@ -1098,6 +1099,15 @@ constructor(
         null
       }
 
+    // Exclude the configured fields from QR
+    val prepopulationExclusionLinkIdsMap =
+      questionnaireConfig.linkIds
+        ?.asSequence()
+        ?.filter { it.type == LinkIdType.PREPOPULATION_EXCLUSION }
+        ?.associateBy { it.linkId } ?: emptyMap()
+    questionnaireResponse?.apply {
+      item = item.filterNot { prepopulationExclusionLinkIdsMap.containsKey(it.linkId) }
+    }
     return Pair(questionnaireResponse, launchContextResources)
   }
 
