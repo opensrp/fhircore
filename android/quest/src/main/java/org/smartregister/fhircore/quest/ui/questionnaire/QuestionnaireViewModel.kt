@@ -148,16 +148,18 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
-    var questionnaire = ContentCache.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id)?.copy()
+    var questionnaire =
+      ContentCache.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id)
+        ?.copy()
     if (questionnaire == null) {
-      questionnaire = defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also { ques ->
-        ContentCache.saveResource(
-          questionnaireConfig.id,
-          ques.copy(),
-        )
-      }
+      questionnaire =
+        defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also { ques ->
+          ContentCache.saveResource(
+            questionnaireConfig.id,
+            ques.copy(),
+          )
+        }
     }
-
 
     return questionnaire as Questionnaire
   }
@@ -649,8 +651,12 @@ constructor(
               StructureMapExtractionContext(
                 transformSupportServices = transformSupportServices,
                 structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
-                  structureMapUrl?.substringAfterLast("/")?.let {
-                   fetchStructureMap(it)
+                  structureMapUrl?.substringAfterLast("/")?.let { smID ->
+                    ContentCache.getResource(smID)?.let {
+                      defaultRepository.loadResource<StructureMap>(smID)?.also {
+                        it.let { ContentCache.saveResource(smID, it) }
+                      }
+                    }
                   }
                 },
               ),
@@ -679,20 +685,6 @@ constructor(
         }
       }
       .getOrDefault(Bundle())
-
-
-  private suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
-    var structureMap: Resource? = null
-    structureMapUrl?.substringAfterLast("/")?.run {
-      structureMap = ContentCache.getResource(ResourceType.StructureMap.name + "/" + this) ?.let {
-        defaultRepository.loadResource<StructureMap>(this)?.also {
-          it.let { ContentCache.saveResource(this, it) }
-        }
-      }
-    }
-    return structureMap as StructureMap?
-  }
-
 
   /**
    * This function saves [QuestionnaireResponse] as draft if any of the [QuestionnaireResponse.item]
