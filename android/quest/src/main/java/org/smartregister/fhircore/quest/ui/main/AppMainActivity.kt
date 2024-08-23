@@ -161,10 +161,10 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             applicationConfiguration.usePractitionerAssignedLocationOnSync ||
               runBlocking { syncLocationIdsProtoStore.data.firstOrNull() }?.isNotEmpty() == true
           ) {
-            triggerSync()
+            schedulePeriodicSync()
           }
         } else {
-          triggerSync()
+          schedulePeriodicSync()
         }
       } else {
         showToast(
