@@ -1073,7 +1073,7 @@ constructor(
         // TODO This will require a new config model for related entity location filter
         val locationIds =
           syncLocationIds
-            .map { retrieveSubLocations(it).map { subLocation -> subLocation.logicalId } }
+            .map { retrieveFlattenedSubLocations(it).map { subLocation -> subLocation.logicalId } }
             .flatten()
             .plus(syncLocationIds)
 

@@ -316,7 +316,7 @@ constructor(
     }
   }
 
-  fun triggerSync() {
+  fun schedulePeriodicSync() {
     viewModelScope.launch {
       syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
     }
