@@ -136,7 +136,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       runJobs()
     }
 
+    // Register sync listener then run sync in that order
     syncListenerManager.registerSyncListener(this@AppMainActivity, lifecycle)
+
     setupLocationServices()
   }
 
@@ -166,19 +168,23 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   private suspend fun runJobs() {
     withContext(dispatcherProvider.io()) {
+      // Setup the drawer and schedule jobs
       appMainViewModel.run {
         retrieveAppMainUiState()
 
         if (isDeviceOnline()) {
+          // Do not schedule sync until location selected when strategy is RelatedEntityLocation
+          // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
+          // if we need to trigger sync based on assigned locations or not
           if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
             if (
               applicationConfiguration.usePractitionerAssignedLocationOnSync ||
                 syncLocationIdsProtoStore.data.firstOrNull()?.isNotEmpty() == true
             ) {
-              triggerSync()
+              schedulePeriodicSync()
             }
           } else {
-            triggerSync()
+            schedulePeriodicSync()
           }
         } else {
           withContext(dispatcherProvider.main()) {
