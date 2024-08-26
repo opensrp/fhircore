@@ -16,27 +16,35 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import java.util.UUID
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.DecimalType
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.TimeType
+import org.hl7.fhir.r4.model.Type
 import org.hl7.fhir.r4.model.UriType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class QuestionnaireExtensionTest : RobolectricTest() {
@@ -442,5 +450,75 @@ class QuestionnaireExtensionTest : RobolectricTest() {
     Assert.assertEquals(null, quantityType)
 
     // TODO: test valid JSON
+  }
+
+  @Test
+  fun testPrepopulateQuestionnaireWithComputedValues() = runTest {
+    val questionnaireConfig =
+      QuestionnaireConfig(
+        id = UUID.randomUUID().toString(),
+        resourceIdentifier = "patient.id",
+        resourceType = ResourceType.Patient,
+        barcodeLinkId = "patient-barcode",
+        type = QuestionnaireType.READ_ONLY.name,
+        configRules =
+          listOf(
+            RuleConfig(
+              name = "rule1",
+              actions = listOf("data.put('rule1', 'Sample Rule')"),
+            ),
+          ),
+        extraParams =
+          listOf(
+            ActionParameter(
+              key = "rule1",
+              value = "@{rule1}",
+              paramType = ActionParameterType.PARAMDATA,
+            ),
+          ),
+      )
+    val patientAgeLinkId = "patient-age"
+    val actionParameter =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.PREPOPULATE,
+          linkId = patientAgeLinkId,
+          dataType = Enumerations.DataType.INTEGER,
+          key = patientAgeLinkId,
+          value = "20",
+        ),
+      )
+    val questionnaire =
+      Questionnaire().apply {
+        addItem(
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = patientAgeLinkId
+            type = Questionnaire.QuestionnaireItemType.INTEGER
+            readOnly = true
+          },
+        )
+      }
+
+    questionnaire.prepopulateWithComputedConfigValues(
+      questionnaireConfig,
+      actionParameter,
+      { mapOf(patientAgeLinkId to "20") },
+      { _, _ -> "" },
+    )
+
+    // Questionnaire.item pre-populated
+    val questionnairePatientAgeItem = questionnaire.find(patientAgeLinkId)
+    val itemValue: Type? = questionnairePatientAgeItem?.initial?.firstOrNull()?.value
+    Assert.assertTrue(itemValue is IntegerType)
+    Assert.assertEquals(20, itemValue?.primitiveValue()?.toInt())
+
+    // Barcode linkId updated
+    val questionnaireBarcodeItem = questionnaireConfig.barcodeLinkId?.let { questionnaire.find(it) }
+    val barCodeItemValue: Type? = questionnaireBarcodeItem?.initial?.firstOrNull()?.value
+    Assert.assertFalse(barCodeItemValue is StringType)
+    Assert.assertNull(
+      questionnaireConfig.resourceIdentifier,
+      barCodeItemValue?.primitiveValue(),
+    )
   }
 }
