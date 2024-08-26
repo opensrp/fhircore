@@ -1,0 +1,407 @@
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <!--    Main-->
+    <string name="sync">Synchronisation manuelle</string>
+    <string name="language">Langue</string>
+    <string name="logout_as_user">Se déconnecter en tant que </string>
+    <string name="show_overdue">Afficher les retards</string>
+    <string name="search_hint">Rechercher le nom ou l\'ID</string>
+    <string name="search">Nom de recherche</string>
+    <string name="sync_data">Synchroniser les données</string>
+    <string name="scan_bar_code">NUMÉRISER LE CODE-BARRES</string>
+    <string name="empty_client_list_message_title">Aucun résultat</string>
+    <string name="empty_client_list_message_details">Désolé, nous n\'avons pas pu trouver le client avec son nom ou son identifiant</string>
+    <string name="register_new_client">Enregistrer un nouveau client</string>
+    <string name="default_app_title" translatable="false">Application Fhir</string>
+    <string name="app_logo">Logo de l\'application</string>
+    <string name="powered_by">Développé par</string>
+    <string name="app_version">Version de l\'application %1$d(%2$s)</string>
+    <string name="data_migration_version">Version de migration de données %1$s</string>
+    <string name="last_sync">Dernière synchronisation %1$s</string>
+    <string name="login_text">START</string>
+    <string name="login_call_fail_error_message">Impossible de vérifier les informations d\'identification du serveur. Vérifiez votre connexion Internet</string>
+    <string name="userinfo_call_fail_error_message">Impossible d\'obtenir les informations utilisateur du serveur. Vérifiez votre connexion Internet</string>
+    <string name="select_language">Sélectionner la langue</string>
+    <string name="logout_user">Déconnectez-vous en tant que %1$s</string>
+    <string name="sync_completed">Synchronisation terminée</string>
+    <string name="syncing">Synchronisation</string>
+    <string name="syncing_up">Synchronisation</string>
+    <string name="syncing_down">Synchronisation</string>
+    <string name="syncing_initiated">Synchronisation démarrée&#8230;</string>
+    <string name="sync_failed">La synchronisation a échoué. Veuillez vérifier votre connexion Internet ou réessayer plus tard</string>
+    <string name="sync_completed_with_errors"> Synchronisation terminée avec des erreurs. Nouvelle tentative…</string>
+    <string name="sync_unauthorised">La synchronisation a échoué car les informations d\'authentification ne sont pas valides.</string>
+    <string name="refresh_token_fail_error_message">Impossible de récupérer les informations d\'identification du serveur. Veuillez vérifier votre connexion Internet.</string>
+    <string name="try_again">Réessayez</string>
+    <string name="status_vaccinated">Vacciné</string>
+    <string name="status_overdue">En retard</string>
+    <string name="status_received_vaccine">Vaccin %1$d \n%2$s</string>
+    <string name="fully_vaccinated">"Entièrement vacciné"</string>
+    <string name="already_fully_vaccinated">"Je ne peux pas recevoir une autre dose. Je suis déjà complètement vacciné"</string>
+    <string name="record_vaccine_nl">Enregistrement des vaccins</string>
+    <string name="date_last_seen">Dernière vue %1$s</string>
+    <string name="date_last_visited">Dernière visite %1$s</string>
+    <string name="str_save">Enregistrer</string>
+    <string name="login_error">Erreur de connexion : %1$s</string>
+    <string name="str_next">SUIVANT</string>
+    <string name="str_previous">PRÉCÉDENT</string>
+    <string name="str_page_info">Page %1$d sur %2$d</string>
+    <string name="search_result">%1$d RÉSULTAT(S)</string>
+    <string name="no_results">Aucun résultat</string>
+    <string name="no_results_message">Désolé, nous ne pouvons pas trouver la personne portant le nom ou l\'identifiant fourni</string>
+    <string name="male">Homme</string>
+    <string name="female">Femme</string>
+    <string name="other">Autre</string>
+    <string name="unknown">Inconnu</string>
+    <string name="syncing_failed">Échec de la synchronisation</string>
+    <string name="syncing_retry">Réessayer la synchronisation</string>
+    <string name="syncing_in_progress">Synchronisation en cours</string>
+    <string name="loading">Chargement</string>
+    <string name="error_logging_out">Message d\'erreur lors de la déconnexion : %1$s</string>
+    <string name="cannot_logout_user">Déconnexion impossible : vous êtes déjà déconnecté ou l\'appareil est hors ligne.</string>
+    <string name="error_loading_config_http_error">Impossible de charger la configuration. Veuillez réessayer plus tard</string>
+    <string name="error_loading_config_no_internet">Impossible de charger la configuration. Veuillez vérifier votre connexion Internet</string>
+    <string name="error_loading_config_general">Erreur de connexion au serveur. Veuillez contacter votre administrateur système</string>
+    <string name="error_loading_form">Erreur de chargement du formulaire</string>
+    <string name="error_saving_form">Erreur rencontrée, impossible d\'enregistrer le formulaire</string>
+    <string name="form_progress_message">Traitement des données. Veuillez patienter</string>
+    <string name="questionnaire_alert_back_pressed_message">Êtes-vous sûr de vouloir revenir en arrière ?</string>
+    <string name="questionnaire_in_progress_alert_back_pressed_message">Êtes-vous sûr de vouloir supprimer les réponses ?</string>
+    <string name="questionnaire_alert_back_pressed_title">Annuler les modifications</string>
+    <string name="questionnaire_alert_back_pressed_button_title">Annuler</string>
+    <string name="questionnaire_alert_back_pressed_save_draft_button_title">Enregistrer le brouillon partiel</string>
+    <string name="questionnaire_alert_neutral_button_title">Annuler</string>
+    <string name="questionnaire_alert_confirm_button_title">Oui</string>
+    <string name="questionnaire_alert_invalid_message">Les détails fournis comportent des erreurs de validation. Résoudre les erreurs et soumettre à nouveau</string>
+    <string name="questionnaire_alert_invalid_title">Échec de la validation</string>
+    <string name="questionnaire_alert_ack_button_title">OK</string>
+    <string name="username">Nom d\'utilisateur</string>
+    <string name="password">Mot de passe</string>
+    <string name="forgot_password">Mot de passe oublié</string>
+    <string name="forgot_password_title">Mot de passe oublié !</string>
+    <string name="more">Plus</string>
+    <string name="call_supervisor">Veuillez appeler votre superviseur au %1$s</string>
+    <string name="dial_number">NUMÉRO DE COMPOSER</string>
+    <string name="register">S\'inscrire</string>
+    <string name="visits">Visites</string>
+    <string name="reports">Rapports</string>
+    <string name="profile">Profil</string>
+    <string name="settings">Paramètres</string>
+    <string name="select_register">Sélectionner l\'inscription</string>
+    <string name="tick">Cocher</string>
+    <string name="clients">Clients</string>
+    <string name="logout">Déconnexion</string>
+    <string name="application_id">ID d\'application</string>
+    <string name="app_id_sample" translatable="false">par ex. ecbis, quest, cha</string>
+    <string name="load_configurations">CHARGER LES CONFIGURATIONS</string>
+    <string name="fhir_core_app" translatable="false">APPLICATION FHIRCORE</string>
+    <string name="remember_app">Mémoriser l\'application</string>
+    <string name="done">Terminé</string>
+    <string name="replace_photo">Remplacer la photo</string>
+    <string name="edit">Modifier</string>
+    <string name="application_not_supported">Erreur lors du chargement des configurations de l\'application %1$s</string>
+    <string name="eCBIS_app_name" translatable="false">eCBIS</string>
+    <string name="invalid_login_credentials">Le nom d\'utilisateur ou le mot de passe n\'est pas valide</string>
+    <string name="invalid_form_id">ID de formulaire non valide joint</string>
+    <string name="set_pin">Définir le code PIN</string>
+    <string name="set_pin_message">CHA utilisera ce code PIN pour se connecter</string>
+    <string name="enter_pin_for_user">Entrez le code PIN pour %1$s</string>
+    <string name="incorrect_pin_please_retry">PIN incorrect, veuillez réessayer</string>
+    <string name="pin_menu_login">Connexion</string>
+    <string name="forgot_pin">PIN oublié ?</string>
+    <string name="please_contact_supervisor">Veuillez contacter votre superviseur.</string>
+    <string name="percentage" translatable="false">%</string>
+    <string name="logging_out">Déconnexion. Veuillez patienter…</string>
+    <string name="session_expired">La session a expiré et vous devez vous reconnecter</string>
+    <string name="sex">Sexe</string>
+    <string name="age">Âge</string>
+    <string name="dob">DATE DE naiss.</string>
+    <string name="id" translatable="false">ID : %1$s</string>
+    <string name="see_all">VOIR TOUT</string>
+    <string name="forms">FORMULAIRES</string>
+    <string name="medical_history">HISTORIQUE MÉDICAL</string>
+    <string name="upcoming_services">SERVICES À VENIR</string>
+    <string name="service_card">CARTE DE SERVICE</string>
+    <string name="other_patients">Autres patients</string>
+    <string name="select_location">Sélectionner l\'emplacement</string>
+    <string name="responses">RÉPONSES (%1$s)</string>
+    <string name="multi_user_login_attempt">Tentative de connexion avec un autre fournisseur</string>
+    <string name="please_wait">Veuillez patienter…</string>
+    <string name="clear_database">Réinitialiser les données</string>
+    <string name="transfer_data">Transférer les données</string>
+    <string name="clear_database_title">Réinitialiser la base de données !</string>
+    <string name="clear_database_message">La réinitialisation de la base de données effacera tous les enregistrements de votre appareil. Cette action ne peut pas être annulée.</string>
+    <string name="resetting_app">Réinitialisation de l\'application…</string>
+    <string name="sync_strategy_careteam_system" translatable="false">https://smartregister.org/care-team-tag-id</string>
+    <string name="sync_strategy_location_system" translatable="false">https://smartregister.org/location-tag-id</string>
+    <string name="sync_strategy_organization_system" translatable="false">https://smartregister.org/organisation-tag-id</string>
+    <string name="sync_strategy_practitioner_system" translatable="false">https://smartregister.org/practitioner-tag-id</string>
+    <string name="sync_strategy_related_entity_location_system" translatable="false">https://smartregister.org/related-entity-location-tag-id</string>
+    <string name="sync_strategy_related_entity_location_display" translatable="false">Emplacement de l\'entité associée</string>
+    <string name="sync_strategy_careteam_display" translatable="false">Équipe de soins du praticien</string>
+    <string name="sync_strategy_location_display" translatable="false">Emplacement du praticien</string>
+    <string name="sync_strategy_organization_display" translatable="false">Organisation du praticien</string>
+    <string name="sync_strategy_practitioner_display" translatable="false">Praticien</string>
+    <string name="year">Année</string>
+    <string name="month">Mois</string>
+    <string name="weeks">Semaine(s)</string>
+    <string name="days">Jours(s)</string>
+    <string name="initializing">Initialisation des paramètres &#8230;</string>
+    <string name="username_sample" translatable="false">p.ex. JohnDoe</string>
+    <string name="percentage_progress" translatable="false">%1$d%%</string>
+    <string name="error_occurred">Une erreur s\'est produite…</string>
+    <string name="insights">Insights</string>
+    <string name="contact_help">"Contacter l'aide"</string>
+    <string name="offline_map">"Cartes hors ligne"</string>
+    <string name="dismiss">Rejeter</string>
+    <string name="user_info">Informations sur l\'utilisateur</string>
+    <string name="assignment_info">Informations sur l\'affectation</string>
+    <string name="app_info">Informations sur l\'application</string>
+    <string name="device_info">Informations sur l\'appareil</string>
+    <string name="refresh">Actualiser</string>
+    <string name="unsynced_resources">Ressources non synchronisées</string>
+    <string name="all_resources_synced">Toutes les ressources synchronisées</string>
+    <string name="synced_statistics">Statistiques synchronisées</string>
+    <string name="all_data_synced">Toutes les données synchronisées</string>
+    <string name="invalid_offline_login_state">Configuration utilisateur requise. Activer votre connexion Internet </string>
+    <string name="select_month">Sélectionner le mois</string>
+    <string name="user">Utilisateur</string>
+    <string name="team">Équipe</string>
+    <string name="locality">Localité</string>
+    <string name="team_organization">Équipe (organisation)</string>
+    <string name="care_team">Équipe de soins</string>
+    <string name="location">Emplacement</string>
+    <string name="app_version_code">Code de version de l\'application</string>
+    <string name="build_date">Date de création</string>
+    <string name="manufacture">Fabricant</string>
+    <string name="app_versions">Version de l\'application</string>
+    <string name="os_version">Version du système d\'exploitation</string>
+    <string name="device_date">Date</string>
+    <string name="device">Appareil</string>
+    <string name="ok">OK</string>
+    <string name="add">AJOUTER</string>
+    <string name="data_migration_started">Démarrage de la migration des données depuis la version %1$d</string>
+    <string name="data_migration_completed">Données d\'application migrées vers la version %1$d</string>
+    <string name="no_data">Aucun ensemble de données</string>
+    <string name="default_html_title">fichier</string>
+    <!--    End Main-->
+
+    <string name="back_to_clients">Retour à la liste des clients</string>
+    <string name="test_results">Résultats des tests</string>
+
+    <string name="edit_patient_info">Modifier les informations</string>
+
+    <string name="menu_clients">Clients</string>
+    <string name="menu_settings">Paramètres</string>
+    <string name="cannot_find_parent_questionnaire">Impossible de trouver le questionnaire parent !</string>
+
+    <string name="loading_forms">Chargement des formulaires...</string>
+    <string name="loading_responses">Chargement des réponses...</string>
+    <string name="no_test_results_found">Aucun résultat de test trouvé</string>
+    <string name="patient_test_results">RÉSULTATS DES TEST</string>
+    <string name="last_test"> Dernier test - %1$s</string>
+    <string name="sample_distance" translatable="false">2.4 km</string>
+    <string name="hash_sign" translatable="false">#</string>
+    <string name="menu_tasks">Tâches</string>
+    <string name="household">Ménage</string>
+    <string name="routine_visit">Visite de routine</string>
+    <string name="anc_visit">Visite de CPN</string>
+    <string name="at_risk">À risque</string>
+    <string name="no_tasks">Aucune tâche</string>
+    <string name="add_member">AJOUTER UN MEMBRE</string>
+    <string name="what_to_do">Que voulez-vous faire ?</string>
+
+    <!--Chaînes de menu à débordement -->
+    <string name="view_profile">Afficher le profil</string>
+    <string name="family_details">Détails de la famille</string>
+    <string name="change_family_head">Changer de chef de famille</string>
+    <string name="change_primary_caregiver">Changer de principal soignant</string>
+    <string name="family_activity">Activité familiale</string>
+    <string name="view_past_encounters">Afficher les rencontres passées</string>
+    <string name="remove_family">Supprimer la famille</string>
+    <string name="family_suffix">Famille %1$s</string>
+    <string name="remove_this_person">Supprimer cette personne</string>
+    <string name="individual_details">Détails individuels</string>
+    <string name="view_family">Afficher la famille</string>
+    <string name="record_sick_child">Enregistrer un enfant malade</string>
+
+    <!-- Chaînes d'options du menu latéral-->
+    <string name="device_to_device_sync">Synchronisation d\'appareil à appareil</string>
+    <string name="anc_clients">Clients ANC</string>
+    <string name="all_clients">Tous les clients</string>
+    <string name="pnc_clients">Clients PNC</string>
+    <string name="hiv_clients">Liste des clients</string>
+    <string name="phone_tracing_clients">Suivi téléphonique</string>
+    <string name="home_tracing_clients">Suivi à domicile</string>
+    <string name="appointment_clients">Rendez-vous</string>
+    <string name="family_planning_clients">Clients de planification familiale</string>
+    <string name="households">Foyers</string>
+    <string name="children">Enfants</string>
+
+    <!--supprimer les chaînes du questionnaire familial-->
+    <string name="remove_family_warning">La suppression de %1$s supprimera l\'intégralité de son dossier médical de votre appareil. Cette action ne peut pas être annulée.</string>
+
+    <!--supprimer les chaînes du questionnaire des membres de la famille-->
+    <string name="remove_family_member_warning">%1$s sera définitivement supprimé de cette famille. Cette action ne peut pas être annulée.</string>
+    <string name="remove_member">Supprimer le membre</string>
+
+    <!--Chaînes de rapport -->
+    <string name="date_range">Plage de dates</string>
+    <string name="change">Modifier</string>
+    <string name="all">Tous</string>
+    <string name="individual">Individu</string>
+    <string name="patient">Patient</string>
+    <string name="subject">Sujet</string>
+    <string name="generate_report">GÉNÉRER UN RAPPORT</string>
+    <string name="select_patient">SÉLECTIONNER LE PATIENT</string>
+    <string name="select_subject">SÉLECTIONNER LE SUJET</string>
+    <string name="start_date">Date de début</string>
+    <string name="end_date">Date de fin</string>
+
+    <!--Modifier les chaînes du chef de famille -->
+    <string name="no_eligible_family_members">Aucun membre de la famille éligible n\'a été trouvé pour le chef de famille.</string>
+    <string name="label_select_new_head">Sélectionnez un nouveau chef de famille</string>
+    <string name="label_assign_new_family_head">Affectez un nouveau chef de famille</string>
+    <string name="alert_message_abort_operation">Êtes-vous sûr de vouloir abandonner cette opération ?</string>
+
+    <!-- Messages d'alerte de boîte de dialogue-->
+    <string name="unsaved_changes_message_alert">Si vous quittez avant d\'avoir enregistré, vos modifications ou changements seront perdus</string>
+    <string name="visit_due_on">%1$s dus le %2$s</string>
+    <string name="visit_due_today">%1$s dus aujourd\'hui</string>
+    <string name="visit_overdue">%1$s en retard depuis %2$s</string>
+    <string name="record_as_anc">Enregistrer comme ANC</string>
+    <string name="pregnancy_outcome">Résultat de la grossesse</string>
+    <string name="registers">Registres</string>
+    <string name="title_no_location_set">Aucun emplacement défini</string>
+    <string name="message_location_set">Définir l\'emplacement pour synchroniser les données et charger les points de service</string>
+    <string name="positive_button_location_set">Définir l\'emplacement</string>
+
+    <string name="questionnaire_response_name" translatable="false">%1$s (%2$s)</string>
+    <string name="due_on">Échéance le %1$s</string>
+
+    <string name="geo_widget_fragment_destination" translatable="false">Destination du fragment GeoWidget</string>
+
+    <string name="structuremap_failed">Échec de l\'extraction des ressources pour %1$s</string>
+    <string name="structure_map_missing_message">StructureMap manquante pour le questionnaire, QuestionnaireResponse enregistrée</string>
+    <string name="structure_success">Ressources extraites avec succès pour %1$s</string>
+    <string name="reassigned_managing_entity">Entité de gestion réaffectée avec succès</string>
+    <string name="error_fetching_user_details">Échec de la récupération des détails de l\'utilisateur</string>
+    <string name="questionnaire_not_found">Questionnaire introuvable. Synchronisez tous les questionnaires pour résoudre le problème</string>
+    <string name="no_visits">Aucune visite</string>
+    <string name="questionnaire_response_invalid">Réponse au questionnaire non valide</string>
+    <string name="app_version_tag_url" translatable="false">https://smartregister.org/app-version</string>
+    <string name="application_version" translatable="false">Version de l\'application</string>
+    <string name="missing_subject_type">Type de sujet manquant sur le questionnaire. Fournissez Questionnaire.subjectType pour résoudre le problème.</string>
+    <string name="missing_questionnaire_config">QuestionnaireConfig est requis mais manquant.</string>
+    <string name="error_populating_questionnaire">Erreur lors du remplissage de certains champs du questionnaire. Réponse au questionnaire non valide.</string>
+    <string name="extraction_in_progress">Traitement des données du questionnaire…</string>
+    <string name="loading_questionnaire">Chargement du questionnaire…</string>
+    <string name="clear_all">Effacer tout</string>
+
+    <string name="location_permissions_denied">Accès à la localisation refusé : pour capturer les coordonnées GPS, veuillez activer les autorisations de localisation dans les paramètres de votre appareil.</string>
+    <string name="location_services_disabled">Les services de localisation sont désactivés. Voulez-vous les activer ?</string>
+    <string name="copy_text_success_message">Lien %1$s copié avec succès</string>
+
+    <string name="invalid_base_resource">La ressource de base pour GeoWidgetConfiguration DOIT être Location</string>
+    <string name="no_search_coonfigs_provided">Aucune configuration fournie pour la barre de recherche</string>
+    <string name="no_found_locations_matching_text">Aucun emplacement trouvé correspondant au texte \"%1$s\"</string>
+
+
+    <!--    SDK-->
+    <!-- 1. Las siguientes secciones incluyen cadenas utilizadas para la interfaz de usuario del cuestionario -->
+
+    <!-- 1.1 Navegación -->
+    <string name="button_pagination_next">Suivant</string>
+    <string name="button_pagination_previous">Précédent</string>
+    <string name="back_button_text">Retour</string>
+    <string name="edit_button_text">Modifier</string>
+    <string name="review_answers_text">Examiner les réponses</string>
+    <string name="button_review">Révision</string>
+    <string name="submit_questionnaire">Soumettre</string>
+    <string name="cancel_questionnaire"> @android:string/cancel</string>
+
+    <!-- 1.2 Enviar ventana emergente -->
+    <string name="questionnaire_validation_error_headline">Erreurs trouvées</string>
+    <string name="questionnaire_validation_error_supporting_text">Corrigez les questions suivantes :</string>
+    <string name="questionnaire_validation_error_item_text_with_bullet">• %s</string>
+    <string name="questionnaire_validation_error_submit_button_text">Envoyer quand même</string>
+    <string name="questionnaire_validation_error_fix_button_text">Corriger les questions</string>
+
+    <!-- 1.3 Cancelar ventana emergente-->
+    <string name="questionnaire_cancel_text">Voulez-vous quitter le questionnaire ?</string>
+    <!-- 2. Las siguientes secciones incluyen cadenas utilizadas en widgets -->
+
+    <!-- 2.1 Todos los widgets -->
+    <string name="not_answered">"Aucune réponse"</string>
+    <string name="help">Aide</string>
+
+    <!-- 2.2 Booleano -->
+    <string name="no">Non</string>
+    <string name="yes">Oui</string>
+
+    <!-- 2.3 Menú desplegable -->
+    <string name="hyphen">-</string>
+
+    <!-- 2.4 Selección múltiple / Open Choice -->
+    <string name="open_choice_other">Autre</string>
+    <string name="open_choice_other_hint">Entrer une option personnalisée</string>
+    <string name="open_choice_other_add_another">Ajouter une autre réponse</string>
+    <string name="multi_select_dialog_subtitle">Sélectionnez tout ce qui s\'applique</string>
+    <string name="save">Enregistrer</string>
+    <string name="cancel">Annuler</string>
+
+    <!-- 2.5 Fecha / FechaHora -->
+    <string name="date">Date</string>
+    <string name="time">Heure</string>
+    <string name="select_date">Sélectionner la date</string>
+    <string name="select_time">Sélectionnez l\'heure</string>
+
+    <!-- 2.6 Widget de archivos adjuntos -->
+    <string name="take_photo">Prendre une photo</string>
+    <string name="cd_photo_preview">Aperçu de la photo</string>
+    <string name="cd_file_icon_preview">Aperçu de l\'icône de fichier</string>
+    <string name="upload_photo">Télécharger une photo</string>
+    <string name="upload_audio">Télécharger l\'audio</string>
+    <string name="upload_video">Télécharger la vidéo</string>
+    <string name="upload_document">Télécharger le document</string>
+    <string name="upload_file">Télécharger le fichier</string>
+    <string name="delete">Supprimer</string>
+    <string name="max_size_image_above_limit_validation_error_msg">Erreur : la taille de l\'image est supérieure à %1$s Mo</string>
+    <string name="max_size_file_above_limit_validation_error_msg">Erreur : la taille du fichier est supérieure à %1$s Mo</string>
+    <string name="upload_failed">Échec du téléchargement</string>
+    <string name="mime_type_wrong_media_format_validation_error_msg">Erreur : mauvais format de média</string>
+    <string name="uploaded">Téléchargé</string>
+    <string name="image_uploaded">Image téléchargée</string>
+    <string name="file_uploaded">Fichier téléchargé</string>
+    <string name="video_uploaded">Vidéo mise en ligne</string>
+    <string name="audio_uploaded">Audio téléchargé</string>
+    <string name="image_deleted">Image supprimée</string>
+    <string name="file_deleted">Fichier supprimé</string>
+    <string name="video_deleted">Vidéo supprimée</string>
+    <string name="audio_deleted">Audio supprimé</string>
+
+    <!-- 2.7 Grupo -->
+    <string name="group_header_add_item_button">Ajouter un élément</string>
+
+    <!-- 3. Las siguientes secciones incluyen cadenas utilizadas en la validación -->
+
+    <!-- 3.1 Validación -->
+    <string name="required_constraint_validation_error_msg">Réponse manquante pour le champ obligatoire.</string>
+    <string name="min_value_validation_error_msg">La valeur minimale autorisée est :<xliff:g id="min_value">%1$s</xliff:g> </string>
+    <string name="max_value_validation_error_msg">La valeur maximale autorisée est :<xliff:g id="max_value">%1$s</xliff:g> </string>
+    <string name="min_length_validation_error_msg">Le nombre minimum de caractères autorisés dans la réponse est : <xliff:g id="min_length">%1$s</xliff:g> </string>
+    <string name="max_decimal_validation_error_msg">Le nombre maximum de décimales autorisées dans la réponse est : <xliff:g id="max_value">%1$s</xliff:g> </string>
+    <string name="regex_validation_error_msg">La réponse ne correspond pas à l\'expression régulière : <xliff:g id="answer_value">%1$s</xliff:g> </string>
+    <string name="number_format_validation_error_msg">Utilisez uniquement (.) entre deux nombres. Les autres caractères spéciaux ne sont pas pris en charge.</string>
+    <string name="date_format_validation_error_msg">Le format de date doit être <xliff:g id="locale_format">%1$s</xliff:g> (par exemple, %2$s )</string>
+    <string name="integer_format_validation_error_msg">Le nombre doit être compris entre <xliff:g id="min_value">%1$s</xliff:g> et <xliff:g id="max_value">%2 $s</xliff:g></string>
+    <string name="decimal_format_validation_error_msg">Numéro invalide</string>
+    <string name="optional_helper_text">Facultatif</string>
+    <string name="required">Obligatoire</string>
+    <string name="required_text_and_new_line">Obligatoire\n</string>
+    <string name="space_asterisk">\u0020\u002a</string>
+    <string name="repeated_group_title">%1$s. %2$s</string>
+    <string name="add_repeated_group_item">Ajouter %1$s</string>
+
+
+</resources>
