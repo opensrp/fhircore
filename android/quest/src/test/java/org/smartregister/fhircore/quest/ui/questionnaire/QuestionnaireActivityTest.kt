@@ -19,11 +19,14 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.location.LocationManager
+import android.provider.Settings
 import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -37,8 +40,13 @@ import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import javax.inject.Inject
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertFalse
+import junit.framework.TestCase.assertTrue
+import kotlin.test.assertNotNull
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Enumerations
@@ -50,18 +58,22 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.Shadows
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowToast
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.location.LocationUtils
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -81,6 +93,9 @@ class QuestionnaireActivityTest : RobolectricTest() {
   @Inject lateinit var testDispatcherProvider: DispatcherProvider
 
   @BindValue lateinit var defaultRepository: DefaultRepository
+
+  @BindValue
+  val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Before
   fun setUp() {
@@ -122,7 +137,9 @@ class QuestionnaireActivityTest : RobolectricTest() {
           ),
       )
     questionnaireJson =
-      context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
+      context.assets.open("resources/sample_patient_registration.json").bufferedReader().use {
+        it.readText()
+      }
     questionnaire = questionnaireJson.decodeResourceFromString()
   }
 
@@ -190,11 +207,82 @@ class QuestionnaireActivityTest : RobolectricTest() {
     }
 
   @Test
-  fun testThatOnBackPressShowsConfirmationAlertDialog() = runTest {
+  fun testThatOnBackPressShowsConfirmationAlertDialog() =
+    runTest(UnconfinedTestDispatcher()) {
+      setupActivity()
+      questionnaireActivity.onBackPressedDispatcher.onBackPressed()
+      val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+      Assert.assertNotNull(dialog)
+    }
+
+  @Test
+  fun `setupLocationServices should fetch location when location is enabled and permissions granted`() {
     setupActivity()
-    questionnaireActivity.onBackPressedDispatcher.onBackPressed()
-    val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestAlertDialog())
-    Assert.assertNotNull(dialog)
+    assertTrue(
+      questionnaireActivity.viewModel.applicationConfiguration.logGpsLocation.contains(
+        LocationLogOptions.QUESTIONNAIRE,
+      ),
+    )
+
+    val fusedLocationProviderClient =
+      LocationServices.getFusedLocationProviderClient(questionnaireActivity)
+    assertNotNull(fusedLocationProviderClient)
+    shadowOf(questionnaireActivity)
+      .grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
+
+    assertTrue(LocationUtils.isLocationEnabled(questionnaireActivity))
+
+    questionnaireActivity.setupLocationServices()
+    assertTrue(questionnaireActivity.hasLocationPermissions())
+    questionnaireActivity.fetchLocation()
+    assertNotNull(questionnaireActivity.currentLocation)
+  }
+
+  @Test
+  fun `setupLocationServices should open location settings if location is disabled`() {
+    setupActivity()
+    assertTrue(
+      questionnaireActivity.viewModel.applicationConfiguration.logGpsLocation.contains(
+        LocationLogOptions.QUESTIONNAIRE,
+      ),
+    )
+
+    val fusedLocationProviderClient =
+      LocationServices.getFusedLocationProviderClient(questionnaireActivity)
+    assertNotNull(fusedLocationProviderClient)
+
+    shadowOf(questionnaireActivity)
+      .grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
+    val locationManager =
+      questionnaireActivity.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, false)
+    locationManager.setTestProviderEnabled(LocationManager.NETWORK_PROVIDER, false)
+
+    questionnaireActivity.fetchLocation()
+    val startedIntent = shadowOf(questionnaireActivity).nextStartedActivity
+    val expectedIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+
+    assertEquals(expectedIntent.component, startedIntent.component)
+  }
+
+  @Test
+  fun `setupLocationServices should launch location permissions dialog if permissions are not granted`() {
+    setupActivity()
+    assertTrue(
+      questionnaireActivity.viewModel.applicationConfiguration.logGpsLocation.contains(
+        LocationLogOptions.QUESTIONNAIRE,
+      ),
+    )
+
+    val fusedLocationProviderClient =
+      LocationServices.getFusedLocationProviderClient(questionnaireActivity)
+    assertNotNull(fusedLocationProviderClient)
+
+    assertTrue(LocationUtils.isLocationEnabled(questionnaireActivity))
+    assertFalse(questionnaireActivity.hasLocationPermissions())
+
+    val dialog = questionnaireActivity.launchLocationPermissionsDialog()
+    assertNotNull(dialog)
   }
 
   private fun setupActivity() {

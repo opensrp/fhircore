@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.data.local.register
 
+import android.content.Context
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
@@ -23,6 +24,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Search
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.DateTimeType
@@ -60,6 +62,7 @@ constructor(
   override val configRulesExecutor: ConfigRulesExecutor,
   override val fhirPathDataExtractor: FhirPathDataExtractor,
   override val parser: IParser,
+  @ApplicationContext override val context: Context,
 ) :
   Repository,
   DefaultRepository(
@@ -71,6 +74,7 @@ constructor(
     configRulesExecutor = configRulesExecutor,
     fhirPathDataExtractor = fhirPathDataExtractor,
     parser = parser,
+    context = context,
   ) {
 
   override suspend fun loadRegisterData(
@@ -81,6 +85,8 @@ constructor(
   ): List<RepositoryResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     return searchResourcesRecursively(
+      filterByRelatedEntityLocationMetaTag =
+        registerConfiguration.filterDataByRelatedEntityLocation,
       filterActiveResources = registerConfiguration.activeResourceFilters,
       fhirResourceConfig = fhirResourceConfig ?: registerConfiguration.fhirResource,
       secondaryResourceConfigs = registerConfiguration.secondaryResources,
@@ -100,6 +106,7 @@ constructor(
     val fhirResource = fhirResourceConfig ?: registerConfiguration.fhirResource
     val baseResourceConfig = fhirResource.baseResource
     val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
+    val filterByRelatedEntityLocation = registerConfiguration.filterDataByRelatedEntityLocation
     val search =
       Search(baseResourceConfig.resource).apply {
         applyConfiguredSortAndFilters(
@@ -107,6 +114,10 @@ constructor(
           sortData = false,
           filterActiveResources = registerConfiguration.activeResourceFilters,
           configComputedRuleValues = configComputedRuleValues,
+        )
+        applyFilterByRelatedEntityLocationMetaTag(
+          baseResourceType = baseResourceConfig.resource,
+          filterByRelatedEntityLocation = filterByRelatedEntityLocation,
         )
       }
     return search.count(
@@ -124,28 +135,26 @@ constructor(
     startDateFormatted: String?,
     endDateFormatted: String?,
   ): RepositoryResourceData {
-    val paramsMap: Map<String, String> =
-      paramsList
-        ?.asSequence()
-        ?.filter {
-          (it.paramType == ActionParameterType.PARAMDATA ||
-            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
-        }
-        ?.associate { it.key to it.value } ?: emptyMap()
+    return withContext(dispatcherProvider.io()) {
+      val paramsMap: Map<String, String> =
+        paramsList
+          ?.asSequence()
+          ?.filter {
+            (it.paramType == ActionParameterType.PARAMDATA ||
+              it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
+          }
+          ?.associate { it.key to it.value } ?: emptyMap()
 
-    val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
-    val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
-    val baseResourceConfig = resourceConfig.baseResource
+      val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
+      val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
+      val baseResourceConfig = resourceConfig.baseResource
 
-    val baseResource: Resource =
-      withContext(dispatcherProvider.io()) {
+      val baseResource: Resource =
         fhirEngine.get(baseResourceConfig.resource, resourceId.extractLogicalIdUuid())
-      }
 
-    val configComputedRuleValues = profileConfiguration.configRules.configRulesComputedValues()
+      val configComputedRuleValues = profileConfiguration.configRules.configRulesComputedValues()
 
-    val retrievedRelatedResources =
-      withContext(dispatcherProvider.io()) {
+      val retrievedRelatedResources =
         retrieveRelatedResources(
           resources = listOf(baseResource),
           relatedResourcesConfigs = resourceConfig.relatedResources,
@@ -154,19 +163,18 @@ constructor(
           startDateFormatted = startDateFormatted,
           endDateFormatted = endDateFormatted,
         )
-      }
-    return RepositoryResourceData(
-      resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
-      resource = baseResource,
-      relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
-      relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
-      secondaryRepositoryResourceData =
-        withContext(dispatcherProvider.io()) {
+
+      RepositoryResourceData(
+        resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
+        resource = baseResource,
+        relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
+        relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
+        secondaryRepositoryResourceData =
           profileConfiguration.secondaryResources.retrieveSecondaryRepositoryResourceData(
             profileConfiguration.filterActiveResources,
-          )
-        },
-    )
+          ),
+      )
+    }
   }
 
   override suspend fun loadReportData(
@@ -227,7 +235,6 @@ constructor(
     paramsMap: Map<String, String>?,
   ): RegisterConfiguration =
     configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramsMap)
-
   suspend fun updateNotificationStatus(resourceId: String) {
     withContext(dispatcherProvider.io()) {
       fhirEngine.get<MessageDefinition>(resourceId).apply {
@@ -237,7 +244,4 @@ constructor(
     }
   }
 
-  companion object {
-    const val ACTIVE = "active"
-  }
 }

@@ -4,6 +4,8 @@
     <string name="logout_as_user">Log out as </string>
     <string name="show_overdue">Show overdue</string>
     <string name="search_hint">Search name or ID</string>
+    <string name="search">Search for name</string>
+    <string name="sync_data">SYNC DATA</string>
     <string name="scan_bar_code">SCAN BARCODE</string>
     <string name="empty_client_list_message_title">No Results</string>
     <string name="empty_client_list_message_details">Sorry, we could not find client with given name or ID</string>
@@ -12,6 +14,7 @@
     <string name="app_logo">Application logo</string>
     <string name="powered_by">Powered By</string>
     <string name="app_version">App version %1$d(%2$s)</string>
+    <string name="data_migration_version">Data migration version %1$s</string>
     <string name="last_sync">Last sync %1$s</string>
     <string name="login_text">LOGIN</string>
     <string name="login_call_fail_error_message">Failed to verify credentials from the server. Check your internet connection</string>
@@ -124,6 +127,7 @@
     <string name="upcoming_services">UPCOMING SERVICES</string>
     <string name="service_card">SERVICE CARD</string>
     <string name="other_patients">Other patients</string>
+    <string name="select_location">Select location</string>
     <string name="responses">RESPONSES (%1$s)</string>
     <string name="multi_user_login_attempt">Attempted to login with a different provider</string>
     <string name="please_wait">Please wait…</string>
@@ -160,6 +164,7 @@
     <string name="device_info">Device info</string>
     <string name="refresh">Refresh</string>
     <string name="unsynced_resources">Unsynced Resources</string>
+    <string name="all_resources_synced">All resources synced</string>
     <string name="synced_statistics">Synced Statistics</string>
     <string name="all_data_synced">All data synced</string>
     <string name="invalid_offline_login_state">User set up required. Enable your internet connection </string>
@@ -172,7 +177,7 @@
     <string name="location">Location</string>
     <string name="app_version_code">App version code</string>
     <string name="build_date">Build date</string>
-    <string name="manufacture">Manufacture</string>
+    <string name="manufacture">Manufacturer</string>
     <string name="app_versions">App version</string>
     <string name="os_version">OS Version</string>
     <string name="device_date">Date</string>
@@ -181,4 +186,13 @@
     <string name="add">ADD</string>
     <string name="data_migration_started">Started data migration from version %1$d</string>
     <string name="data_migration_completed">Application data migrated to version %1$d</string>
+    <string name="help">Help</string>
+    <string name="no_data">No data set</string>
+    <string name="sync_complete">Sync complete</string>
+    <string name="sync_error">Sync error</string>
+    <string name="minutes_remaining">Calculating minutes remaining...</string>
+    <string name="sync_up_inprogress"> %1$d%% Syncing up…</string>
+    <string name="sync_down_inprogress"> %1$d%% Syncing down…</string>
+    <string name="default_html_title">file</string>
+    <string name="retry">RETRY</string>
 </resources>

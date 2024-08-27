@@ -1,0 +1,159 @@
+# Resource closure using background workers
+
+Event management implementation provides the ability to configure background workers so that we can state which resources to close when they run.
+
+Some use cases would be -
+* Closing related resources such as conditions when CarePlans are closed by the background worker that cancels expired tasks.
+* Closing related resources such as conditions when the background worker that closes CarePlans when all it's related tasks are either `cancelled` or `complete`.
+
+This is achieved by use of the `EventWorkFlow` config. The `EventWorkFlow` config is added to the Application Config.
+
+## Sample event workflow configuration
+``` json
+{
+"eventWorkflows": [
+    {
+      "eventType": "RESOURCE_CLOSURE",
+      "eventResources": [
+        {
+          "id": "sickChildConditionToBeClosed",
+          "resource": "Condition",
+          "configRules": [
+            {
+              "name": "patientId",
+              "condition": "true",
+              "actions": [
+                "data.put('patientId', fhirPath.extractValue(CarePlan, 'CarePlan.subject.reference'))"
+              ]
+            }
+          ],
+          "dataQueries": [
+            {
+              "paramName": "code",
+              "filterCriteria": [
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://snomed.info/sct",
+                    "code": "275142008"
+                  }
+                }
+              ]
+            },
+            {
+              "paramName": "subject",
+              "filterCriteria": [
+                {
+                  "dataType": "REFERENCE",
+                  "computedRule": "patientId"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "updateValues": [
+        {
+          "jsonPathExpression": "Condition.clinicalStatus.coding[0].code",
+          "value": "370996005",
+          "resourceType": "Condition"
+        },
+        {
+          "jsonPathExpression": "Condition.clinicalStatus.coding[0].system",
+          "value": "http://www.snomed.org/",
+          "resourceType": "Condition"
+        },
+        {
+          "jsonPathExpression": "Condition.clinicalStatus.coding[0].display",
+          "value": "resolved",
+          "resourceType": "Condition"
+        }
+      ]
+    }
+  ]
+}
+```
+
+The current implementation eventWorkflow config only handle closure of resources, hence the event type defaults to `RESOURCE_CLOSURE`.
+
+The eventWorkFlow config for this implementation does not contain trigger conditions.
+
+The event resources define which resource is eligible for closure as well as any related resources.
+
+The data queries define how to search for and filter the resources from the database.
+
+Once the resources have been retrieved from the database, the next step is to close the resources by updating the values of certain fields. For the current implementation this has been done in the code. This is not configurable at this point.
+Closure of any resource that has not been handled will need an update to the code that performs resource closure.
+
+The following table contains the values for each field that is required to close a resource.field
+
+| Resource | Field | Value |
+| :---         |     :---      |           :--- |
+| Careplan  | status     | Completed   |
+| Task     | status      | cancelled      |
+|      | lastModified      | current date      |
+| Condition     |   Condition.clinicalStatus    |  code:370996005, display:resolved, system: http://www.snomed.org/   |
+| Procedure     |  Procedure.status     |  stopped     |
+| ServiceRequest     |  status     |   revoked |
+
+
+## EventWorkflows properties
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+eventType |The intention of the eventWorkflow. E.g close resources | yes | RESOURCE_CLOSURE is supported for now |
+triggerConditions | This defines an array of condition for to be met for the event to run | no | null |
+eventResourceId |  uniqueId of resource id to be closed |  yes   |               |
+eventResources | A list of resources to close(Type of ResourceConfig) |    yes
+
+### Event Resource Properties
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+id |uniqueId of resource id to be closed  | yes |  |
+resource | The type of resource  | yes |  |
+configRules | Rules to be that are executed to populate dynamic values such as a patient id   | no |  |
+dataQueries | Configs used to represent how resources to be closed are retrieved from the database  | yes |  |
+relatedResources | Configs that represent how to fetch related resources e.g Tasks linked to a CarePlan | no |  |
+
+### DataQuery properties
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+paramName | String representation of the resource field to search on | yes |  |
+operation | Logical SQL operation to perform i.e AND, OR | yes | AND |
+filterCriteria | Configs that represent the datatype and value for filtering data | yes |  |
+
+## Filtering Related Resources
+Filtering the Related Resources is achieved by use of the `filterFhirPathExpression` configuration.
+It specifies which field and values to filter the resources by.
+
+### Sample filter fhirpath expression configuration
+``` json
+{
+  "filterFhirPathExpression": [
+    {
+      "key": "Task.status",
+      "value": "ready"
+    }
+  ]
+}
+```
+### FilterFhirPathExpression properties
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+key |The resource field to apply the filter on | yes |  |
+value | The value that the resource field should match for the filter to pass | yes |  |
+
+### UpdateValue properties
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+jsonPathExpression | JsonPath representation of the resource field to update | yes |  |
+value | The value to update the resource field with | yes |  |
+resourceType | The name of the resource type to be updated | yes |  |
+
+### Resource Filter Expression properties
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+conditionalFhirPathExpressions | Criteria to filter which resources when only a subset of the fetched resources need to be updated e.g only update tasks whose status is not completed | yes |  |
+matchAll | Determines whether all conditional FhirPath expressions should evaluate to true | no | true |
+resourceType | The name of the resource type to be updated | yes |  |

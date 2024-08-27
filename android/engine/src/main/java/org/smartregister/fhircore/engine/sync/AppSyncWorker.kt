@@ -28,6 +28,7 @@ import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkMana
 import com.google.android.fhir.sync.upload.UploadStrategy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.runBlocking
 
 @HiltWorker
 class AppSyncWorker
@@ -44,7 +45,7 @@ constructor(
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
     ResourceParamsBasedDownloadWorkManager(
-      syncParams = syncListenerManager.loadSyncParams(),
+      syncParams = runBlocking { syncListenerManager.loadResourceSearchParams() },
       context = appTimeStampContext,
     )
 

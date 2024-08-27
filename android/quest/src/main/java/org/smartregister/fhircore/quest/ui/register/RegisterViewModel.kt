@@ -27,6 +27,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.math.ceil
@@ -43,6 +44,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterFilterField
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
@@ -55,7 +57,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -71,7 +72,6 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val dispatcherProvider: DispatcherProvider,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
 ) : ViewModel() {
 
@@ -79,7 +79,6 @@ constructor(
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
   val registerUiState = mutableStateOf(RegisterUiState())
   val currentPage: MutableState<Int> = mutableIntStateOf(0)
-  val searchText = mutableStateOf("")
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<ResourceData>>> =
     MutableStateFlow(emptyFlow())
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
@@ -91,6 +90,11 @@ constructor(
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
+  private val _currentSyncJobStatusFlow: MutableSharedFlow<CurrentSyncJobStatus?> =
+    MutableSharedFlow(0)
+  val applicationConfiguration: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
+  }
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -164,11 +168,10 @@ constructor(
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
-        searchText.value = event.searchText
-        if (event.searchText.isEmpty()) {
+        if (event.searchQuery.isBlank()) {
           paginateRegisterData(registerUiState.value.registerId)
         } else {
-          filterRegisterData(event)
+          filterRegisterData(event.searchQuery.query)
         }
       }
       is RegisterEvent.MoveToNextPage -> {
@@ -182,7 +185,7 @@ constructor(
       RegisterEvent.ResetFilterRecordsCount -> _filteredRecordsCount.longValue = -1
     }
 
-  fun filterRegisterData(event: RegisterEvent.SearchRegister) {
+  fun filterRegisterData(searchText: String) {
     val searchBar = registerUiState.value.registerConfiguration?.searchBar
     // computedRules (names of pre-computed rules) must be provided for search to work.
     if (searchBar?.computedRules != null) {
@@ -193,7 +196,7 @@ constructor(
             searchBar.computedRules!!.any { ruleName ->
               // if ruleName not found in map return {-1}; check always return false hence no data
               val value = resourceData.computedValuesMap[ruleName]?.toString() ?: "{-1}"
-              value.contains(other = event.searchText, ignoreCase = true)
+              value.contains(other = searchText, ignoreCase = true)
             }
           }
         }
@@ -223,15 +226,12 @@ constructor(
         ?.mapValues { it.value.first() }
 
     // Get filter queries from the map. NOTE: filterId MUST be unique for all resources
+    val baseResourceRegisterFilterField = registerDataFilterFieldsMap?.get(baseResource.filterId)
     val newBaseResourceDataQueries =
       createQueriesForRegisterFilter(
-        registerDataFilterFieldsMap?.get(baseResource.filterId)?.dataQueries,
-        qrItemMap,
+        dataQueries = baseResourceRegisterFilterField?.dataQueries,
+        qrItemMap = qrItemMap,
       )
-
-    Timber.i(
-      "New data queries for filtering Base Resources: ${newBaseResourceDataQueries.encodeJson()}",
-    )
 
     val newRelatedResources =
       createFilterRelatedResources(
@@ -240,19 +240,30 @@ constructor(
         qrItemMap = qrItemMap,
       )
 
-    Timber.i(
-      "New configurations for filtering related resource data: ${newRelatedResources.encodeJson()}",
-    )
-
+    val fhirResourceConfig =
+      FhirResourceConfig(
+        baseResource =
+          baseResource.copy(
+            dataQueries = newBaseResourceDataQueries ?: baseResource.dataQueries,
+            nestedSearchResources =
+              baseResourceRegisterFilterField?.nestedSearchResources?.map { nestedSearchConfig ->
+                nestedSearchConfig.copy(
+                  dataQueries =
+                    createQueriesForRegisterFilter(
+                      dataQueries = nestedSearchConfig.dataQueries,
+                      qrItemMap = qrItemMap,
+                    ),
+                )
+              } ?: baseResource.nestedSearchResources,
+          ),
+        relatedResources = newRelatedResources,
+      )
     registerFilterState.value =
       RegisterFilterState(
         questionnaireResponse = questionnaireResponse,
-        fhirResourceConfig =
-          FhirResourceConfig(
-            baseResource = baseResource.copy(dataQueries = newBaseResourceDataQueries),
-            relatedResources = newRelatedResources,
-          ),
+        fhirResourceConfig = fhirResourceConfig,
       )
+    Timber.i("New ResourceConfig for register data filter: ${fhirResourceConfig.encodeJson()}")
   }
 
   private fun createFilterRelatedResources(
@@ -261,20 +272,31 @@ constructor(
     qrItemMap: Map<String, QuestionnaireResponse.QuestionnaireResponseItemComponent>,
   ): List<ResourceConfig> {
     val newRelatedResources =
-      relatedResources.map {
+      relatedResources.map { resourceConfig: ResourceConfig ->
+        val registerFilterField = registerDataFilterFieldsMap?.get(resourceConfig.filterId)
         val newDataQueries =
           createQueriesForRegisterFilter(
-            registerDataFilterFieldsMap?.get(it.filterId)?.dataQueries,
-            qrItemMap,
+            dataQueries = registerFilterField?.dataQueries,
+            qrItemMap = qrItemMap,
           )
-        it.copy(
-          dataQueries = newDataQueries,
+        resourceConfig.copy(
+          dataQueries = newDataQueries ?: resourceConfig.dataQueries,
           relatedResources =
             createFilterRelatedResources(
               registerDataFilterFieldsMap = registerDataFilterFieldsMap,
-              relatedResources = it.relatedResources,
+              relatedResources = resourceConfig.relatedResources,
               qrItemMap = qrItemMap,
             ),
+          nestedSearchResources =
+            registerFilterField?.nestedSearchResources?.map { nestedSearchConfig ->
+              nestedSearchConfig.copy(
+                dataQueries =
+                  createQueriesForRegisterFilter(
+                    dataQueries = nestedSearchConfig.dataQueries,
+                    qrItemMap = qrItemMap,
+                  ),
+              )
+            } ?: resourceConfig.nestedSearchResources,
         )
       }
     return newRelatedResources
@@ -288,16 +310,18 @@ constructor(
       ?.map {
         val newFilterCriteria = mutableListOf<FilterCriterionConfig>()
         it.filterCriteria.forEach { filterCriterionConfig ->
+        if (!filterCriterionConfig.dataFilterLinkId.isNullOrEmpty()) {
           val answerComponent = qrItemMap[filterCriterionConfig.dataFilterLinkId]
           answerComponent?.answer?.forEach { itemAnswerComponent ->
             val criterion =
               convertAnswerToFilterCriterion(itemAnswerComponent, filterCriterionConfig)
             if (criterion != null) newFilterCriteria.add(criterion)
           }
+        } else {
+          newFilterCriteria.add(filterCriterionConfig)
         }
-        it.copy(
-          filterCriteria = newFilterCriteria,
-        )
+      }
+      it.copy(filterCriteria = newFilterCriteria)
       }
       ?.filter { it.filterCriteria.isNotEmpty() }
 
@@ -340,7 +364,7 @@ constructor(
         val numberFilterCriterion =
           oldFilterCriterion as FilterCriterionConfig.NumberFilterCriterionConfig
         FilterCriterionConfig.NumberFilterCriterionConfig(
-          dataType = DataType.DECIMAL,
+          dataType = DataType.INTEGER,
           computedRule = numberFilterCriterion.computedRule,
           prefix = numberFilterCriterion.prefix,
           value = answerComponent.valueIntegerType.value.toBigDecimal(),
@@ -364,7 +388,7 @@ constructor(
           computedRule = dateFilterCriterion.computedRule,
           prefix = dateFilterCriterion.prefix,
           valueAsDateTime = true,
-          value = answerComponent.valueDecimalType.asStringValue(),
+          value = answerComponent.valueDateTimeType.asStringValue(),
         )
       }
       answerComponent.hasValueDateType() -> {
@@ -374,7 +398,7 @@ constructor(
           dataType = DataType.DATE,
           computedRule = dateFilterCriterion.computedRule,
           prefix = dateFilterCriterion.prefix,
-          valueAsDateTime = false,
+          valueAsDateTime = dateFilterCriterion.valueAsDateTime,
           value = answerComponent.valueDateType.asStringValue(),
         )
       }
@@ -408,7 +432,7 @@ constructor(
   ) {
     if (registerId.isNotEmpty()) {
       val paramsMap: Map<String, String> = params.toParamDataMap()
-      viewModelScope.launch(dispatcherProvider.io()) {
+      viewModelScope.launch {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
 
         val resourceData =
@@ -458,9 +482,15 @@ constructor(
             screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
             isFirstTimeSync =
               sharedPreferencesHelper
-                .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
-                .isNullOrEmpty() && _totalRecordsCount.longValue == 0L,
-            resourceData = resourceData,
+                .read(
+                  SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+                  null,
+                )
+                .isNullOrEmpty() &&
+                _totalRecordsCount.longValue == 0L &&
+                // Do not show progress dialog if initial sync is disabled
+                applicationConfiguration.usePractitionerAssignedLocationOnSync,
+	    resourceData = resourceData,
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
             totalRecordsCount = _totalRecordsCount.longValue,
@@ -477,6 +507,7 @@ constructor(
                 .toInt(),
             progressPercentage = _percentageProgress,
             isSyncUpload = _isUploadSync,
+            currentSyncJobStatus = _currentSyncJobStatusFlow,
             params = paramsMap,
           )
       }
@@ -485,10 +516,5 @@ constructor(
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
-  }
-
-  suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {
-    _percentageProgress.emit(progress)
-    _isUploadSync.emit(isUploadSync)
   }
 }

@@ -1,3 +1,4 @@
+import android.databinding.tool.ext.capitalizeUS
 import com.android.build.api.variant.FilterConfiguration.FilterType
 import java.io.FileReader
 import java.text.SimpleDateFormat
@@ -7,13 +8,10 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.json.JSONArray
 import org.json.JSONObject
 
-buildscript {
-  apply(from = "../jacoco.gradle.kts")
-  apply(from = "../properties.gradle.kts")
-  apply(from = "../ktlint.gradle.kts")
-}
-
 plugins {
+  `jacoco-report`
+  `project-properties`
+  ktlint
   id("com.android.application")
   id("kotlin-android")
   id("kotlin-kapt")
@@ -30,10 +28,10 @@ plugins {
 sonar {
   properties {
     property("sonar.projectKey", "fhircore")
-    property("sonar.kotlin.source.version", libs.kotlin)
+    property("sonar.kotlin.source.version", libs.versions.kotlin)
     property(
       "sonar.androidLint.reportPaths",
-      "${project.buildDir}/reports/lint-results-opensrpDebug.xml",
+      "${project.layout.buildDirectory.get()}/reports/lint-results-opensrpDebug.xml",
     )
     property("sonar.host.url", System.getenv("SONAR_HOST_URL"))
     property("sonar.login", System.getenv("SONAR_TOKEN"))
@@ -55,17 +53,18 @@ sonar {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = BuildConfigs.compileSdk
 
   val buildDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
 
   namespace = "org.smartregister.fhircore.quest"
 
   defaultConfig {
-    applicationId = "org.smartregister.opensrp"
-    minSdk = 26
-    versionCode = 10
-    versionName = "1.1.0"
+    applicationId = BuildConfigs.applicationId
+    minSdk = BuildConfigs.minSdk
+    targetSdk = BuildConfigs.targetSdk
+    versionCode = BuildConfigs.versionCode
+    versionName = BuildConfigs.versionName
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
@@ -107,18 +106,25 @@ android {
   }
 
   buildTypes {
-    getByName("debug") { enableUnitTestCoverage = true }
+    getByName("debug") {
+      enableUnitTestCoverage = BuildConfigs.enableUnitTestCoverage
+      enableAndroidTestCoverage = BuildConfigs.enableAndroidTestCoverage
+    }
+
+    create("debugNonProxy") { initWith(getByName("debug")) }
+
     create("benchmark") {
       signingConfig = signingConfigs.getByName("debug")
       matchingFallbacks += listOf("debug")
       isDebuggable = true
     }
 
-    create("debugNonProxy") { initWith(getByName("debug")) }
-
     getByName("release") {
       isMinifyEnabled = false
-      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+      proguardFiles(
+        getDefaultProguardFile("proguard-android-optimize.txt"),
+        "proguard-rules.pro",
+      )
       signingConfig = signingConfigs.getByName("release")
     }
   }
@@ -170,7 +176,7 @@ android {
     buildConfig = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.5.8" }
+  composeOptions { kotlinCompilerExtensionVersion = BuildConfigs.kotlinCompilerExtensionVersion }
 
   testOptions {
     execution = "ANDROIDX_TEST_ORCHESTRATOR"
@@ -182,7 +188,7 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.11" }
+  testCoverage { jacocoVersion = BuildConfigs.jacocoVersion }
 
   lint { abortOnError = false }
 
@@ -271,6 +277,7 @@ android {
       versionNameSuffix = "-sidCadre"
       manifestPlaceholders["appLabel"] = "KaderKu"
     }
+
     create("sidEir") {
       dimension = "apps"
       applicationIdSuffix = ".sidEir"
@@ -278,11 +285,25 @@ android {
       manifestPlaceholders["appLabel"] = "VaksinatorKu"
     }
 
-    create("wdf") {
+    create("sidEcd") {
       dimension = "apps"
-      applicationIdSuffix = ".wdf"
-      versionNameSuffix = "-wdf"
+      applicationIdSuffix = ".sidEcd"
+      versionNameSuffix = "-sidEcd"
+      manifestPlaceholders["appLabel"] = "PaudKu"
+    }
+
+    create("diabetesCompass") {
+      dimension = "apps"
+      applicationIdSuffix = ".diabetesCompass"
+      versionNameSuffix = "-diabetesCompass"
       manifestPlaceholders["appLabel"] = "Diabetes Compass"
+    }
+
+    create("diabetesCompassClinic") {
+      dimension = "apps"
+      applicationIdSuffix = ".diabetesCompassClinic"
+      versionNameSuffix = "-diabetesCompassClinic"
+      manifestPlaceholders["appLabel"] = "Diabetes Compass Clinic"
     }
 
     create("zeir") {
@@ -290,6 +311,13 @@ android {
       applicationIdSuffix = ".zeir"
       versionNameSuffix = "-zeir"
       manifestPlaceholders["appLabel"] = "ZEIR"
+    }
+
+    create("gizEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".gizeir"
+      versionNameSuffix = "-gizeir"
+      manifestPlaceholders["appLabel"] = "EIR"
     }
 
     create("engage") {
@@ -305,23 +333,33 @@ android {
       versionNameSuffix = "-who_eir"
       manifestPlaceholders["appLabel"] = "WHO EIR"
     }
+
     create("psi-eswatini") {
       dimension = "apps"
       applicationIdSuffix = ".psi_eswatini"
       versionNameSuffix = "-psi_eswatini"
       manifestPlaceholders["appLabel"] = "PSI WFA"
     }
+
     create("eusm") {
       dimension = "apps"
       applicationIdSuffix = ".eusm"
       versionNameSuffix = "-eusm"
       manifestPlaceholders["appLabel"] = "EUSM"
     }
+
     create("demoEir") {
       dimension = "apps"
       applicationIdSuffix = ".demoEir"
       versionNameSuffix = "-demoEir"
       manifestPlaceholders["appLabel"] = "OpenSRP EIR"
+    }
+
+    create("contigo") {
+      dimension = "apps"
+      applicationIdSuffix = ".contigo"
+      versionNameSuffix = "-contigo"
+      manifestPlaceholders["appLabel"] = "Contigo"
     }
   }
 
@@ -333,6 +371,11 @@ android {
       "app_name",
       "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"",
     )
+  }
+
+  applicationVariants.all {
+    val variant = this
+    tasks.register("jacocoTestReport${variant.name.capitalizeUS()}")
   }
 
   splits {
@@ -388,7 +431,8 @@ tasks.withType<Test> {
   testLogging { events = setOf(TestLogEvent.FAILED) }
   minHeapSize = "4608m"
   maxHeapSize = "4608m"
-  maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+  // maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+  configure<JacocoTaskExtension> { isIncludeNoLocationClasses = true }
 }
 
 configurations { all { exclude(group = "xpp3") } }
@@ -408,6 +452,10 @@ dependencies {
   implementation(libs.hilt.work)
   implementation(platform(libs.firebase.bom))
   implementation(libs.firebase.messaging.ktx)
+  implementation(libs.gms.play.services.location)
+  implementation(libs.mlkit.barcode.scanning)
+
+  implementation(libs.bundles.cameraX)
 
   // Annotation processors
   kapt(libs.hilt.compiler)
@@ -450,6 +498,8 @@ dependencies {
   // Android Test dependencies
   androidTestImplementation(libs.junit)
   androidTestImplementation(libs.espresso.core)
+  androidTestImplementation(libs.rules)
+  androidTestImplementation(libs.uiautomator)
 
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }

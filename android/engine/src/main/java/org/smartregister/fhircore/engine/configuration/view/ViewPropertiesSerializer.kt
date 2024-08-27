@@ -53,6 +53,7 @@ object ViewPropertiesSerializer :
       ViewType.LIST -> ListProperties.serializer()
       ViewType.IMAGE -> ImageProperties.serializer()
       ViewType.BORDER -> DividerProperties.serializer()
+      ViewType.STACK -> StackViewProperties.serializer()
     }
   }
 }

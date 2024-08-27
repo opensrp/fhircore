@@ -21,8 +21,8 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -38,12 +38,15 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Consent
 import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -53,6 +56,7 @@ import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
@@ -60,9 +64,11 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.model.Type
+import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.joda.time.Instant
 import org.json.JSONException
 import org.json.JSONObject
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -74,10 +80,10 @@ const val REFERENCE = "reference"
 const val PARTOF = "part-of"
 private val fhirR4JsonParser = FhirContext.forR4Cached().getCustomJsonParser()
 
-fun Base?.valueToString(): String {
+fun Base?.valueToString(datePattern: String = "dd-MMM-yyyy"): String {
   return when {
     this == null -> return ""
-    this.isDateTime -> (this as BaseDateTimeType).value.makeItReadable()
+    this.isDateTime -> (this as BaseDateTimeType).value.makeItReadable(datePattern)
     this.isPrimitive -> (this as PrimitiveType<*>).asStringValue()
     this is Coding -> display ?: code
     this is CodeableConcept -> this.stringValue()
@@ -223,6 +229,31 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
   }
 }
 
+/**
+ * Set all questions that are not of type [Questionnaire.QuestionnaireItemType.GROUP] to readOnly if
+ * [readOnlyLinkIds] item are there while editing the form. This also generates the correct FHIRPath
+ * population expression for each question when mapped to the corresponding [QuestionnaireResponse]
+ */
+fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForEditing(
+  path: String = "QuestionnaireResponse.item",
+  readOnlyLinkIds: List<String>? = emptyList(),
+) {
+  forEach { item ->
+    if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
+      item.readOnly = readOnlyLinkIds?.contains(item.linkId) == true
+      item.item.prepareQuestionsForEditing(
+        "$path.where(linkId = '${item.linkId}').answer.item",
+        readOnlyLinkIds,
+      )
+    } else {
+      item.item.prepareQuestionsForEditing(
+        "$path.where(linkId = '${item.linkId}').item",
+        readOnlyLinkIds,
+      )
+    }
+  }
+}
+
 /** Delete resources in [QuestionnaireResponse.contained] from the database */
 suspend fun QuestionnaireResponse.deleteRelatedResources(defaultRepository: DefaultRepository) {
   contained.forEach { defaultRepository.delete(it) }
@@ -268,6 +299,7 @@ fun Resource.appendOrganizationInfo(authenticatedOrganizationIds: List<String>?)
         is Group -> managingEntity = updateReference(managingEntity, organizationRef)
         is Encounter -> serviceProvider = updateReference(serviceProvider, organizationRef)
         is Location -> managingOrganization = updateReference(managingOrganization, organizationRef)
+        is Consent -> organization = updateReferenceList(organization, organizationRef)
         else -> {}
       }
     }
@@ -300,6 +332,7 @@ fun Resource.appendPractitionerInfo(practitionerId: String?) {
           } else {
             participant
           }
+      is Consent -> performer = updateReferenceList(performer, practitionerRef)
       else -> {}
     }
   }
@@ -336,6 +369,14 @@ fun Resource.appendRelatedEntityLocation(
         this.meta.addTag(locationCoding.apply { setCode(locationId) })
       }
     }
+}
+
+private fun updateReferenceList(
+  oldReferenceList: List<Reference>?,
+  newReference: Reference,
+): List<Reference> {
+  val list = oldReferenceList?.filter { !it.reference.isNullOrEmpty() }
+  return if (!list.isNullOrEmpty()) list else listOf(newReference)
 }
 
 private fun updateReference(oldReference: Reference?, newReference: Reference): Reference =
@@ -380,6 +421,14 @@ fun isValidResourceType(resourceCode: String): Boolean {
   } catch (exception: FHIRException) {
     false
   }
+}
+
+fun ImplementationGuide.retrieveImplementationGuideDefinitionResources():
+  List<ImplementationGuide.ImplementationGuideDefinitionResourceComponent> {
+  val resources =
+    mutableListOf<ImplementationGuide.ImplementationGuideDefinitionResourceComponent>()
+  this.definition.resource.forEach { resources.add(it) }
+  return resources
 }
 
 /**
@@ -531,5 +580,49 @@ fun List<RepositoryResourceData>.filterByFhirPathExpression(
         fhirPathDataExtractor.extractValue(repositoryResourceData.resource, it).toBoolean()
       }
     }
+  }
+}
+
+/** Extracts and returns a translated string for the gender in the resource */
+fun Resource.extractGender(context: Context): String {
+  return when (this) {
+    is Patient -> getGenderString(this.gender, context)
+    is RelatedPerson -> getGenderString(this.gender, context)
+    else -> ""
+  }
+}
+
+private fun getGenderString(gender: Enumerations.AdministrativeGender?, context: Context): String {
+  return when (gender) {
+    Enumerations.AdministrativeGender.MALE -> context.getString(R.string.male)
+    Enumerations.AdministrativeGender.FEMALE -> context.getString(R.string.female)
+    Enumerations.AdministrativeGender.OTHER -> context.getString(R.string.other)
+    Enumerations.AdministrativeGender.UNKNOWN -> context.getString(R.string.unknown)
+    else -> ""
+  }
+}
+
+fun Enumerations.AdministrativeGender.translateGender(context: Context) =
+  when (this) {
+    Enumerations.AdministrativeGender.MALE -> context.getString(R.string.male)
+    Enumerations.AdministrativeGender.FEMALE -> context.getString(R.string.female)
+    else -> context.getString(R.string.unknown)
+  }
+
+/** Extract a Resource's age if birthDate is an available field */
+fun Resource.extractAge(context: Context): String {
+  return when (this) {
+    is Patient -> this.birthDate?.let { calculateAge(it, context) } ?: ""
+    is RelatedPerson -> this.birthDate?.let { calculateAge(it, context) } ?: ""
+    else -> ""
+  }
+}
+
+/** Extract a Resource's birthDate if it's an available field */
+fun Resource.extractBirthDate(): Date? {
+  return when (this) {
+    is Patient -> this.birthDate
+    is RelatedPerson -> this.birthDate
+    else -> null
   }
 }

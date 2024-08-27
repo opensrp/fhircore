@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,9 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,11 +37,19 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageShape
+import org.smartregister.fhircore.engine.configuration.view.RowProperties
+import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
 import org.smartregister.fhircore.engine.configuration.view.TextCase
+import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
+import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -50,6 +62,7 @@ fun CardView(
   viewProperties: CardViewProperties,
   resourceData: ResourceData,
   navController: NavController,
+  decodedImageMap: SnapshotStateMap<String, Bitmap>,
 ) {
   // Check if card is visible
   if (viewProperties.visible.toBoolean()) {
@@ -102,6 +115,7 @@ fun CardView(
             viewProperties = viewProperties.content,
             resourceData = resourceData,
             navController = navController,
+            decodedImageMap = decodedImageMap,
           )
         }
       }
@@ -140,6 +154,7 @@ private fun CardViewWithoutPaddingPreview() {
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }
@@ -176,6 +191,7 @@ private fun CardViewWithPaddingPreview() {
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }
@@ -198,6 +214,75 @@ private fun CardViewWithoutPaddingAndHeaderPreview() {
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
+    )
+  }
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+private fun CardViewImageWithItems() {
+  Column(modifier = Modifier.fillMaxWidth()) {
+    CardView(
+      viewProperties =
+        CardViewProperties(
+          fillMaxWidth = true,
+          viewType = ViewType.CARD,
+          content =
+            listOf(
+              RowProperties(
+                viewType = ViewType.ROW,
+                alignment = ViewAlignment.START,
+                children =
+                  listOf(
+                    ImageProperties(
+                      imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_service_points"),
+                      backgroundColor = "dangerColor",
+                      size = 70,
+                      shape = ImageShape.CIRCLE,
+                    ),
+                    ColumnProperties(
+                      viewType = ViewType.COLUMN,
+                      weight = 0.7f,
+                      children =
+                        listOf(
+                          CompoundTextProperties(
+                            primaryText = "Richard Brown, M, 21",
+                            primaryTextColor = "#000000",
+                            primaryTextFontWeight = TextFontWeight.BOLD,
+                          ),
+                          SpacerProperties(height = 8f),
+                          CompoundTextProperties(
+                            primaryText = "Richard Brown, M, 21",
+                            primaryTextColor = "#000000",
+                          ),
+                          SpacerProperties(height = 8f),
+                          CompoundTextProperties(
+                            secondaryText = "Service point description",
+                            primaryTextColor = "#000000",
+                          ),
+                          SpacerProperties(height = 16f),
+                          CompoundTextProperties(
+                            secondaryText = "Number of items",
+                            primaryTextColor = "#000000",
+                          ),
+                          ButtonProperties(
+                            status = "COMPLETED",
+                            viewType = ViewType.BUTTON,
+                            text = "COVID Vaccination",
+                            fillMaxWidth = false,
+                            startIcon = ImageConfig("ic_home", ICON_TYPE_LOCAL),
+                            alignment = ViewAlignment.CENTER,
+                          ),
+                        ),
+                    ),
+                  ),
+              ),
+            ),
+        ),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+      navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }

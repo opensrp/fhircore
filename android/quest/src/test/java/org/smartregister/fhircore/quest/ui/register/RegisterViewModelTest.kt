@@ -55,11 +55,11 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 
 @HiltAndroidTest
 class RegisterViewModelTest : RobolectricTest() {
@@ -67,7 +67,6 @@ class RegisterViewModelTest : RobolectricTest() {
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
 
-  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var registerViewModel: RegisterViewModel
   private lateinit var registerRepository: RegisterRepository
@@ -87,7 +86,6 @@ class RegisterViewModelTest : RobolectricTest() {
           registerRepository = registerRepository,
           configurationRegistry = configurationRegistry,
           sharedPreferencesHelper = sharedPreferencesHelper,
-          dispatcherProvider = dispatcherProvider,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
         ),
       )
@@ -157,11 +155,11 @@ class RegisterViewModelTest : RobolectricTest() {
     every { registerViewModel.registerUiState } returns
       mutableStateOf(RegisterUiState(registerId = registerId))
     // Search with empty string should paginate the data
-    registerViewModel.onEvent(RegisterEvent.SearchRegister(""))
+    registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery.emptyText))
     verify { registerViewModel.paginateRegisterData(any(), any()) }
 
     // Search for the word 'Khan' should call the filterRegisterData function
-    registerViewModel.onEvent(RegisterEvent.SearchRegister("Khan"))
+    registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery("Khan")))
     verify { registerViewModel.filterRegisterData(any()) }
   }
 
@@ -286,6 +284,16 @@ class RegisterViewModelTest : RobolectricTest() {
       },
     )
 
+    Assert.assertNotNull(
+      newBaseResourceQueries.find { dataQuery ->
+        dataQuery.paramName == "relationship" &&
+          dataQuery.filterCriteria.any {
+            it.dataType == Enumerations.DataType.CODE && (it.value as Code).code == "N" ||
+              it.dataType == Enumerations.DataType.CODE && (it.value as Code).code == "M"
+          }
+      },
+    )
+
     val taskRelatedResourceDataQueries =
       updatedFhirResourceConfig.relatedResources
         .find { it.id == ResourceType.Task.name }
@@ -326,6 +334,20 @@ class RegisterViewModelTest : RobolectricTest() {
                     dataType = Enumerations.DataType.DATE,
                     prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS,
                     dataFilterLinkId = "birthdate-filter",
+                  ),
+                ),
+            ),
+            DataQuery(
+              paramName = "relationship",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.TokenFilterCriterionConfig(
+                    dataType = Enumerations.DataType.CODE,
+                    value = Code(code = "N", system = "http://hl7.org/fhir/v2/0131"),
+                  ),
+                  FilterCriterionConfig.TokenFilterCriterionConfig(
+                    dataType = Enumerations.DataType.CODE,
+                    value = Code(code = "M", system = "http://hl7.org/fhir/v2/0132"),
                   ),
                 ),
             ),

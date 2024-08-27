@@ -20,6 +20,7 @@ import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
+import org.smartregister.fhircore.engine.domain.model.LauncherType
 
 @Serializable
 data class ApplicationConfiguration(
@@ -30,7 +31,7 @@ data class ApplicationConfiguration(
   val languages: List<String> = listOf("en"),
   val useDarkTheme: Boolean = false,
   val syncInterval: Long = 15,
-  val syncStrategies: List<String> = listOf(),
+  val syncStrategy: List<SyncStrategy> = listOf(),
   val loginConfig: LoginConfig = LoginConfig(),
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null,
   val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
@@ -42,5 +43,42 @@ data class ApplicationConfiguration(
   val showLogo: Boolean = true,
   val taskBackgroundWorkerBatchSize: Int = 500,
   val eventWorkflows: List<EventWorkflow> = emptyList(),
+  val settingsScreenMenuOptions: List<SettingsOptions> =
+    listOf(
+      SettingsOptions.MANUAL_SYNC,
+      SettingsOptions.SWITCH_LANGUAGES,
+      SettingsOptions.RESET_DATA,
+      SettingsOptions.INSIGHTS,
+    ),
+  val logGpsLocation: List<LocationLogOptions> = emptyList(),
+  val usePractitionerAssignedLocationOnSync: Boolean = true,
+  val navigationStartDestination: NavigationStartDestinationConfig =
+    NavigationStartDestinationConfig(
+      launcherType = LauncherType.REGISTER,
+      id = null,
+    ),
+  val codingSystems: List<CodingSystemConfig> = emptyList(),  
   val requiredPermissions: List<PermissionConfig> = emptyList(),
 ) : Configuration()
+
+enum class SyncStrategy {
+  Location,
+  CareTeam,
+  RelatedEntityLocation,
+  Organization,
+  Practitioner,
+}
+
+enum class LocationLogOptions {
+  QUESTIONNAIRE,
+  CALCULATE_DISTANCE_RULE_EXECUTOR,
+}
+
+enum class SettingsOptions {
+  MANUAL_SYNC,
+  OFFLINE_MAPS,
+  SWITCH_LANGUAGES,
+  RESET_DATA,
+  INSIGHTS,
+  CONTACT_HELP,
+}

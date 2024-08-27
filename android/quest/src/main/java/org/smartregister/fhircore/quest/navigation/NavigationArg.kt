@@ -22,19 +22,11 @@ object NavigationArg {
   const val PROFILE_ID = "profileId"
   const val SCREEN_TITLE = "screenTitle"
   const val RESOURCE_ID = "resourceId"
-  const val QUESTIONNAIRE_CONFIG = "questionnaireConfig"
   const val RESOURCE_CONFIG = "resourceConfig"
-  const val CONFIG_ID = "configId"
+  const val MULTI_SELECT_VIEW_CONFIG = "multiSelectViewConfig"
+  const val GEO_WIDGET_ID = "geoWidgetId"
   const val REPORT_ID = "reportId"
   const val NOTIFICATION_ID = "notificationId"
   const val PARAMS = "params"
   const val TOOL_BAR_HOME_NAVIGATION = "toolBarHomeNavigation"
-
-  /** Create route paths */
-  fun routePathsOf(vararg navArg: String): String =
-    "?" + navArg.toList().joinToString("&") { "$it={$it}" }
-
-  /** Bind nav arguments values */
-  fun bindArgumentsOf(vararg navArg: Pair<String, String?>): String =
-    "?" + navArg.joinToString("&") { "${it.first}=${it.second}" }
 }

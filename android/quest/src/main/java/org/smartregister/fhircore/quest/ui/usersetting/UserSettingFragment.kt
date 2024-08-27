@@ -23,7 +23,6 @@ import android.view.ViewGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
-import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
@@ -33,23 +32,20 @@ import androidx.compose.ui.platform.testTag
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.BuildConfig
-import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
+import org.smartregister.fhircore.engine.configuration.app.SettingsOptions
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
-import retrofit2.HttpException
-import timber.log.Timber
 
 @AndroidEntryPoint
 class UserSettingFragment : Fragment(), OnSyncListener {
@@ -98,19 +94,28 @@ class UserSettingFragment : Fragment(), OnSyncListener {
                 username = userSettingViewModel.retrieveUsername(),
                 practitionerLocation = userSettingViewModel.practitionerLocation(),
                 fullname = userSettingViewModel.retrieveUserInfo()?.name,
-                allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
                 selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
-                allowP2PSync = userSettingViewModel.enabledDeviceToDeviceSync(),
                 languages = userSettingViewModel.languages,
                 onEvent = userSettingViewModel::onEvent,
-                showDatabaseResetConfirmation =
-                  userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
                 progressBarState =
                   userSettingViewModel.progressBarState.observeAsState(Pair(false, 0)).value,
                 isDebugVariant = BuildConfig.DEBUG,
                 mainNavController = findNavController(),
                 lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp(),
                 showProgressIndicatorFlow = userSettingViewModel.showProgressIndicatorFlow,
+                dataMigrationVersion = userSettingViewModel.retrieveDataMigrationVersion(),
+                enableManualSync =
+                  userSettingViewModel.enableMenuOption(SettingsOptions.MANUAL_SYNC),
+                allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
+                showDatabaseResetConfirmation =
+                  userSettingViewModel.enableMenuOption(SettingsOptions.RESET_DATA) &&
+                    userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
+                enableAppInsights = userSettingViewModel.enableMenuOption(SettingsOptions.INSIGHTS),
+                showOfflineMaps =
+                  userSettingViewModel.enableMenuOption(SettingsOptions.OFFLINE_MAPS),
+                allowP2PSync = userSettingViewModel.enabledDeviceToDeviceSync(),
+                enableHelpContacts =
+                  userSettingViewModel.enableMenuOption(SettingsOptions.CONTACT_HELP),
               )
             }
           }
@@ -124,54 +129,20 @@ class UserSettingFragment : Fragment(), OnSyncListener {
     syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
-  override fun onSync(syncJobStatus: SyncJobStatus) {
-    when (syncJobStatus) {
-      is SyncJobStatus.Started ->
-        lifecycleScope.launch {
-          userSettingViewModel.emitSnackBarState(
-            SnackBarMessageConfig(message = getString(R.string.syncing)),
-          )
-        }
-      is SyncJobStatus.Succeeded -> {
-        lifecycleScope.launch {
-          userSettingViewModel.emitSnackBarState(
-            SnackBarMessageConfig(
-              message = getString(R.string.sync_completed),
-              actionLabel = getString(R.string.ok).uppercase(),
-              duration = SnackbarDuration.Long,
-            ),
-          )
-        }
+  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
+    if (syncJobStatus is CurrentSyncJobStatus.Running) {
+      if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
+        val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
+        val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+        val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
+        appMainViewModel.updateAppDrawerUIState(
+          isSyncUpload = isSyncUpload,
+          currentSyncJobStatus = syncJobStatus,
+          percentageProgress = progressPercentage,
+        )
       }
-      is SyncJobStatus.Failed -> {
-        val hasAuthError =
-          try {
-            Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
-            syncJobStatus.exceptions.any {
-              it.exception is HttpException && (it.exception as HttpException).code() == 401
-            }
-          } catch (nullPointerException: NullPointerException) {
-            false
-          }
-
-        lifecycleScope.launch {
-          userSettingViewModel.emitSnackBarState(
-            SnackBarMessageConfig(
-              message =
-                getString(
-                  if (hasAuthError) {
-                    R.string.sync_unauthorised
-                  } else R.string.sync_completed_with_errors,
-                ),
-              duration = SnackbarDuration.Long,
-              actionLabel = getString(R.string.ok).uppercase(),
-            ),
-          )
-        }
-      }
-      else -> {
-        // Do nothing
-      }
+    } else {
+      appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
     }
   }
 

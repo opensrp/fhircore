@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.di
 
-import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.gson.Gson
@@ -25,8 +24,8 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import java.net.URL
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
@@ -40,7 +39,6 @@ import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
 import org.smartregister.fhircore.engine.BuildConfig
-import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
@@ -84,7 +82,7 @@ class NetworkModule {
   fun provideOkHttpClient(
     tokenAuthenticator: TokenAuthenticator,
     sharedPreferencesHelper: SharedPreferencesHelper,
-    openSrpApplication: OpenSrpApplication?,
+    configService: ConfigService,
   ) =
     OkHttpClient.Builder()
       .addInterceptor(
@@ -93,15 +91,11 @@ class NetworkModule {
             var request = chain.request()
             val requestPath = request.url.encodedPath.substring(1)
             val resourcePath = if (!_isNonProxy) requestPath.replace("fhir/", "") else requestPath
+            val host = URL(configService.provideAuthConfiguration().fhirServerBaseUrl).host
 
-            openSrpApplication?.let {
-              if (
-                (request.url.host == it.getFhirServerHost()?.host) &&
-                  CUSTOM_ENDPOINTS.contains(resourcePath)
-              ) {
-                val newUrl = request.url.newBuilder().encodedPath("/$resourcePath").build()
-                request = request.newBuilder().url(newUrl).build()
-              }
+            if (request.url.host == host && CUSTOM_ENDPOINTS.contains(resourcePath)) {
+              val newUrl = request.url.newBuilder().encodedPath("/$resourcePath").build()
+              request = request.newBuilder().url(newUrl).build()
             }
 
             chain.proceed(request)
@@ -232,11 +226,6 @@ class NetworkModule {
   @Provides
   fun provideFhirResourceService(@RegularRetrofit retrofit: Retrofit): FhirResourceService =
     retrofit.create(FhirResourceService::class.java)
-
-  @Provides
-  @Singleton
-  fun provideFHIRBaseURL(@ApplicationContext context: Context): OpenSrpApplication? =
-    if (context is OpenSrpApplication) context else null
 
   companion object {
     const val TIMEOUT_DURATION = 120L

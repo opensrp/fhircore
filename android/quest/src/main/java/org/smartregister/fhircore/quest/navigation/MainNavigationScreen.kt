@@ -24,7 +24,7 @@ sealed class MainNavigationScreen(
   val route: Int,
   val showInBottomNav: Boolean = false,
 ) {
-  object Home :
+  data object Home :
     MainNavigationScreen(
       R.string.clients,
       org.smartregister.fhircore.quest.R.drawable.ic_home,
@@ -32,7 +32,7 @@ sealed class MainNavigationScreen(
       true,
     )
 
-  object Reports :
+  data object Reports :
     MainNavigationScreen(
       R.string.reports,
       R.drawable.ic_reports,
@@ -40,7 +40,7 @@ sealed class MainNavigationScreen(
       true,
     )
 
-  object OtherReports :
+  data object OtherReports :
     MainNavigationScreen(
       R.string.reports,
       R.drawable.ic_reports,
@@ -48,7 +48,7 @@ sealed class MainNavigationScreen(
       true,
     )
 
-  object Settings :
+  data object Settings :
     MainNavigationScreen(
       R.string.settings,
       R.drawable.ic_settings,
@@ -56,23 +56,33 @@ sealed class MainNavigationScreen(
       true,
     )
 
-  object Notifications :
+  data object Notifications :
     MainNavigationScreen(
       titleResource = R.string.notification,
       route = org.smartregister.fhircore.quest.R.id.notificationFragment,
     )
 
-  object Profile :
+  data object Profile :
     MainNavigationScreen(
       titleResource = R.string.profile,
       route = org.smartregister.fhircore.quest.R.id.profileFragment,
     )
 
-  /*object GeoWidget :
-    MainNavigationScreen(route = org.smartregister.fhircore.geowidget.R.id.geoWidgetFragment)*/
+  /*object GeoWidgetLauncher :
+    MainNavigationScreen(route = org.smartregister.fhircore.quest.R.id.geoWidgetLauncherFragment)*/
 
-  object Insight :
+  data object Insight :
     MainNavigationScreen(route = org.smartregister.fhircore.quest.R.id.userInsightScreenFragment)
+
+  data object LocationSelector :
+    MainNavigationScreen(
+      route = org.smartregister.fhircore.quest.R.id.multiSelectBottomSheetFragment,
+    )
+
+  data object SummaryBottomSheetFragment :
+    MainNavigationScreen(
+      route = org.smartregister.fhircore.quest.R.id.summaryBottomSheetFragment,
+    )
 
   fun eventId(id: String) = route.toString() + "_" + id
 }

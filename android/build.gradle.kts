@@ -24,7 +24,6 @@ plugins {
   alias(libs.plugins.org.owasp.dependencycheck)
   alias(libs.plugins.com.diffplug.spotless) apply false
   alias(libs.plugins.android.junit5) apply false
-
 }
 
 tasks.dokkaHtmlMultiModule {
@@ -36,6 +35,8 @@ tasks.dokkaHtmlMultiModule {
   }
 }
 
+apply(from = "mapbox.gradle.kts")
+
 allprojects {
   repositories {
     gradlePluginPortal()
@@ -43,7 +44,9 @@ allprojects {
     google()
     mavenCentral()
     maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
-    maven(url = "https://jcenter.bintray.com/")
+    maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots")
+    maven(url = "https://repo.spring.io/plugins-release")
+    maven(url = "https://repository.liferay.com/nexus/content/repositories/public")
     apply(plugin = "org.owasp.dependencycheck")
     tasks.dependencyCheckAggregate{
       dependencyCheck.formats.add("XML")
@@ -59,18 +62,17 @@ subprojects {
   }
 
   configure<SpotlessExtension> {
-    val lintVersion = "0.49.0"
 
     kotlin {
       target("**/*.kt")
-      ktlint(lintVersion)
+      ktlint(BuildConfigs.ktLintVersion)
       ktfmt().googleStyle()
       licenseHeaderFile("${project.rootProject.projectDir}/license-header.txt")
     }
 
     kotlinGradle {
       target("*.gradle.kts")
-      ktlint(lintVersion)
+      ktlint(BuildConfigs.ktLintVersion)
       ktfmt().googleStyle()
     }
 
@@ -92,7 +94,7 @@ subprojects {
     resolutionStrategy {
       eachDependency {
         when (requested.group) {
-          "org.jacoco" -> useVersion("0.8.11")
+          "org.jacoco" -> useVersion(BuildConfigs.jacocoVersion)
         }
       }
     }

@@ -90,6 +90,7 @@ class ProfileFragment : Fragment() {
             onEvent = profileViewModel::onEvent,
             snackStateFlow = profileViewModel.snackBarStateFlow,
             monthFilterRange = profileViewModel.getMonthFilterRange(),
+            decodedImageMap = configurationRegistry.decodedImageMap,
           )
         }
       }

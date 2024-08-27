@@ -19,14 +19,17 @@ package org.smartregister.fhircore.engine.data.local
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.parser.IParser
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.google.android.fhir.logicalId
 import com.google.gson.Gson
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -46,16 +49,17 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonPrimitive
 import org.hl7.fhir.r4.model.Address
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
-import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Procedure
@@ -71,8 +75,10 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.configuration.event.UpdateWorkflowValueConfig
@@ -81,9 +87,12 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.PATIENT_CONDITION_RESOLVED_DISPLAY
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.SNOMED_SYSTEM
 import org.smartregister.fhircore.engine.domain.model.Code
+import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
 import org.smartregister.fhircore.engine.domain.model.KeyValueConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -107,34 +116,36 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
-  @Inject lateinit var configService: ConfigService
-
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var parser: IParser
+
+  @BindValue
+  val configService: ConfigService =
+    spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
   private val application = ApplicationProvider.getApplicationContext<Application>()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private lateinit var dispatcherProvider: DefaultDispatcherProvider
   private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var defaultRepository: DefaultRepository
-  private lateinit var spiedConfigService: ConfigService
 
   @Before
   fun setUp() {
     hiltRule.inject()
     dispatcherProvider = DefaultDispatcherProvider()
     sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
-    spiedConfigService = spyk(configService)
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
         dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
-        configService = spiedConfigService,
+        configService = configService,
         configRulesExecutor = configRulesExecutor,
         fhirPathDataExtractor = fhirPathDataExtractor,
         parser = parser,
+        context = context,
       )
   }
 
@@ -193,30 +204,6 @@ class DefaultRepositoryTest : RobolectricTest() {
     }
 
     coVerify { fhirEngine.search<Patient>(any()) }
-  }
-
-  @Test
-  fun searchShouldReturn1ConditionGivenConditionTypeDataRequirement() = runTest {
-    val coding = Coding("https://system.co", "codi", "Condition code")
-    val condition = Condition().apply { code = CodeableConcept(coding) }
-
-    fhirEngine.create(condition)
-
-    runBlocking {
-      val actualPatients =
-        defaultRepository.searchCondition(
-          dataRequirement =
-            DataRequirement().apply {
-              type = Enumerations.ResourceType.CONDITION.toCode()
-              addCodeFilter(
-                DataRequirement.DataRequirementCodeFilterComponent()
-                  .addCode(coding)
-                  .setPath("code"),
-              )
-            },
-        )
-      Assert.assertEquals(1, actualPatients.size)
-    }
   }
 
   @Test
@@ -309,27 +296,25 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Test
   fun testCreateShouldNotDuplicateMetaTagsWithSameSystemCode() {
     val system = "https://smartregister.org/location-tag-id"
-    val code = "86453"
-    val anotherCode = "10200"
-    val coding = Coding(system, code, "Location")
-    val anotherCoding = Coding(system, anotherCode, "Location")
+    val coding = Coding(system, "86453", "Location")
+    val anotherCoding = Coding(system, "10200", "Location")
     val resource = Patient().apply { meta.addTag(coding) }
 
     // Meta contains 1 tag with code 86453
     Assert.assertEquals(1, resource.meta.tag.size)
     val firstTag = resource.meta.tag.first()
-    Assert.assertEquals(code, firstTag.code)
+    Assert.assertEquals("86453", firstTag.code)
     Assert.assertEquals(system, firstTag.system)
 
     coEvery { fhirEngine.create(any()) } returns listOf(resource.id)
-    every { spiedConfigService.provideResourceTags(sharedPreferenceHelper) } returns
+    every { configService.provideResourceTags(sharedPreferenceHelper) } returns
       listOf(coding, anotherCoding)
     runBlocking { defaultRepository.create(true, resource) }
 
     // Expecting 2 tags; tag with code 86453 should not be duplicated.
     Assert.assertEquals(2, resource.meta.tag.size)
     Assert.assertNotNull(resource.meta.lastUpdated)
-    Assert.assertNotNull(resource.meta.getTag(system, code))
+    Assert.assertNotNull(resource.meta.getTag(system, "86453"))
   }
 
   @Test
@@ -573,6 +558,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
+          context = context,
         ),
       )
     coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
@@ -650,6 +636,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
+          context = context,
         ),
       )
 
@@ -767,6 +754,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "Task.status",
         value = JsonPrimitive("cancelled"),
+        resourceType = ResourceType.Task,
       )
     val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
 
@@ -790,6 +778,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "CarePlan.status",
         value = JsonPrimitive("completed"),
+        resourceType = ResourceType.CarePlan,
       )
     val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
 
@@ -823,15 +812,17 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "ServiceRequest.status",
         value = JsonPrimitive("revoked"),
+        resourceType = ResourceType.ServiceRequest,
       )
     val resourceFilterExpression =
       ResourceFilterExpression(
         conditionalFhirPathExpressions = listOf("ServiceRequest.status != 'completed'"),
+        resourceType = ResourceType.ServiceRequest,
       )
     val eventWorkflow =
       EventWorkflow(
         updateValues = listOf(updatedValues),
-        resourceFilterExpression = resourceFilterExpression,
+        resourceFilterExpressions = listOf(resourceFilterExpression),
       )
 
     defaultRepository.updateResourcesRecursively(
@@ -873,16 +864,18 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "ServiceRequest.status",
         value = JsonPrimitive("revoked"),
+        resourceType = ResourceType.ServiceRequest,
       )
 
     val resourceFilterExpression =
       ResourceFilterExpression(
         conditionalFhirPathExpressions = listOf("ServiceRequest.status != 'completed'"),
+        resourceType = ResourceType.ServiceRequest,
       )
     val eventWorkflow =
       EventWorkflow(
         updateValues = listOf(updatedValues),
-        resourceFilterExpression = resourceFilterExpression,
+        resourceFilterExpressions = listOf(resourceFilterExpression),
       )
 
     defaultRepository.updateResourcesRecursively(
@@ -917,6 +910,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "CarePlan.status",
         value = JsonPrimitive("completed"),
+        resourceType = ResourceType.CarePlan,
       )
     val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
     defaultRepository.updateResourcesRecursively(
@@ -929,6 +923,170 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", carePlanSlot.captured.id)
     Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
+  }
+
+  @Test
+  fun testUpdateResources() = runTest {
+    val patient =
+      Patient().apply {
+        id = "Patient/6c9553f4-f237-498c-b500-058883841d51"
+        active = true
+      }
+
+    val carePlan =
+      CarePlan().apply {
+        id = "CarePlan/3e04863c-41cc-47a4-b57e-eb1cc4e00ef8"
+        status = CarePlan.CarePlanStatus.ACTIVE
+        subject = patient.asReference()
+      }
+
+    val resourceConfig =
+      ResourceConfig(
+        id = "carePlan-id",
+        resource = carePlan.resourceType,
+        configRules =
+          listOf(
+            RuleConfig(
+              name = "patientId",
+              condition = "true",
+              actions =
+                listOf(
+                  "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))",
+                ),
+            ),
+          ),
+        dataQueries =
+          listOf(
+            DataQuery(
+              paramName = "instantiates-canonical",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.ReferenceFilterCriterionConfig(
+                    dataType = Enumerations.DataType.REFERENCE,
+                    value = "PlanDefinition/cd39380b-2359-4b98-8ab9-df7f90fe9392",
+                  ),
+                ),
+            ),
+            DataQuery(
+              paramName = "subject",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.ReferenceFilterCriterionConfig(
+                    dataType = Enumerations.DataType.REFERENCE,
+                    value = "patientId",
+                  ),
+                ),
+            ),
+          ),
+      )
+
+    fhirEngine.create(patient, carePlan)
+
+    val updatedValues =
+      UpdateWorkflowValueConfig(
+        jsonPathExpression = "CarePlan.status",
+        value = JsonPrimitive("completed"),
+      )
+    val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
+    defaultRepository.updateResourcesRecursively(
+      resourceConfig = resourceConfig,
+      subject = patient,
+      eventWorkflow = eventWorkflow,
+    )
+
+    val resourceSlot = slot<Resource>()
+    val captured = resourceSlot.captured as CarePlan
+    coVerify { fhirEngine.update(capture(resourceSlot)) }
+    Assert.assertEquals("3e04863c-41cc-47a4-b57e-eb1cc4e00ef8", captured.logicalId)
+    Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, captured.status)
+  }
+
+  @Test
+  fun testUpdateResourcesRecursively() = runTest {
+    val patient =
+      Patient().apply {
+        id = "Patient/6c9553f4-f237-498c-b500-058883841d51"
+        active = true
+      }
+
+    val task =
+      Task().apply {
+        id = "Task/e0bd5cd6-5a36-45c2-8c32-1dac77909179"
+        status = Task.TaskStatus.READY
+        `for` = patient.asReference()
+        executionPeriod.end = Date(java.time.LocalDate.parse("2024-04-03").toEpochDay())
+      }
+
+    val resourceConfig =
+      ResourceConfig(
+        resource = task.resourceType,
+        configRules =
+          listOf(
+            RuleConfig(
+              name = "patientId",
+              condition = "true",
+              actions =
+                listOf(
+                  "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))",
+                ),
+            ),
+            RuleConfig(
+              name = "taskEnd",
+              condition = "true",
+              actions =
+                listOf(
+                  "data.put('taskEnd', fhirPath.extractValue(Task, 'Task.executionPeriod.end'))",
+                ),
+            ),
+          ),
+        dataQueries =
+          listOf(
+            DataQuery(
+              paramName = "subject",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.ReferenceFilterCriterionConfig(
+                    dataType = Enumerations.DataType.REFERENCE,
+                    computedRule = "patientId",
+                  ),
+                ),
+            ),
+            DataQuery(
+              paramName = "period",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.DateFilterCriterionConfig(
+                    dataType = Enumerations.DataType.DATETIME,
+                    valueAsDateTime = true,
+                    computedRule = "2024-04-03",
+                    value = "2024-04-03",
+                    prefix = ParamPrefixEnum.LESSTHAN,
+                  ),
+                ),
+            ),
+          ),
+      )
+
+    fhirEngine.create(patient, task)
+
+    val updatedValues =
+      UpdateWorkflowValueConfig(
+        jsonPathExpression = "Task.status",
+        value = JsonPrimitive("completed"),
+      )
+
+    val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
+    defaultRepository.updateResourcesRecursively(
+      resourceConfig = resourceConfig,
+      subject = patient,
+      eventWorkflow = eventWorkflow,
+    )
+
+    val resourceSlot = slot<Resource>()
+    val captured = resourceSlot.captured as Task
+    coVerify { fhirEngine.update(capture(resourceSlot)) }
+    Assert.assertEquals("e0bd5cd6-5a36-45c2-8c32-1dac77909179", captured.id)
+    Assert.assertEquals(Task.TaskStatus.COMPLETED, captured.status)
   }
 
   @Test
@@ -989,6 +1147,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "Procedure.status",
         value = JsonPrimitive("stopped"),
+        resourceType = ResourceType.Procedure,
       )
     val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
     runBlocking { defaultRepository.closeResource(procedure, eventWorkflow) }
@@ -1010,6 +1169,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "ServiceRequest.status",
         value = JsonPrimitive("revoked"),
+        resourceType = ResourceType.ServiceRequest,
       )
     val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
     runBlocking {
@@ -1050,16 +1210,19 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].code",
         JsonPrimitive(PATIENT_CONDITION_RESOLVED_CODE),
+        resourceType = ResourceType.Condition,
       )
     val updatedValueDisplay =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].display",
         JsonPrimitive(PATIENT_CONDITION_RESOLVED_DISPLAY),
+        resourceType = ResourceType.Condition,
       )
     val updatedValueSystem =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].system",
         JsonPrimitive(SNOMED_SYSTEM),
+        resourceType = ResourceType.Condition,
       )
 
     val eventWorkflow =
@@ -1070,9 +1233,49 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(conditionSlot)) }
     val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
-    Assert.assertEquals(DefaultRepository.SNOMED_SYSTEM, capturedCode.system)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
+    Assert.assertEquals(SNOMED_SYSTEM, capturedCode.system)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
+  }
+
+  @Test
+  fun testCloseResourceUpdatesRestOfTheResourcesWhenUpdatingOneResourceThrowsAnException() {
+    val carePlan = CarePlan().apply { id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53" }
+    coEvery { fhirEngine.update(any()) } just runs
+    val carePlanSlot = slot<CarePlan>()
+
+    val carePlanUpdatedValues =
+      UpdateWorkflowValueConfig(
+        jsonPathExpression = "CarePlan.status",
+        value = JsonPrimitive("completed"),
+        resourceType = ResourceType.CarePlan,
+      )
+    val carePlanEventWorkflow = EventWorkflow(updateValues = listOf(carePlanUpdatedValues))
+
+    runBlocking { defaultRepository.closeResource(carePlan, carePlanEventWorkflow) }
+    coVerify { fhirEngine.update(capture(carePlanSlot)) }
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", carePlanSlot.captured.id)
+    Assert.assertNull(carePlanSlot.captured.status)
+
+    val procedure =
+      Procedure().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = Procedure.ProcedureStatus.UNKNOWN
+      }
+    coEvery { fhirEngine.update(any()) } just runs
+    val procedureSlot = slot<Procedure>()
+
+    val updatedValues =
+      UpdateWorkflowValueConfig(
+        jsonPathExpression = "Procedure.status",
+        value = JsonPrimitive("stopped"),
+        resourceType = ResourceType.Procedure,
+      )
+    val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
+    runBlocking { defaultRepository.closeResource(procedure, eventWorkflow) }
+    coVerify { fhirEngine.update(capture(procedureSlot)) }
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", procedureSlot.captured.id)
+    Assert.assertEquals(Procedure.ProcedureStatus.STOPPED, procedureSlot.captured.status)
   }
 
   // TODO Refactor/Remove after https://github.com/opensrp/fhircore/issues/2488
@@ -1108,16 +1311,19 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].code",
         JsonPrimitive(PATIENT_CONDITION_RESOLVED_CODE),
+        resourceType = ResourceType.Condition,
       )
     val updatedValueDisplay =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].display",
         JsonPrimitive(PATIENT_CONDITION_RESOLVED_DISPLAY),
+        resourceType = ResourceType.Condition,
       )
     val updatedValueSystem =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].system",
         JsonPrimitive(SNOMED_SYSTEM),
+        resourceType = ResourceType.Condition,
       )
 
     val eventWorkflow =
@@ -1134,9 +1340,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(conditionSlot)) }
     val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
-    Assert.assertEquals(DefaultRepository.SNOMED_SYSTEM, capturedCode.system)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
+    Assert.assertEquals(SNOMED_SYSTEM, capturedCode.system)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
   }
 
   // TODO Refactor/Remove after https://github.com/opensrp/fhircore/issues/2488
@@ -1172,16 +1378,19 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].code",
         JsonPrimitive(PATIENT_CONDITION_RESOLVED_CODE),
+        resourceType = ResourceType.Condition,
       )
     val updatedValueDisplay =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].display",
         JsonPrimitive(PATIENT_CONDITION_RESOLVED_DISPLAY),
+        resourceType = ResourceType.Condition,
       )
     val updatedValueSystem =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].system",
         JsonPrimitive(SNOMED_SYSTEM),
+        resourceType = ResourceType.Condition,
       )
 
     val eventWorkflow =
@@ -1198,9 +1407,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(conditionSlot)) }
     val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
-    Assert.assertEquals(DefaultRepository.SNOMED_SYSTEM, capturedCode.system)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
+    Assert.assertEquals(SNOMED_SYSTEM, capturedCode.system)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
   }
 
   @Test
@@ -1212,4 +1421,111 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     coVerify { fhirEngine.create(resource, isLocalOnly = true) }
   }
+
+  @Test
+  fun testRetrieveUniqueIdAssignmentResourceShouldReturnAResource() =
+    runTest(timeout = 30.seconds) {
+      val group1 =
+        Group().apply {
+          id = "grp1"
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept().apply { text = "phn" },
+              CodeableConcept().apply { text = "1234" },
+              BooleanType(true),
+            ),
+          )
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept().apply { text = "phn" },
+              CodeableConcept().apply { text = "123456" },
+              BooleanType(false),
+            ),
+          )
+          active = true
+          type = Group.GroupType.DEVICE
+          name = "Unique IDs"
+        }
+
+      val group2 =
+        Group().apply {
+          id = "grp2"
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept().apply { text = "phn" },
+              CodeableConcept().apply { text = "56789" },
+              BooleanType(false),
+            ),
+          )
+          active = false
+          type = Group.GroupType.DEVICE
+          name = "Unique IDs"
+        }
+
+      val uniqueIdAssignmentConfig =
+        UniqueIdAssignmentConfig(
+          linkId = "phn",
+          idFhirPathExpression =
+            "Group.characteristic.where(exclude=false and code.text='phn').first().value.text",
+          readOnly = false,
+          resource = ResourceType.Group,
+          resourceFilterExpression =
+            ResourceFilterExpression(
+              conditionalFhirPathExpressions =
+                listOf(
+                  "Group.active = true and Group.type = 'device' and Group.name = 'Unique IDs'",
+                ),
+              matchAll = true,
+            ),
+        )
+
+      fhirEngine.create(group1, group2)
+      val resource =
+        defaultRepository.retrieveUniqueIdAssignmentResource(uniqueIdAssignmentConfig, emptyMap())
+      Assert.assertNotNull(resource)
+      Assert.assertTrue(resource is Group)
+      Assert.assertEquals("1234", (resource as Group).characteristic[0].valueCodeableConcept.text)
+      Assert.assertFalse(resource.characteristic[1].exclude)
+    }
+
+  @Test
+  fun testRetrieveFlattenedSubLocationsShouldReturnCorrectLocations() =
+    runTest(timeout = 120.seconds) {
+      val location1 = Location().apply { id = "loc1" }
+      val location2 =
+        Location().apply {
+          id = "loc2"
+          partOf = location1.asReference()
+        }
+      val location3 =
+        Location().apply {
+          id = "loc3"
+          partOf = location1.asReference()
+        }
+      val location4 =
+        Location().apply {
+          id = "loc4"
+          partOf = location3.asReference()
+        }
+      val location5 =
+        Location().apply {
+          id = "loc5"
+          partOf = location4.asReference()
+        }
+
+      fhirEngine.create(location1, location2, location3, location4, location5, isLocalOnly = true)
+
+      val location1SubLocations =
+        defaultRepository.retrieveFlattenedSubLocations(location1.logicalId)
+      Assert.assertEquals(4, location1SubLocations.size)
+      Assert.assertEquals(location2.logicalId, location1SubLocations[0].logicalId)
+      Assert.assertEquals(location3.logicalId, location1SubLocations[1].logicalId)
+      Assert.assertEquals(location4.logicalId, location1SubLocations[2].logicalId)
+      Assert.assertEquals(location5.logicalId, location1SubLocations[3].logicalId)
+
+      val location4SubLocations =
+        defaultRepository.retrieveFlattenedSubLocations(location4.logicalId)
+      Assert.assertEquals(1, location4SubLocations.size)
+      Assert.assertEquals(location5.logicalId, location4SubLocations.first().logicalId)
+    }
 }

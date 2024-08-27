@@ -45,7 +45,7 @@ fun yesterday(): Date = DateTimeType.now().apply { add(Calendar.DATE, -1) }.valu
 
 fun today(): Date = DateTimeType.today().value
 
-fun Date.formatDate(pattern: String): String =
+fun Date.formatDate(pattern: String = "dd-MMM-yyyy"): String =
   SimpleDateFormat(pattern, Locale.ENGLISH).format(this)
 
 fun Date.isToday() = this.formatDate(SDF_YYYY_MM_DD) == today().formatDate(SDF_YYYY_MM_DD)
@@ -56,11 +56,11 @@ fun SimpleDateFormat.tryParse(date: String): Date? =
       .runCatching { SimpleDateFormat(this.toPattern(), Locale.ENGLISH).parse(date) }
       .getOrNull()
 
-fun Date?.makeItReadable(): String {
+fun Date?.makeItReadable(pattern: String = "dd-MMM-yyyy"): String {
   return if (this == null) {
     "N/A"
   } else {
-    SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault()).run { format(this@makeItReadable) }
+    SimpleDateFormat(pattern, Locale.getDefault()).run { format(this@makeItReadable) }
   }
 }
 

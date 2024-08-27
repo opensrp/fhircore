@@ -19,7 +19,7 @@ package org.smartregister.fhircore.engine.rulesengine
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Resource
 import org.jeasy.rules.api.Facts

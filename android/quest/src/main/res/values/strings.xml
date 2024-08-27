@@ -87,6 +87,9 @@
     <string name="record_as_anc">Record as ANC</string>
     <string name="pregnancy_outcome">Pregnancy Outcome</string>
     <string name="registers">Registers</string>
+    <string name="title_no_location_set">No Location Set</string>
+    <string name="message_location_set">Set location to sync data and load service points</string>
+    <string name="positive_button_location_set">Set location</string>
 
     <string name="questionnaire_response_name" translatable="false">%1$s (%2$s)</string>
     <string name="due_on">Due on %1$s</string>
@@ -101,6 +104,8 @@
     <string name="questionnaire_not_found">Questionnaire not found.  Sync all questionnaires to fix</string>
     <string name="no_visits">No visits</string>
     <string name="questionnaire_response_invalid">Questionnaire response invalid</string>
+    <string name="extracted_resources_validation_fail">Validation on extracted resources failed. Please check the logs</string>
+    <string name="error_occurred_generating_careplan">An error occurred generating CarePlan. Please check the logs</string>
     <string name="app_version_tag_url" translatable="false">https://smartregister.org/app-version</string>
     <string name="application_version" translatable="false">Application Version</string>
     <string name="missing_subject_type">Missing subject type on questionnaire. Provide Questionnaire.subjectType to resolve.</string>
@@ -109,6 +114,11 @@
     <string name="extraction_in_progress">Processing questionnaire data…</string>
     <string name="loading_questionnaire">Loading questionnaire…</string>
     <string name="clear_all">Clear All</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <string name="location_permissions_denied">Location Access Denied: To capture GPS coordinates, please enable location permissions in your device settings.</string>
+    <string name="location_services_disabled">Location services are disabled. Do you want to enable them?</string>
     <string name="copy_text_success_message">Link %1$s copied successfully</string>
     <string name="required_permission_title">Permission required!</string>
     <string name="required_permission_message">Below permissions are required to be allowed to use this app.\n\n %s \n</string>
@@ -116,7 +126,15 @@
     <string name="default_notification_channel_name">quest_notification_channel</string>
     <string name="application_alert_back_pressed_message">Are you sure you want to close the application?</string>
     <string name="application_alert_confirm_button_title">Yes</string>
-
-
-
+    <string name="submit_questionnaire">Submit</string>
+    <string name="invalid_base_resource">The base resource for GeoWidgetConfiguration MUST be Location</string>
+    <string name="no_search_coonfigs_provided">No configs provided for search bar</string>
+    <string name="no_found_locations_matching_text">No location found matching text \"%1$s\"</string>
+    <string name="open_choice_other_hint">Other</string>
+    <string name="qr_code">qr_code</string>
+    <string name="barcode_camera_permission_denied">Camera permission request denied. Barcode may not work as expected</string>
+    <string name="prompt_point_at_a_barcode">Place your camera over the QR Code to start scanning</string>
+    <string name="add_qr_code">Add QR code</string>
+    <string name="scan_qr_code">Scan QR Code</string>
+    <string name="scan_qr_camera_instruction">Place your camera over the entire QR Code to start scanning</string>
 </resources>

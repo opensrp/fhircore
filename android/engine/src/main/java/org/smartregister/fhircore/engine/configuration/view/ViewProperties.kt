@@ -72,4 +72,8 @@ enum class ViewAlignment {
   END,
   CENTER,
   NONE,
+  TOPSTART,
+  TOPEND,
+  BOTTOMSTART,
+  BOTTOMEND,
 }

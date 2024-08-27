@@ -1,0 +1,147 @@
+---
+sidebar_position: 2
+---
+
+# Developer setup
+
+[![Android CI with Gradle](https://github.com/opensrp/fhircore/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/opensrp/fhircore/actions/workflows/ci.yml?query=branch%3Amain)
+[![codecov](https://codecov.io/gh/opensrp/fhircore/branch/main/graph/badge.svg?token=IJUTHZUGGH)](https://codecov.io/gh/opensrp/fhircore)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![project chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.fhir.org/#narrow/stream/370552-OpenSRP)
+
+## Android Studio
+
+Use Android Studio 4.2+.
+
+## Kotlin style
+
+If you would like Android Studio to help format your code, follow these steps to set up your Android Studio:
+
+1. Install and configure the [ktfmt plugin](https://github.com/facebookincubator/ktfmt) in Android Studio by following these steps:
+    1. Go to Android Studio's `Settings` (or `Preferences`), select the `Plugins` category, click the `Marketplace` tab, search for the `ktfmt` plugin, and click the `Install` button
+    1. In Android Studio's `Settings` (or `Preferences`), go to `Editor` → `ktfmt Settings`, tick `Enable ktfmt`, change the `Code style` to `Google (Internal)`, and click `OK`
+1. Indent 2 spaces. In Android Studio's `Settings` (or `Preferences`), go to `Editor` → `Code Style` → `Kotlin` → `Tabs and Indents`, set `Tab size`, `Indent` and `Continuation indent` to `2`, and click `OK`.
+1. Use single name import sorted lexicographically. In Android Studio's `Settings` (or `Preferences`), go to `Editor` → `Code Style` → `Kotlin` → `Imports`, in `Top-level Symbols` and `Java statics and Enum Members` sections select `Use single name import` option, remove all the rules in `Packages to Use Imports with '*'` and `Import Layout` sections and click `OK`.
+
+Now you can go to `Code` → `Reformat code`, or press `Ctrl+Alt+L` (`⌘+⌥+L` for Mac) to automatically format code in Android Studio.
+
+Note that you don't have to do any of these. You could rely on spotless to format any code you want to push. For details see below.
+
+## Build setup
+
+Begin by cloning this repository. Ensure you have JAVA 11 installed, and setup Android studio to use the Java 11 JDK for this project.
+
+Update `local.properties` file by providing the required Keycloak credentials to enable syncing of data to and from the HAPI FHIR server:
+
+```
+#oauth configurations
+OAUTH_BASE_URL=https://keycloak-stage.smartregister.org/auth/realms/FHIR_Android/
+OAUTH_CLIENT_ID="provide client id"
+OAUTH_SCOPE=openid
+
+#fhir store base url
+FHIR_BASE_URL=https://fhir.labs.smartregister.org/fhir/
+
+#sentry dsn
+SENTRY_DSN=<https://your/sentry/project/dsn>
+
+#Optional: Application id for a specific build variant
+OPENSRP_APP_ID="demo"
+
+```
+
+**Note:** It is required to configure your OAuth client as **public** hence there's no need for a _OAuth client secret_.
+
+Create an empty `keystore.properties` file in the path `/android/keystore.properties`. This file is already gitignored so you can set up credentials without leaking to git.
+
+### Gateway vs Non Gateway backend
+The codebase supports building a release that uses the [FHIR Gateway backend](https://github.com/opensrp/fhir-gateway) and one that doesn't. The **proxy** mode is the _default_ but if your backend is not using the [FHIR Gateway](https://github.com/opensrp/fhir-gateway/releases) you need to specify this by switching to the correct build type variant. To switch between the two one needs to change to a variant with the `debugNonProxy` build type. e.g for the flavor `opensrp` select the variant `opensrpDebugNonProxy`
+
+## App release
+
+In order for the `assembleRelease` and/or `bundleRelease` Gradle tasks to work for instance when you need to generate a signed release version of the APK (or AAB), a keystore is required.
+
+Generate your own release keystore using the `keytool` utility (installed as part of the java runtime) by running the following command:
+
+```sh
+keytool -genkey -v -keystore fhircore.keystore.jks -alias <your_alias_name> -keyalg RSA -keysize 4096 -validity 1000
+```
+
+Place the Keystore file in your user(home) directory i.e. `/Users/username/fhircore.keystore.jks` for Windows or `~/fhircore.keystore.jks` for Unix based systems.
+
+Next, create the following SYSTEM_VARIABLEs and set their values accordingly: `KEYSTORE_ALIAS`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD`
+
+**Note:** Assign the generated keystore values to the SYSTEM_VARIABLEs listed above. Also note, if your platform doesn't prompt you for a second password when generating the Keystore (e.g. of type PKCS12) then both the KEYSTORE_PASSWORD and KEY_PASSWORD should have the same value.
+
+You can alternatively store the above credentials in a file named `keystore.properties`. Just be careful to include this file in `.gitignore` to prevent leaking secrets via git VCS.
+
+```
+KEYSTORE_PASSWORD=xxxxxx
+KEYSTORE_ALIAS=xxxxxx
+KEY_PASSWORD=xxxxxx
+```
+Lastly, you can also provide the `local.properties` and/or the `keystore.properties` file as a gradle property using via the property names `localPropertiesFile` and `keystorePropertiesFile` respectively. The value of the properties file should be its absolute file path.
+
+For example, to build the eCHIS release from the terminal you can run the command below:
+```sh
+./gradlew assembleEchisRelease --stacktrace -PlocalPropertiesFile=/Abolute/Path/To/echis.local.properties -PkeystorePropertiesFile=/Absolute/Path/To/echis.keystore.properties
+```
+
+**Note:** The app supports a variant mode that does not require the FHIR Gateway/Proxy to be integrated. To build the same APK as a NON-PROXY variant set the `isNonProxy` gradle property to `true` e.g.
+```sh
+./gradlew assembleEchisRelease --stacktrace -PisNonProxy=true -PlocalPropertiesFile=/Abolute/Path/To/proxy.echis.local.properties -PkeystorePropertiesFile=/Absolute/Path/To/echis.keystore.properties
+```
+
+Refer to the following links for more details:
+
+- [Java Key and Certificate Management Tool](https://docs.oracle.com/javase/6/docs/technotes/tools/windows/keytool.html)
+- [Signing Android apps](https://developer.android.com/studio/publish/app-signing)
+
+
+
+## Application architecture
+
+FHIR Core is based on MVVM Android application architecture. It also follows the recommended [Repository Pattern](https://developer.android.com/jetpack/guide) on its data layer. The diagram below shows the different layers of the application structure and how they interact with eachother.
+
+At the core is Android FHIR SDK which provides Data Access API, Search API, Sync API, Smart Guidelines API and Data Capture API.
+
+## Project Structure
+
+The project currently consists an application module (`quest`) and two Android library modules (`engine` and `geowidget`). The `geowidget` module contains implementation for intergrating Map views to FHIR Core. `engine` module contains shared code.
+
+## Package structure
+
+`quest` and `geowidget` modules packages are grouped based on features. `engine` module on the other hand uses a hybrid approach, combining both layered and feature based package structure.
+
+At a higher level every module is at least organized into three main packages, namely:
+
+### `data`
+
+This package is used to holds classes/objects implementations for accessing data view the Android FHIR SDK APIs. The `data` package for `engine` module is further sub-divided into two sub-packages that is `local` and `remote`. `local` directory holds the implementation for accessing the Sqlite database whereas`remote` directory contains implementation for making http requests to HAPI FHIR server backend.
+
+### `ui`
+
+This package mostly contains Android `Activity`, `Fragment`, `ViewModel`, and `Composable` functions for rendering UI.
+
+### `util`
+
+This package is used to hold any code that shared internally typically implemented as Kotlin extensions. Other utilities use kotlin `object` to implement singletons.
+
+Conventionally, classes are further organized into more cohesive directories within the main packages mentioned above. This should allow minimal updates when code is refactored by moving directories.
+
+## Running the documentation locally
+
+To run the documentation locally navigate to the repository root directory and run:
+
+```
+npm install
+npx docusaurus start
+```
+
+## Resources
+
+Refer to the following links for more details:
+
+- [Android App Architecture Guide](https://developer.android.com/jetpack/guide) - Learn more about Android App Architecture
+- [Jetpack Compose](https://developer.android.com/jetpack/compose) - Learn more about Jetpack Compose
+- [Sentry DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/)

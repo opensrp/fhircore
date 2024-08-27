@@ -24,9 +24,9 @@ import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
@@ -201,8 +201,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     fhirCarePlanGenerator =
       FhirCarePlanGenerator(
         fhirEngine = fhirEngine,
-        transformSupportServices = transformSupportServices,
         fhirPathEngine = fhirPathEngine,
+        transformSupportServices = transformSupportServices,
         defaultRepository = defaultRepository,
         fhirResourceUtil = fhirResourceUtil,
         workflowCarePlanGenerator = workflowCarePlanGenerator,
@@ -566,8 +566,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           carePlan.description,
         )
         assertEquals(patient.logicalId, carePlan.subject.extractId())
-        assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
-        assertEquals(patient.generalPractitionerFirstRep.extractId(), carePlan.author.extractId())
+        assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable(),
+        )
+        assertEquals(
+          patient.generalPractitionerFirstRep.extractId(),
+          carePlan.author.extractId(),
+        )
         assertEquals(
           DateTimeType.now().value.makeItReadable(),
           carePlan.period.start.makeItReadable(),
@@ -645,7 +651,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         assertEquals("HH Routine visit Plan", carePlan.title)
         assertEquals("sample plan", carePlan.description)
         assertEquals(group.logicalId, carePlan.subject.extractId())
-        assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
+        assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable(),
+        )
         assertNotNull(carePlan.period.start)
         assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
 
@@ -716,7 +725,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           carePlan.description,
         )
         assertEquals(group.logicalId, carePlan.subject.extractId())
-        assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
+        assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable(),
+        )
         assertNotNull(carePlan.period.start)
         assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
 
@@ -880,8 +892,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val createdTasksSlot = mutableListOf<Resource>()
     val updatedTasksSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
-    coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(createdTasksSlot)) } just
-      runs
+    coEvery {
+      defaultRepository.addOrUpdate(
+        capture(booleanSlot),
+        capture(createdTasksSlot),
+      )
+    } just runs
     coEvery { defaultRepository.addOrUpdate(any(), capture(updatedTasksSlot)) } just runs
     coEvery { fhirEngine.update(any()) } just runs
     coEvery { fhirEngine.get<StructureMap>("528a8603-2e43-4a2e-a33d-1ec2563ffd3e") } returns
@@ -912,7 +928,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         subject = patient,
         data =
           Bundle()
-            .addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse }),
+            .addEntry(
+              Bundle.BundleEntryComponent().apply { resource = questionnaireResponse },
+            ),
       )
       ?.also { carePlan: CarePlan ->
         assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
@@ -974,7 +992,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       .generateOrUpdateCarePlan(
         plandefinition,
         patient,
-        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse }),
+        Bundle()
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponse },
+          ),
       )
       .also { _ ->
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
@@ -1190,7 +1211,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
                   val ancStart =
                     fhirCarePlanGenerator
-                      .evaluateToDate(DateTimeType(lmp.value), "\$this + 3 'month'")!!
+                      .evaluateToDate(
+                        DateTimeType(lmp.value),
+                        "\$this + 3 'month'",
+                      )!!
                       .value
                   this.forEachIndexed { index, task ->
                     assertEquals(
@@ -1336,7 +1360,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
                     it.code.codingFirstRep.code == "33879002"
                 },
               )
-              assertTrue(tasks.all { it.description.contains(it.reasonCode.text, true) })
+              assertTrue(
+                tasks.all {
+                  it.description.contains(
+                    it.reasonCode.text,
+                    true,
+                  )
+                },
+              )
               assertTrue(
                 tasks.all {
                   it.`for`.reference == questionnaireResponses.first().subject.reference
@@ -1508,7 +1539,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
                     it.code.codingFirstRep.code == "33879002"
                 },
               )
-              assertTrue(tasks.all { it.description.contains(it.reasonCode.text, true) })
+              assertTrue(
+                tasks.all {
+                  it.description.contains(
+                    it.reasonCode.text,
+                    true,
+                  )
+                },
+              )
               assertTrue(
                 tasks.all {
                   it.`for`.reference == questionnaireResponses.first().subject.reference
@@ -1536,7 +1574,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
                   "IPV" -> assertEquals(task.groupIdentifier.value, "14_wk")
                   "MEASLES 1" -> assertEquals(task.groupIdentifier.value, "9_mo")
                   "MEASLES 2" -> assertEquals(task.groupIdentifier.value, "15_mo")
-                  "YELLOW FEVER" -> assertEquals(task.groupIdentifier.value, "9_mo")
+                  "YELLOW FEVER" ->
+                    assertEquals(
+                      task.groupIdentifier.value,
+                      "9_mo",
+                    )
                   "TYPHOID" -> assertEquals(task.groupIdentifier.value, "9_mo")
                   "HPV 1" -> assertEquals(task.groupIdentifier.value, "108_mo")
                   "HPV 2" -> assertEquals(task.groupIdentifier.value, "114_mo")
@@ -1605,8 +1647,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
               val pcv2 = tasks.first { it.description.contains("PCV 2") }
               val bcg = tasks.first { it.description.contains("BCG") }
 
-              assertEquals(opv2.partOf.first().reference.toString(), opv1.referenceValue())
-              assertEquals(pcv3.partOf.first().reference.toString(), pcv2.referenceValue())
+              assertEquals(
+                opv2.partOf.first().reference.toString(),
+                opv1.referenceValue(),
+              )
+              assertEquals(
+                pcv3.partOf.first().reference.toString(),
+                pcv2.referenceValue(),
+              )
               assertTrue(bcg.partOf.isEmpty())
               val c = Calendar.getInstance()
               c.time = opv1.restriction?.period?.start!!
@@ -1666,10 +1714,21 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           carePlan.description,
         )
         assertEquals(patient.logicalId, carePlan.subject.extractId())
-        assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
-        assertEquals(patient.generalPractitionerFirstRep.extractId(), carePlan.author.extractId())
+        assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.created.makeItReadable(),
+        )
+        assertEquals(
+          patient.generalPractitionerFirstRep.extractId(),
+          carePlan.author.extractId(),
+        )
         assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
-        coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(resourcesSlot)) }
+        coEvery {
+          defaultRepository.addOrUpdate(
+            capture(booleanSlot),
+            capture(resourcesSlot),
+          )
+        }
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
           .map { it as Task }
@@ -1876,7 +1935,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun `updateDependentTaskDueDate should update dependent task without output`() {
     coEvery { fhirEngine.search<Task>(any()) } returns emptyList()
-    coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
+    coEvery {
+      fhirEngine.get(
+        ResourceType.Task,
+        "650203d2-f327-4eb4-a9fd-741e0ce29c3f",
+      )
+    } returns
       opv0.apply {
         status = TaskStatus.READY
         partOf = listOf(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f"))
@@ -1902,7 +1966,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Test
   fun `updateDependentTaskDueDate should run with dependent task, with output but no execution period start date`() {
-    coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
+    coEvery {
+      fhirEngine.get(
+        ResourceType.Task,
+        "650203d2-f327-4eb4-a9fd-741e0ce29c3f",
+      )
+    } returns
       opv0.apply {
         status = TaskStatus.INPROGRESS
         output = listOf()
@@ -1918,7 +1987,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun `updateDependentTaskDueDate with dependent task with output, execution period start date, and encounter part of reference that is null`() {
     coEvery { fhirEngine.search<Task>(any()) } returns emptyList()
-    coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
+    coEvery {
+      fhirEngine.get(
+        ResourceType.Task,
+        "650203d2-f327-4eb4-a9fd-741e0ce29c3f",
+      )
+    } returns
       opv1.apply {
         status = TaskStatus.INPROGRESS
         output =
@@ -1951,7 +2025,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun `updateDependentTaskDueDate with dependent task with output, execution period start date, and encounter part of reference that is not an Immunization`() {
     coEvery { fhirEngine.search<Task>(any()) } returns emptyList()
-    coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
+    coEvery {
+      fhirEngine.get(
+        ResourceType.Task,
+        "650203d2-f327-4eb4-a9fd-741e0ce29c3f",
+      )
+    } returns
       opv1.apply {
         status = TaskStatus.INPROGRESS
         output =
@@ -1991,7 +2070,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Test
   fun `updateDependentTaskDueDate with Task input value equal or greater than difference between administration date and depedentTask executionPeriod start`() {
-    coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
+    coEvery {
+      fhirEngine.get(
+        ResourceType.Task,
+        "650203d2-f327-4eb4-a9fd-741e0ce29c3f",
+      )
+    } returns
       opv1.apply {
         status = TaskStatus.INPROGRESS
         output =
@@ -2496,7 +2580,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     assertEquals(planDefinition.title, carePlan.title)
     assertEquals(planDefinition.description, carePlan.description)
     assertEquals(patient.logicalId, carePlan.subject.extractId())
-    assertEquals(DateTimeType(dateToday).value.makeItReadable(), carePlan.created.makeItReadable())
+    assertEquals(
+      DateTimeType(dateToday).value.makeItReadable(),
+      carePlan.created.makeItReadable(),
+    )
     assertEquals(patient.generalPractitionerFirstRep.extractId(), carePlan.author.extractId())
 
     assertEquals(referenceDate.makeItReadable(), carePlan.period.start.makeItReadable())
@@ -2529,6 +2616,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       "HPV 1" to patient.birthDate.plusMonths(108),
       "HPV 2" to patient.birthDate.plusMonths(114),
     )
+
+  @Test
+  fun cleanPlanDefinitionCanonical() {
+    val carePlan = CarePlan().apply { instantiatesCanonical = listOf(CanonicalType("123456")) }
+    fhirCarePlanGenerator.invokeCleanPlanDefinitionCanonical(carePlan)
+    assertEquals("PlanDefinition/123456", carePlan.instantiatesCanonical.first().value)
+  }
 }
 
 private fun Date.asYyyyMmDd(): String = this.formatDate(SDF_YYYY_MM_DD)
