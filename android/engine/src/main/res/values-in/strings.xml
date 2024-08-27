@@ -1,5 +1,5 @@
 <resources>
-    <string name="sync">Sinkronisasi manual</string>
+    <string name="manual_sync">Sinkronisasi manual</string>
     <string name="language">Bahasa</string>
     <string name="logout_as_user">Keluar sebagai </string>
     <string name="show_overdue">Tampilkan yang terlambat</string>
