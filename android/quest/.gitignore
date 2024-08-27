@@ -3,3 +3,4 @@ release/
 src/androidTest/assets/resources.db
 src/benchmark/assets/resources.db
 **/debug/
+*.orig

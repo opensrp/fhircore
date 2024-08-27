@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -30,8 +31,11 @@ import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -60,6 +64,7 @@ fun TabView(
   viewProperties: TabViewProperties,
   resourceData: ResourceData,
   navController: NavController,
+  decodedImageMap: SnapshotStateMap<String, Bitmap>,
   selectedTabIndex: Int? = null,
   tabChangedEvent: ((Int) -> Unit)? = null,
 ) {
@@ -85,6 +90,7 @@ fun TabView(
       viewProperties = viewProperties,
       resourceData = resourceData,
       navController = navController,
+      decodedImageMap = decodedImageMap,
     )
   }
 }
@@ -160,6 +166,7 @@ fun TabContents(
   viewProperties: TabViewProperties,
   resourceData: ResourceData,
   navController: NavController,
+  decodedImageMap: SnapshotStateMap<String, Bitmap>,
 ) {
   HorizontalPager(
     verticalAlignment = Alignment.Top,
@@ -177,6 +184,7 @@ fun TabContents(
             viewProperties = listOf(viewProperties.tabContents[pageIndex]),
             resourceData = resourceData,
             navController = navController,
+            decodedImageMap = decodedImageMap
           )
         }
       }
@@ -185,6 +193,7 @@ fun TabContents(
         viewProperties = listOf(viewProperties.tabContents[pageIndex]),
         resourceData = resourceData,
         navController = navController,
+        decodedImageMap = decodedImageMap,
       )
     }
   }
@@ -233,6 +242,7 @@ private fun TabViewPreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodedImageMap = remember { mutableStateMapOf() },
     )
   }
 }

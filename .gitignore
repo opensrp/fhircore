@@ -23,6 +23,7 @@ captures/
 
 # IntelliJ
 *.iml
+*.orig
 .idea/
 
 # Fleet

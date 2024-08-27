@@ -454,6 +454,7 @@ dependencies {
   implementation(libs.firebase.messaging.ktx)
   implementation(libs.gms.play.services.location)
   implementation(libs.mlkit.barcode.scanning)
+  implementation(libs.material3)
 
   implementation(libs.bundles.cameraX)
 

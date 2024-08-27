@@ -21,3 +21,6 @@ keystore.properties
 
 # Gradle Properties
 gradle.properties
+
+
+*.orig

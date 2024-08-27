@@ -261,6 +261,7 @@ fun GenerateView(
           viewProperties = properties as TabViewProperties,
           resourceData = resourceData,
           navController = navController,
+          decodedImageMap = decodedImageMap,
         )
       ViewType.PERSONAL_DATA ->
         PersonalDataView(

@@ -174,7 +174,7 @@ open class AppMainActivity :
       navController.navInflater.inflate(R.navigation.application_nav_graph).apply {
         val startDestination =
           when (appMainViewModel.applicationConfiguration.navigationStartDestination.launcherType) {
-            LauncherType.MAP -> R.id.geoWidgetLauncherFragment
+            LauncherType.MAP -> 0
             LauncherType.REGISTER -> R.id.registerFragment
           }
         setStartDestination(startDestination)

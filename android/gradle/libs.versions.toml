@@ -60,6 +60,7 @@ lifecycle= "2.8.3"
 mapbox-sdk-turf = "4.8.0"
 material = "1.12.0"
 mlkit-barcode-scanning = "17.3.0"
+material3 = "1.2.0"
 mockk = "1.13.8"
 mockk-android = "1.13.8"
 msg-simple = "1.2"
@@ -170,6 +171,8 @@ lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-view
 mapbox-sdk-turf = { group = "com.mapbox.mapboxsdk", name = "mapbox-sdk-turf", version.ref = "mapbox-sdk-turf" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 mlkit-barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "mlkit-barcode-scanning"}
+
+material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk-android" }
 msg-simple = { group = "com.github.java-json-tools", name = "msg-simple", version.ref = "msg-simple" }
