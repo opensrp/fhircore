@@ -15,7 +15,7 @@
     <string name="fully_vaccinated">"Chanjo kamili"</string>
     <string name="select_language">Chagua Lugha</string>
     <string name="register_new_client">Sajilisha mteja</string>
-    <string name="sync">Sawazisha</string>
+    <string name="manual_sync">Sawazisha</string>
     <string name="show_overdue">Onyesha waliochelewa</string>
     <string name="record_vaccine_nl">Rekodi\nChanjo</string>
     <string name="str_save">Hifadhi</string>

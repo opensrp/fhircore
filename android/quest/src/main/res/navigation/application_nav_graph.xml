@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/geoWidgetLauncherFragment"
-        android:name="org.smartregister.fhircore.quest.ui.launcher.GeoWidgetLauncherFragment">
+        android:name="org.smartregister.fhircore.quest.ui.geowidget.GeoWidgetLauncherFragment">
         <argument
             android:name="geoWidgetId"
             android:defaultValue=""
