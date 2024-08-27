@@ -183,20 +183,22 @@ constructor(
 
   fun forgotPassword(context: Context) {
     val contactNumber = applicationConfiguration.loginConfig.supervisorContactNumber
+    val countryCode = applicationConfiguration.loginConfig.countryCode
     if (!contactNumber.isNullOrEmpty()) {
-      val formattedNumber = formatPhoneNumber(context, contactNumber)
+      val formattedNumber = countryCode?.let { formatPhoneNumber(context, contactNumber, it) }
       _launchDialPad.value = formattedNumber
     } else {
       Toast.makeText(context, context.getString(R.string.call_supervisor), Toast.LENGTH_LONG).show()
     }
   }
 
-  fun formatPhoneNumber(context: Context, number: String): String {
+  fun formatPhoneNumber(context: Context, number: String, countryCode: String): String {
     return try {
       val cleanedNumber = number.filter { it.isDigit() }
-      val countryCode = context.getString(R.string.country_code)
+      // Format the number using the provided country code
       PhoneNumberUtils.formatNumber(cleanedNumber, countryCode)
     } catch (e: Exception) {
+      // Log the error and return the original number if formatting fails
       Timber.tag("PhoneNumberFormatting").e(e, "Error formatting phone number")
       number
     }
