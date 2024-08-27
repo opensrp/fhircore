@@ -192,15 +192,13 @@ fun AppDrawer(
 
         item {
           if (navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true) {
-            Column(modifier = modifier.padding(horizontal = 16.dp)) {
-              OtherPatientsItem(
-                navigationConfiguration = navigationConfiguration,
-                onSideMenuClick = onSideMenuClick,
-                openDrawer = openDrawer,
-                navController = navController,
-              )
-              if (navigationConfiguration.staticMenu.isNotEmpty()) Divider(color = DividerColor)
-            }
+            OtherPatientsItem(
+              navigationConfiguration = navigationConfiguration,
+              onSideMenuClick = onSideMenuClick,
+              openDrawer = openDrawer,
+              navController = navController,
+            )
+            if (navigationConfiguration.staticMenu.isNotEmpty()) Divider(color = DividerColor)
           }
         }
 
