@@ -52,6 +52,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -108,6 +109,9 @@ class MeasureReportViewModelTest : RobolectricTest() {
   @Inject lateinit var defaultRepository: DefaultRepository
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  private val unconfinedTestDispatcher = UnconfinedTestDispatcher()
 
   @Inject lateinit var fhirEngine: FhirEngine
   private val measureReportRepository: MeasureReportRepository = mockk()
@@ -302,9 +306,9 @@ class MeasureReportViewModelTest : RobolectricTest() {
     Assert.assertNotNull(sampleSubjectViewData.family, subjectViewData?.family)
   }
 
-  @Test()
+  @Test
   fun testEvaluateMeasureUtilizesPreviouslyGeneratedMeasureReportIfAvailable() =
-    runTest(timeout = 90.seconds) {
+    runTest(timeout = 90.seconds, context = unconfinedTestDispatcher) {
       val subject = Group().apply { id = "groupId" }
       val testMeasureReport =
         MeasureReport().apply {
