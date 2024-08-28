@@ -42,15 +42,10 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
-import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
-import java.time.OffsetDateTime
-import java.time.format.DateTimeParseException
 import javax.inject.Inject
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.launchIn
@@ -87,8 +82,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
   private val registerViewModel by viewModels<RegisterViewModel>()
   private val appMainViewModel by activityViewModels<AppMainViewModel>()
   private val searchViewModel by activityViewModels<SearchViewModel>()
-
-  @Inject lateinit var workManager: WorkManager
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -199,32 +192,13 @@ class RegisterFragment : Fragment(), OnSyncListener {
   override fun onResume() {
     super.onResume()
     syncListenerManager.registerSyncListener(this, lifecycle)
-    resetFirstTimeSync()
+    checkFirstTimeSyncStatus()
   }
 
-  private fun resetFirstTimeSync() {
-    if (registerViewModel.registerUiState.value.isFirstTimeSync) {
-      val syncInfo =
-        workManager.getWorkInfosForUniqueWork(
-          "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
-        )
-
-      if (syncInfo.get().size > 0) {
-        workManager.getWorkInfoByIdLiveData(syncInfo.get().first().id).observe(
-          viewLifecycleOwner,
-        ) { workInfo: WorkInfo ->
-          if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
-            val outputDataState = workInfo.outputData.getString("State") ?: ""
-            val outputData = Gson().fromJson(outputDataState, OutputDataState::class.java)
-            val dateTimestamp =
-              try {
-                OffsetDateTime.parse(outputData?.timestamp ?: "")
-              } catch (e: DateTimeParseException) {
-                OffsetDateTime.now()
-              }
-            onSync(CurrentSyncJobStatus.Succeeded(dateTimestamp))
-          }
-        }
+  private fun checkFirstTimeSyncStatus() {
+    if (registerViewModel.isFirstTimeSync()) {
+      if (appMainViewModel.getSyncWorkerStatus()) {
+        onSync(CurrentSyncJobStatus.Succeeded(appMainViewModel.getSyncWorkerCompletionTime()))
       }
     }
   }

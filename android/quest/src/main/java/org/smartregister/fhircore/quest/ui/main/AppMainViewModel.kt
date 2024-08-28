@@ -37,13 +37,10 @@ import java.time.OffsetDateTime
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
@@ -51,15 +48,12 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.app.SyncStrategy
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
-import org.smartregister.fhircore.engine.sync.AppSyncWorker
 import org.smartregister.fhircore.engine.sync.CustomSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
@@ -88,6 +82,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.decodeBinaryResourcesToBitmap
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
+import timber.log.Timber
 
 @HiltViewModel
 class AppMainViewModel
@@ -273,20 +268,6 @@ constructor(
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
-  fun triggerSync() {
-    viewModelScope.launch { syncBroadcaster.runFirstTimeSync() }
-
-    workManager.run {
-      schedulePeriodically<AppSyncWorker>(
-        workId = AppSyncWorker.WORK_ID,
-        repeatInterval = applicationConfiguration.syncInterval,
-        timeUnit = TimeUnit.MINUTES,
-        requiresNetwork = true,
-        initialDelay = applicationConfiguration.syncInterval,
-      )
-    }
-  }
-
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
     workManager.run {
@@ -405,6 +386,29 @@ constructor(
 
   private fun getSyncProgress(completed: Int, total: Int) =
     completed * 100 / if (total > 0) total else 1
+
+  fun getSyncWorkerStatus(): Boolean {
+    return sharedPreferencesHelper
+      .read(
+        "SYNC_WORKER_COMPLETE",
+        "false",
+      )
+      .toBoolean()
+  }
+
+  fun getSyncWorkerCompletionTime(): OffsetDateTime {
+    val syncWorkerCompletionTime =
+      sharedPreferencesHelper.read(
+        "SYNC_WORKER_COMPLETION_TIME",
+        null,
+      )
+    return try {
+      OffsetDateTime.parse(syncWorkerCompletionTime)
+    } catch (e: Exception) {
+      Timber.e(e, "Failed to pass OffsetDateTime")
+      OffsetDateTime.now()
+    }
+  }
 
   companion object {
     const val SYNC_TIMESTAMP_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"
