@@ -184,7 +184,7 @@ fun ActionConfig.handleClickEvent(
     ApplicationWorkflow.LAUNCH_INSIGHT_SCREEN ->
       navController.navigate(MainNavigationScreen.Insight.route)
     ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
-    ApplicationWorkflow.LAUNCH_MAP -> {
+    /*ApplicationWorkflow.LAUNCH_MAP -> {
       val mapFragmentDestination = MainNavigationScreen.GeoWidgetLauncher.route
 
       val isMapFragmentExists = navController.currentDestination?.id == mapFragmentDestination
@@ -197,7 +197,7 @@ fun ActionConfig.handleClickEvent(
           navOptions = navOptions(mapFragmentDestination, inclusive = true, singleOnTop = true),
         )
       }
-    }
+    }*/
     ApplicationWorkflow.LAUNCH_DIALLER -> {
       val actionParameter = interpolatedParams.first()
       val patientPhoneNumber = actionParameter.value

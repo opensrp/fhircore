@@ -127,7 +127,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
               } else startDestinationConfig.id,
           )
         }
-        LauncherType.MAP -> bundleOf(NavigationArg.GEO_WIDGET_ID to startDestinationConfig.id)
       }
 
     // Retrieve the navController directly from the NavHostFragment
@@ -138,7 +137,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       navController.navInflater.inflate(R.navigation.application_nav_graph).apply {
         val startDestination =
           when (appMainViewModel.applicationConfiguration.navigationStartDestination.launcherType) {
-            LauncherType.MAP -> R.id.geoWidgetLauncherFragment
             LauncherType.REGISTER -> R.id.registerFragment
           }
         setStartDestination(startDestination)

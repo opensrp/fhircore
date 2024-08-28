@@ -64,7 +64,7 @@ class FhirEngineModule {
               connectionTimeOut = TIMEOUT_DURATION,
               readTimeOut = TIMEOUT_DURATION,
               writeTimeOut = TIMEOUT_DURATION,
-              uploadWithGzip = true,
+              uploadWithGzip = !BuildConfig.DEBUG,
             ),
           httpLogger =
             HttpLogger(

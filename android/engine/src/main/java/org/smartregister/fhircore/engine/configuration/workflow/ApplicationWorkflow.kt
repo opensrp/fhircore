@@ -43,7 +43,7 @@ enum class ApplicationWorkflow {
   LAUNCH_QUESTIONNAIRE,
 
   /** A workflow for navigating to maps */
-  LAUNCH_MAP,
+//  LAUNCH_MAP,
 
   /** A workflow for changing a managing entity */
   CHANGE_MANAGING_ENTITY,

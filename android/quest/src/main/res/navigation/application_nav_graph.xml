@@ -5,21 +5,6 @@
     app:startDestination="@id/registerFragment">
 
     <fragment
-        android:id="@+id/geoWidgetLauncherFragment"
-        android:name="org.smartregister.fhircore.quest.ui.geowidget.GeoWidgetLauncherFragment">
-        <argument
-            android:name="geoWidgetId"
-            android:defaultValue=""
-            app:argType="string"
-            app:nullable="false" />
-        <argument
-            android:name="toolBarHomeNavigation"
-            android:defaultValue="OPEN_DRAWER"
-            app:argType="org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation"
-            app:nullable="false" />
-    </fragment>
-
-    <fragment
         android:id="@+id/registerFragment"
         android:name="org.smartregister.fhircore.quest.ui.register.RegisterFragment">
         <argument
