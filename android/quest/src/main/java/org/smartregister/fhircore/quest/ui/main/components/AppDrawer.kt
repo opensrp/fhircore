@@ -192,15 +192,13 @@ fun AppDrawer(
 
         item {
           if (navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true) {
-            Column(modifier = modifier.padding(horizontal = 16.dp)) {
-              OtherPatientsItem(
-                navigationConfiguration = navigationConfiguration,
-                onSideMenuClick = onSideMenuClick,
-                openDrawer = openDrawer,
-                navController = navController,
-              )
-              if (navigationConfiguration.staticMenu.isNotEmpty()) Divider(color = DividerColor)
-            }
+            OtherPatientsItem(
+              navigationConfiguration = navigationConfiguration,
+              onSideMenuClick = onSideMenuClick,
+              openDrawer = openDrawer,
+              navController = navController,
+            )
+            if (navigationConfiguration.staticMenu.isNotEmpty()) Divider(color = DividerColor)
           }
         }
 
@@ -317,11 +315,11 @@ private fun DefaultSyncStatus(
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
 ) {
-  val noUnsyncedData = unSyncedResourceCount.intValue == 0
+  val allDataSynced = unSyncedResourceCount.intValue == 0
   Box(
     modifier =
       Modifier.background(
-          if (noUnsyncedData) {
+          if (allDataSynced) {
             SideMenuBottomItemDarkColor
           } else WarningColor.copy(alpha = TRANSPARENCY),
         )
@@ -330,15 +328,27 @@ private fun DefaultSyncStatus(
     SideMenuItem(
       modifier = Modifier,
       imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, reference = "ic_sync"),
-      title = stringResource(org.smartregister.fhircore.engine.R.string.sync),
+      title =
+        stringResource(
+          if (allDataSynced) {
+            org.smartregister.fhircore.engine.R.string.manual_sync
+          } else org.smartregister.fhircore.engine.R.string.sync,
+        ),
+      subTitle =
+        if (allDataSynced) {
+          null
+        } else {
+          stringResource(org.smartregister.fhircore.engine.R.string.unsynced_data_present)
+        },
+      subTitleTextColor = SubtitleTextColor,
       endText = appUiState.lastSyncTime,
       padding = 0,
       showEndText = true,
-      endTextColor = if (noUnsyncedData) SubtitleTextColor else Color.Unspecified,
-      mainTextColor = if (noUnsyncedData) Color.White else Color.Unspecified,
-      mainTextBold = !noUnsyncedData,
-      startIcon = if (noUnsyncedData) null else Icons.Default.Error,
-      startIconColor = if (noUnsyncedData) null else WarningColor,
+      endTextColor = if (allDataSynced) SubtitleTextColor else Color.Unspecified,
+      mainTextColor = if (allDataSynced) Color.White else Color.Unspecified,
+      mainTextBold = !allDataSynced,
+      startIcon = if (allDataSynced) null else Icons.Default.Error,
+      startIconColor = if (allDataSynced) null else WarningColor,
     ) {
       openDrawer(false)
       onSideMenuClick(AppMainEvent.SyncData(context))
@@ -467,6 +477,8 @@ private fun SideMenuItem(
   imageConfig: ImageConfig? = null,
   mainTextColor: Color = Color.White,
   title: String,
+  subTitle: String? = null,
+  subTitleTextColor: Color = SubtitleTextColor,
   endText: String = "",
   endTextColor: Color = Color.White,
   padding: Int = 12,
@@ -489,7 +501,7 @@ private fun SideMenuItem(
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(
-      modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG),
+      modifier = modifier.padding(end = 16.dp).testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG),
       verticalAlignment = Alignment.CenterVertically,
     ) {
       if (startIcon != null) {
@@ -501,16 +513,26 @@ private fun SideMenuItem(
         )
       } else {
         Image(
-          paddingEnd = 10,
+          paddingEnd = 8,
           imageProperties = ImageProperties(imageConfig = imageConfig, size = 32),
           tint = MenuItemColor,
           navController = rememberNavController(),
         )
       }
-      SideMenuItemText(title = title, textColor = mainTextColor, boldText = mainTextBold)
+      Column {
+        SideMenuItemText(title = title, textColor = mainTextColor, boldText = mainTextBold)
+        if (!subTitle.isNullOrBlank()) {
+          SideMenuItemText(
+            title = subTitle,
+            textColor = subTitleTextColor,
+            boldText = false,
+            textSize = 14,
+          )
+        }
+      }
     }
     if (showEndText) {
-      SideMenuItemText(title = endText, textColor = endTextColor)
+      SideMenuItemText(title = endText, textColor = endTextColor, textSize = 14)
     }
     endImageVector?.let { imageVector ->
       Icon(
@@ -548,7 +570,7 @@ fun AppDrawerPreview() {
         appMainUiStateOf(
           appTitle = "MOH VTS",
           username = "Demo",
-          lastSyncTime = "05:30 PM, Mar 3",
+          lastSyncTime = "Mar 3, 05:30 PM",
           currentLanguage = "English",
           languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
           navigationConfiguration =
@@ -583,7 +605,7 @@ fun AppDrawerWithUnSyncedDataPreview() {
         appMainUiStateOf(
           appTitle = "MOH VTS",
           username = "Demo",
-          lastSyncTime = "05:30 PM, Mar 3",
+          lastSyncTime = "Aug 16, 06:54 PM",
           currentLanguage = "English",
           languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
           navigationConfiguration =
@@ -621,7 +643,7 @@ fun AppDrawerOnSyncCompletePreview() {
         appMainUiStateOf(
           appTitle = "MOH VTS",
           username = "Demo",
-          lastSyncTime = "05:30 PM, Mar 3",
+          lastSyncTime = "Mar 3, 05:30 PM",
           currentLanguage = "English",
           languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
           navigationConfiguration =
@@ -663,7 +685,7 @@ fun AppDrawerOnSyncFailedPreview() {
         appMainUiStateOf(
           appTitle = "MOH VTS",
           username = "Demo",
-          lastSyncTime = "05:30 PM, Mar 3",
+          lastSyncTime = "Mar 3, 05:30 PM",
           currentLanguage = "English",
           languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
           navigationConfiguration =
@@ -705,7 +727,7 @@ fun AppDrawerOnSyncRunningPreview() {
         appMainUiStateOf(
           appTitle = "MOH VTS",
           username = "Demo",
-          lastSyncTime = "05:30 PM, Mar 3",
+          lastSyncTime = "Mar 3, 05:30 PM",
           currentLanguage = "English",
           languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
           navigationConfiguration =
