@@ -26,6 +26,7 @@ import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -41,6 +42,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import java.io.File
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -49,8 +51,10 @@ import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Address
+import org.hl7.fhir.r4.model.Attachment
 import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
@@ -66,6 +70,7 @@ import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.IntegerType
+import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Observation
@@ -103,6 +108,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isToday
@@ -137,6 +143,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var parser: IParser
+
+  @Inject lateinit var knowledgeManager: KnowledgeManager
 
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
   private lateinit var questionnaireConfig: QuestionnaireConfig
@@ -207,6 +215,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           fhirOperator = fhirOperator,
           fhirPathDataExtractor = fhirPathDataExtractor,
           configurationRegistry = configurationRegistry,
+          knowledgeManager = knowledgeManager,
         ),
       )
 
@@ -637,7 +646,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireViewModelInstance =
       QuestionnaireViewModel(
         defaultRepository = defaultRepository,
-        dispatcherProvider = defaultRepository.dispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         fhirCarePlanGenerator = fhirCarePlanGenerator,
         resourceDataRulesExecutor = resourceDataRulesExecutor,
         transformSupportServices = mockk(),
@@ -646,6 +655,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         fhirValidatorProvider = fhirValidatorProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
         configurationRegistry = configurationRegistry,
+        knowledgeManager = knowledgeManager,
       )
     val patientAgeLinkId = "patient-age"
     val newQuestionnaireConfig =
@@ -1040,34 +1050,58 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
   @Test
-  fun testExecuteCqlShouldInvokeRunCqlLibrary() = runTest {
-    val bundle =
-      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
+  fun testExecuteCqlShouldInvokeRunCqlLibrary() =
+    runTest(UnconfinedTestDispatcher()) {
+      val bundle =
+        Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
 
-    val questionnaire =
-      samplePatientRegisterQuestionnaire.copy().apply {
-        addExtension(
-          Extension().apply {
-            url = "https://sample.cqf-library.url"
-            setValue(StringType("http://smartreg.org/Library/123"))
-          },
+      val questionnaire =
+        samplePatientRegisterQuestionnaire.copy().apply {
+          addExtension(
+            Extension().apply {
+              url = "https://sample.cqf-library.url"
+              setValue(StringType("http://smartreg.org/Library/123"))
+            },
+          )
+        }
+
+      coEvery { fhirOperator.evaluateLibrary(any(), any(), any(), any()) } returns Parameters()
+
+      val cqlLibrary =
+        Library().apply {
+          id = "Library/123"
+          url = "http://smartreg.org/Library/123"
+          name = "123"
+          version = "1.0.0"
+          status = Enumerations.PublicationStatus.ACTIVE
+          addContent(
+            Attachment().apply {
+              contentType = "text/cql"
+              data = "someCQL".toByteArray()
+            },
+          )
+        }
+
+      knowledgeManager.install(
+        File.createTempFile(cqlLibrary.name, ".json").apply {
+          this.writeText(cqlLibrary.encodeResourceToString())
+        },
+      )
+
+      fhirEngine.create(patient)
+
+      questionnaireViewModel.executeCql(patient, bundle, questionnaire)
+
+      coVerify {
+        fhirOperator.evaluateLibrary(
+          "http://smartreg.org/Library/123",
+          patient.asReference().reference,
+          null,
+          bundle,
+          null,
         )
       }
-
-    coEvery { fhirOperator.evaluateLibrary(any(), any(), any(), any()) } returns Parameters()
-
-    questionnaireViewModel.executeCql(patient, bundle, questionnaire)
-    fhirEngine.create(patient)
-
-    coVerify {
-      fhirOperator.evaluateLibrary(
-        "http://smartreg.org/Library/123",
-        patient.asReference().reference,
-        null,
-        expressions = setOf(),
-      )
     }
-  }
 
   @Test
   fun testGenerateCarePlan() = runTest {
@@ -1259,7 +1293,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           encounterId = null,
         )
       Assert.assertNotNull(latestQuestionnaireResponse)
-      Assert.assertEquals("qr1", latestQuestionnaireResponse?.id)
+      Assert.assertEquals("QuestionnaireResponse/qr1", latestQuestionnaireResponse?.id)
     }
 
   @Test
@@ -1793,7 +1827,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       val questionnaireViewModelInstance =
         QuestionnaireViewModel(
           defaultRepository = defaultRepository,
-          dispatcherProvider = defaultRepository.dispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
           transformSupportServices = mockk(),
@@ -1802,6 +1836,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           fhirValidatorProvider = fhirValidatorProvider,
           fhirPathDataExtractor = fhirPathDataExtractor,
           configurationRegistry = configurationRegistry,
+          knowledgeManager = knowledgeManager,
         )
       val questionnaireWithDefaultDate =
         Questionnaire().apply {
@@ -1844,7 +1879,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireViewModelInstance =
       QuestionnaireViewModel(
         defaultRepository = defaultRepository,
-        dispatcherProvider = defaultRepository.dispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         fhirCarePlanGenerator = fhirCarePlanGenerator,
         resourceDataRulesExecutor = resourceDataRulesExecutor,
         transformSupportServices = mockk(),
@@ -1853,6 +1888,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         fhirValidatorProvider = fhirValidatorProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
         configurationRegistry = configurationRegistry,
+        knowledgeManager = knowledgeManager,
       )
     val questionnaireConfig1 =
       questionnaireConfig.copy(

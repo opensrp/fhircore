@@ -31,8 +31,8 @@ import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -115,6 +115,7 @@ constructor(
   val fhirValidatorProvider: Provider<FhirValidator>,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val configurationRegistry: ConfigurationRegistry,
+  val knowledgeManager: KnowledgeManager,
 ) : ViewModel() {
   private val parser = FhirContext.forR4Cached().newJsonParser()
 
@@ -779,58 +780,53 @@ constructor(
       bundle.addEntry(Bundle.BundleEntryComponent().setResource(basicResource))
     }
 
-    val libraryFilters =
-      questionnaire.cqfLibraryUrls().map {
-        val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.extractLogicalIdUuid()) }
-        apply
-      }
-
-    if (libraryFilters.isNotEmpty()) {
-      defaultRepository.fhirEngine
-        .search<Library> {
-          filter(
-            Resource.RES_ID,
-            *libraryFilters.toTypedArray(),
+    questionnaire.cqfLibraryUrls().forEach { libraryUrl ->
+      val librariesList =
+        withContext(dispatcherProvider.io()) {
+          knowledgeManager.loadResources(
+            ResourceType.Library.name,
+            libraryUrl,
           )
         }
-        .forEach { librarySearchResult ->
-          val result: Parameters =
-            fhirOperator.evaluateLibrary(
-              librarySearchResult.resource.url,
-              subject.asReference().reference,
-              null,
-              bundle,
-              null,
-            ) as Parameters
 
-          val resources =
-            result.parameter.mapNotNull { cqlResultParameterComponent ->
-              (cqlResultParameterComponent.value ?: cqlResultParameterComponent.resource)?.let {
-                resultParameterResource ->
-                if (BuildConfig.DEBUG) {
-                  Timber.d(
-                    "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${
-                                            getStringRepresentation(
-                                                resultParameterResource,
-                                            )
-                                        }",
-                  )
-                }
+      librariesList.forEach { baseResource ->
+        val result: Parameters =
+          fhirOperator.evaluateLibrary(
+            (baseResource as Library).url,
+            subject.asReference().reference,
+            null,
+            bundle,
+            null,
+          ) as Parameters
 
-                if (
-                  cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
-                    resultParameterResource.isResource
-                ) {
-                  defaultRepository.create(true, resultParameterResource as Resource)
-                  resultParameterResource
-                } else {
-                  null
-                }
+        val resources =
+          result.parameter.mapNotNull { cqlResultParameterComponent ->
+            (cqlResultParameterComponent.value ?: cqlResultParameterComponent.resource)?.let {
+              resultParameterResource ->
+              if (BuildConfig.DEBUG) {
+                Timber.d(
+                  "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${
+                                        getStringRepresentation(
+                                            resultParameterResource,
+                                        )
+                                    }",
+                )
+              }
+
+              if (
+                cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
+                  resultParameterResource.isResource
+              ) {
+                defaultRepository.create(true, resultParameterResource as Resource)
+                resultParameterResource
+              } else {
+                null
               }
             }
+          }
 
-          validateWithFhirValidator(*resources.toTypedArray())
-        }
+        validateWithFhirValidator(*resources.toTypedArray())
+      }
     }
   }
 
