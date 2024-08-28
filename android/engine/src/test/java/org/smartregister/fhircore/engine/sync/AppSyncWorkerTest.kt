@@ -29,6 +29,8 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 class AppSyncWorkerTest : RobolectricTest() {
   @Test
@@ -39,6 +41,8 @@ class AppSyncWorkerTest : RobolectricTest() {
     val fhirEngine = mockk<FhirEngine>()
     val taskExecutor = mockk<TaskExecutor>()
     val timeContext = mockk<AppTimeStampContext>()
+    val sharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+    val dispatcherProvider = mockk<DispatcherProvider>()
 
     every { taskExecutor.serialTaskExecutor } returns mockk()
     every { workerParams.taskExecutor } returns taskExecutor
@@ -51,6 +55,8 @@ class AppSyncWorkerTest : RobolectricTest() {
         syncListenerManager,
         fhirEngine,
         timeContext,
+        sharedPreferencesHelper,
+        dispatcherProvider,
       )
 
     appSyncWorker.getDownloadWorkManager()

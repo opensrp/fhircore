@@ -198,6 +198,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
     if (registerViewModel.isFirstTimeSync()) {
       if (appMainViewModel.getSyncWorkerStatus()) {
         onSync(CurrentSyncJobStatus.Succeeded(appMainViewModel.getSyncWorkerCompletionTime()))
+        appMainViewModel.countRegisterData()
       }
     }
   }
