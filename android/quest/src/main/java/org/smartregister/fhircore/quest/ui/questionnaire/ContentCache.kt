@@ -20,6 +20,7 @@ import androidx.collection.LruCache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Resource
+import timber.log.Timber
 
 object ContentCache {
   private val maxMemory: Int = (Runtime.getRuntime().maxMemory() / 1024).toInt()
@@ -27,9 +28,14 @@ object ContentCache {
   private val cache = LruCache<String, Resource>(cacheSize)
 
   suspend fun saveResource(resourceId: String, resource: Resource) =
-    withContext(Dispatchers.IO) { cache.put("${resource::class.simpleName}/$resourceId", resource) }
+    withContext(Dispatchers.IO) {
+      cache.put("${resource::class.simpleName}/$resourceId", resource)
+      Timber.i("ContentCache:saveResource: $resourceId")
+    }
 
-  fun getResource(resourceId: String) = cache[resourceId]
+  fun getResource(resourceId: String): Resource? {
+    return cache[resourceId]?.also { Timber.i("ContentCache:getResource: $resourceId") }
+  }
 
   suspend fun invalidate() = withContext(Dispatchers.IO) { cache.evictAll() }
 }

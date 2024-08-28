@@ -652,11 +652,14 @@ constructor(
                 transformSupportServices = transformSupportServices,
                 structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
                   structureMapUrl?.substringAfterLast("/")?.let { smID ->
-                    ContentCache.getResource(smID)?.let {
-                      defaultRepository.loadResource<StructureMap>(smID)?.also {
-                        it.let { ContentCache.saveResource(smID, it) }
-                      }
+                    ContentCache.getResource(ResourceType.StructureMap.name + "/" + smID)?.let {
+                      it as StructureMap
                     }
+                      ?: run {
+                        defaultRepository.loadResource<StructureMap>(smID)?.also {
+                          ContentCache.saveResource(smID, it)
+                        }
+                      }
                   }
                 },
               ),
