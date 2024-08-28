@@ -51,7 +51,6 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
