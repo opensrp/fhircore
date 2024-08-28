@@ -328,5 +328,3 @@ class RegisterFragment : Fragment(), OnSyncListener {
     const val REGISTER_SCREEN_BOX_TAG = "fragmentRegisterScreenTestTag"
   }
 }
-
-@Serializable data class OutputDataState(val timestamp: String)
