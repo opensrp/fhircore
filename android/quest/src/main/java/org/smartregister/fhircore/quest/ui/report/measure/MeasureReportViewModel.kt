@@ -328,16 +328,16 @@ constructor(
                 ) {
                   withContext(dispatcherProvider.io()) {
                     fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
-                  }
 
-                  measureReportRepository.evaluatePopulationMeasure(
-                    measureUrl = config.url,
-                    startDateFormatted = startDateFormatted,
-                    endDateFormatted = endDateFormatted,
-                    subjects = subjects,
-                    existing = existingValidReports,
-                    practitionerId = practitionerId,
-                  )
+                    measureReportRepository.evaluatePopulationMeasure(
+                      measureUrl = config.url,
+                      startDateFormatted = startDateFormatted,
+                      endDateFormatted = endDateFormatted,
+                      subjects = subjects,
+                      existing = existingValidReports,
+                      practitionerId = practitionerId,
+                    )
+                  }
                 } else {
                   existingValidReports
                 }
