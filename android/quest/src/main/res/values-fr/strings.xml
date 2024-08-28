@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="back_to_clients">Retour à la liste des clients</string>
     <string name="test_results">Résultat du test</string>
 
@@ -12,67 +12,248 @@
     <string name="loading_responses">Chargement des réponses</string>
     <string name="no_test_results_found">Aucun résultat trouvé</string>
     <string name="patient_test_results">Résultat du test</string>
-    <string name="last_test">" Dernier Test - %1$s"</string>
+    <string name="last_test">Dernier essai -%1$s</string>
     <string name="menu_tasks">Tâches</string>
+    <string name="household">Ménage</string>
     <string name="routine_visit">Visite de routine</string>
-    <string name="anc_visit">Visite CPN</string>
-    <string name="at_risk">À risque</string>
+    <string name="anc_visit">Visite ANC</string>
+    <string name="at_risk">A risque</string>
     <string name="no_tasks">Aucune tâche</string>
-    <string name="add_member">AJOUTER UN MEMBRE</string>
-    <string name="what_to_do">Qu\'est-ce que tu veux faire?</string>
+    <string name="add_member">Ajouter un membre</string>
+    <string name="what_to_do">Qu\'est-ce que tu veux faire aujourd\'hui ?</string>
+
+    <!--Overflow menu strings -->
     <string name="view_profile">Voir le profil</string>
-    <string name="family_details">Détails de famille</string>
-    <string name="change_primary_caregiver">Changer de soignant principal</string>
+    <string name="family_details">Informations sur la famille</string>
     <string name="change_family_head">Changer de chef de famille</string>
-    <string name="family_activity">Activités familiale</string>
+    <string name="change_primary_caregiver">Changer de soignant principal</string>
+    <string name="family_activity">Activité de la famille</string>
     <string name="view_past_encounters">Voir les rencontres passées</string>
     <string name="remove_family">Supprimer la famille</string>
-    <string name="family_suffix">Famille %1$s</string>
-    <string name="remove_this_person">Supprimer cette personne</string>
-    <string name="individual_details">Détails individuels</string>
+    <string name="family_suffix">%1$s Famille</string>
+    <string name="remove_this_person">Retirer cette personne</string>
+    <string name="individual_details">Informations individuelles</string>
     <string name="view_family">Afficher la famille</string>
+    <string name="record_sick_child">Enregistrer l\'enfant malade</string>
+
+    <!-- SideMenu option strings-->
     <string name="device_to_device_sync">Synchronisation d\'appareil à appareil</string>
-    <string name="anc_clients">Clients CPN</string>
+    <string name="anc_clients">Clients ANC</string>
     <string name="all_clients">Tous les clients</string>
     <string name="pnc_clients">Clients PNC</string>
-    <string name="family_planning_clients">Clients de la planification familiale</string>
-    <string name="households">Ménages</string>
-    <string name="children">Enfants</string>
-    <string name="remove_family_warning">La suppression de %1$s supprimera l\'intégralité de son dossier médical de votre appareil. Cette action ne peut pas être annulée.</string>
-    <string name="remove_family_member_warning">%1$s sera supprimé définitivement de cette famille. Cette action ne peut pas être annulée.</string>
-    <string name="household">Ménage</string>
-    <string name="all">Tout</string>
-    <string name="alert_message_abort_operation">Voulez-vous vraiment annuler cette opération ?</string>
-    <string name="label_assign_new_family_head">Nommer chef de famille</string>
-    <string name="change">Changer</string>
-    <string name="date_range">Plage de dates</string>
-    <string name="due_on">Dû le %1$s</string>
-    <string name="end_date">Date de fin</string>
-    <string name="generate_report">GÉNÉRER UN RAPPORT</string>
-    <string name="unsaved_changes_message_alert">Si vous quittez avant d\'enregistrer, vos modifications ou changements seront perdus</string>
-    <string name="individual">Individuel</string>
-    <string name="no_eligible_family_members">Aucun membre de la famille éligible n\'a été identifié comme chef de ménage.</string>
-    <string name="patient">Patiente</string>
-    <string name="please_wait">Veuillez patienter...</string>
-    <string name="record_as_anc">Enregistrer sous CPN</string>
-    <string name="remove_member">Supprimer le membre du ménage</string>
-    <string name="label_select_new_head">Choisir un nouveau chef de famille</string>
-    <string name="select_date">Sélectionnez des dates</string>
-    <string name="select_patient">SÉLECTIONNER PATIENT</string>
-    <string name="start_date">Date de début</string>
-    <string name="visit_due_on">%1$s dû le %2$s</string>
-    <string name="visit_due_today">%1$s dû aujourd\'hui</string>
-    <string name="visit_overdue">%1$s en retard il y a %2$s</string>
-    <string name="pregnancy_outcome">Résultat de la grossesse</string>
-    <string name="registers">Registres</string>
-    <string name="record_sick_child">Inscrire un enfant malade</string>
-    <string name="hiv_clients">Liste de clients</string>
-    <string name="phone_tracing_clients">Recherche de téléphone</string>
+    <string name="hiv_clients">Liste des clients</string>
+    <string name="phone_tracing_clients">Recherche de numéros de téléphone</string>
     <string name="home_tracing_clients">Recherche de domicile</string>
     <string name="appointment_clients">Rendez-vous</string>
-    <string name="structure_success">Ressources extraites avec succès pour %1$s</string>
-    <string name="structuremap_failed">Échec de l\'extraction des ressources pour le %1$s</string>
-    <string name="structure_map_missing_message">StructureMap manquante pour Questionnaire , QuestionnaireResponse enregistré</string>
-    <string name="sync_completed_with_errors">Synchronisation terminée avec des erreurs. Nouvelle tentative…</string>
-    <string name="error_occurred">Quelque chose sest mal passé...</string>
+    <string name="family_planning_clients">Clients du planning familial</string>
+    <string name="households">Ménages</string>
+    <string name="children">Enfants</string>
+
+    <!--remove family questionnaire strings-->
+    <string name="remove_family_warning">La suppression %1$ssupprime l\'ensemble du dossier médical de l\'utilisateur de votre appareil. Cette action ne peut pas être annulée.</string>
+
+    <!--remove family member questionnaire strings-->
+    <string name="remove_family_member_warning">%1$s sera définitivement retiré de cette famille. Cette action ne peut être annulée.</string>
+    <string name="remove_member">Supprimer un membre</string>
+
+    <!--Reporting strings -->
+    <string name="date_range">Plage de dates</string>
+    <string name="change">Changer</string>
+    <string name="all">Tout</string>
+    <string name="individual">Individuel</string>
+    <string name="please_wait">S\'il vous plaît, attendez</string>
+    <string name="patient">Patient</string>
+    <string name="subject">Sujet</string>
+    <string name="generate_report">GÉNÉRER DES RAPPORTS</string>
+    <string name="select_patient">Sélection de patient</string>
+    <string name="select_subject">Sélection de sujet</string>
+    <string name="start_date">Date de début</string>
+    <string name="end_date">Date de fin</string>
+    <string name="select_date">Sélectionnez les dates</string>
+
+    <!--Change family head strings -->
+    <string name="no_eligible_family_members">Aucun membre de la famille éligible n\'a été trouvé pour le chef de famille.</string>
+    <string name="label_select_new_head">Sélectionner un nouveau chef de famille</string>
+    <string name="label_assign_new_family_head">Assigner un nouveau chef de famille</string>
+    <string name="alert_message_abort_operation">Êtes-vous sûr de vouloir interrompre cette opération ?</string>
+
+    <!-- Dialog alert messages-->
+    <string name="unsaved_changes_message_alert">Si vous quittez le site avant de l\'avoir enregistré, vos modifications seront perdues.</string>
+    <string name="visit_due_on">%1$s dû le %2$s</string>
+    <string name="visit_due_today">%1$sà régler aujourd\'hui</string>
+    <string name="visit_overdue"> %1$sen retard il y a%2$s</string>
+    <string name="record_as_anc">Enregistrer comme ANC</string>
+    <string name="pregnancy_outcome">Résultats de la grossesse</string>
+    <string name="registers">Registres</string>
+    <string name="title_no_location_set">Pas d\'emplacement défini</string>
+    <string name="message_location_set">Définir l\'emplacement pour synchroniser les données et charger les points de service</string>
+    <string name="positive_button_location_set">Définir l\'emplacement</string>
+
+    <string name="due_on">Échéance le %1$s</string>
+
+    <string name="structuremap_failed">Échec de l\'extraction des ressources pour %1$s</string>
+    <string name="structure_map_missing_message">StructureMap manquante pour le questionnaire,  réponse du questionnaire sauvegardé</string>
+    <string name="structure_success">Des ressources extraites avec succès pour %1$s</string>
+    <string name="reassigned_managing_entity">Réaffectation réussie de l\'entité gestionnaire</string>
+    <string name="error_fetching_user_details">Échec de la recherche des informations de l\'utilisateur</string>
+    <string name="questionnaire_not_found">Questionnaire introuvable, synchroniser tous les questionnaires pour régler ce problème</string>
+    <string name="no_visits">Pas de visites</string>
+    <string name="questionnaire_response_invalid">Réponse du questionnaire invalide</string>
+    <string name="missing_subject_type">Type de sujet manquant dans le questionnaire. Fournir Questionnaire.subjectType pour résoudre le problème.</string>
+    <string name="missing_questionnaire_config">QuestionnaireConfig est requis mais manquant</string>
+    <string name="error_populating_questionnaire">Erreur dans le remplissage de certains champs du questionnaire. Réponse au questionnaire non valide.</string>
+    <string name="extraction_in_progress">Traitement des données du questionnaire...</string>
+    <string name="loading_questionnaire">Chargement du questionnaire...</string>
+    <string name="clear_all">Tout effacer</string>
+    <string name="yes">Oui</string>
+    <string name="no">Non</string>
+
+    <string name="location_permissions_denied">Accès à la localisation refusé : Pour capturer les coordonnées GPS, veuillez activer les autorisations de localisation dans les paramètres de votre appareil.</string>
+    <string name="location_services_disabled">Les services de localisation sont désactivés. Souhaitez-vous les activer ?</string>
+    <string name="copy_text_success_message">Lien %1$s copié avec succès</string>
+    <string name="submit_questionnaire">Soumettre</string>
+
+
+
+    <!-- SDK SDC Strings -->
+
+    <!-- 1. The following sections include strings used for the questionnaire UI -->
+
+    <!-- 1.1 Navigation -->
+    <string name="button_pagination_next">Suivant</string>
+    <string name="button_pagination_previous">Précédent</string>
+    <string name="back_button_text">Retour</string>
+    <string name="edit_button_text">Modifier</string>
+    <string name="review_answers_text">Revoir les réponses</string>
+    <string name="button_review">Revoir</string>
+    <string name="cancel_questionnaire">\\@android:string/cancel</string>
+
+    <!-- 1.2 Submit Pop-up -->
+    <string name="questionnaire_validation_error_headline">Erreurs trouvées</string>
+    <string
+        name="questionnaire_validation_error_supporting_text"
+        >Répondez aux questions suivantes :</string>
+    <string
+        name="questionnaire_validation_error_item_text_with_bullet"
+        >%s</string>
+    <string
+        name="questionnaire_validation_error_submit_button_text"
+        >Soumettre de toute façon</string>
+    <string
+        name="questionnaire_validation_error_fix_button_text"
+        >Répondre aux questions</string>
+
+    <!-- 1.3 Cancel Pop-up-->
+    <string
+        name="questionnaire_cancel_text"
+        >Voulez-vous quitter le questionnaire \?</string>
+
+    <!-- 2. The following sections include strings used in widgets -->
+
+    <!-- 2.1 All Widgets -->
+    <string name="not_answered">\"Non répondu\"</string>
+    <string name="help">Aide</string>
+
+    <!-- 2.2 Boolean -->
+    <!-- <string name="no">Non</string> -->
+    <!-- <string name="yes">Oui</string> -->
+
+    <!-- 2.3 Drop Down -->
+    <string name="hyphen">-</string>
+
+    <!-- 2.4 Multi Select / Open Choice -->
+    <string name="open_choice_other">Autre</string>
+    <string name="open_choice_other_hint">Saisissez une option personnalisée</string>
+    <string name="open_choice_other_add_another">Ajouter une autre réponse</string>
+    <string name="multi_select_dialog_subtitle">Cochez toutes les cases qui s\'appliquent</string>
+    <string name="save">Sauvegardez</string>
+    <string name="cancel">Annuler</string>
+
+    <!-- 2.5 Date / DateTime -->
+    <string name="date">Date</string>
+    <string name="time">Heure</string>
+    <!-- <string name="select_date">Sélectionnez les date</string> -->
+   <string name="select_time">Sélectionner l\'heure</string>
+
+   <!-- 2.6 Attachment widget -->
+    <string name="take_photo">Prendre une photo</string>
+    <string name="cd_photo_preview">Aperçu des photos</string>
+    <string name="cd_file_icon_preview">Aperçu de l\'icône du fichier</string>
+    <string name="upload_photo">Télécharger la photo</string>
+    <string name="upload_audio">Télécharger l\'audio</string>
+    <string name="upload_video">Télécharger la vidéo</string>
+    <string name="upload_document">Télécharger le document</string>
+    <string name="upload_file">Télécharger le fichier</string>
+    <string name="delete">Effacer</string>
+    <string
+        name="max_size_image_above_limit_validation_error_msg"
+        >Erreur : La taille de l\'image est supérieure à %1$s MB</string>
+    <string
+        name="max_size_file_above_limit_validation_error_msg"
+        >Erreur : La taille du fichier est supérieure à %1$s MB</string>
+    <string name="upload_failed">Échec du téléchargement</string>
+    <string
+        name="mime_type_wrong_media_format_validation_error_msg"
+        >Erreur : Mauvais format de support</string>
+    <string name="uploaded">Téléchargé</string>
+    <string name="image_uploaded">Image téléchargée</string>
+    <string name="file_uploaded">Fichier téléchargé</string>
+    <string name="video_uploaded">Vidéo téléchargée</string>
+    <string name="audio_uploaded">Audio téléchargée</string>
+    <string name="image_deleted">Image supprimée</string>
+    <string name="file_deleted">Fichier supprimé</string>
+    <string name="video_deleted">Vidéo supprimée</string>
+    <string name="audio_deleted">Audio supprimé</string>
+
+    <!-- 2.7 Group -->
+    <string name="group_header_add_item_button">Ajouter un article</string>
+
+    <!-- 3. The following sections include strings used in validation -->
+
+    <!-- 3.1 Validation -->
+    <string
+        name="required_constraint_validation_error_msg"
+        >Réponse manquante pour le champ obligatoire.</string>
+    <string
+        name="min_value_validation_error_msg"
+        >La valeur minimale autorisée est de<xliff:g id="min_value">%1$s</xliff:g> : </string>
+    <string
+        name="max_value_validation_error_msg"
+        >La valeur maximale autorisée est de <xliff:g id="max_value">%1$s</xliff:g>: </string>
+    <string
+        name="min_length_validation_error_msg"
+        >Le nombre minimum de caractères autorisés dans la réponse est le suivant : <xliff:g
+        id="min_length"
+        >%1$s</xliff:g></string>
+    <string
+        name="max_decimal_validation_error_msg"
+        >Le nombre maximum de décimales autorisées dans la réponse est de : <xliff:g
+        id="max_value"
+        >%1$s</xliff:g></string>
+    <string
+        name="regex_validation_error_msg"
+        >La réponse ne correspond pas à l\'expression régulière : <xliff:g
+        id="answer_value"
+        >%1$s</xliff:g></string>
+    <string
+        name="number_format_validation_error_msg"
+        >N\'utilisez que (.) entre deux nombres. Les autres caractères spéciaux ne sont pas pris en charge.</string>
+    <string
+        name="date_format_validation_error_msg"
+        >Le format de la date doit être <xliff:g
+        id="locale_format"
+        >%1$s</xliff:g> (ex. %2$s)</string>
+    <string
+        name="integer_format_validation_error_msg"
+        >Le nombre doit être compris entre <xliff:g id="min_value">%1$s</xliff:g> et <xliff:g
+        id="max_value"
+        >%2$s</xliff:g></string>
+    <string name="decimal_format_validation_error_msg">Numéro invalide</string>
+    <string name="optional_helper_text">Optionnel</string>
+    <string name="required">Requis</string>
+    <string name="required_text_and_new_line">Requis\n</string>
+    <string name="space_asterisk">\u0020\u002a</string>
+
+    <!-- End SDK SDC Strings -->
+
 </resources>

@@ -21,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onChildren
@@ -60,6 +59,7 @@ class RegisterCardListTest {
         onEvent = {},
         registerUiState = RegisterUiState(),
         currentPage = mutableStateOf(1),
+        onSearchByQrSingleResultAction = {},
       )
     }
 
@@ -84,17 +84,17 @@ class RegisterCardListTest {
         onEvent = {},
         registerUiState = RegisterUiState(),
         currentPage = mutableStateOf(1),
+        onSearchByQrSingleResultAction = {},
       )
     }
 
-    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(3)
+    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(2)
 
     composeTestRule
       .onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG)
       .onChildren()
       .onFirst()
       .assert(hasText("Patient 1"))
-      .assertIsDisplayed()
   }
 
   @Test
@@ -116,10 +116,11 @@ class RegisterCardListTest {
         registerUiState = RegisterUiState(),
         currentPage = mutableStateOf(1),
         showPagination = true,
+        onSearchByQrSingleResultAction = {},
       )
     }
 
-    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(4)
+    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(3)
 
     composeTestRule
       .onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG)
@@ -141,6 +142,7 @@ class RegisterCardListTest {
         onEvent = {},
         registerUiState = RegisterUiState(),
         currentPage = mutableStateOf(1),
+        onSearchByQrSingleResultAction = {},
       )
     }
 

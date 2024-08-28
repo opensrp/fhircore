@@ -33,3 +33,53 @@ private fun List<QuestionnaireResponseItemComponent>.clearText() {
     }
   }
 }
+
+/** Borrows from: https://github.com/google/android-fhir/pull/1936 */
+fun QuestionnaireResponse.packRepeatedGroups() {
+  item = item.packRepeatedGroups()
+}
+
+private fun List<QuestionnaireResponse.QuestionnaireResponseItemComponent>.packRepeatedGroups():
+  List<QuestionnaireResponse.QuestionnaireResponseItemComponent> {
+  forEach { it ->
+    it.item = it.item.packRepeatedGroups()
+    it.answer.forEach { it.item = it.item.packRepeatedGroups() }
+  }
+  val linkIdToPackedResponseItems =
+    groupBy { it.linkId }
+      .mapValues { (linkId, questionnaireResponseItems) ->
+        questionnaireResponseItems.singleOrNull()
+          ?: QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            this.linkId = linkId
+            answer =
+              questionnaireResponseItems.map {
+                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                  item = it.item
+                }
+              }
+          }
+      }
+  return map { it.linkId }.distinct().map { linkIdToPackedResponseItems[it]!! }
+}
+
+/** Pre-order list of all questionnaire response items in the questionnaire. */
+val QuestionnaireResponse.allItems: List<QuestionnaireResponse.QuestionnaireResponseItemComponent>
+  get() = item.flatMap { it.descendant }
+
+/**
+ * Pre-order list of descendants of the questionnaire response item (inclusive of the current item).
+ */
+val QuestionnaireResponse.QuestionnaireResponseItemComponent.descendant:
+  List<QuestionnaireResponse.QuestionnaireResponseItemComponent>
+  get() =
+    mutableListOf<QuestionnaireResponse.QuestionnaireResponseItemComponent>().also {
+      appendDescendantTo(it)
+    }
+
+private fun QuestionnaireResponse.QuestionnaireResponseItemComponent.appendDescendantTo(
+  output: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
+) {
+  output.add(this)
+  item.forEach { it.appendDescendantTo(output) }
+  answer.forEach { answer -> answer.item.forEach { it.appendDescendantTo(output) } }
+}

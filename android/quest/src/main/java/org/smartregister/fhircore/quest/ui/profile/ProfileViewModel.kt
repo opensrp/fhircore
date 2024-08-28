@@ -22,8 +22,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -98,7 +98,11 @@ constructor(
       )
     profileConfig.overFlowMenuItems
       .filter { it.icon != null && !it.icon!!.reference.isNullOrEmpty() }
-      .decodeBinaryResourcesToBitmap(viewModelScope, registerRepository)
+      .decodeBinaryResourcesToBitmap(
+        viewModelScope,
+        registerRepository,
+        configurationRegistry.decodedImageMap,
+      )
   }
 
   suspend fun retrieveProfileUiState(
@@ -127,6 +131,7 @@ constructor(
           profileConfiguration = profileConfigs,
           snackBarTheme = applicationConfiguration.snackBarTheme,
           showDataLoadProgressIndicator = false,
+          decodedImageMap = configurationRegistry.decodedImageMap,
         )
 
       profileConfigs.views.retrieveListProperties().forEach { listProperties ->
@@ -140,15 +145,13 @@ constructor(
           listResourceDataStateMap[listProperties.id] != null &&
             listResourceDataStateMap[listProperties.id]?.size!! > 0
         ) {
-          val computedMap = listResourceDataStateMap[listProperties.id]?.get(0)?.computedValuesMap
-          viewModelScope.launch(dispatcherProvider.io()) {
-            if (computedMap != null) {
-              loadRemoteImagesBitmaps(
-                profileConfiguration.views,
-                registerRepository,
-                computedMap,
-              )
-            }
+          listResourceDataStateMap[listProperties.id]?.forEach { resourceData ->
+            loadRemoteImagesBitmaps(
+              profileConfiguration.views,
+              registerRepository,
+              resourceData.computedValuesMap,
+              configurationRegistry.decodedImageMap,
+            )
           }
         }
       }

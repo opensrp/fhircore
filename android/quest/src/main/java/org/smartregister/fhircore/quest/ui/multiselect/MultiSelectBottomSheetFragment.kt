@@ -25,43 +25,54 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.event.AppEvent
+import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 
 @AndroidEntryPoint
 class MultiSelectBottomSheetFragment() : BottomSheetDialogFragment() {
 
+  @Inject lateinit var eventBus: EventBus
   val bottomSheetArgs by navArgs<MultiSelectBottomSheetFragmentArgs>()
   val multiSelectViewModel by viewModels<MultiSelectViewModel>()
   private val appMainViewModel by activityViewModels<AppMainViewModel>()
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     isCancelable = false
-    val multiSelectViewConfig = bottomSheetArgs.multiSelectViewConfig
+    val multiSelectViewConfig = bottomSheetArgs?.multiSelectViewConfig
     if (multiSelectViewConfig != null) {
       multiSelectViewModel.populateLookupMap(requireContext(), multiSelectViewConfig)
     }
   }
 
   private fun onSelectionDone() {
-    multiSelectViewModel.saveSelectedLocations(requireContext())
-    appMainViewModel.run {
-      if (requireContext().isDeviceOnline()) {
-        triggerSync()
-      } else {
-        requireContext()
-          .showToast(
-            getString(org.smartregister.fhircore.engine.R.string.sync_failed),
-            Toast.LENGTH_LONG,
-          )
+    lifecycleScope.launch {
+      multiSelectViewModel.saveSelectedLocations(requireContext())
+      appMainViewModel.run {
+        if (requireContext().isDeviceOnline()) {
+          viewModelScope.launch { syncBroadcaster.runOneTimeSync() }
+          schedulePeriodicSync()
+        } else {
+          requireContext()
+            .showToast(
+              getString(org.smartregister.fhircore.engine.R.string.sync_failed),
+              Toast.LENGTH_LONG,
+            )
+          eventBus.triggerEvent(AppEvent.RefreshRegisterData)
+        }
       }
+      dismiss()
     }
-    dismiss()
   }
 
   override fun onCreateView(
@@ -74,14 +85,14 @@ class MultiSelectBottomSheetFragment() : BottomSheetDialogFragment() {
         AppTheme {
           MultiSelectBottomSheetView(
             rootTreeNodes = multiSelectViewModel.rootTreeNodes,
-            selectedNodes = multiSelectViewModel.selectedNodes,
+            syncLocationStateMap = multiSelectViewModel.selectedNodes,
             title = bottomSheetArgs.screenTitle,
             onDismiss = { dismiss() },
             searchTextState = multiSelectViewModel.searchTextState,
             onSearchTextChanged = multiSelectViewModel::onTextChanged,
             onSelectionDone = ::onSelectionDone,
             search = multiSelectViewModel::search,
-            isLoading = multiSelectViewModel.flag.observeAsState(),
+            isLoading = multiSelectViewModel.isLoading.observeAsState(),
           )
         }
       }

@@ -1,0 +1,2639 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "e5155788-8831-4916-a3f5-486915ce34b211",
+  "meta": {
+    "versionId": "29",
+    "lastUpdated": "2024-06-11T14:12:54.253+00:00",
+    "source": "#90b4f79a2de731ab",
+    "profile": [
+      "http://ehelse.no/fhir/StructureDefinition/sdf-Questionnaire"
+    ],
+    "security": [
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.7618",
+        "code": "3",
+        "display": "Helsehjelp"
+      }
+    ],
+    "tag": [
+      {
+        "system": "urn:ietf:bcp:47",
+        "code": "nb-NO",
+        "display": "Bokmål"
+      },
+      {
+        "system": "urn:ietf:bcp:47",
+        "code": "en-GB",
+        "display": "English"
+      }
+    ]
+  },
+  "language": "nb-NO",
+  "extension": [
+    {
+      "url": "http://helsenorge.no/fhir/StructureDefinition/sdf-sidebar",
+      "valueCoding": {
+        "system": "http://helsenorge.no/fhir/ValueSet/sdf-sidebar",
+        "code": "1"
+      }
+    },
+    {
+      "url": "http://helsenorge.no/fhir/StructureDefinition/sdf-information-message",
+      "valueCoding": {
+        "system": "http://helsenorge.no/fhir/ValueSet/sdf-information-message",
+        "code": "1"
+      }
+    },
+    {
+      "url": "http://helsenorge.no/fhir/StructureDefintion/sdf-itemControl-visibility",
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://helsenorge.no/fhir/CodeSystem/AttachmentRenderOptions",
+            "code": "hide-help",
+            "display": "Hide help texts"
+          },
+          {
+            "system": "http://helsenorge.no/fhir/CodeSystem/AttachmentRenderOptions",
+            "code": "hide-sublabel",
+            "display": "Hide sublabel texts"
+          }
+        ]
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir-sid.stage.opensrp.id/fhir/StructureMap/febf0030-262f-443d-95b4-e002d437cfd011"
+    }
+  ],
+  "version": "1",
+  "name": "Add Family Member Registration",
+  "title": "Add Family Member Registration",
+  "status": "draft",
+  "subjectType": [
+    "Patient",
+    "RelatedPerson"
+  ],
+  "date": "2023-08-15T00:00:00+03:00",
+  "publisher": "NHN",
+  "contact": [
+    {
+      "name": "https://www.smartregister.org/"
+    }
+  ],
+  "description": "Add Family Member Registration",
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/ValueSet/usage-context-type",
+        "code": "focus",
+        "display": "Clinical Focus",
+        "_display": {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/translation",
+              "extension": [
+                {
+                  "url": "lang",
+                  "valueCode": "id"
+                },
+                {
+                  "url": "content",
+                  "valueString": "Fokus Klinis"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+            "display": "Patient Registration",
+            "_display": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "id"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Pendaftaran Pasien"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+          "valueString": "password-widget"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+          "valueInteger": 16
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "NIK number should be of 16 digits"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^\\+?(?:[()\\h-]*\\d[()\\h-]*){16}$"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-display-category",
+                "code": "instructions"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "82a80049-8d2d-4008-81aa-55356b9d6628",
+      "text": "NIK number",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nomor Induk Kependudukan (NIK)"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "required": false,
+      "maxLength": 16
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='82a80049-8d2d-4008-81aa-55356b9d6628').answer.value.exists()"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+          "valueInteger": 16
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "NIK number should be of 16 digits",
+          "_valueString": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                "extension": [
+                  {
+                    "url": "lang",
+                    "valueCode": "id"
+                  },
+                  {
+                    "url": "content",
+                    "valueString": "Nomor Induk Kependudukan (NIK) harus 16 digit"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^\\+?(?:[()\\h-]*\\d[()\\h-]*){16}$"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-display-category",
+                "code": "instructions"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+          "extension": [
+            {
+              "url": "key",
+              "valueId": "constraint-1"
+            },
+            {
+              "url": "requirements",
+              "valueString": "Verify NIK field must have the same value as NIK field",
+              "_valueString": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "id"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "Isian kedua NIK harus sama"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "url": "severity",
+              "valueCode": "error"
+            },
+            {
+              "url": "expression",
+              "valueString": "%context.answer.value = %resource.descendants().where(linkId='82a80049-8d2d-4008-81aa-55356b9d6628').answer.value"
+            },
+            {
+              "url": "human",
+              "valueString": "NIK does not match",
+              "_valueString": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "id"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "NIK tidak sama"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "url": "location",
+              "valueString": "1"
+            }
+          ]
+        }
+      ],
+      "linkId": "6acb0d21-98f3-4c26-8479-8a9ed30200d0",
+      "text": "Verify NIK number",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nomor Induk Kependudukan (NIK)"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "required": true,
+      "maxLength": 16
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.name.given"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^[a-zA-Z\\- ]*$"
+        }
+      ],
+      "linkId": "e6306275-b989-4375-8527-3a56092081b8",
+      "text": "First Name",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nama Depan"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^[a-zA-Z\\- ]*$"
+        }
+      ],
+      "linkId": "8fb87910-d900-4eea-dbba-dcf76ee6806d",
+      "text": "Last Name",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nama Belakang"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.name.given"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "(Optional)"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^[a-zA-Z\\- ]*$"
+        }
+      ],
+      "linkId": "597f4425-72b3-4bc4-8f38-b742aa3e99cd",
+      "text": "Nickname",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nama Panggilan"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "dateOfDelivery",
+      "text": "Date of Delivery",
+      "type": "date"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "d/M/y"
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.birthDate"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "_valueDate": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "today()"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='dateOfDelivery').answer.value"
+          }
+        }
+      ],
+      "linkId": "cd8e3d6d-e9ff-458d-d122-57070bebffaf",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
+      "text": "Date of Birth",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Tangal Lahir"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "date",
+      "enableWhen": [
+        {
+          "question": "36d39dbe-00e2-4e29-f079-3ec8f0119aff",
+          "operator": "exists",
+          "answerBoolean": false
+        }
+      ],
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "check-box",
+                "display": "Check-box",
+                "_display": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "id"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Kotak Ceklis"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "text": "Check-box",
+            "_text": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "id"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Kotak Ceklis"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "linkId": "36d39dbe-00e2-4e29-f079-3ec8f0119aff",
+      "type": "choice",
+      "required": false,
+      "repeats": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:uuid:d2f70cf6-9320-4f5c-ce52-02f67f2a99e2",
+            "code": "date-of-birth-unknown",
+            "display": "Date of Birth Unknown",
+            "_display": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "id"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Tangal Lahir tidak diketahui"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueInteger": 120
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-fhirpath",
+          "valueString": "Patient.extension.where(url = 'http://helsenorge.no/fhir/StructureDefinition/sdf-age').value"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Please enter a valid age"
+        }
+      ],
+      "linkId": "8460d986-ef71-4997-80ee-7887d8c345e7",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.age",
+      "text": "Age",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Umur"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "integer",
+      "enableWhen": [
+        {
+          "question": "36d39dbe-00e2-4e29-f079-3ec8f0119aff",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d2f70cf6-9320-4f5c-ce52-02f67f2a99e2",
+            "code": "date-of-birth-unknown"
+          }
+        }
+      ],
+      "enableBehavior": "all",
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "iif(%resource.descendants().where(linkId='36d39dbe-00e2-4e29-f079-3ec8f0119aff').answer.value.code = 'date-of-birth-unknown', %resource.descendants().where(linkId='8460d986-ef71-4997-80ee-7887d8c345e7').answer.value.toString().toInteger(), %resource.descendants().where(linkId='b5bc7f80-4a0c-486c-e5eb-32c750036f94').answer.value.toString().toInteger())"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "age",
+      "text": "Age",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Umur"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "integer",
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.gender"
+          }
+        }
+      ],
+      "linkId": "77e32953-0679-48b5-f004-1ab4a4ac0271",
+      "text": "Sex",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Jenis Kelamin"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/administrative-gender",
+            "code": "male",
+            "display": "Male",
+            "_display": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "id"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Laki-laki"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/administrative-gender",
+            "code": "female",
+            "display": "Female",
+            "_display": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "id"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Perempuan"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "iif(%resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(5, 2).toInteger() > today().toString().substring(5, 2).toInteger(), (today().toString().substring(0, 4).toInteger() - 1) - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(0, 4).toInteger(), today().toString().substring(0, 4).toInteger() - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(0, 4).toInteger())"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "calculated-year",
+      "text": "calculated year",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "tahun terhitung"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "integer"
+    },
+    {
+      "extension": [
+        {
+          "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+          "valueString": "password-widget"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Enter a valid mobile number. Strings and special characters aren't allowed",
+          "_valueString": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                "extension": [
+                  {
+                    "url": "lang",
+                    "valueCode": "id"
+                  },
+                  {
+                    "url": "content",
+                    "valueString": "Isi dengan nomor ponsel yang valid. Tidak boleh menggunakan huruf atau simbol."
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^\\d{10,13}$"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-display-category",
+                "code": "instructions"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "a30b3cec-9692-499b-8a0e-7af15d9cb888",
+      "text": "Mobile number",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nomor HP"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "age",
+          "operator": ">=",
+          "answerInteger": 17
+        },
+        {
+          "question": "calculated-year",
+          "operator": ">=",
+          "answerInteger": 17
+        }
+      ],
+      "enableBehavior": "any",
+      "required": false,
+      "maxLength": 13
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='a30b3cec-9692-499b-8a0e-7af15d9cb888').answer.value.exists()"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Enter a valid mobile number. Strings and special characters aren't allowed",
+          "_valueString": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                "extension": [
+                  {
+                    "url": "lang",
+                    "valueCode": "id"
+                  },
+                  {
+                    "url": "content",
+                    "valueString": "Isi dengan nomor ponsel yang valid. Tidak boleh menggunakan huruf atau simbol."
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^\\d{10,13}$"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-display-category",
+                "code": "instructions"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+          "extension": [
+            {
+              "url": "key",
+              "valueId": "constraint-1"
+            },
+            {
+              "url": "requirements",
+              "valueString": "Verify phone number field must have the same value as phone number field",
+              "_valueString": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "id"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "Isian kedua nomor ponsel harus sama"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "url": "severity",
+              "valueCode": "error"
+            },
+            {
+              "url": "expression",
+              "valueString": "%context.answer.value = %resource.descendants().where(linkId='a30b3cec-9692-499b-8a0e-7af15d9cb888').answer.value"
+            },
+            {
+              "url": "human",
+              "valueString": "Mobile number does not match",
+              "_valueString": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "id"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "HP tidak sesuai"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "url": "location",
+              "valueString": "1"
+            }
+          ]
+        }
+      ],
+      "linkId": "5e5833bb-1514-47ff-8efe-48620e039baf",
+      "text": "Verify Mobile number",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nomor HP"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "required": true,
+      "maxLength": 13
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^[a-zA-Z\\- ]*$"
+        }
+      ],
+      "linkId": "31283dfa-acce-4555-872c-2cbe52160fcb",
+      "text": "Spouse's name",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nama Pasangan"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "age",
+          "operator": ">=",
+          "answerInteger": 17
+        },
+        {
+          "question": "calculated-year",
+          "operator": ">=",
+          "answerInteger": 17
+        }
+      ],
+      "enableBehavior": "any",
+      "required": false
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^[a-zA-Z\\- ]*$"
+        }
+      ],
+      "linkId": "e3a6950c-7192-4a69-df45-4d2994d50f89",
+      "text": "Alternate contact name",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nama kontak alternatif"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "age",
+          "operator": ">=",
+          "answerInteger": 17
+        },
+        {
+          "question": "calculated-year",
+          "operator": ">=",
+          "answerInteger": 17
+        }
+      ],
+      "enableBehavior": "any",
+      "required": false
+    },
+    {
+      "extension": [
+        {
+          "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+          "valueString": "password-widget"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Enter a valid mobile number. Strings and special characters aren't allowed"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^\\d{10,13}$"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-display-category",
+                "code": "instructions"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "67355f8d-d49c-4865-fbda-14369340ea93",
+      "text": "Alternate contact phone number",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nomor HP kontak alternatif"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "age",
+          "operator": ">=",
+          "answerInteger": 17
+        },
+        {
+          "question": "calculated-year",
+          "operator": ">=",
+          "answerInteger": 17
+        }
+      ],
+      "enableBehavior": "any",
+      "required": false,
+      "maxLength": 13
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='67355f8d-d49c-4865-fbda-14369340ea93').answer.value.exists()"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Enter a valid mobile number. Strings and special characters aren't allowed"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^\\d{10,13}$"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-display-category",
+                "code": "instructions"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+          "extension": [
+            {
+              "url": "key",
+              "valueId": "constraint-1"
+            },
+            {
+              "url": "requirements",
+              "valueString": "Verify phone number field must have the same value as phone number field",
+              "_valueString": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "id"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "Isian kedua nomor ponsel harus sama"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "url": "severity",
+              "valueCode": "error"
+            },
+            {
+              "url": "expression",
+              "valueString": "%context.answer.value = %resource.descendants().where(linkId='67355f8d-d49c-4865-fbda-14369340ea93').answer.value"
+            },
+            {
+              "url": "human",
+              "valueString": "Values do not match",
+              "_valueString": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "id"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "Password tidak sesuai"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "url": "location",
+              "valueString": "1"
+            }
+          ]
+        }
+      ],
+      "linkId": "8ad82649-9080-4371-8f30-4539bbbf62d1",
+      "text": "Verify alternate contact phone number",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nomor HP kontak alternatif"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "age",
+          "operator": ">=",
+          "answerInteger": 17
+        },
+        {
+          "question": "calculated-year",
+          "operator": ">=",
+          "answerInteger": 17
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true,
+      "maxLength": 13
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "(((%resource.descendants().where(linkId='36d39dbe-00e2-4e29-f079-3ec8f0119aff').answer.value.code.exists().not()) and (%resource.descendants().where(linkId='calculated-year').answer.value < 17)) or (%resource.descendants().where(linkId='8460d986-ef71-4997-80ee-7887d8c345e7').answer.value < 17))"
+          }
+        }
+      ],
+      "linkId": "3d453a4e-8548-468f-81b7-e5451abe1106",
+      "text": "Does the child have a mother/guardian?",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Apakah anak memiliki wali?"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "1e9579f9-b3e2-46a4-e7bd-365d32b45eaa",
+            "system": "urn:uuid:6bf5b563-47c1-4146-8a9a-492b2d29b8a4",
+            "code": "yes",
+            "display": "Yes",
+            "_display": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "id"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Ya"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "1f407a2c-fa05-43ff-c44f-64f08068107e",
+            "system": "urn:uuid:6bf5b563-47c1-4146-8a9a-492b2d29b8a4",
+            "code": "no",
+            "display": "No",
+            "_display": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "id"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Tidak"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "dbf5b992-03fc-457d-93eb-d603cccc9ce5",
+      "text": "Mother/guardian first name",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nama depan Ibu/Wali"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "3d453a4e-8548-468f-81b7-e5451abe1106",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:6bf5b563-47c1-4146-8a9a-492b2d29b8a4",
+            "code": "yes"
+          }
+        }
+      ],
+      "required": true
+    },
+    {
+      "linkId": "46a91ed5-1ef8-4afc-8a8c-54d52258343e",
+      "text": "Mother/guardian last name",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nama belakang Ibu/Wali"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "3d453a4e-8548-468f-81b7-e5451abe1106",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:6bf5b563-47c1-4146-8a9a-492b2d29b8a4",
+            "code": "yes"
+          }
+        }
+      ],
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "d/M/y"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "_valueDate": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "today() - 13 'years'"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "f331b415-9188-4add-cf3f-36019a593690",
+      "text": "Mother/guardian DOB",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Tanggal lahir Ibu/Wali"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "date",
+      "enableWhen": [
+        {
+          "question": "3d453a4e-8548-468f-81b7-e5451abe1106",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:6bf5b563-47c1-4146-8a9a-492b2d29b8a4",
+            "code": "yes"
+          }
+        }
+      ],
+      "required": false
+    },
+    {
+      "linkId": "e5e2aa85-c416-48c6-9caa-b8009c523175",
+      "text": "Does the mother/guardian have NIK Number?",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Apakah Ibu/Wali memiliki NIK?"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "choice",
+      "enableWhen": [
+        {
+          "question": "3d453a4e-8548-468f-81b7-e5451abe1106",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:6bf5b563-47c1-4146-8a9a-492b2d29b8a4",
+            "code": "yes"
+          }
+        }
+      ],
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "9d90eabe-9f85-4a06-87a2-0343f397d452",
+            "system": "urn:uuid:c0c05eac-b4b1-4248-b488-f017fd0dfa22",
+            "code": "yes",
+            "display": "Yes",
+            "_display": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "id"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Ya"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "99354ecb-5521-460f-8ada-1684ac6f3150",
+            "system": "urn:uuid:c0c05eac-b4b1-4248-b488-f017fd0dfa22",
+            "code": "no",
+            "display": "No",
+            "_display": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "id"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Tidak"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+          "valueString": "password-widget"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+          "valueInteger": 16
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "NIK number should be of 16 digits",
+          "_valueString": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                "extension": [
+                  {
+                    "url": "lang",
+                    "valueCode": "id"
+                  },
+                  {
+                    "url": "content",
+                    "valueString": "Nomor NIK harus 16 digit"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^\\+?(?:[()\\h-]*\\d[()\\h-]*){16}$"
+        }
+      ],
+      "linkId": "6dd1b786-dc61-43e7-9cda-711f71024469",
+      "text": "Mother/Guardian's NIK Number",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "NIK Ibu/Wali"
+              }
+            ]
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/questionnaire-display-category",
+                  "code": "instructions"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "e5e2aa85-c416-48c6-9caa-b8009c523175",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:c0c05eac-b4b1-4248-b488-f017fd0dfa22",
+            "code": "yes"
+          }
+        },
+        {
+          "question": "3d453a4e-8548-468f-81b7-e5451abe1106",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:6bf5b563-47c1-4146-8a9a-492b2d29b8a4",
+            "code": "yes"
+          }
+        }
+      ],
+      "enableBehavior": "all",
+      "required": true,
+      "maxLength": 16
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+          "valueInteger": 16
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "NIK number should be of 16 digits"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^\\+?(?:[()\\h-]*\\d[()\\h-]*){16}$"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-display-category",
+                "code": "instructions"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+          "extension": [
+            {
+              "url": "key",
+              "valueId": "constraint-1"
+            },
+            {
+              "url": "requirements",
+              "valueString": "Verify guardian's NIK field must have the same value as guardian's NIK field",
+              "_valueString": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "id"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "Isian kedua nomor NIK harus sama"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "url": "severity",
+              "valueCode": "error"
+            },
+            {
+              "url": "expression",
+              "valueString": "%context.answer.value = %resource.descendants().where(linkId='6dd1b786-dc61-43e7-9cda-711f71024469').answer.value"
+            },
+            {
+              "url": "human",
+              "valueString": "Guardian's NIK does not match",
+              "_valueString": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "id"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "NIK wali tidak sama"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "url": "location",
+              "valueString": "1"
+            }
+          ]
+        }
+      ],
+      "linkId": "8960843f-c7ac-428b-8002-21436bdb6b1a",
+      "text": "Verify mother/Guardian's NIK Number",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "NIK Ibu/Wali"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "e5e2aa85-c416-48c6-9caa-b8009c523175",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:c0c05eac-b4b1-4248-b488-f017fd0dfa22",
+            "code": "yes"
+          }
+        },
+        {
+          "question": "3d453a4e-8548-468f-81b7-e5451abe1106",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:6bf5b563-47c1-4146-8a9a-492b2d29b8a4",
+            "code": "yes"
+          }
+        }
+      ],
+      "enableBehavior": "all",
+      "required": true,
+      "maxLength": 16
+    },
+    {
+      "linkId": "bcbce519-7314-466e-d42c-5107a4b4a687",
+      "text": "Does the mother/guardian own a phone?",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Apakah Ibu/Wali memiliki telepon genggam (HP)?"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "choice",
+      "enableWhen": [
+        {
+          "question": "3d453a4e-8548-468f-81b7-e5451abe1106",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:6bf5b563-47c1-4146-8a9a-492b2d29b8a4",
+            "code": "yes"
+          }
+        }
+      ],
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "ba420974-2a52-415e-81b6-37c02ba8433d",
+            "system": "urn:uuid:660783e0-0fcc-4e09-967c-322c1dd9405f",
+            "code": "yes",
+            "display": "Yes",
+            "_display": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "id"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Ya"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "18536349-1193-4d12-87af-b506cea03718",
+            "system": "urn:uuid:660783e0-0fcc-4e09-967c-322c1dd9405f",
+            "code": "no",
+            "display": "No",
+            "_display": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "id"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Tidak"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+          "valueString": "password-widget"
+        },
+        {
+          "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+          "valueString": "password-widget"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^\\d{10,13}$"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Please enter a valid phone number",
+          "_valueString": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                "extension": [
+                  {
+                    "url": "lang",
+                    "valueCode": "id"
+                  },
+                  {
+                    "url": "content",
+                    "valueString": "Masukkan nomor ponsel yang valid"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-display-category",
+                "code": "instructions"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "f4833bf7-c293-4f38-866d-a89066ef32d1",
+      "text": "Mother/guardian's phone number",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nomor HP Ibu/Wali"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "3d453a4e-8548-468f-81b7-e5451abe1106",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:6bf5b563-47c1-4146-8a9a-492b2d29b8a4",
+            "code": "yes"
+          }
+        },
+        {
+          "question": "bcbce519-7314-466e-d42c-5107a4b4a687",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:660783e0-0fcc-4e09-967c-322c1dd9405f",
+            "code": "yes"
+          }
+        }
+      ],
+      "enableBehavior": "all",
+      "required": true,
+      "maxLength": 13
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^\\d{10,13}$"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Please enter a valid phone number"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-display-category",
+                "code": "instructions"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+          "extension": [
+            {
+              "url": "key",
+              "valueId": "constraint-1"
+            },
+            {
+              "url": "requirements",
+              "valueString": "Verify guardian's phone number field must have the same value as phone number field",
+              "_valueString": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "id"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "Pastikan kedua isian nomor ponsel wali telah sama"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "url": "severity",
+              "valueCode": "error"
+            },
+            {
+              "url": "expression",
+              "valueString": "%context.answer.value = %resource.descendants().where(linkId='f4833bf7-c293-4f38-866d-a89066ef32d1').answer.value"
+            },
+            {
+              "url": "human",
+              "valueString": "Guardian's phone number does not match",
+              "_valueString": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "id"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "Isian kedua nomor ponsel wali harus sama"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "url": "location",
+              "valueString": "1"
+            }
+          ]
+        }
+      ],
+      "linkId": "c92639fb-be71-4cab-90dd-ac86bdf220e1",
+      "text": "Verify mother/guardian's phone number",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nomor HP Ibu/Wali"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "3d453a4e-8548-468f-81b7-e5451abe1106",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:6bf5b563-47c1-4146-8a9a-492b2d29b8a4",
+            "code": "yes"
+          }
+        },
+        {
+          "question": "bcbce519-7314-466e-d42c-5107a4b4a687",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:660783e0-0fcc-4e09-967c-322c1dd9405f",
+            "code": "yes"
+          }
+        }
+      ],
+      "enableBehavior": "all",
+      "required": true,
+      "maxLength": 13
+    },
+    {
+      "extension": [
+        {
+          "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+          "valueString": "password-widget"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+          "valueInteger": 10
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "NIN number should be of 13 digits",
+          "_valueString": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                "extension": [
+                  {
+                    "url": "lang",
+                    "valueCode": "id"
+                  },
+                  {
+                    "url": "content",
+                    "valueString": "Nomor BPJS harus 13 digit"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-display-category",
+                "code": "instructions"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^000\\+?(?:[()\\h-]*\\d[()\\h-]*){7,10}$"
+        }
+      ],
+      "linkId": "bad3d9f7-00c1-4606-d10b-b400c71f0bca",
+      "text": "National Insurance number",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nomor BPJS"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "required": false,
+      "maxLength": 13
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='bad3d9f7-00c1-4606-d10b-b400c71f0bca').answer.value.exists()"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+          "valueInteger": 10
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "NIN number should be of 13 digits"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^000\\+?(?:[()\\h-]*\\d[()\\h-]*){7,10}$"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-display-category",
+                "code": "instructions"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+          "extension": [
+            {
+              "url": "key",
+              "valueId": "constraint-1"
+            },
+            {
+              "url": "requirements",
+              "valueString": "Verify National Insurance field must have the same value as National Insurance field",
+              "_valueString": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "id"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "Isian kedua nomor BPJS harus sama"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "url": "severity",
+              "valueCode": "error"
+            },
+            {
+              "url": "expression",
+              "valueString": "%context.answer.value = %resource.descendants().where(linkId='bad3d9f7-00c1-4606-d10b-b400c71f0bca').answer.value"
+            },
+            {
+              "url": "human",
+              "valueString": "National Insurance number does not match",
+              "_valueString": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "id"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "Nomor BPJS tidak sama"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "url": "location",
+              "valueString": "1"
+            }
+          ]
+        }
+      ],
+      "linkId": "fef9e49a-3501-41c6-9e9e-b57af9c32e23",
+      "text": "Verify National Insurance number",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nomor BPJS"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "required": true,
+      "maxLength": 13
+    },
+    {
+      "linkId": "1b87fbf5-1330-4e65-8364-10cbf7c0a3e3",
+      "text": "Current Home Address",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Alamat tempat tinggal sekarang"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "toggle-is-family-head",
+      "text": "isFamilyHeadExists",
+      "type": "integer"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "(%resource.descendants().where(linkId='toggle-is-family-head').answer.value = 0 and (%resource.descendants().where(linkId='calculated-year').answer.value >= 17 or %resource.descendants().where(linkId='age').answer.value >= 17))"
+          }
+        }
+      ],
+      "linkId": "1e1a206f-1cc2-4e48-8103-b26bf4bd7c3c",
+      "text": "Household head",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Peran di keluarga.Kepala keluarga?"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "choice",
+      "enableBehavior": "any",
+      "required": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "db16ca66-a958-4042-8b69-b6274d7a1cf8",
+            "system": "urn:uuid:7b6761a6-2f3d-4cda-9155-cf089c94403a",
+            "code": "yes",
+            "display": "Yes",
+            "_display": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "id"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Ya"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "634f6d26-73d0-4058-8a9e-d5a003ce002e",
+            "system": "urn:uuid:7b6761a6-2f3d-4cda-9155-cf089c94403a",
+            "code": "no",
+            "display": "No",
+            "_display": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "id"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Tidak"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "(((%resource.descendants().where(linkId='36d39dbe-00e2-4e29-f079-3ec8f0119aff').answer.value.code.exists().not()) and (%resource.descendants().where(linkId='calculated-year').answer.value < 17)) or (%resource.descendants().where(linkId='8460d986-ef71-4997-80ee-7887d8c345e7').answer.value < 17))"
+          }
+        }
+      ],
+      "linkId": "d02e3a9e-ede2-4cd5-9c98-cc5824c06ac4",
+      "text": "Is the child's father alive?",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Apakah Ayah dari anak masih hidup?"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "8d0ec61d-6c79-43cd-ee75-b7982becf32d",
+            "system": "urn:uuid:a0c601e3-b8e0-49ed-82b0-1579c1c53dfd",
+            "code": "yes",
+            "display": "Yes",
+            "_display": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "id"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Ya"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "e8c4e406-61da-40c8-8ca2-8996b4280ef6",
+            "system": "urn:uuid:a0c601e3-b8e0-49ed-82b0-1579c1c53dfd",
+            "code": "no",
+            "display": "No",
+            "_display": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                  "extension": [
+                    {
+                      "url": "lang",
+                      "valueCode": "id"
+                    },
+                    {
+                      "url": "content",
+                      "valueString": "Tidak"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^[a-zA-Z\\- ]*$"
+        }
+      ],
+      "linkId": "945f09f7-0641-4675-8329-b02d99c5425f",
+      "text": "Father's First Name",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nama Depan Ayah"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "d02e3a9e-ede2-4cd5-9c98-cc5824c06ac4",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:a0c601e3-b8e0-49ed-82b0-1579c1c53dfd",
+            "code": "yes"
+          }
+        }
+      ],
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^[a-zA-Z\\- ]*$"
+        }
+      ],
+      "linkId": "945f09f7-0641-4675-8329-b02d99c5425g",
+      "text": "Father's Last Name",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Nama Belakang Ayah"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "d02e3a9e-ede2-4cd5-9c98-cc5824c06ac4",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:a0c601e3-b8e0-49ed-82b0-1579c1c53dfd",
+            "code": "yes"
+          }
+        }
+      ],
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "d/M/y"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "_valueDate": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "today() - 13 'years'"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "f331b415-9188-4add-cf3f-36019a593691",
+      "text": "Father's DOB",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "id"
+              },
+              {
+                "url": "content",
+                "valueString": "Tangal Lahir Ayah"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "date",
+      "enableWhen": [
+        {
+          "question": "d02e3a9e-ede2-4cd5-9c98-cc5824c06ac4",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:a0c601e3-b8e0-49ed-82b0-1579c1c53dfd",
+            "code": "yes"
+          }
+        }
+      ],
+      "required": false
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "household-id",
+      "type": "string"
+    }
+  ]
+}

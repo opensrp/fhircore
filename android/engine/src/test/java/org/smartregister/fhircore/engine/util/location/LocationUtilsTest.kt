@@ -26,7 +26,7 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
@@ -72,7 +72,7 @@ class LocationUtilsTest : RobolectricTest() {
   }
 
   @Test
-  fun `test getAccurateLocation`() = runBlocking {
+  fun `test getAccurateLocation`() = runTest {
     val location =
       Location("Test location").apply {
         latitude = 36.0
@@ -88,7 +88,7 @@ class LocationUtilsTest : RobolectricTest() {
   }
 
   @Test
-  fun `test getApproximateLocation`() = runBlocking {
+  fun `test getApproximateLocation`() = runTest {
     val location =
       Location("").apply {
         latitude = 36.0
@@ -102,7 +102,7 @@ class LocationUtilsTest : RobolectricTest() {
   }
 
   @Test
-  fun `test getAccurateLocation with cancellation`() = runBlocking {
+  fun `test getAccurateLocation with cancellation`() = runTest {
     val job = launch {
       delay(500)
       coroutineContext.cancel()

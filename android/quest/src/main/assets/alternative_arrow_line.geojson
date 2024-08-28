@@ -1,0 +1,138 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "marker-color": "#7e7e7e",
+        "marker-size": "medium",
+        "marker-symbol": "",
+        "testStatus": "positive",
+        "dateTime": "2019-01-01 00:06:45"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.95526123046875,
+          -0.03845214555104571
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stroke": "#555555",
+        "stroke-width": 2,
+        "stroke-opacity": 1,
+        "fill": "#555555",
+        "fill-opacity": 0.5,
+        "testStatus": "positive",
+        "dateTime": "2019-01-02 00:06:45"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              37.49359130859375,
+              -0.10162348187356197
+            ],
+            [
+              37.58148193359375,
+              -0.10162348187356197
+            ],
+            [
+              37.58148193359375,
+              -0.010986328057668812
+            ],
+            [
+              37.49359130859375,
+              -0.010986328057668812
+            ],
+            [
+              37.49359130859375,
+              -0.10162348187356197
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "marker-color": "#7e7e7e",
+        "marker-size": "medium",
+        "marker-symbol": "",
+        "testStatus": "positive",
+        "dateTime": "2019-01-03 00:06:45"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.5457763671875,
+          -0.44219531715407406
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "stroke": "#555555",
+        "stroke-width": 2,
+        "stroke-opacity": 1,
+        "fill": "#555555",
+        "fill-opacity": 0.5,
+        "testStatus": "positive",
+        "dateTime": "2019-01-05 00:06:45"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              38.0511474609375,
+              -0.475153244974683
+            ],
+            [
+              37.979736328125,
+              -0.5520544462864851
+            ],
+            [
+              38.089599609375,
+              -0.5959975522614256
+            ],
+            [
+              38.199462890625,
+              -0.5300827699064127
+            ],
+            [
+              38.14727783203125,
+              -0.42022328331247877
+            ],
+            [
+              38.0511474609375,
+              -0.475153244974683
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "marker-color": "#7e7e7e",
+        "marker-size": "medium",
+        "marker-symbol": "",
+        "dateTime": "2019-01-04 00:06:45",
+        "testStatus": "negative"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.913818359375,
+          -0.24719161596904016
+        ]
+      }
+    }
+  ]
+}

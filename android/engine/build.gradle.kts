@@ -31,7 +31,10 @@ android {
   }
 
   buildTypes {
-    getByName("debug") { enableUnitTestCoverage = true }
+    getByName("debug") {
+      enableUnitTestCoverage = BuildConfigs.enableUnitTestCoverage
+      enableAndroidTestCoverage = BuildConfigs.enableAndroidTestCoverage
+    }
 
     create("debugNonProxy") {
       initWith(getByName("debug"))
@@ -263,6 +266,7 @@ dependencies {
   implementation(Dependencies.HapiFhir.structuresR4) { exclude(module = "junit") }
   implementation(Dependencies.HapiFhir.guavaCaching)
   implementation(Dependencies.HapiFhir.validationR4)
+  implementation(Dependencies.HapiFhir.validationR5)
   implementation(Dependencies.HapiFhir.validation) {
     exclude(module = "commons-logging")
     exclude(module = "httpclient")

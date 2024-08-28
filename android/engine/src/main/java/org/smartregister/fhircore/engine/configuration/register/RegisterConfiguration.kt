@@ -21,8 +21,11 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.domain.model.TopScreenSectionConfig
 
 @Serializable
 data class RegisterConfiguration(
@@ -44,4 +47,13 @@ data class RegisterConfiguration(
     ),
   val configRules: List<RuleConfig>? = null,
   val registerFilter: RegisterFilterConfig? = null,
-) : Configuration()
+  val filterDataByRelatedEntityLocation: Boolean = false,
+  val topScreenSection: TopScreenSectionConfig? = null,
+  val onSearchByQrSingleResultActions: List<ActionConfig>? = null,
+) : Configuration() {
+  val onSearchByQrSingleResultValidActions =
+    onSearchByQrSingleResultActions?.filter { it.trigger == ActionTrigger.ON_SEARCH_SINGLE_RESULT }
+
+  val showSearchByQrCode =
+    !onSearchByQrSingleResultValidActions.isNullOrEmpty() || searchBar?.searchByQrCode == true
+}
