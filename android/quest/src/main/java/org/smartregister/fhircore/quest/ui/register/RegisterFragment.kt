@@ -222,10 +222,12 @@ class RegisterFragment : Fragment(), OnSyncListener {
       is CurrentSyncJobStatus.Succeeded -> {
         refreshRegisterData()
         appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+        appMainViewModel.countRegisterData()
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
         appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+        appMainViewModel.countRegisterData()
       }
       else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
     }
