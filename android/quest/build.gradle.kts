@@ -450,7 +450,6 @@ dependencies {
   testImplementation(libs.navigation.testing)
   testImplementation(libs.kotlin.test)
   testImplementation(libs.work.testing)
-  testImplementation("org.skyscreamer:jsonassert:1.5.3")
 
   // To run only on debug builds
   debugImplementation(libs.ui.test.manifest)
