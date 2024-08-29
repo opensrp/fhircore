@@ -35,8 +35,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.skyscreamer.jsonassert.JSONAssert
-import org.skyscreamer.jsonassert.JSONCompareMode
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.valueToString
@@ -243,6 +241,6 @@ class CqlContentTest : RobolectricTest() {
     println(cqlResultStr)
     println(expectedResource)
 
-    JSONAssert.assertEquals(expectedResource, cqlResultStr, JSONCompareMode.STRICT)
+    Assert.assertEquals(expectedResource, cqlResultStr)
   }
 }
