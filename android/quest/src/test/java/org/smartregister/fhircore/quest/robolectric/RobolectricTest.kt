@@ -100,7 +100,7 @@ abstract class RobolectricTest {
 
   fun File.parseSampleResource(): IBaseResource = sanitizeSampleResourceContent(this.readText())
 
-  fun sanitizeSampleResourceContent(content: String): IBaseResource =
+  private fun sanitizeSampleResourceContent(content: String): IBaseResource =
     content
       .replace("#TODAY", Date().formatDate(SDF_YYYY_MM_DD))
       .replace("#NOW", DateTimeType.now().valueAsString)
