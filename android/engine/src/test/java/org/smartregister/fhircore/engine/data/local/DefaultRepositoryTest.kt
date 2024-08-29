@@ -121,6 +121,8 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var parser: IParser
 
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
+
   @BindValue
   val configService: ConfigService =
     spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
@@ -129,7 +131,6 @@ class DefaultRepositoryTest : RobolectricTest() {
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private lateinit var dispatcherProvider: DefaultDispatcherProvider
   private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
-  private lateinit var preferenceDataStore: PreferenceDataStore
   private lateinit var defaultRepository: DefaultRepository
 
   @Before
