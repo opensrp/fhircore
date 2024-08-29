@@ -28,6 +28,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Base64
+import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
@@ -137,22 +138,21 @@ constructor(
 
   fun forgotPin(context: Context) {
     val contactNumber = applicationConfiguration.loginConfig.supervisorContactNumber
-    val countryCode = applicationConfiguration.loginConfig.countryCode
-    if (!contactNumber.isNullOrEmpty() && !countryCode.isNullOrEmpty()) {
-      val formattedNumber = formatPhoneNumber(context, contactNumber, countryCode)
+    if (!contactNumber.isNullOrEmpty()) {
+      val formattedNumber = formatPhoneNumber(context, contactNumber)
       _launchDialPad.value = formattedNumber
     } else {
       Toast.makeText(context, context.getString(R.string.call_supervisor), Toast.LENGTH_LONG).show()
     }
   }
 
-  fun formatPhoneNumber(context: Context, number: String, countryCode: String): String {
+  fun formatPhoneNumber(context: Context, number: String): String {
     return try {
       val cleanedNumber = number.filter { it.isDigit() }
-      // Format the number using the provided country code
-      PhoneNumberUtils.formatNumber(cleanedNumber, countryCode)
+      val localeCountryCode = Locale.getDefault().country
+
+      PhoneNumberUtils.formatNumber(cleanedNumber, localeCountryCode)
     } catch (e: Exception) {
-      // Log the error and return the original number if formatting fails
       Timber.tag("PhoneNumberFormatting").e(e, "Error formatting phone number")
       number
     }

@@ -156,14 +156,17 @@ class PinViewModelTest : RobolectricTest() {
   fun testForgotPinLaunchesDialer() {
     configurationRegistry.configsJsonMap[ConfigType.Application.name] =
       "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{\"supervisorContactNumber\":\"1234567890\"}}"
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    val expectedFormattedNumber = pinViewModel.formatPhoneNumber(context, "1234567890")
+
     val launchDialPadObserver =
       Observer<String?> { dialPadUri ->
         if (dialPadUri != null) {
-          Assert.assertEquals("1234567890", dialPadUri)
+          Assert.assertEquals(expectedFormattedNumber, dialPadUri)
         }
       }
-
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     try {
       pinViewModel.launchDialPad.observeForever(launchDialPadObserver)
@@ -179,12 +182,11 @@ class PinViewModelTest : RobolectricTest() {
       "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{}}"
 
     val context = ApplicationProvider.getApplicationContext<Context>()
-    val toastMessage = context.getString(R.string.call_supervisor)
+    val expectedToastMessage = context.getString(R.string.call_supervisor)
 
-    // Run the forgotPin method and capture the Toast
     pinViewModel.forgotPin(context)
 
-    Assert.assertEquals(toastMessage, ShadowToast.getTextOfLatestToast())
+    Assert.assertEquals(expectedToastMessage, ShadowToast.getTextOfLatestToast())
   }
 
   @Test
