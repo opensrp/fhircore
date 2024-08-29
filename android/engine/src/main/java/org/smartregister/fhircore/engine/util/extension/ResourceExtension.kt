@@ -23,7 +23,6 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
-import com.google.android.fhir.search.search
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.Date
@@ -64,7 +63,6 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.model.Type
-import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.joda.time.Instant
 import org.json.JSONException
 import org.json.JSONObject
@@ -486,7 +484,7 @@ suspend fun Task.updateDependentTaskDueDate(
   return apply {
     val dependentTasks =
       defaultRepository.fhirEngine
-        .search<Task> {
+        .batchedSearch<Task> {
           filter(
             referenceParameter = ReferenceClientParam(PARTOF),
             { value = id },
