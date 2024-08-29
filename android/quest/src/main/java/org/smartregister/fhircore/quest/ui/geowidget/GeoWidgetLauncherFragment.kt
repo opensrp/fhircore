@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.launcher
+package org.smartregister.fhircore.quest.ui.geowidget
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -61,7 +60,6 @@ import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
@@ -92,7 +90,6 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
-  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
   private lateinit var geoWidgetFragment: GeoWidgetFragment
   private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
   private val navArgs by navArgs<GeoWidgetLauncherFragmentArgs>()
@@ -195,6 +192,9 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                     }
                   }
                 },
+                isFirstTimeSync = geoWidgetLauncherViewModel.isFirstTime(),
+                appDrawerUIState = appDrawerUIState,
+                onAppMainEvent = appMainViewModel::onEvent,
               )
             }
           }
@@ -209,24 +209,39 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
   }
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
-    if (syncJobStatus is CurrentSyncJobStatus.Running) {
-      if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
-        val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
-        val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
-        val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
-        appMainViewModel.updateAppDrawerUIState(
-          isSyncUpload = isSyncUpload,
-          currentSyncJobStatus = syncJobStatus,
-          percentageProgress = progressPercentage,
-        )
+    when (syncJobStatus) {
+      is CurrentSyncJobStatus.Running -> {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
+          val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
+          val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+          val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
+          appMainViewModel.updateAppDrawerUIState(
+            isSyncUpload = isSyncUpload,
+            currentSyncJobStatus = syncJobStatus,
+            percentageProgress = progressPercentage,
+          )
+        }
       }
-    } else appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+      is CurrentSyncJobStatus.Succeeded,
+      is CurrentSyncJobStatus.Failed, -> {
+        lifecycleScope.launch {
+          val geoJsonFeatures =
+            geoWidgetLauncherViewModel.retrieveLocations(
+              geoWidgetConfig = geoWidgetConfiguration,
+              searchText = searchViewModel.searchQuery.value.query,
+            )
+          geoWidgetViewModel.features.postValue(geoJsonFeatures)
+        }
+        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+      }
+      else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+    }
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     showSetLocationDialog()
-    lifecycleScope.launch(dispatcherProvider.io()) {
+    lifecycleScope.launch {
       // Retrieve if searchText is null; filter will be triggered automatically if text is not empty
       if (searchViewModel.searchQuery.value.isBlank()) {
         val geoJsonFeatures =
