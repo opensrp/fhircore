@@ -42,6 +42,7 @@ import java.time.Instant
 import javax.inject.Inject
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
