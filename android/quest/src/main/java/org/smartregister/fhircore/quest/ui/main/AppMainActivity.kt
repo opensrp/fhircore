@@ -22,6 +22,7 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -29,7 +30,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.getValue
-import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -40,25 +40,19 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
 import java.time.Instant
 import javax.inject.Inject
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
-import org.smartregister.fhircore.engine.configuration.app.SyncStrategy
-import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.datastore.ProtoDataStore
-import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.serializable
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -67,7 +61,6 @@ import org.smartregister.fhircore.engine.util.location.PermissionUtils
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
-import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
@@ -111,85 +104,34 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
-
-    lifecycleScope.launch {
-      val startDestinationArgs: Bundle = getStartDestinationArgs()
-
-      // Retrieve the navController directly from the NavHostFragment
+    lifecycleScope.launch(dispatcherProvider.main()) {
       val navController =
         (supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment).navController
 
-      val graph = withContext(dispatcherProvider.io()) {
-        navController.navInflater.inflate(R.navigation.application_nav_graph).apply {
-          val startDestination =
-            when (
-              appMainViewModel.applicationConfiguration.navigationStartDestination.launcherType
-            ) {
-              LauncherType.MAP -> R.id.geoWidgetLauncherFragment
-              LauncherType.REGISTER -> R.id.registerFragment
-            }
-          setStartDestination(startDestination)
-        }
-      }
-
-      navController.setGraph(graph, startDestinationArgs)
-      runJobs()
-    }
-
-    setupLocationServices()
-  }
-
-  private fun getStartDestinationArgs(): Bundle {
-    val startDestinationConfig =
-      appMainViewModel.applicationConfiguration.navigationStartDestination
-
-    return when (startDestinationConfig.launcherType) {
-      LauncherType.REGISTER -> {
-        val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
-        val clickAction = topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
-        bundleOf(
-          NavigationArg.SCREEN_TITLE to
-                  if (startDestinationConfig.screenTitle.isNullOrEmpty()) {
-                    topMenuConfig.display
-                  } else startDestinationConfig.screenTitle,
-          NavigationArg.REGISTER_ID to
-                  if (startDestinationConfig.id.isNullOrEmpty()) {
-                    clickAction?.id ?: topMenuConfig.id
-                  } else startDestinationConfig.id,
-        )
-      }
-
-      LauncherType.MAP -> bundleOf(NavigationArg.GEO_WIDGET_ID to startDestinationConfig.id)
-    }
-  }
-
-  private fun runJobs() {
-      // Setup the drawer and schedule jobs
-      appMainViewModel.run {
-        retrieveAppMainUiState()
-
-        if (isDeviceOnline()) {
-          // Do not schedule sync until location selected when strategy is RelatedEntityLocation
-          // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
-          // if we need to trigger sync based on assigned locations or not
-          if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
-            if (
-              applicationConfiguration.usePractitionerAssignedLocationOnSync ||
-                runBlocking { syncLocationIdsProtoStore.data.firstOrNull() }?.isNotEmpty() == true
-            ) {
-              schedulePeriodicSync()
-            }
-          } else {
-            schedulePeriodicSync()
+      val graph =
+        withContext(dispatcherProvider.io()) {
+          navController.navInflater.inflate(R.navigation.application_nav_graph).apply {
+            val startDestination =
+              when (
+                appMainViewModel.applicationConfiguration.navigationStartDestination.launcherType
+              ) {
+                LauncherType.MAP -> R.id.geoWidgetLauncherFragment
+                LauncherType.REGISTER -> R.id.registerFragment
+              }
+            setStartDestination(startDestination)
           }
-        } else {
-            showToast(
-              getString(org.smartregister.fhircore.engine.R.string.sync_failed),
-              Toast.LENGTH_LONG,
-            )
         }
-        schedulePeriodicJobs()
+
+      appMainViewModel.run {
+        navController.setGraph(graph, getStartDestinationArgs())
+        retrieveAppMainUiState()
+        withContext(dispatcherProvider.io()) { schedulePeriodicJobs(this@AppMainActivity) }
       }
+      setupLocationServices()
+
+      findViewById<View>(R.id.mainScreenProgressBar).apply { visibility = View.GONE }
+      findViewById<View>(R.id.mainScreenProgressBarText).apply { visibility = View.GONE }
+    }
   }
 
   override fun onResume() {
