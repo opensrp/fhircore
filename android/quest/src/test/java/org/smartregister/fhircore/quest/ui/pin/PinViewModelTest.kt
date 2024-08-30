@@ -73,6 +73,7 @@ class PinViewModelTest : RobolectricTest() {
   fun testSetPinUiState() {
     val context = ApplicationProvider.getApplicationContext<Application>()
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
+    every { secureSharedPreference.retrieveLoggedInUsernames() } returns setOf("demo")
     pinViewModel.setPinUiState(true, context)
     val pinUiState = pinViewModel.pinUiState.value
     Assert.assertEquals(
@@ -88,6 +89,7 @@ class PinViewModelTest : RobolectricTest() {
     val context = ApplicationProvider.getApplicationContext<Application>()
     every { secureSharedPreference.retrieveSessionPin() } returns null
     every { secureSharedPreference.retrieveSessionUsername() } returns null
+    every { secureSharedPreference.retrieveLoggedInUsernames() } returns setOf("null")
     configurationRegistry.configsJsonMap[ConfigType.Application.name] =
       "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{\"showLogo\":true,\"enablePin\":true,\"pinLoginMessage\":\"Test Message\"}}"
     pinViewModel.setPinUiState(true, context)
@@ -102,6 +104,7 @@ class PinViewModelTest : RobolectricTest() {
       "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{\"showLogo\":true,\"enablePin\":true}}"
     every { secureSharedPreference.retrieveSessionPin() } returns null
     every { secureSharedPreference.retrieveSessionUsername() } returns null
+    every { secureSharedPreference.retrieveLoggedInUsernames() } returns setOf("null")
     pinViewModel.setPinUiState(true, context)
     val pinUiState = pinViewModel.pinUiState.value
     Assert.assertEquals("CHA will use this PIN to login", pinUiState.message)
@@ -116,10 +119,11 @@ class PinViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnSetPin() {
+    every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     pinViewModel.onSetPin("1990".toCharArray())
 
     val newPinSlot = slot<CharArray>()
-    verify { secureSharedPreference.saveSessionPin(any(), capture(newPinSlot)) }
+    verify { secureSharedPreference.saveSessionPin("demo", capture(newPinSlot)) }
 
     Assert.assertEquals("1990", newPinSlot.captured.concatToString())
     Assert.assertEquals(true, pinViewModel.navigateToHome.value)
@@ -162,21 +166,25 @@ class PinViewModelTest : RobolectricTest() {
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun testPinLogin() {
+    val context = ApplicationProvider.getApplicationContext<Application>()
     mockkStatic(::passwordHashString)
 
     coEvery { passwordHashString(any(), any()) } returns "currentStoredPinHash"
-    coEvery { secureSharedPreference.retrieveSessionPin() } returns "currentStoredPinHash"
-    coEvery { secureSharedPreference.retrievePinSalt() } returns
-      Base64.getEncoder().encodeToString("currentStoredSalt".toByteArray())
+    coEvery { secureSharedPreference.retrieveSessionUsername() } returns "demo"
 
     val loginPin = charArrayOf('1', '2', '1', '3', '1', '4')
+    coEvery { secureSharedPreference.retrieveSessionUserPin(eq("demo")) } returns
+      "currentStoredPinHash"
+    coEvery { secureSharedPreference.retrieveSessionUserSalt(eq("demo")) } returns
+      Base64.getEncoder().encodeToString("currentStoredSalt".toByteArray())
 
     var pinIsValid = false
     val callback = { valid: Boolean -> pinIsValid = valid }
+    pinViewModel.selectUser("demo", context)
     runTest { pinViewModel.pinLogin(loginPin, callback) }
     // Verify the credentials are fetched from the secure shared prefs helper
-    verify { secureSharedPreference.retrieveSessionPin() }
-    verify { secureSharedPreference.retrievePinSalt() }
+    verify { secureSharedPreference.retrieveSessionUserPin(eq("demo")) }
+    verify { secureSharedPreference.retrieveSessionUserSalt(eq("demo")) }
 
     // Verify callback is invoked with result after PIN validation
     Assert.assertTrue(pinIsValid)
