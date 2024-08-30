@@ -34,8 +34,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.CurrentSyncJobStatus
-import com.google.android.fhir.sync.SyncJobStatus
-import com.google.android.fhir.sync.SyncOperation
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
@@ -179,7 +177,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
             if (
               applicationConfiguration.usePractitionerAssignedLocationOnSync ||
-                syncLocationIdsProtoStore.data.firstOrNull()?.isNotEmpty() == true
+                runBlocking { syncLocationIdsProtoStore.data.firstOrNull() }?.isNotEmpty() == true
             ) {
               schedulePeriodicSync()
             }
@@ -202,6 +200,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   override fun onResume() {
     super.onResume()
     findNavController(R.id.nav_host).addOnDestinationChangedListener(sentryNavListener)
+    syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
   override fun onPause() {
@@ -364,16 +363,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           )
           updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
         }
-      is CurrentSyncJobStatus.Running ->
-        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
-          val isSyncUpload =
-            (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
-              SyncOperation.UPLOAD
-          if (isSyncUpload) {
-            appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
-          }
-        }
-      else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+      else -> {
+        // Do Nothing
+      }
     }
   }
 }
