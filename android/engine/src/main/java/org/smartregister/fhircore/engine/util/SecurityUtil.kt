@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.util
 
-import android.os.Build
 import java.nio.charset.StandardCharsets
 import java.security.SecureRandom
 import java.util.Arrays
@@ -28,22 +27,14 @@ fun CharArray.toPasswordHash(salt: ByteArray) = passwordHashString(this, salt)
 
 @VisibleForTesting
 fun passwordHashString(password: CharArray, salt: ByteArray): String {
-  val pbKeySpec = PBEKeySpec(password, salt, 800000, 256)
-  val secretKeyFactory =
-    SecretKeyFactory.getInstance(
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        "PBKDF2withHmacSHA256"
-      } else {
-        "PBKDF2WithHmacSHA1"
-      },
-    )
+  val pbKeySpec = PBEKeySpec(password, salt, 180000, 512)
+  val secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2withHmacSHA512")
   return secretKeyFactory.generateSecret(pbKeySpec).encoded.toString(StandardCharsets.UTF_8)
 }
 
 fun Int.getRandomBytesOfSize(): ByteArray {
-  val random = SecureRandom()
   val randomSaltBytes = ByteArray(this)
-  random.nextBytes(randomSaltBytes)
+  SecureRandom().nextBytes(randomSaltBytes)
   return randomSaltBytes
 }
 
