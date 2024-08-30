@@ -113,13 +113,13 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     setContentView(R.layout.activity_main)
 
     lifecycleScope.launch {
-      val startDestinationArgs: Bundle =
-        withContext(dispatcherProvider.default()) { getStartDestinationArgs() }
+      val startDestinationArgs: Bundle = getStartDestinationArgs()
 
       // Retrieve the navController directly from the NavHostFragment
       val navController =
         (supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment).navController
-      val graph =
+
+      val graph = withContext(dispatcherProvider.io()) {
         navController.navInflater.inflate(R.navigation.application_nav_graph).apply {
           val startDestination =
             when (
@@ -130,43 +130,40 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             }
           setStartDestination(startDestination)
         }
+      }
 
       navController.setGraph(graph, startDestinationArgs)
       runJobs()
     }
 
-    // Register sync listener then run sync in that order
-    syncListenerManager.registerSyncListener(this@AppMainActivity, lifecycle)
-
     setupLocationServices()
   }
 
-  private suspend fun getStartDestinationArgs(): Bundle {
-    return withContext(dispatcherProvider.default()) {
-      val startDestinationConfig =
-        appMainViewModel.applicationConfiguration.navigationStartDestination
-      when (startDestinationConfig.launcherType) {
-        LauncherType.REGISTER -> {
-          val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
-          val clickAction = topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
-          bundleOf(
-            NavigationArg.SCREEN_TITLE to
-              if (startDestinationConfig.screenTitle.isNullOrEmpty()) {
-                topMenuConfig.display
-              } else startDestinationConfig.screenTitle,
-            NavigationArg.REGISTER_ID to
-              if (startDestinationConfig.id.isNullOrEmpty()) {
-                clickAction?.id ?: topMenuConfig.id
-              } else startDestinationConfig.id,
-          )
-        }
-        LauncherType.MAP -> bundleOf(NavigationArg.GEO_WIDGET_ID to startDestinationConfig.id)
+  private fun getStartDestinationArgs(): Bundle {
+    val startDestinationConfig =
+      appMainViewModel.applicationConfiguration.navigationStartDestination
+
+    return when (startDestinationConfig.launcherType) {
+      LauncherType.REGISTER -> {
+        val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
+        val clickAction = topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
+        bundleOf(
+          NavigationArg.SCREEN_TITLE to
+                  if (startDestinationConfig.screenTitle.isNullOrEmpty()) {
+                    topMenuConfig.display
+                  } else startDestinationConfig.screenTitle,
+          NavigationArg.REGISTER_ID to
+                  if (startDestinationConfig.id.isNullOrEmpty()) {
+                    clickAction?.id ?: topMenuConfig.id
+                  } else startDestinationConfig.id,
+        )
       }
+
+      LauncherType.MAP -> bundleOf(NavigationArg.GEO_WIDGET_ID to startDestinationConfig.id)
     }
   }
 
-  private suspend fun runJobs() {
-    withContext(dispatcherProvider.io()) {
+  private fun runJobs() {
       // Setup the drawer and schedule jobs
       appMainViewModel.run {
         retrieveAppMainUiState()
@@ -186,16 +183,13 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             schedulePeriodicSync()
           }
         } else {
-          withContext(dispatcherProvider.main()) {
             showToast(
               getString(org.smartregister.fhircore.engine.R.string.sync_failed),
               Toast.LENGTH_LONG,
             )
-          }
         }
         schedulePeriodicJobs()
       }
-    }
   }
 
   override fun onResume() {
