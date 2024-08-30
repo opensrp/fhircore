@@ -39,3 +39,6 @@ enum class SharedPreferenceKey {
 }
 
 fun practitionerIdKey(username: String) = "${username}_${SharedPreferenceKey.PRACTITIONER_ID.name}"
+
+fun practitionerNameKey(username: String) =
+  "${username}_${SharedPreferenceKey.PRACTITIONER_DETAILS.name}"

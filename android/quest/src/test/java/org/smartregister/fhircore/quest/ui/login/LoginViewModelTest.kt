@@ -69,6 +69,7 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.practitionerNameKey
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.AccountManagerShadow
@@ -209,18 +210,21 @@ internal class LoginViewModelTest : RobolectricTest() {
           scope = "open_my_guy",
         ),
       )
-    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
-    val practitioner =
-      practitionerDetails().apply { fhirPractitionerDetails.id = "$thisUsername-practitioner-id" }
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-      PractitionerDetails(),
-    )
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.PRACTITIONER_ID.name,
-      practitioner.fhirPractitionerDetails?.id,
-    )
+    coEvery { keycloakService.fetchUserInfo() } returns
+      Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
+    // Mock result for retrieving a FHIR resource using user's keycloak uuid
+    val bundle = Bundle()
+    val bundleEntry =
+      Bundle.BundleEntryComponent().apply {
+        resource =
+          practitionerDetails().apply {
+            fhirPractitionerDetails.id = "$thisUsername-practitioner-id"
+          }
+      }
+    coEvery { fhirResourceService.getResource(any()) } returns bundle.addEntry(bundleEntry)
     every { tokenAuthenticator.sessionActive() } returns true
+
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
 
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
@@ -639,7 +643,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       UserInfo(),
     ) {}
     Assert.assertNotNull(
-      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+      sharedPreferencesHelper.read(practitionerNameKey(loginViewModel.username.value!!)),
     )
   }
 
@@ -669,7 +673,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       ),
     ) {}
     Assert.assertNotNull(
-      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+      sharedPreferencesHelper.read(practitionerNameKey(loginViewModel.username.value!!)),
     )
   }
 
@@ -707,7 +711,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       UserInfo().apply { keycloakUuid = "my-test-practitioner-id" },
     ) {}
     Assert.assertNotNull(
-      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+      sharedPreferencesHelper.read(practitionerNameKey(loginViewModel.username.value!!)),
     )
   }
 

@@ -54,6 +54,7 @@ import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.practitionerIdKey
+import org.smartregister.fhircore.engine.util.practitionerNameKey
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.PractitionerDetails
@@ -207,7 +208,8 @@ constructor(
             },
           )
         } else {
-          if (secureSharedPreference.retrieveSessionUsername() == null) {
+          if (secureSharedPreference.retrieveSessionUsername(trimmedUsername) == null) {
+            secureSharedPreference.saveSessionUsername(trimmedUsername)
             _showProgressBar.postValue(false)
             _loginErrorState.postValue(LoginErrorState.INVALID_OFFLINE_STATE)
           } else if (
@@ -475,7 +477,7 @@ constructor(
       value = fhirPractitionerDetails.fhirPractitionerDetails?.id,
     )
     sharedPreferences.write(
-      "${trimmedUsername}_${SharedPreferenceKey.PRACTITIONER_DETAILS.name}",
+      practitionerNameKey(trimmedUsername),
       fhirPractitionerDetails,
     )
     sharedPreferences.write(ResourceType.CareTeam.name, careTeams)
