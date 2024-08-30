@@ -59,16 +59,18 @@ constructor(
    * [Lifecycle.State.DESTROYED]
    */
   fun registerSyncListener(onSyncListener: OnSyncListener, lifecycle: Lifecycle) {
-    _onSyncListeners.add(WeakReference(onSyncListener))
-    Timber.w("${onSyncListener::class.simpleName} registered to receive sync state events")
-    lifecycle.addObserver(
-      object : DefaultLifecycleObserver {
-        override fun onStop(owner: LifecycleOwner) {
-          super.onStop(owner)
-          deregisterSyncListener(onSyncListener)
-        }
-      },
-    )
+    if (_onSyncListeners.find { it.get() == onSyncListener } == null) {
+      _onSyncListeners.add(WeakReference(onSyncListener))
+      Timber.w("${onSyncListener::class.simpleName} registered to receive sync state events")
+      lifecycle.addObserver(
+        object : DefaultLifecycleObserver {
+          override fun onDestroy(owner: LifecycleOwner) {
+            super.onDestroy(owner)
+            deregisterSyncListener(onSyncListener)
+          }
+        },
+      )
+    }
   }
 
   /**

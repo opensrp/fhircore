@@ -33,8 +33,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.CurrentSyncJobStatus
-import com.google.android.fhir.sync.SyncJobStatus
-import com.google.android.fhir.sync.SyncOperation
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
@@ -146,9 +144,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
     navController.setGraph(graph, startDestinationArgs)
 
-    // Register sync listener then run sync in that order
-    syncListenerManager.registerSyncListener(this, lifecycle)
-
     // Setup the drawer and schedule jobs
     appMainViewModel.run {
       retrieveAppMainUiState()
@@ -179,6 +174,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   override fun onResume() {
     super.onResume()
     findNavController(R.id.nav_host).addOnDestinationChangedListener(sentryNavListener)
+    syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
   override fun onPause() {
@@ -341,16 +337,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           )
           updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
         }
-      is CurrentSyncJobStatus.Running ->
-        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
-          val isSyncUpload =
-            (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
-              SyncOperation.UPLOAD
-          if (isSyncUpload) {
-            appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
-          }
-        }
-      else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+      else -> {
+        // Do Nothing
+      }
     }
   }
 }
