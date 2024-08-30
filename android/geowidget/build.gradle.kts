@@ -112,6 +112,7 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.mapbox.sdk.turf)
+  implementation(libs.soloader) // Override soloader in mapbox
   implementation(libs.kujaku.library) {
     isTransitive = true
     exclude(group = "stax", module = "stax-api")

@@ -97,6 +97,7 @@ work-runtime-ktx = "2.7.1"
 work-testing = "2.7.1"
 workflow = "0.1.0-alpha02-preview9.1-SNAPSHOT"
 xercesImpl = "2.12.2"
+soloader = "0.10.4"
 
 [libraries]
 accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist-flowlayout" }
@@ -194,6 +195,7 @@ runner = { module = "androidx.test:runner", version.ref = "runner" }
 runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtime-livedata" }
 security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security-crypto" }
 slf4j-nop = { group = "org.slf4j", name = "slf4j-nop", version.ref = "slf4j-nop" }
+soloader = {group = "com.facebook.soloader", name = "soloader", version.ref = "soloader"}
 stax-api = { group = "javax.xml.stream", name = "stax-api", version.ref = "stax-api" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
