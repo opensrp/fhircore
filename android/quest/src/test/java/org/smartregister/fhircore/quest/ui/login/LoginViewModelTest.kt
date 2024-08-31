@@ -245,8 +245,10 @@ internal class LoginViewModelTest : RobolectricTest() {
       updateCredentials()
       secureSharedPreference.saveMultiCredentials("nativeUser", "n4t1veP5wd".toCharArray())
       sharedPreferencesHelper.write(ResourceType.Location.name, listOf("test-location"))
+      sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("test-careteam"))
+      sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("test-organization"))
       sharedPreferencesHelper.write(
-        SharedPreferenceKey.PRACTITIONER_ID.name,
+        practitionerNameKey("nativeUser"),
         "nativeUser-practitioner-id",
       )
 
@@ -274,6 +276,8 @@ internal class LoginViewModelTest : RobolectricTest() {
                     FhirPractitionerDetails().apply {
                       practitionerId = StringType("my-test-practitioner-id")
                       locations = mutableListOf(Location().apply { id = "test-location" })
+                      careTeams = listOf(CareTeam().apply { id = "test-careteam" })
+                      organizations = listOf(Organization().apply { id = "test-organization" })
                     }
                 }
             },
@@ -303,7 +307,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     secureSharedPreference.saveMultiCredentials("nativeUser", "n4t1veP5wd".toCharArray())
     sharedPreferencesHelper.write(ResourceType.Location.name, listOf("test-location"))
     sharedPreferencesHelper.write(
-      SharedPreferenceKey.PRACTITIONER_ID.name,
+      practitionerNameKey("nativeUser"),
       "nativeUser-practitioner-id",
     )
 
@@ -330,7 +334,9 @@ internal class LoginViewModelTest : RobolectricTest() {
                 fhirPractitionerDetails =
                   FhirPractitionerDetails().apply {
                     practitionerId = StringType("my-test-practitioner-id")
-                    locations = mutableListOf(Location().apply { id = "another-test-location" })
+                    locations = listOf(Location().apply { id = "another-test-location" })
+                    organizations = listOf()
+                    careTeams = listOf()
                   }
               }
           },
