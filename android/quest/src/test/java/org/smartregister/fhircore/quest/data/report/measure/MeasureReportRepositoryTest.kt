@@ -135,7 +135,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
         fhirPathDataExtractor = mockk(),
         parser = parser,
         context = ApplicationProvider.getApplicationContext(),
-        dispatcherProvider = dispatcherProvider
+        dispatcherProvider = dispatcherProvider,
       )
   }
 
