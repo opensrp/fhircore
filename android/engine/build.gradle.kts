@@ -184,8 +184,8 @@ dependencies {
   api(libs.data.capture) {
     isTransitive = true
     exclude(group = "ca.uhn.hapi.fhir")
-    exclude(group = "com.google.android.fhir", module = "engine")
     exclude(group = "com.google.android.fhir", module = "common")
+    exclude(group = "org.smartregister", module = "common")
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
   api(libs.cqf.fhir.cr) {
@@ -198,23 +198,19 @@ dependencies {
     exclude(group = "xerces")
     exclude(group = "com.github.java-json-tools")
     exclude(group = "org.codehaus.woodstox")
-    exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.google.android.fhir", module = "engine")
+    exclude(group = "org.smartregister", module = "engine")
     exclude(group = "com.github.ben-manes.caffeine")
   }
   api(libs.contrib.barcode) {
     isTransitive = true
     exclude(group = "org.smartregister", module = "data-capture")
     exclude(group = "ca.uhn.hapi.fhir")
-    exclude(group = "com.google.android.fhir", module = "common")
-    exclude(group = "com.google.android.fhir", module = "engine")
   }
   api(libs.contrib.locationwidget) {
     isTransitive = true
     exclude(group = "org.smartregister", module = "data-capture")
     exclude(group = "ca.uhn.hapi.fhir")
-    exclude(group = "com.google.android.fhir", module = "common")
-    exclude(group = "com.google.android.fhir", module = "engine")
   }
   api(libs.fhir.engine) {
     isTransitive = true
