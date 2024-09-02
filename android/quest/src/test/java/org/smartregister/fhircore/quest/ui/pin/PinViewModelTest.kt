@@ -22,7 +22,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.Runs
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -123,7 +122,8 @@ class PinViewModelTest : RobolectricTest() {
     val newPinSlot = slot<CharArray>()
     val onSavedPinLambdaSlot = slot<() -> Unit>()
 
-    coEvery { secureSharedPreference.saveSessionPin(capture(newPinSlot), captureLambda()) } just Runs
+    coEvery { secureSharedPreference.saveSessionPin(capture(newPinSlot), captureLambda()) } just
+      Runs
 
     pinViewModel.onSetPin("1990".toCharArray())
 
@@ -191,9 +191,6 @@ class PinViewModelTest : RobolectricTest() {
 
     // Verify pin char array is overwritten in memory for valid pin
     Assert.assertEquals("******", loginPin.concatToString())
-
-//    // Verify the progressBar flag is set to hidden
-//    Assert.assertFalse(pinViewModel.pinUiState.value.showProgressBar)
 
     unmockkStatic(::passwordHashString)
   }
