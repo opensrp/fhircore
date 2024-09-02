@@ -41,7 +41,7 @@ class PinLoginScreenKtTest {
     composeRule.setContent {
       PinLoginPage(
         onSetPin = {},
-        showProgressBar = true,
+        showProgressBar = false,
         showError = false,
         onMenuLoginClicked = {},
         forgotPin = {},
@@ -72,7 +72,7 @@ class PinLoginScreenKtTest {
     composeRule.setContent {
       PinLoginPage(
         onSetPin = {},
-        showProgressBar = true,
+        showProgressBar = false,
         showError = false,
         onMenuLoginClicked = {},
         forgotPin = {},
@@ -109,7 +109,7 @@ class PinLoginScreenKtTest {
     composeRule.setContent {
       PinLoginPage(
         onSetPin = {},
-        showProgressBar = true,
+        showProgressBar = false,
         showError = true,
         onMenuLoginClicked = {},
         forgotPin = {},
@@ -161,7 +161,7 @@ class PinLoginScreenKtTest {
     composeRule.setContent {
       PinLoginPage(
         onSetPin = {},
-        showProgressBar = true,
+        showProgressBar = false,
         showError = false,
         onMenuLoginClicked = {},
         forgotPin = {},
