@@ -25,6 +25,7 @@ import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Measure
@@ -35,6 +36,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -54,6 +56,7 @@ constructor(
   override val fhirPathDataExtractor: FhirPathDataExtractor,
   override val parser: IParser,
   @ApplicationContext override val context: Context,
+  val dispatcherProvider: DispatcherProvider,
 ) :
   DefaultRepository(
     fhirEngine = fhirEngine,
@@ -146,17 +149,19 @@ constructor(
     subject: String?,
     practitionerId: String?,
   ): MeasureReport {
-    return fhirOperator.evaluateMeasure(
-      measure =
-        knowledgeManager
-          .loadResources(ResourceType.Measure.name, measureUrl, null, null, null)
-          .firstOrNull() as Measure,
-      start = startDateFormatted,
-      end = endDateFormatted,
-      reportType = reportType,
-      subjectId = subject,
-      practitioner = practitionerId.takeIf { it?.isNotBlank() == true },
-    )
+    return withContext(dispatcherProvider.io()) {
+      fhirOperator.evaluateMeasure(
+        measure =
+          knowledgeManager
+            .loadResources(ResourceType.Measure.name, measureUrl, null, null, null)
+            .firstOrNull() as Measure,
+        start = startDateFormatted,
+        end = endDateFormatted,
+        reportType = reportType,
+        subjectId = subject,
+        practitioner = practitionerId.takeIf { it?.isNotBlank() == true },
+      )
+    }
   }
 
   /**
