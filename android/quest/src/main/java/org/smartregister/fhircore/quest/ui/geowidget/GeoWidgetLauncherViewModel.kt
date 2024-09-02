@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.launcher
+package org.smartregister.fhircore.quest.ui.geowidget
 
 import android.content.Context
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -30,7 +29,10 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
@@ -39,13 +41,13 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
-import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 
 @HiltViewModel
 class GeoWidgetLauncherViewModel
@@ -55,17 +57,19 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  val configurationRegistry: ConfigurationRegistry,
 ) : ViewModel() {
 
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
 
-  val appDrawerUiState = mutableStateOf(AppDrawerUIState())
-
   private val _noLocationFoundDialog = MutableLiveData<Boolean>()
   val noLocationFoundDialog: LiveData<Boolean>
     get() = _noLocationFoundDialog
 
+  private val applicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+  }
   private lateinit var repositoryResourceDataList: List<RepositoryResourceData>
 
   suspend fun retrieveLocations(
@@ -224,6 +228,11 @@ constructor(
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
   }
+
+  fun isFirstTime(): Boolean =
+    sharedPreferencesHelper
+      .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+      .isNullOrEmpty() && applicationConfiguration.usePractitionerAssignedLocationOnSync
 
   private companion object {
     const val KEY_LATITUDE = "positionLatitude"

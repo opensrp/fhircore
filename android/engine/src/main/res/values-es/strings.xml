@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="sync">Sincronización manual</string>
+    <string name="manual_sync">Sincronización manual</string>
     <string name="language">Idioma</string>
     <string name="logout_as_user">Cerrar sesión como </string>
     <string name="show_overdue">Mostrar vencido</string>
