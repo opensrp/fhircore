@@ -75,7 +75,6 @@ class AppSettingActivity : AppCompatActivity() {
         loadConfigurations(appSettingActivity)
       }
     } else if (!BuildConfig.OPENSRP_APP_ID.isNullOrEmpty()) {
-      // this part simulates what the user would have done manually via the text field and button
       appSettingViewModel.onApplicationIdChanged(BuildConfig.OPENSRP_APP_ID)
       appSettingViewModel.fetchConfigurations(appSettingActivity)
     } else {
