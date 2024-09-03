@@ -41,6 +41,7 @@ class PinLoginScreenKtTest {
     composeRule.setContent {
       PinLoginPage(
         onSetPin = {},
+        showProgressBar = false,
         showError = false,
         onMenuLoginClicked = {},
         forgotPin = {},
@@ -71,6 +72,7 @@ class PinLoginScreenKtTest {
     composeRule.setContent {
       PinLoginPage(
         onSetPin = {},
+        showProgressBar = false,
         showError = false,
         onMenuLoginClicked = {},
         forgotPin = {},
@@ -107,6 +109,7 @@ class PinLoginScreenKtTest {
     composeRule.setContent {
       PinLoginPage(
         onSetPin = {},
+        showProgressBar = false,
         showError = true,
         onMenuLoginClicked = {},
         forgotPin = {},
@@ -117,7 +120,6 @@ class PinLoginScreenKtTest {
             setupPin = false,
             pinLength = 4,
             showLogo = true,
-            showProgressBar = true,
           ),
         onShowPinError = {},
         onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
@@ -131,6 +133,7 @@ class PinLoginScreenKtTest {
     composeRule.setContent {
       PinLoginPage(
         onSetPin = {},
+        showProgressBar = true,
         showError = false,
         onMenuLoginClicked = {},
         forgotPin = {},
@@ -141,7 +144,6 @@ class PinLoginScreenKtTest {
             setupPin = true,
             pinLength = 4,
             showLogo = false,
-            showProgressBar = true,
           ),
         onShowPinError = {},
         onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
@@ -159,6 +161,7 @@ class PinLoginScreenKtTest {
     composeRule.setContent {
       PinLoginPage(
         onSetPin = {},
+        showProgressBar = false,
         showError = false,
         onMenuLoginClicked = {},
         forgotPin = {},
@@ -169,7 +172,6 @@ class PinLoginScreenKtTest {
             setupPin = false,
             pinLength = 1,
             showLogo = false,
-            showProgressBar = true,
           ),
         onShowPinError = {},
         onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
