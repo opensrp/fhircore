@@ -26,6 +26,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Base64
 import javax.inject.Inject
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -68,6 +69,10 @@ constructor(
   val showError
     get() = _showError
 
+  private val _showProgressBar = MutableLiveData(false)
+  val showProgressBar
+    get() = _showProgressBar
+
   val pinUiState: MutableState<PinUiState> =
     mutableStateOf(
       PinUiState(message = "", appName = "", setupPin = false, pinLength = 0, showLogo = false),
@@ -97,24 +102,28 @@ constructor(
 
   fun onPinVerified(validPin: Boolean) {
     if (validPin) {
-      pinUiState.value = pinUiState.value.copy(showProgressBar = false)
+      showProgressBar(false)
       _navigateToHome.postValue(true)
     }
   }
 
   fun onShowPinError(showError: Boolean) {
-    pinUiState.value = pinUiState.value.copy(showProgressBar = false)
+    showProgressBar(false)
     _showError.postValue(showError)
   }
 
   fun onSetPin(newPin: CharArray) {
-    viewModelScope.launch(dispatcherProvider.io()) {
-      pinUiState.value = pinUiState.value.copy(showProgressBar = true)
-      secureSharedPreference.saveSessionPin(newPin)
-      pinUiState.value = pinUiState.value.copy(showProgressBar = false)
+    viewModelScope.launch {
+      showProgressBar(true)
+      secureSharedPreference.saveSessionPin(newPin) {
+        showProgressBar(false)
+        _navigateToHome.postValue(true)
+      }
     }
+  }
 
-    _navigateToHome.postValue(true)
+  fun showProgressBar(showProgressBar: Boolean) {
+    _showProgressBar.postValue(showProgressBar)
   }
 
   fun onMenuItemClicked(launchAppSettingScreen: Boolean) {
@@ -135,19 +144,20 @@ constructor(
   }
 
   fun pinLogin(enteredPin: CharArray, callback: (Boolean) -> Unit) {
-    viewModelScope.launch(dispatcherProvider.io()) {
-      pinUiState.value = pinUiState.value.copy(showProgressBar = true)
-
+    viewModelScope.launch {
+      showProgressBar(true)
       val storedPinHash = secureSharedPreference.retrieveSessionPin()
       val salt = secureSharedPreference.retrievePinSalt()
-      val generatedHash = enteredPin.toPasswordHash(Base64.getDecoder().decode(salt))
+      val generatedHash =
+        async(dispatcherProvider.io()) {
+            enteredPin.toPasswordHash(Base64.getDecoder().decode(salt))
+          }
+          .await()
       val validPin = generatedHash == storedPinHash
-
       if (validPin) clearPasswordInMemory(enteredPin)
-
       callback.invoke(validPin)
-
       onPinVerified(validPin)
+      showProgressBar(false)
     }
   }
 }
