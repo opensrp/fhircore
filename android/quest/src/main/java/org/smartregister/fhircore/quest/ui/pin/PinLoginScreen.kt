@@ -75,9 +75,11 @@ const val PIN_LOGO_IMAGE = "pin_logo_image"
 @Composable
 fun PinLoginScreen(viewModel: PinViewModel) {
   val showError by viewModel.showError.observeAsState(initial = false)
+  val showProgressBar by viewModel.showProgressBar.observeAsState(initial = false)
   val pinUiState = viewModel.pinUiState.value
 
   PinLoginPage(
+    showProgressBar = showProgressBar,
     showError = showError,
     pinUiState = pinUiState,
     onMenuLoginClicked = viewModel::onMenuItemClicked,
@@ -92,6 +94,7 @@ fun PinLoginScreen(viewModel: PinViewModel) {
 @Composable
 fun PinLoginPage(
   modifier: Modifier = Modifier,
+  showProgressBar: Boolean,
   showError: Boolean,
   pinUiState: PinUiState,
   onSetPin: (CharArray) -> Unit,
@@ -153,7 +156,7 @@ fun PinLoginPage(
 
           // Only show error message and forgot password when not setting the pin
           if (!pinUiState.setupPin) {
-            if (pinUiState.showProgressBar) CircularProgressBar()
+            if (showProgressBar) CircularProgressBar()
 
             if (showError) {
               Text(
@@ -181,7 +184,7 @@ fun PinLoginPage(
             // Enable button when a new PIN of required length is entered
             Button(
               onClick = { onSetPin(newPin) },
-              enabled = newPin.size == pinUiState.pinLength && !pinUiState.showProgressBar,
+              enabled = newPin.size == pinUiState.pinLength && !showProgressBar,
               modifier =
                 modifier
                   .bringIntoViewRequester(bringIntoViewRequester)
@@ -195,7 +198,7 @@ fun PinLoginPage(
               elevation = null,
             ) {
               Box(modifier = Modifier.padding(8.dp), contentAlignment = Alignment.Center) {
-                if (pinUiState.showProgressBar) {
+                if (showProgressBar) {
                   CircularProgressIndicator(
                     modifier = modifier.size(18.dp).testTag(CIRCULAR_PROGRESS_INDICATOR),
                     strokeWidth = 1.6.dp,
@@ -306,6 +309,7 @@ fun ForgotPinDialog(
 @PreviewWithBackgroundExcludeGenerated
 private fun PinSetupPreview() {
   PinLoginPage(
+    showProgressBar = false,
     showError = false,
     pinUiState =
       PinUiState(
@@ -327,6 +331,7 @@ private fun PinSetupPreview() {
 @PreviewWithBackgroundExcludeGenerated
 private fun PinSetupPreviewWithProgress() {
   PinLoginPage(
+    showProgressBar = true,
     showError = false,
     pinUiState =
       PinUiState(
@@ -335,7 +340,6 @@ private fun PinSetupPreviewWithProgress() {
         setupPin = true,
         pinLength = 4,
         showLogo = true,
-        showProgressBar = true,
       ),
     onSetPin = {},
     onMenuLoginClicked = {},
@@ -349,6 +353,7 @@ private fun PinSetupPreviewWithProgress() {
 @PreviewWithBackgroundExcludeGenerated
 private fun PinLoginPreview() {
   PinLoginPage(
+    showProgressBar = false,
     showError = false,
     pinUiState =
       PinUiState(

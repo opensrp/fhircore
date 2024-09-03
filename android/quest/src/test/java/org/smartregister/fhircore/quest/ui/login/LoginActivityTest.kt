@@ -28,7 +28,9 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkObject
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
@@ -125,9 +127,13 @@ class LoginActivityTest : RobolectricTest() {
 
   @Test
   @Ignore("Weird: Cannot set session pin")
-  fun testNavigateToScreenShouldLaunchPinLoginWithoutSetup() {
+  fun testNavigateToScreenShouldLaunchPinLoginWithoutSetup() = runBlocking {
     // Return a session pin, login with pin is enabled by default
-    secureSharedPreference.saveSessionPin("1234".toCharArray())
+    val onSavedPinMock = mockk<() -> Unit>(relaxed = true)
+    secureSharedPreference.saveSessionPin(pin = "1234".toCharArray(), onSavedPin = onSavedPinMock)
+
+    verify { onSavedPinMock.invoke() }
+
     every { secureSharedPreference.retrieveSessionPin() } returns "1234"
 
     loginActivity.loginViewModel.updateNavigateHome(true)
