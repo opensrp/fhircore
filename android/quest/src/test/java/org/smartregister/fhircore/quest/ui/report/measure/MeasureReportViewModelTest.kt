@@ -315,7 +315,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
         }
       val testMeasureReport =
         MeasureReport().apply {
-          id = "measureId"
+          id = "MeasureReport/measureId"
           measure = "http://nourl.com"
           type = MeasureReportType.INDIVIDUAL
           this.subject = subject.asReference()
@@ -329,12 +329,15 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
       val reportConfiguration =
         ReportConfiguration(
-          id = "measureId",
+          id = "ReportConfiguration/measureId",
           title = "Measure 1",
           description = "Measure report for testing",
           url = "http://nourl.com",
           module = "Module1",
         )
+
+      coEvery { measureReportViewModel.formatPopulationMeasureReports(any(), any()) } returns
+        emptyList()
 
       coEvery {
         fhirEngine.retrievePreviouslyGeneratedMeasureReports(
@@ -345,19 +348,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
         )
       } returns listOf(testMeasureReport)
 
-      coEvery {
-        measureReportRepository.evaluatePopulationMeasure(
-          startDateFormatted = any(),
-          endDateFormatted = any(),
-          measureUrl = any(),
-          subjects = any(),
-          existing = any(),
-          practitionerId = any(),
-        )
-      } returns listOf(testMeasureReport)
-
       coEvery { measureReportRepository.fetchSubjects(any(ReportConfiguration::class)) } returns
-        listOf()
+        listOf(subject.asReference().toString())
 
       measureReportViewModel.reportTypeSelectorUiState.value =
         ReportTypeSelectorUiState(startDate = "21 Jan, 2022", endDate = "27 Jan, 2022")
@@ -365,12 +357,29 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
       measureReportViewModel.evaluateMeasure(navController, null)
 
+      val measureReportListSlot = slot<List<MeasureReport>>()
+
       coVerify {
-        measureReportViewModel.formatPopulationMeasureReports(listOf(testMeasureReport), any())
+        measureReportViewModel.formatPopulationMeasureReports(capture(measureReportListSlot), any())
       }
 
-      // TODO Confirm verification as per implementation
-      coVerify {
+      assertEquals(testMeasureReport.id, measureReportListSlot.captured.first().id)
+      assertEquals(testMeasureReport.measure, measureReportListSlot.captured.first().measure)
+      assertEquals(testMeasureReport.type, measureReportListSlot.captured.first().type)
+      assertEquals(
+        testMeasureReport.subject.reference,
+        measureReportListSlot.captured.first().subject.reference,
+      )
+      assertEquals(
+        testMeasureReport.period.start.toString(),
+        measureReportListSlot.captured.first().period.start.toString(),
+      )
+      assertEquals(
+        testMeasureReport.period.end.toString(),
+        measureReportListSlot.captured.first().period.end.toString(),
+      )
+
+      coVerify(exactly = 0) {
         measureReportRepository.evaluatePopulationMeasure(any(), any(), any(), any(), any(), any())
       }
     }

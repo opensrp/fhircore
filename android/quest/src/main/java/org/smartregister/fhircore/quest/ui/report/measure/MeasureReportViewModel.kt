@@ -289,7 +289,8 @@ constructor(
             val subjects = mutableListOf<String>()
             subjects.addAll(measureReportRepository.fetchSubjects(config))
 
-            // If a practitioner Id is available, add it to the list of subjects
+            // If a practitioner Id is available and if the subjects list is empty, add it to the
+            // list of subjects
             if (practitionerId?.isNotBlank() == true && subjects.isEmpty()) {
               subjects.add("${Practitioner().resourceType.name}/$practitionerId")
             }
