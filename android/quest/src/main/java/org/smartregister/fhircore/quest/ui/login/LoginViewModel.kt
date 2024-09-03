@@ -180,7 +180,7 @@ constructor(
 
   fun forgotPassword() {
     // TODO load supervisor contact e.g.
-    _launchDialPad.value = "tel:0123456789"
+    _launchDialPad.value = "tel:02130006100"
   }
 
   fun updateNavigateHome(navigateHome: Boolean = true) {

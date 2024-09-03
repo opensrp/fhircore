@@ -404,7 +404,7 @@ fun ForgotPasswordDialog(
       )
     },
     text = {
-      Text(text = stringResource(R.string.call_supervisor, "012-3456-789"), fontSize = 16.sp)
+      Text(text = stringResource(R.string.call_supervisor, "021-30006100"), fontSize = 16.sp)
     },
     buttons = {
       Row(
