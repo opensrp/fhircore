@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.login
 
 import android.content.Context
-import android.telephony.PhoneNumberUtils
 import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -32,7 +31,6 @@ import io.sentry.Sentry
 import io.sentry.protocol.User
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
-import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
@@ -53,9 +51,11 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.clearPasswordInMemory
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.model.location.LocationHierarchy
@@ -127,7 +127,7 @@ constructor(
       val passwordAsCharArray = password.value!!.trim().toCharArray()
 
       viewModelScope.launch(dispatcherProvider.io()) {
-        if (context.getActivity()!!.isDeviceOnline()) {
+        if (context.getActivity()?.isDeviceOnline() == true) {
           fetchToken(
             username = trimmedUsername,
             password = passwordAsCharArray,
@@ -183,27 +183,12 @@ constructor(
   }
 
   fun forgotPassword(context: Context) {
-    val contactNumber = applicationConfiguration.loginConfig.supervisorContactNumber
-
-    if (!contactNumber.isNullOrEmpty()) {
-      val formattedNumber = formatPhoneNumber(context, contactNumber)
+    val formattedNumber =
+      applicationConfiguration.loginConfig.supervisorContactNumber.formatPhoneNumber(context)
+    if (!formattedNumber.isNullOrBlank()) {
       _launchDialPad.value = formattedNumber
     } else {
-      Toast.makeText(context, context.getString(R.string.call_supervisor), Toast.LENGTH_LONG).show()
-    }
-  }
-
-  fun formatPhoneNumber(context: Context, number: String): String {
-    return try {
-      val cleanedNumber = number.filter { it.isDigit() }
-      val localeCountryCode = Locale.getDefault().country
-
-      // Use the newer method with locale-based formatting
-      PhoneNumberUtils.formatNumber(cleanedNumber, localeCountryCode)
-    } catch (e: Exception) {
-      // Log the error and return the original number if formatting fails
-      Timber.tag("PhoneNumberFormatting").e(e, "Error formatting phone number")
-      number
+      context.showToast(context.getString(R.string.missing_supervisor_contact), Toast.LENGTH_LONG)
     }
   }
 

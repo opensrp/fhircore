@@ -189,10 +189,11 @@
     <string name="no_data">No data set</string>
     <string name="sync_complete">Sync complete</string>
     <string name="sync_error">Sync error</string>
-    <string name="minutes_remaining">Calculating minutes remaining...</string>
+    <string name="minutes_remaining">Calculating minutes remaining…</string>
     <string name="sync_up_inprogress"> %1$d%% Syncing up…</string>
     <string name="sync_down_inprogress"> %1$d%% Syncing down…</string>
     <string name="default_html_title">file</string>
     <string name="retry">RETRY</string>
     <string name="unsynced_data_present">There\'s some un-synced data</string>
+    <string name="missing_supervisor_contact">Supervisor contact missing or the provided phone number is invalid</string>
 </resources>

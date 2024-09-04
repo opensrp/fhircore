@@ -57,7 +57,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
       this,
     ) { dialPadUri ->
       dialPadUri?.let {
-        val intent = Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(dialPadUri) }
+        val intent = Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:$dialPadUri") }
         startActivity(intent)
       }
     }

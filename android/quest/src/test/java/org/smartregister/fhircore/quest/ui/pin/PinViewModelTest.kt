@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
 import org.smartregister.fhircore.engine.util.passwordHashString
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -167,7 +168,7 @@ class PinViewModelTest : RobolectricTest() {
 
     val context = InstrumentationRegistry.getInstrumentation().targetContext
 
-    val expectedFormattedNumber = pinViewModel.formatPhoneNumber(context, "1234567890")
+    val expectedFormattedNumber = "1234567890".formatPhoneNumber(context)
 
     val launchDialPadObserver =
       Observer<String?> { dialPadUri ->

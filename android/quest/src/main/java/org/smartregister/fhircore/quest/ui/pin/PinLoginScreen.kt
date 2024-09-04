@@ -131,7 +131,7 @@ fun PinLoginPage(
     Box(modifier = modifier.padding(innerPadding)) {
       if (
         showForgotPinDialog &&
-          !applicationConfiguration.loginConfig.supervisorContactNumber.isNullOrEmpty()
+          !applicationConfiguration.loginConfig.supervisorContactNumber.isNullOrBlank()
       ) {
         ForgotPinDialog(
           supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
