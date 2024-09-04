@@ -1120,22 +1120,48 @@ constructor(
       }
 
     // Exclude the configured fields from QR
-    val prepopulationExclusionLinkIdsMap =
-      questionnaireConfig.linkIds
-        ?.asSequence()
-        ?.filter { it.type == LinkIdType.PREPOPULATION_EXCLUSION }
-        ?.associateBy { it.linkId } ?: emptyMap()
-    questionnaireResponse?.apply {
-      item = item.filterNot { prepopulationExclusionLinkIdsMap.containsKey(it.linkId) }
+    if (questionnaireResponse != null) {
+      val exclusionLinkIdsMap: Map<String, Boolean> =
+        questionnaireConfig.linkIds
+          ?.asSequence()
+          ?.filter { it.type == LinkIdType.PREPOPULATION_EXCLUSION }
+          ?.associateBy { it.linkId }
+          ?.mapValues { it.value.type == LinkIdType.PREPOPULATION_EXCLUSION } ?: emptyMap()
+
+      questionnaireResponse.item =
+        excludePrepopulationFields(questionnaireResponse.item.toMutableList(), exclusionLinkIdsMap)
     }
     return Pair(questionnaireResponse, launchContextResources)
   }
 
+  fun excludePrepopulationFields(
+    items: MutableList<QuestionnaireResponseItemComponent>,
+    exclusionMap: Map<String, Boolean>,
+  ): MutableList<QuestionnaireResponseItemComponent> {
+    val stack = LinkedList<MutableList<QuestionnaireResponseItemComponent>>()
+    stack.push(items)
+    while (stack.isNotEmpty()) {
+      val currentItems = stack.pop()
+      val iterator = currentItems.iterator()
+      while (iterator.hasNext()) {
+        val item = iterator.next()
+        if (exclusionMap.containsKey(item.linkId)) {
+          iterator.remove()
+        } else if (item.item.isNotEmpty()) {
+          stack.push(item.item)
+        }
+      }
+    }
+    return items
+  }
+
   private fun List<QuestionnaireResponseItemComponent>.removeUnAnsweredItems():
     List<QuestionnaireResponseItemComponent> {
-    return this.filter { it.hasAnswer() || it.item.isNotEmpty() }
+    return this.asSequence()
+      .filter { it.hasAnswer() || it.item.isNotEmpty() }
       .onEach { it.item = it.item.removeUnAnsweredItems() }
       .filter { it.hasAnswer() || it.item.isNotEmpty() }
+      .toList()
   }
 
   /**

@@ -2032,4 +2032,44 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertNotNull(result.first)
     Assert.assertTrue(result.first!!.find("linkid-1") == null)
   }
+
+  @Test
+  fun testExcludeNestedItemFromQuestionnairePrepopulation() {
+    val item1 = QuestionnaireResponse.QuestionnaireResponseItemComponent().apply { linkId = "1" }
+    val item2 = QuestionnaireResponse.QuestionnaireResponseItemComponent().apply { linkId = "2" }
+    val item3 =
+      QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+        linkId = "3"
+        item =
+          mutableListOf(
+            QuestionnaireResponse.QuestionnaireResponseItemComponent().apply { linkId = "3.1" },
+            QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+              linkId = "3.2"
+              item =
+                mutableListOf(
+                  QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+                    linkId = "3.2.1"
+                  },
+                  QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+                    linkId = "3.2.2"
+                  },
+                )
+            },
+          )
+      }
+
+    val items = mutableListOf(item1, item2, item3)
+    val exclusionMap = mapOf("2" to true, "3.1" to true, "3.2.2" to true)
+    val filteredItems = questionnaireViewModel.excludePrepopulationFields(items, exclusionMap)
+    Assert.assertEquals(2, filteredItems.size)
+    Assert.assertEquals("1", filteredItems.first().linkId)
+    val itemThree = filteredItems.last()
+    Assert.assertEquals("3", itemThree.linkId)
+    Assert.assertEquals(1, itemThree.item.size)
+    val itemThreePointTwo = itemThree.item.first()
+    Assert.assertEquals("3.2", itemThreePointTwo.linkId)
+    Assert.assertEquals(1, itemThreePointTwo.item.size)
+    val itemThreePointTwoOne = itemThreePointTwo.item.first()
+    Assert.assertEquals("3.2.1", itemThreePointTwoOne.linkId)
+  }
 }
