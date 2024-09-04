@@ -182,9 +182,9 @@ constructor(
       }
 
       currentQuestionnaireResponse.processMetadata(
-        questionnaire,
-        questionnaireConfig,
-        context,
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
+        context = context,
       )
 
       val bundle =
@@ -387,6 +387,11 @@ constructor(
           }
         }
 
+        // Set Encounter on QR if the ResourceType is Encounter
+        if (this.resourceType == ResourceType.Encounter) {
+          questionnaireResponse.setEncounter(this.asReference())
+        }
+
         // Set the Group's Related Entity Location metadata tag on Resource before saving.
         this.applyRelatedEntityLocationMetaTag(questionnaireConfig, context, subjectType)
 
@@ -533,10 +538,11 @@ constructor(
         !questionnaireConfig.resourceIdentifier.isNullOrEmpty() &&
         subjectType != null
     ) {
-      searchLatestQuestionnaireResponse(
+      searchQuestionnaireResponse(
           resourceId = questionnaireConfig.resourceIdentifier!!,
           resourceType = questionnaireConfig.resourceType ?: subjectType,
           questionnaireId = questionnaire.logicalId,
+          encounterId = questionnaireConfig.encounterId,
         )
         ?.contained
         ?.asSequence()
@@ -999,18 +1005,31 @@ constructor(
    * [resourceId] that was extracted from the [Questionnaire] identified as [questionnaireId].
    * Returns null if non is found.
    */
-  suspend fun searchLatestQuestionnaireResponse(
+  suspend fun searchQuestionnaireResponse(
     resourceId: String,
     resourceType: ResourceType,
     questionnaireId: String,
+    encounterId: String?,
   ): QuestionnaireResponse? {
     val search =
       Search(ResourceType.QuestionnaireResponse).apply {
-        filter(QuestionnaireResponse.SUBJECT, { value = "$resourceType/$resourceId" })
+        filter(
+          QuestionnaireResponse.SUBJECT,
+          { value = resourceId.asReference(resourceType).reference },
+        )
         filter(
           QuestionnaireResponse.QUESTIONNAIRE,
-          { value = "${ResourceType.Questionnaire}/$questionnaireId" },
+          { value = questionnaireId.asReference(ResourceType.Questionnaire).reference },
         )
+        if (!encounterId.isNullOrBlank()) {
+          filter(
+            QuestionnaireResponse.ENCOUNTER,
+            {
+              value =
+                encounterId.extractLogicalIdUuid().asReference(ResourceType.Encounter).reference
+            },
+          )
+        }
       }
     val questionnaireResponses: List<QuestionnaireResponse> = defaultRepository.search(search)
     return questionnaireResponses.maxByOrNull { it.meta.lastUpdated }
@@ -1082,10 +1101,11 @@ constructor(
           !resourceIdentifier.isNullOrEmpty() &&
           (questionnaireConfig.isEditable() || questionnaireConfig.isReadOnly())
       ) {
-        searchLatestQuestionnaireResponse(
+        searchQuestionnaireResponse(
             resourceId = resourceIdentifier,
             resourceType = resourceType,
             questionnaireId = questionnaire.logicalId,
+            encounterId = questionnaireConfig.encounterId,
           )
           ?.let {
             QuestionnaireResponse().apply {
