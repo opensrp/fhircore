@@ -74,15 +74,18 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 
 const val CIRCULAR_PROGRESS_INDICATOR = "progress_indicator"
 const val PIN_LOGO_IMAGE = "pin_logo_image"
+const val FORGOT_PIN_TEST_TAG = "FORGOT_PIN_TEXT"
 
 @Composable
 fun PinLoginScreen(viewModel: PinViewModel) {
   val showError by viewModel.showError.observeAsState(initial = false)
+  val showProgressBar by viewModel.showProgressBar.observeAsState(initial = false)
   val pinUiState = viewModel.pinUiState.value
   val applicationConfiguration = remember { viewModel.applicationConfiguration }
 
   PinLoginPage(
     applicationConfiguration = applicationConfiguration,
+    showProgressBar = showProgressBar,
     showError = showError,
     pinUiState = pinUiState,
     onMenuLoginClicked = viewModel::onMenuItemClicked,
@@ -98,6 +101,7 @@ fun PinLoginScreen(viewModel: PinViewModel) {
 fun PinLoginPage(
   applicationConfiguration: ApplicationConfiguration,
   modifier: Modifier = Modifier,
+  showProgressBar: Boolean,
   showError: Boolean,
   pinUiState: PinUiState,
   onSetPin: (CharArray) -> Unit,
@@ -165,7 +169,7 @@ fun PinLoginPage(
 
           // Only show error message and forgot password when not setting the pin
           if (!pinUiState.setupPin) {
-            if (pinUiState.showProgressBar) CircularProgressBar()
+            if (showProgressBar) CircularProgressBar()
 
             if (showError) {
               Text(
@@ -187,14 +191,14 @@ fun PinLoginPage(
                     .align(Alignment.CenterHorizontally)
                     .clickable { showForgotPinDialog = !showForgotPinDialog }
                     .bringIntoViewRequester(bringIntoViewRequester)
-                    .testTag("FORGOT_PIN_TEXT"), // <-- Added test tag here
+                    .testTag(FORGOT_PIN_TEST_TAG), // <-- Added test tag here
               )
             }
           } else {
             // Enable button when a new PIN of required length is entered
             Button(
               onClick = { onSetPin(newPin) },
-              enabled = newPin.size == pinUiState.pinLength && !pinUiState.showProgressBar,
+              enabled = newPin.size == pinUiState.pinLength && !showProgressBar,
               modifier =
                 modifier
                   .bringIntoViewRequester(bringIntoViewRequester)
@@ -208,7 +212,7 @@ fun PinLoginPage(
               elevation = null,
             ) {
               Box(modifier = Modifier.padding(8.dp), contentAlignment = Alignment.Center) {
-                if (pinUiState.showProgressBar) {
+                if (showProgressBar) {
                   CircularProgressIndicator(
                     modifier = modifier.size(18.dp).testTag(CIRCULAR_PROGRESS_INDICATOR),
                     strokeWidth = 1.6.dp,
@@ -341,6 +345,7 @@ private fun PinSetupPreview() {
         configType = "application",
         appTitle = "FHIRCore App",
       ),
+    showProgressBar = false,
     showError = false,
     pinUiState =
       PinUiState(
@@ -368,6 +373,7 @@ private fun PinSetupPreviewWithProgress() {
         configType = "application",
         appTitle = "FHIRCore App",
       ),
+    showProgressBar = true,
     showError = false,
     pinUiState =
       PinUiState(
@@ -376,7 +382,6 @@ private fun PinSetupPreviewWithProgress() {
         setupPin = true,
         pinLength = 4,
         showLogo = true,
-        showProgressBar = true,
       ),
     onSetPin = {},
     onMenuLoginClicked = {},
@@ -396,6 +401,7 @@ private fun PinLoginPreview() {
         configType = "application",
         appTitle = "FHIRCore App",
       ),
+    showProgressBar = false,
     showError = false,
     pinUiState =
       PinUiState(

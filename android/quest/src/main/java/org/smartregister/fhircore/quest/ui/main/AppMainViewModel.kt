@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
+import android.content.Context
+import android.os.Bundle
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
@@ -40,6 +42,7 @@ import java.util.TimeZone
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -48,12 +51,15 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.SyncStrategy
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
+import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.sync.CustomSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
@@ -267,52 +273,31 @@ constructor(
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
-  /** This function is used to schedule tasks that are intended to run periodically */
-  fun schedulePeriodicJobs() {
-    workManager.run {
-      schedulePeriodically<FhirTaskStatusUpdateWorker>(
-        workId = FhirTaskStatusUpdateWorker.WORK_ID,
-        duration = Duration.tryParse(applicationConfiguration.taskStatusUpdateJobDuration),
-        requiresNetwork = false,
-      )
-
-      schedulePeriodically<FhirResourceExpireWorker>(
-        workId = FhirResourceExpireWorker.WORK_ID,
-        duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration),
-        requiresNetwork = false,
-      )
-
-      schedulePeriodically<FhirCompleteCarePlanWorker>(
-        workId = FhirCompleteCarePlanWorker.WORK_ID,
-        duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
-        requiresNetwork = false,
-      )
-
-      schedulePeriodically<CustomSyncWorker>(
-        workId = CustomSyncWorker.WORK_ID,
-        repeatInterval = applicationConfiguration.syncInterval,
-        initialDelay = 0,
-      )
-
-      measureReportConfigurations.forEach { measureReportConfig ->
-        measureReportConfig.scheduledGenerationDuration?.let { scheduledGenerationDuration ->
-          schedulePeriodically<MeasureReportMonthPeriodWorker>(
-            workId = "${MeasureReportMonthPeriodWorker.WORK_ID}-${measureReportConfig.id}",
-            duration = Duration.tryParse(scheduledGenerationDuration),
-            requiresNetwork = false,
-            inputData =
-              workDataOf(
-                MeasureReportMonthPeriodWorker.MEASURE_REPORT_CONFIG_ID to measureReportConfig.id,
-              ),
-          )
-        }
-      }
-    }
-  }
-
   fun schedulePeriodicSync() {
     viewModelScope.launch {
       syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
+    }
+  }
+
+  fun getStartDestinationArgs(): Bundle {
+    val startDestinationConfig = applicationConfiguration.navigationStartDestination
+
+    return when (startDestinationConfig.launcherType) {
+      LauncherType.REGISTER -> {
+        val topMenuConfig = navigationConfiguration.clientRegisters.first()
+        val clickAction = topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
+        bundleOf(
+          NavigationArg.SCREEN_TITLE to
+            if (startDestinationConfig.screenTitle.isNullOrEmpty()) {
+              topMenuConfig.display
+            } else startDestinationConfig.screenTitle,
+          NavigationArg.REGISTER_ID to
+            if (startDestinationConfig.id.isNullOrEmpty()) {
+              clickAction?.id ?: topMenuConfig.id
+            } else startDestinationConfig.id,
+        )
+      }
+      LauncherType.MAP -> bundleOf(NavigationArg.GEO_WIDGET_ID to startDestinationConfig.id)
     }
   }
 
@@ -386,7 +371,76 @@ constructor(
   private fun getSyncProgress(completed: Int, total: Int) =
     completed * 100 / if (total > 0) total else 1
 
+  suspend fun schedulePeriodicJobs(context: Context) {
+    if (context.isDeviceOnline()) {
+      // Do not schedule sync until location selected when strategy is RelatedEntityLocation
+      // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
+      // if we need to trigger sync based on assigned locations or not
+      if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
+        if (
+          applicationConfiguration.usePractitionerAssignedLocationOnSync ||
+            context.syncLocationIdsProtoStore.data.firstOrNull()?.isNotEmpty() == true
+        ) {
+          schedulePeriodicSync()
+        }
+      } else {
+        schedulePeriodicSync()
+      }
+    } else {
+      with(context) {
+        withContext(dispatcherProvider.main()) {
+          showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
+        }
+      }
+    }
+
+    workManager.run {
+      schedulePeriodically<FhirTaskStatusUpdateWorker>(
+        workId = FhirTaskStatusUpdateWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskStatusUpdateJobDuration),
+        requiresNetwork = false,
+        initialDelay = INITIAL_DELAY,
+      )
+
+      schedulePeriodically<FhirResourceExpireWorker>(
+        workId = FhirResourceExpireWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration),
+        requiresNetwork = false,
+        initialDelay = INITIAL_DELAY,
+      )
+
+      schedulePeriodically<FhirCompleteCarePlanWorker>(
+        workId = FhirCompleteCarePlanWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
+        requiresNetwork = false,
+        initialDelay = INITIAL_DELAY,
+      )
+
+      schedulePeriodically<CustomSyncWorker>(
+        workId = CustomSyncWorker.WORK_ID,
+        repeatInterval = applicationConfiguration.syncInterval,
+        initialDelay = 0,
+      )
+
+      measureReportConfigurations.forEach { measureReportConfig ->
+        measureReportConfig.scheduledGenerationDuration?.let { scheduledGenerationDuration ->
+          schedulePeriodically<MeasureReportMonthPeriodWorker>(
+            workId = "${MeasureReportMonthPeriodWorker.WORK_ID}-${measureReportConfig.id}",
+            duration = Duration.tryParse(scheduledGenerationDuration),
+            requiresNetwork = false,
+            inputData =
+              workDataOf(
+                MeasureReportMonthPeriodWorker.MEASURE_REPORT_CONFIG_ID to measureReportConfig.id,
+              ),
+            initialDelay = INITIAL_DELAY,
+          )
+        }
+      }
+    }
+  }
+
   companion object {
+    private const val INITIAL_DELAY = 15L
     const val SYNC_TIMESTAMP_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"
     const val SYNC_TIMESTAMP_OUTPUT_FORMAT = "MMM d, hh:mm aa"
   }
