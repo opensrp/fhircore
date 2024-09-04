@@ -127,6 +127,7 @@ fun String.spaceByUppercase() =
   this.split(Regex("(?=\\p{Upper})")).joinToString(separator = " ").trim()
 
 fun String?.formatPhoneNumber(context: Context): String? {
+  if (this == null) return null
   return try {
     PhoneNumberUtils.formatNumber(this, context.resources.configuration.locales.get(0).country)
       ?: this

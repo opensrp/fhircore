@@ -189,12 +189,9 @@ class PinViewModelTest : RobolectricTest() {
   fun testForgotPinDisplaysToastWhenNoContactNumber() {
     configurationRegistry.configsJsonMap[ConfigType.Application.name] =
       "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{}}"
-
     val context = ApplicationProvider.getApplicationContext<Context>()
-    val expectedToastMessage = context.getString(R.string.call_supervisor)
-
+    val expectedToastMessage = context.getString(R.string.missing_supervisor_contact)
     pinViewModel.forgotPin(context)
-
     Assert.assertEquals(expectedToastMessage, ShadowToast.getTextOfLatestToast())
   }
 

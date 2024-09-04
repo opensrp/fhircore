@@ -106,7 +106,7 @@ class LoginActivityTest : RobolectricTest() {
     val resultIntent = shadowOf(loginActivity).nextStartedActivity
     Assert.assertNotNull(resultIntent)
     Assert.assertEquals(Intent.ACTION_DIAL, resultIntent.action)
-    Assert.assertEquals(phoneNumber, resultIntent.data.toString())
+    Assert.assertEquals(phoneNumber, resultIntent.data?.schemeSpecificPart.toString())
   }
 
   @Test
