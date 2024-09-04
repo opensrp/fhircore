@@ -46,6 +46,7 @@ data class QuestionnaireConfig(
   val confirmationDialog: ConfirmationDialog? = null,
   val groupResource: GroupResourceConfig? = null,
   val taskId: String? = null,
+  val encounterId: String? = null,
   val saveDraft: Boolean = false,
   val snackBarMessage: SnackBarMessageConfig? = null,
   val eventWorkflows: List<EventWorkflow> = emptyList(),
@@ -73,6 +74,7 @@ data class QuestionnaireConfig(
     this.copy(
       id = id.interpolate(computedValuesMap).extractLogicalIdUuid(),
       taskId = taskId?.interpolate(computedValuesMap),
+      encounterId = encounterId?.interpolate(computedValuesMap),
       title = title?.interpolate(computedValuesMap),
       type = type.interpolate(computedValuesMap),
       managingEntityRelationshipCode =
