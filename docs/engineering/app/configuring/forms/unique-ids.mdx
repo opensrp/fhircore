@@ -153,4 +153,121 @@ When an ID is used, the characteristic entry with that ID is updated to be exclu
 }
 ```
 
-## Generating IDs
+## Verhoeff algorithm for ID generation
+
+To use the Verhoeff algorithm for ID generation on Android, you will need to implement the algorithm for checksum validation. The Verhoeff algorithm ensures that the IDs generated are error-resistant, specifically detecting common errors like transpositions or single-digit mistakes. Here is how you can implement it in Android.
+
+Step-by-Step Guide:
+
+### Verhoeff algorithm Overview
+
+The Verhoeff algorithm uses:
+
+- A multiplication table (d table) to determine how numbers are multiplied.
+- A permutation table (p table) to rearrange digits before adding them.
+- An inverse table (inv table) to compute the check digit.
+
+### Verhoeff algorithm tables
+
+Here are the tables used in the algorithm:
+
+```kotlin
+object Verhoeff {
+    // D table for multiplication
+    private val d = arrayOf(
+        intArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+        intArrayOf(1, 2, 3, 4, 0, 6, 7, 8, 9, 5),
+        intArrayOf(2, 3, 4, 0, 1, 7, 8, 9, 5, 6),
+        intArrayOf(3, 4, 0, 1, 2, 8, 9, 5, 6, 7),
+        intArrayOf(4, 0, 1, 2, 3, 9, 5, 6, 7, 8),
+        intArrayOf(5, 9, 8, 7, 6, 0, 4, 3, 2, 1),
+        intArrayOf(6, 5, 9, 8, 7, 1, 0, 4, 3, 2),
+        intArrayOf(7, 6, 5, 9, 8, 2, 1, 0, 4, 3),
+        intArrayOf(8, 7, 6, 5, 9, 3, 2, 1, 0, 4),
+        intArrayOf(9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+    )
+
+    // P table for permutation
+    private val p = arrayOf(
+        intArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+        intArrayOf(1, 5, 7, 6, 2, 8, 3, 0, 9, 4),
+        intArrayOf(5, 8, 0, 3, 7, 9, 6, 1, 4, 2),
+        intArrayOf(8, 9, 1, 6, 0, 4, 3, 5, 2, 7),
+        intArrayOf(9, 4, 5, 3, 1, 2, 6, 8, 7, 0),
+        intArrayOf(4, 2, 8, 6, 5, 7, 3, 9, 0, 1),
+        intArrayOf(2, 7, 9, 3, 8, 0, 6, 4, 1, 5),
+        intArrayOf(7, 0, 4, 6, 9, 1, 3, 2, 5, 8)
+    )
+
+    // Inv table for inverse
+    private val inv = intArrayOf(0, 4, 3, 2, 1, 5, 6, 7, 8, 9)
+}
+```
+
+### Generate checksum
+
+Here is the code to compute the Verhoeff check digit for a given number:
+
+```kotlin
+// Function to generate Verhoeff Checksum
+fun generateVerhoeff(number: String): String {
+    var c = 0 // Checksum
+    val myArray = stringToReversedIntArray(number)
+    
+    for (i in myArray.indices) {
+        c = Verhoeff.d[c][Verhoeff.p[i % 8][myArray[i]]]
+    }
+    
+    return Verhoeff.inv[c].toString() // Return Verhoeff check digit
+}
+
+// Convert string to reversed int array
+private fun stringToReversedIntArray(num: String): IntArray {
+    val myArray = num.map { it.toString().toInt() }.toIntArray()
+    return myArray.reversedArray()
+}
+```
+
+### Validate an ID
+
+To validate an ID with its check digit, you need to verify that the check digit is correct. Here’s the code for validation:
+
+```kotlin
+// Function to validate Verhoeff check digit
+fun validateVerhoeff(number: String): Boolean {
+    var c = 0
+    val myArray = stringToReversedIntArray(number)
+    
+    for (i in myArray.indices) {
+        c = Verhoeff.d[c][Verhoeff.p[i % 8][myArray[i]]]
+    }
+    
+    return c == 0 // If the checksum is 0, the number is valid
+}
+```
+
+### Usage in an Android App
+
+You can integrate the above code into an Android project. Here’s how to use it for generating a patient ID and checking its validity:
+
+To generate a patient ID with a Verhoeff check digit:
+
+```kotlin
+val baseID = "123456"  // Example patient ID (without checksum)
+val checkDigit = generateVerhoeff(baseID)
+val fullID = baseID + checkDigit  // Full ID with Verhoeff check digit
+println("Generated Patient ID: $fullID")
+
+
+	•	To validate a patient ID:
+val isValid = validateVerhoeff(fullID)
+if (isValid) {
+    println("The ID is valid.")
+} else {
+    println("The ID is invalid.")
+}
+```
+
+### Syncing or storing IDs
+
+Once you have generated the ID, you can store it in a local database (e.g., Room or SQLite) or sync it with a server. You can implement these features based on your app’s design, whether you are using server communication (REST API) or local storage.
