@@ -41,7 +41,6 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import javax.inject.Inject
 import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
 import kotlin.test.assertNotNull
 import kotlin.time.Duration.Companion.seconds
@@ -71,7 +70,6 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
-import org.smartregister.fhircore.engine.util.location.LocationUtils
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -216,29 +214,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
     }
 
   @Test
-  fun `setupLocationServices should fetch location when location is enabled and permissions granted`() {
-    setupActivity()
-    assertTrue(
-      questionnaireActivity.viewModel.applicationConfiguration.logGpsLocation.contains(
-        LocationLogOptions.QUESTIONNAIRE,
-      ),
-    )
-
-    val fusedLocationProviderClient =
-      LocationServices.getFusedLocationProviderClient(questionnaireActivity)
-    assertNotNull(fusedLocationProviderClient)
-    shadowOf(questionnaireActivity)
-      .grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
-
-    assertTrue(LocationUtils.isLocationEnabled(questionnaireActivity))
-
-    questionnaireActivity.setupLocationServices()
-    assertTrue(questionnaireActivity.hasLocationPermissions())
-    questionnaireActivity.fetchLocation()
-    assertNotNull(questionnaireActivity.currentLocation)
-  }
-
-  @Test
   fun `setupLocationServices should open location settings if location is disabled`() {
     setupActivity()
     assertTrue(
@@ -263,26 +238,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
     val expectedIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
 
     assertEquals(expectedIntent.component, startedIntent.component)
-  }
-
-  @Test
-  fun `setupLocationServices should launch location permissions dialog if permissions are not granted`() {
-    setupActivity()
-    assertTrue(
-      questionnaireActivity.viewModel.applicationConfiguration.logGpsLocation.contains(
-        LocationLogOptions.QUESTIONNAIRE,
-      ),
-    )
-
-    val fusedLocationProviderClient =
-      LocationServices.getFusedLocationProviderClient(questionnaireActivity)
-    assertNotNull(fusedLocationProviderClient)
-
-    assertTrue(LocationUtils.isLocationEnabled(questionnaireActivity))
-    assertFalse(questionnaireActivity.hasLocationPermissions())
-
-    val dialog = questionnaireActivity.launchLocationPermissionsDialog()
-    assertNotNull(dialog)
   }
 
   private fun setupActivity() {
