@@ -27,12 +27,14 @@ object ContentCache {
   private val cacheSize: Int = maxMemory / 8
   private val cache = LruCache<String, Resource>(cacheSize)
 
+  @JvmStatic
   suspend fun saveResource(resourceId: String, resource: Resource) =
     withContext(Dispatchers.IO) {
       cache.put("${resource::class.simpleName}/$resourceId", resource)
       Timber.i("ContentCache:saveResource: $resourceId")
     }
 
+  @JvmStatic
   fun getResource(resourceId: String): Resource? {
     return cache[resourceId]?.also { Timber.i("ContentCache:getResource: $resourceId") }
   }

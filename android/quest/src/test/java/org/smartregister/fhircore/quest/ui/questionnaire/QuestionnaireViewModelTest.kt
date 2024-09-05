@@ -640,6 +640,26 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testRetrieveQuestionnaireShouldReturnValidQuestionnaireFromCache() = runBlocking {
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
+      samplePatientRegisterQuestionnaire
+
+    ContentCache.saveResource(questionnaireConfig.id, samplePatientRegisterQuestionnaire)
+
+    val questionnaire =
+      questionnaireViewModel.retrieveQuestionnaire(
+        questionnaireConfig = questionnaireConfig,
+      )
+
+    Assert.assertEquals(
+      samplePatientRegisterQuestionnaire,
+      ContentCache.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id)
+    )
+    Assert.assertNotNull(questionnaire)
+    Assert.assertEquals(questionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
+  }
+
+  @Test
   fun testPopulateQuestionnaireShouldPrePopulatedQuestionnaireWithComputedValues() = runTest {
     val questionnaireViewModelInstance =
       QuestionnaireViewModel(
