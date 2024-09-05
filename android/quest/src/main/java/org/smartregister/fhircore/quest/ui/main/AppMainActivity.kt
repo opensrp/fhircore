@@ -127,11 +127,15 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         retrieveAppMainUiState()
         withContext(dispatcherProvider.io()) { schedulePeriodicJobs(this@AppMainActivity) }
       }
-      setupLocationServices()
 
       findViewById<View>(R.id.mainScreenProgressBar).apply { visibility = View.GONE }
       findViewById<View>(R.id.mainScreenProgressBarText).apply { visibility = View.GONE }
     }
+  }
+
+  override fun onStart() {
+    super.onStart()
+    setupLocationServices()
   }
 
   override fun onResume() {
