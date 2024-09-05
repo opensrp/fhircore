@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="sync">Synchronisation manuelle</string>
+    <string name="manual_sync">Synchronisation manuelle</string>
     <string name="language">Langue</string>
     <string name="logout_as_user">Se déconnecter en tant que </string>
     <string name="show_overdue">Afficher les retards</string>

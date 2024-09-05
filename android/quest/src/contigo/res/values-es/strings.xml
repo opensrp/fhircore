@@ -11,7 +11,7 @@
     <string name="scan_bar_code">ESCANEAR CÓDIGO DE BARRAS</string>
     <string name="empty_client_list_message_title">Sin resultados</string>
     <string name="empty_client_list_message_details">Lo sentimos, no pudimos encontrar el cliente con su nombre o ID</string>
-    <string name="register_new_client">Registrar nuevo cliente</string>
+    <string name="register_new_client">Registrar a un nuevo paciente</string>
     <string name="default_app_title" translatable="false">Aplicación Fhir</string>
     <string name="app_logo">Logotipo de la aplicación</string>
     <string name="powered_by">Desarrollado por</string>
@@ -22,7 +22,7 @@
     <string name="login_call_fail_error_message">No se pudieron verificar las credenciales del servidor. Comprueba tu conexión a Internet</string>
     <string name="userinfo_call_fail_error_message">No se pudo obtener información del usuario del servidor. Comprueba tu conexión a Internet</string>
     <string name="select_language">Seleccionar idioma</string>
-    <string name="logout_user">Cerrar sesión como %1$s</string>
+    <string name="logout_user">Cerrar sesión para %1$s</string>
     <string name="sync_completed">Sincronización completa</string>
     <string name="syncing">Sincronización</string>
     <string name="syncing_up">Sincronizando</string>
@@ -36,11 +36,11 @@
     <string name="status_vaccinated">Vacunado</string>
     <string name="status_overdue">Atrasado</string>
     <string name="status_received_vaccine">Vacuna %1$d \n%2$s</string>
-    <string name="fully_vaccinated">"Completamente vacunado"</string>
+    <string name="fully_vaccinated">"Esquema de vacunación completo"</string>
     <string name="already_fully_vaccinated">"No puedo recibir otra dosis. Ya estoy completamente vacunado"</string>
     <string name="record_vaccine_nl">Registro\nVacuna</string>
-    <string name="date_last_seen">Visto por última vez %1$s</string>
-    <string name="date_last_visited">Última visita %1$s</string>
+    <string name="date_last_seen">Fecha de última visita %1$s</string>
+    <string name="date_last_visited">Fecha de última visita %1$s</string>
     <string name="str_save">Guardar</string>
     <string name="login_error">Error de inicio de sesión: %1$s</string>
     <string name="str_next">SIGUIENTE</string>
@@ -95,9 +95,9 @@
     <string name="app_id_sample" translatable="false">por ejemplo, ecbis, quest, cha</string>
     <string name="load_configurations">CARGAR CONFIGURACIONES</string>
     <string name="fhir_core_app" translatable="false">APLICACIÓN FHIRCORE</string>
-    <string name="remember_app">Recordar aplicación</string>
+    <string name="remember_app">Recordar la aplicación</string>
     <string name="done">Listo</string>
-    <string name="replace_photo">Reemplazar foto</string>
+    <string name="replace_photo">Reemplazar la foto</string>
     <string name="edit">Editar</string>
     <string name="application_not_supported">Error al cargar las configuraciones de la aplicación %1$s</string>
     <string name="eCBIS_app_name" translatable="false">eCBIS</string>
@@ -120,7 +120,7 @@
     <string name="see_all">VER TODO</string>
     <string name="forms">FORMULARIOS</string>
     <string name="medical_history">ANTECEDENTES MÉDICOS</string>
-    <string name="upcoming_services">PRÓXIMOS SERVICIOS</string>
+    <string name="upcoming_services">INMUNIZACIONES FALTANTES</string>
     <string name="service_card">TARJETA DE SERVICIO</string>
     <string name="other_patients">Otros pacientes</string>
     <string name="select_location">Seleccionar ubicación</string>
@@ -138,20 +138,20 @@
     <string name="sync_strategy_practitioner_system" translatable="false">https://smartregister.org/practitioner-tag-id</string>
     <string name="sync_strategy_related_entity_location_system" translatable="false">https://smartregister.org/ related-entity-location-tag-id</string>
     <string name="sync_strategy_related_entity_location_display" translatable="false">Ubicación de entidad relacionada</string>
-    <string name="sync_strategy_careteam_display" translatable="false">Equipo de atención de profesionales</string>
-    <string name="sync_strategy_location_display" translatable="false">Ubicación del practicante</string>
-    <string name="sync_strategy_organization_display" translatable="false">Organización profesional</string>
-    <string name="sync_strategy_practitioner_display" translatable="false">Practicante</string>
+    <string name="sync_strategy_careteam_display" translatable="false">Equipo de profesionales en salud</string>
+    <string name="sync_strategy_location_display" translatable="false">Ubicación del personal de salud</string>
+    <string name="sync_strategy_organization_display" translatable="false">Organización del personal</string>
+    <string name="sync_strategy_practitioner_display" translatable="false">Personal de salud</string>
     <string name="year">Año</string>
     <string name="month">Mes</string>
     <string name="weeks">Semana(s)</string>
-    <string name="days">Días(s)</string>
+    <string name="days">Día(s)</string>
     <string name="initializing">Inicializando configuración &#8230;</string>
     <string name="username_sample" translatable="false">por ejemplo, JohnDoe</string>
     <string name="percentage_progress" translatable="false">%1$d%%</string>
     <string name="error_occurred">Algo salió mal…</string>
     <string name="insights">Perspectivas</string>
-    <string name="contact_help">"Contactar con ayuda"</string>
+    <string name="contact_help">"Solicitar ayuda"</string>
     <string name="offline_map">"Mapas sin conexión"</string>
     <string name="dismiss">Descartar</string>
     <string name="user_info">Información del usuario</string>
@@ -168,8 +168,8 @@
     <string name="user">Usuario</string>
     <string name="team">Equipo</string>
     <string name="locality">Localidad</string>
-    <string name="team_organization">Equipo(Organización)</string>
-    <string name="care_team">Equipo de atención</string>
+    <string name="team_organization">Equipo(Organización del personal)</string>
+    <string name="care_team">Equipo de profesionales en salud</string>
     <string name="location">Ubicación</string>
     <string name="app_version_code">Código de versión de la aplicación</string>
     <string name="build_date">Fecha de compilación</string>
@@ -182,16 +182,16 @@
     <string name="add">AÑADIR</string>
     <string name="data_migration_started">Migración de datos iniciada desde la versión %1$d</string>
     <string name="data_migration_completed">Datos de la aplicación migrados a la versión %1$d</string>
-    <string name="no_data">Sin conjunto de datos</string>
+    <string name="no_data">Sin información</string>
     <string name="default_html_title">archivo</string>
     <!--    End Main-->
 
-    <string name="back_to_clients">Volver a la lista de clientes</string>
-    <string name="test_results">Resultados de la prueba</string>
+    <string name="back_to_clients">Volver a la lista de los pacientes</string>
+    <string name="test_results">Resultado de la prueba del sistemaa</string>
 
-    <string name="edit_patient_info">Editar información</string>
+    <string name="edit_patient_info">Editar información del paciente</string>
 
-    <string name="menu_clients">Clientes</string>
+    <string name="menu_clients">Pacientes</string>
     <string name="menu_settings">Configuración</string>
     <string name="cannot_find_parent_questionnaire">¡No se puede encontrar el cuestionario principal!</string>
 
@@ -203,9 +203,9 @@
     <string name="sample_distance" translatable="false">2,4 km</string>
     <string name="hash_sign" translatable="false">#</string>
     <string name="menu_tasks">Tareas</string>
-    <string name="household">Hogar</string>
+    <string name="household">Familia</string>
     <string name="routine_visit">Visita de rutina</string>
-    <string name="anc_visit">Visita de ANC</string>
+    <string name="anc_visit">Visita prenatal</string>
     <string name="at_risk">En riesgo</string>
     <string name="no_tasks">Sin tareas</string>
     <string name="add_member">AGREGAR MIEMBRO</string>
@@ -213,37 +213,37 @@
 
     <!--Overflow menu strings -->
     <string name="view_profile">Ver perfil</string>
-    <string name="family_details">Detalles de la familia</string>
-    <string name="change_family_head">Cambiar cabeza de familia</string>
+    <string name="family_details">Información de la familia</string>
+    <string name="change_family_head">Cambiar jefe de familia</string>
     <string name="change_primary_caregiver">Cambiar cuidador principal</string>
-    <string name="family_activity">Actividad familiar</string>
+    <string name="family_activity">Actividad de la familia</string>
     <string name="view_past_encounters">Ver encuentros pasados</string>
-    <string name="remove_family">Eliminar familia</string>
+    <string name="remove_family">Eliminar registro de la familia</string>
     <string name="family_suffix">Familia %1$s</string>
     <string name="remove_this_person">Eliminar esta persona</string>
-    <string name="individual_details">Detalles individuales</string>
+    <string name="individual_details">Información individual</string>
     <string name="view_family">Ver familia</string>
-    <string name="record_sick_child">Registrar niño enfermo</string>
+    <string name="record_sick_child">Registrar a un niño enfermo</string>
 
     <!-- SideMenu option strings-->
     <string name="device_to_device_sync">Sincronización de dispositivo a dispositivo</string>
-    <string name="anc_clients">Clientes de ANC</string>
-    <string name="all_clients">Todos los clientes</string>
-    <string name="pnc_clients">Clientes de PNC</string>
-    <string name="hiv_clients">Lista de clientes</string>
+    <string name="anc_clients">Pacientes de consulta prenatal</string>
+    <string name="all_clients">Todos los pacientes</string>
+    <string name="pnc_clients">Pacientes de consulta postnatal</string>
+    <string name="hiv_clients">Lista de pacientes</string>
     <string name="phone_tracing_clients">Rastreo telefónico</string>
-    <string name="home_tracing_clients">Rastreo domiciliario</string>
+    <string name="home_tracing_clients">Rastreo de domicilio</string>
     <string name="appointment_clients">Citas</string>
-    <string name="family_planning_clients">Clientes de planificación familiar</string>
-    <string name="households">Hogares</string>
-    <string name="children">Niños</string>
+    <string name="family_planning_clients">Pacientes de planificación familiar</string>
+    <string name="households">Familias</string>
+    <string name="children">Niños/Niñas</string>
 
     <!--remove family questionnaire strings-->
     <string name="remove_family_warning">Si eliminas a %1$s, se eliminará todo su historial médico de tu dispositivo. Esta acción no se puede deshacer.</string>
 
     <!--remove family member questionnaire strings-->
     <string name="remove_family_member_warning">%1$s se eliminará de forma permanente de esta familia. Esta acción no se puede deshacer.</string>
-    <string name="remove_member">Eliminar miembro</string>
+    <string name="remove_member">Eliminar paciente</string>
 
     <!--Reporting strings -->
     <string name="date_range">Rango de fechas</string>
@@ -269,7 +269,7 @@
     <string name="visit_due_on">%1$s vencen el %2$s</string>
     <string name="visit_due_today">%1$s vencen hoy</string>
     <string name="visit_overdue">%1$s vencidos hace %2$s</string>
-    <string name="record_as_anc">Registrar como ANC</string>
+    <string name="record_as_anc">Registrar como consulta prenatal</string>
     <string name="pregnancy_outcome">Resultado del embarazo</string>
     <string name="registers">Registros</string>
     <string name="title_no_location_set">Sin ubicación establecida</string>
@@ -355,7 +355,7 @@
     <string name="date">Fecha</string>
     <string name="time">Hora</string>
     <string name="select_date">Seleccionar fecha</string>
-    <string name="select_time">Seleccionar tiempo</string>
+    <string name="select_time">Seleccionar hora</string>
 
     <!-- 2.6 Widget de archivos adjuntos -->
     <string name="take_photo">Tomar foto</string>
@@ -391,7 +391,7 @@
     <string name="min_value_validation_error_msg">El valor mínimo permitido es:<xliff:g id="min_value">%1$s</xliff:g> </string>
     <string name="max_value_validation_error_msg">El valor máximo permitido es:<xliff:g id="max_value">%1$s</xliff:g> </string>
     <string name="min_length_validation_error_msg">El número mínimo de caracteres que están permitidos en la respuesta es: <xliff:g id="min_length">%1$s</xliff:g> </string>
-    <string name="max_decimal_validation_error_msg">El número máximo de decimales que están permitidos en la respuesta la respuesta es: <xliff:g id="max_value">%1$s</xliff:g> </string>
+    <string name="max_decimal_validation_error_msg">El número máximo de decimales que están permitidos en la respuesta es: <xliff:g id="max_value">%1$s</xliff:g> </string>
     <string name="regex_validation_error_msg">La respuesta no coincide con la expresión regular: <xliff:g id="answer_value">%1$s</xliff:g> </string>
     <string name="number_format_validation_error_msg">Utilice únicamente (.) entre dos números. No se admiten otros caracteres especiales.</string>
     <string name="date_format_validation_error_msg">El formato de fecha debe ser <xliff:g id="locale_format">%1$s</xliff:g> (por ejemplo, %2$s )</string>

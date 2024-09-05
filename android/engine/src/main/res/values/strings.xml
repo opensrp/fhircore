@@ -1,5 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="sync">Manual Sync</string>
+    <string name="manual_sync">Manual Sync</string>
+    <string name="sync">Sync</string>
     <string name="language">Language</string>
     <string name="logout_as_user">Log out as </string>
     <string name="show_overdue">Show overdue</string>
@@ -194,4 +195,5 @@
     <string name="sync_down_inprogress"> %1$d%% Syncing down…</string>
     <string name="default_html_title">file</string>
     <string name="retry">RETRY</string>
+    <string name="unsynced_data_present">There\'s some un-synced data</string>
 </resources>
