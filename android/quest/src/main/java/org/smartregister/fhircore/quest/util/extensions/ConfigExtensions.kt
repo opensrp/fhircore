@@ -200,9 +200,9 @@ fun ActionConfig.handleClickEvent(
     }
     ApplicationWorkflow.LAUNCH_DIALLER -> {
       val actionParameter = interpolatedParams.first()
-      val patientPhoneNumber = actionParameter.value
+      val phoneNumber = actionParameter.value
       val intent = Intent(Intent.ACTION_DIAL)
-      intent.data = Uri.parse("tel:$patientPhoneNumber")
+      intent.data = Uri.parse("tel:$phoneNumber")
       ContextCompat.startActivity(navController.context, intent, null)
     }
     ApplicationWorkflow.COPY_TEXT -> {
