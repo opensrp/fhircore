@@ -42,6 +42,7 @@ constructor(
     return withContext(dispatcherProvider.io()) {
       fhirResourceUtil.expireOverdueTasks()
       fhirResourceUtil.closeResourcesRelatedToCompletedServiceRequests()
+      fhirResourceUtil.closeCustomResources()
       Result.success()
     }
   }
