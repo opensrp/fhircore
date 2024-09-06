@@ -150,6 +150,7 @@
     <string name="weeks">Week(s)</string>
     <string name="days">Days(s)</string>
     <string name="initializing">Initializing settings &#8230;</string>
+    <string name="initializing_application">Initializing application &#8230;</string>
     <string name="username_sample" translatable="false">e.g JohnDoe</string>
     <string name="percentage_progress" translatable="false">%1$d%%</string>
     <string name="error_occurred">Something went wrong…</string>
