@@ -21,6 +21,7 @@ import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -36,6 +37,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -74,6 +76,7 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.extension.DEFAULT_FORMAT_SDF_DD_MM_YYYY
 import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.quest.ui.pin.CIRCULAR_PROGRESS_INDICATOR
 
 const val USER_INSIGHT_TOP_APP_BAR = "userInsightToAppBar"
 const val INSIGHT_UNSYNCED_DATA = "insightUnsyncedData"
@@ -94,6 +97,7 @@ fun UserSettingInsightScreen(
   dividerColor: Color = DividerColor,
   unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
   navController: NavController,
+  showProgressIndicator: Boolean = false,
   onRefreshRequest: () -> Unit,
   dateFormat: String = DEFAULT_FORMAT_SDF_DD_MM_YYYY,
 ) {
@@ -271,6 +275,17 @@ fun UserSettingInsightScreen(
             }
           }
         }
+      }
+    }
+    if (showProgressIndicator) {
+      Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+      ) {
+        CircularProgressIndicator(
+          modifier = Modifier.size(24.dp).testTag(CIRCULAR_PROGRESS_INDICATOR).wrapContentWidth(),
+          strokeWidth = 1.6.dp,
+        )
       }
     }
   }
