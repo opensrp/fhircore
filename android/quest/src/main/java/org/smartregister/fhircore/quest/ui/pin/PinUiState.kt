@@ -22,5 +22,4 @@ data class PinUiState(
   val setupPin: Boolean,
   val pinLength: Int,
   val showLogo: Boolean,
-  val showProgressBar: Boolean = false,
 )
