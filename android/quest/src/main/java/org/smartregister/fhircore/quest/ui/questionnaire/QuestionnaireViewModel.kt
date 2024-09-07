@@ -70,6 +70,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.CodingSystemUsage
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.ContentCache
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.isEditable
@@ -148,20 +149,21 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
-    var questionnaire =
+    var result =
       ContentCache.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id)
         ?.copy()
-    if (questionnaire == null) {
-      questionnaire =
-        defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also { ques ->
+    if (result == null) {
+      result =
+        defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also { questionnaire
+          ->
           ContentCache.saveResource(
             questionnaireConfig.id,
-            ques.copy(),
+            questionnaire.copy(),
           )
         }
     }
 
-    return questionnaire as Questionnaire
+    return result as Questionnaire
   }
 
   /**

@@ -57,6 +57,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.event.EventType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.ContentCache
 import org.smartregister.fhircore.engine.util.extension.addResourceParameter
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.batchedSearch
@@ -214,8 +215,16 @@ constructor(
               }
             source.setParameter(Task.SP_PERIOD, period)
             source.setParameter(ActivityDefinition.SP_VERSION, IntegerType(index))
-            // need to cache these SM too
-            val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
+            val structureMapId = IdType(action.transform).idPart
+            val structureMap =
+              ContentCache.getResource(ResourceType.StructureMap.name + "/" + structureMapId)?.let {
+                it as StructureMap
+              }
+                ?: run {
+                  fhirEngine.get<StructureMap>(structureMapId).also {
+                    ContentCache.saveResource(structureMapId, it)
+                  }
+                }
             structureMapUtilities.transform(
               transformSupportServices.simpleWorkerContext,
               source,
