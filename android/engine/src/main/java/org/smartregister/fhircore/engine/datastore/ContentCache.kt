@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.questionnaire
+package org.smartregister.fhircore.engine.datastore
 
 import androidx.collection.LruCache
 import kotlinx.coroutines.Dispatchers
@@ -39,5 +39,9 @@ object ContentCache {
     return cache[resourceId]?.also { Timber.i("ContentCache:getResource: $resourceId") }
   }
 
-  suspend fun invalidate() = withContext(Dispatchers.IO) { cache.evictAll() }
+  suspend fun invalidate() =
+    withContext(Dispatchers.IO) {
+      cache.evictAll()
+      Timber.i("ContentCache: clearing cache")
+    }
 }

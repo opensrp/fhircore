@@ -647,7 +647,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(
       samplePatientRegisterQuestionnaire,
-      ContentCache.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id)
+      ContentCache.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id),
     )
     Assert.assertNotNull(questionnaire)
     Assert.assertEquals(questionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
