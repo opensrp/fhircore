@@ -154,7 +154,7 @@ constructor(
         ?.copy()
     if (result == null) {
       result =
-        defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also { questionnaire
+        defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also { questionnaire,
           ->
           ContentCache.saveResource(
             questionnaireConfig.id,
