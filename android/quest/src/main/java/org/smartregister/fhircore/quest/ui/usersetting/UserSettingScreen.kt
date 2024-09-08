@@ -46,11 +46,11 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Insights
-import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Map
 import androidx.compose.material.icons.rounded.Phone
 import androidx.compose.material.icons.rounded.Share
@@ -120,6 +120,7 @@ fun UserSettingScreen(
   onEvent: (UserSettingsEvent) -> Unit,
   mainNavController: NavController,
   appVersionPair: Pair<Int, String>? = null,
+  dataMigrationVersion: String,
   lastSyncTime: String?,
   showProgressIndicatorFlow: MutableStateFlow<Boolean>,
   enableManualSync: Boolean,
@@ -141,7 +142,7 @@ fun UserSettingScreen(
         title = { Text(text = stringResource(R.string.settings)) },
         navigationIcon = {
           IconButton(onClick = { mainNavController.popBackStack() }) {
-            Icon(Icons.Filled.ArrowBack, null)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
           }
         },
         contentColor = Color.White,
@@ -220,7 +221,7 @@ fun UserSettingScreen(
       if (enableManualSync) {
         UserSettingRow(
           icon = Icons.Rounded.Sync,
-          text = stringResource(id = R.string.sync),
+          text = stringResource(id = R.string.manual_sync),
           clickListener = { onEvent(UserSettingsEvent.SyncData(context)) },
           modifier = modifier.testTag(USER_SETTING_ROW_SYNC),
         )
@@ -356,7 +357,7 @@ fun UserSettingScreen(
       }
 
       UserSettingRow(
-        icon = Icons.Rounded.Logout,
+        icon = Icons.AutoMirrored.Rounded.Logout,
         text = stringResource(id = R.string.logout),
         clickListener = { onEvent(UserSettingsEvent.Logout(context)) },
         modifier = modifier.testTag(USER_SETTING_ROW_LOGOUT),
@@ -393,6 +394,15 @@ fun UserSettingScreen(
           text = stringResource(id = R.string.app_version, versionCode, versionName),
           modifier = modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally),
         )
+
+        if (dataMigrationVersion.toInt() > 0) {
+          Text(
+            color = contentColor,
+            fontSize = 16.sp,
+            text = stringResource(id = R.string.data_migration_version, dataMigrationVersion),
+            modifier = modifier.padding(top = 2.dp).align(Alignment.CenterHorizontally),
+          )
+        }
 
         Text(
           color = contentColor,
@@ -505,6 +515,7 @@ fun UserSettingPreview() {
     onEvent = {},
     mainNavController = rememberNavController(),
     appVersionPair = Pair(1, "1.0.1"),
+    dataMigrationVersion = "0",
     lastSyncTime = "05:30 PM, Mar 3",
     showProgressIndicatorFlow = MutableStateFlow(false),
     enableManualSync = true,

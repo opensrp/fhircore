@@ -11,7 +11,7 @@ import org.json.JSONObject
 plugins {
   `jacoco-report`
   `project-properties`
-  `ktlint`
+  ktlint
   id("com.android.application")
   id("kotlin-android")
   id("kotlin-kapt")
@@ -27,7 +27,7 @@ plugins {
 sonar {
   properties {
     property("sonar.projectKey", "fhircore")
-    property("sonar.kotlin.source.version", libs.kotlin)
+    property("sonar.kotlin.source.version", libs.versions.kotlin)
     property(
       "sonar.androidLint.reportPaths",
       "${project.layout.buildDirectory.get()}/reports/lint-results-opensrpDebug.xml",
@@ -61,6 +61,7 @@ android {
   defaultConfig {
     applicationId = BuildConfigs.applicationId
     minSdk = BuildConfigs.minSdk
+    targetSdk = BuildConfigs.targetSdk
     versionCode = BuildConfigs.versionCode
     versionName = BuildConfigs.versionName
     multiDexEnabled = true
@@ -99,14 +100,18 @@ android {
   }
 
   buildTypes {
-    getByName("debug") { enableUnitTestCoverage = true }
+    getByName("debug") {
+      enableUnitTestCoverage = BuildConfigs.enableUnitTestCoverage
+      enableAndroidTestCoverage = BuildConfigs.enableAndroidTestCoverage
+    }
+
+    create("debugNonProxy") { initWith(getByName("debug")) }
+
     create("benchmark") {
       signingConfig = signingConfigs.getByName("debug")
       matchingFallbacks += listOf("debug")
       isDebuggable = true
     }
-
-    create("debugNonProxy") { initWith(getByName("debug")) }
 
     getByName("release") {
       isMinifyEnabled = false
@@ -406,7 +411,8 @@ tasks.withType<Test> {
   testLogging { events = setOf(TestLogEvent.FAILED) }
   minHeapSize = "4608m"
   maxHeapSize = "4608m"
-  maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+  // maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+  configure<JacocoTaskExtension> { isIncludeNoLocationClasses = true }
 }
 
 configurations { all { exclude(group = "xpp3") } }
@@ -422,7 +428,10 @@ dependencies {
   implementation(libs.material)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
-  implementation(libs.play.services.location)
+  implementation(libs.gms.play.services.location)
+  implementation(libs.mlkit.barcode.scanning)
+
+  implementation(libs.bundles.cameraX)
 
   // Annotation processors
   kapt(libs.hilt.compiler)

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -30,5 +31,6 @@ data class RegisterUiState(
   val pagesCount: Int = 1,
   val progressPercentage: Flow<Int> = flowOf(0),
   val isSyncUpload: Flow<Boolean> = flowOf(false),
+  val currentSyncJobStatus: Flow<CurrentSyncJobStatus?> = flowOf(null),
   val params: Map<String, String> = emptyMap(),
 )

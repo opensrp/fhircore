@@ -62,6 +62,7 @@ fun RegisterCardList(
   registerUiState: RegisterUiState,
   currentPage: MutableState<Int>,
   showPagination: Boolean = false,
+  onSearchByQrSingleResultAction: (ResourceData) -> Unit,
 ) {
   LazyColumn(modifier = Modifier.testTag(REGISTER_CARD_LIST_TEST_TAG), state = lazyListState) {
     items(
@@ -82,6 +83,7 @@ fun RegisterCardList(
       }
       Divider(color = DividerColor, thickness = 1.dp)
     }
+
     pagingItems.apply {
       when {
         loadState.refresh is LoadState.Loading -> item { CircularProgressBar() }
@@ -99,6 +101,11 @@ fun RegisterCardList(
           val error = pagingItems.loadState.append as LoadState.Error
           item {
             ErrorMessage(message = error.error.localizedMessage!!, onClickRetry = { retry() })
+          }
+        }
+        loadState.append.endOfPaginationReached || loadState.refresh.endOfPaginationReached -> {
+          if (pagingItems.itemCount == 1) {
+            onSearchByQrSingleResultAction.invoke(pagingItems[0]!!)
           }
         }
       }

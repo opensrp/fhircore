@@ -80,7 +80,7 @@ fun Image(
 ) {
   val imageConfig = imageProperties.imageConfig
   val colorTint = tint ?: imageProperties.imageConfig?.color.parseColor()
-  val cotext = LocalContext.current
+  val context = LocalContext.current
   if (imageConfig != null) {
     if (imageProperties.text != null) {
       Row(
@@ -101,7 +101,7 @@ fun Image(
           navController = navController,
           resourceData = resourceData,
           modifier = modifier,
-          context = cotext,
+          context = context,
           decodedImageMap = decodedImageMap,
         )
       }
@@ -114,7 +114,7 @@ fun Image(
         navController = navController,
         resourceData = resourceData,
         modifier = modifier,
-        context = cotext,
+        context = context,
         decodedImageMap = decodedImageMap,
       )
     }
@@ -202,7 +202,7 @@ fun ClickableImageIcon(
                   .conditional(paddingEnd != null, { padding(end = paddingEnd?.dp!!) })
                   .align(Alignment.Center)
                   .fillMaxSize(0.9f),
-              bitmap = decodedImage!!.asImageBitmap(),
+              bitmap = decodedImage.asImageBitmap(),
               contentDescription = null,
               alpha = imageProperties.imageConfig!!.alpha,
               contentScale = contentScale,

@@ -23,6 +23,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
@@ -59,6 +60,7 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherFragment
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
@@ -72,144 +74,166 @@ fun List<ActionConfig>.handleClickEvent(
   context: Context? = null,
 ) {
   val onClickAction =
-    this.find { it.trigger.isIn(ActionTrigger.ON_CLICK, ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION) }
+    this.find {
+      it.trigger.isIn(
+        ActionTrigger.ON_SEARCH_SINGLE_RESULT,
+        ActionTrigger.ON_CLICK,
+        ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+      )
+    }
 
-  onClickAction?.let { theConfig ->
-    val computedValuesMap = resourceData?.computedValuesMap ?: emptyMap()
-    val actionConfig = theConfig.interpolate(computedValuesMap)
-    val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
-    val practitionerId =
-      interpolatedParams
-        .find { it.paramType == ActionParameterType.RESOURCE_ID && it.key == PRACTITIONER_ID }
-        ?.value
-    val resourceId =
-      interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
-        ?: resourceData?.baseResourceId
-    when (actionConfig.workflow?.let { ApplicationWorkflow.valueOf(it) }) {
-      ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
-        actionConfig.questionnaire?.let { questionnaireConfig ->
-          val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
+  onClickAction?.handleClickEvent(navController, resourceData, navMenu, context)
+}
 
-          // Questionnaire is NOT launched via navigation component. It is started for result.
-          if (navController.context is QuestionnaireHandler) {
-            (navController.context as QuestionnaireHandler).launchQuestionnaire(
-              context = navController.context,
-              questionnaireConfig = questionnaireConfigInterpolated,
-              actionParams = interpolatedParams,
-            )
+fun ActionConfig.handleClickEvent(
+  navController: NavController,
+  resourceData: ResourceData? = null,
+  navMenu: NavigationMenuConfig? = null,
+  context: Context? = null,
+) {
+  val computedValuesMap = resourceData?.computedValuesMap ?: emptyMap()
+  val actionConfig = interpolate(computedValuesMap)
+  val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
+  val practitionerId =
+    interpolatedParams
+      .find { it.paramType == ActionParameterType.RESOURCE_ID && it.key == PRACTITIONER_ID }
+      ?.value
+  val resourceId =
+    interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
+      ?: resourceData?.baseResourceId
+  when (actionConfig.workflow?.let { ApplicationWorkflow.valueOf(it) }) {
+    ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
+      actionConfig.questionnaire?.let { questionnaireConfig ->
+        val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
+
+        // Questionnaire is NOT launched via navigation component. It is started for result.
+        if (navController.context is QuestionnaireHandler) {
+          (navController.context as QuestionnaireHandler).launchQuestionnaire(
+            context = navController.context,
+            questionnaireConfig = questionnaireConfigInterpolated,
+            actionParams = interpolatedParams,
+          )
+        }
+      }
+    }
+    ApplicationWorkflow.LAUNCH_PROFILE -> {
+      actionConfig.id?.let { id ->
+        val args =
+          bundleOf(
+            NavigationArg.PROFILE_ID to id,
+            NavigationArg.RESOURCE_ID to resourceId,
+            NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
+            NavigationArg.PARAMS to interpolatedParams.toTypedArray(),
+          )
+        val navOptions =
+          when (actionConfig.popNavigationBackStack) {
+            false,
+            null, -> null
+            true ->
+              navController.currentDestination?.id?.let { currentDestId ->
+                navOptions(resId = currentDestId, inclusive = true)
+              }
           }
-        }
-      }
-      ApplicationWorkflow.LAUNCH_PROFILE -> {
-        actionConfig.id?.let { id ->
-          val args =
-            bundleOf(
-              NavigationArg.PROFILE_ID to id,
-              NavigationArg.RESOURCE_ID to resourceId,
-              NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
-              NavigationArg.PARAMS to interpolatedParams.toTypedArray(),
-            )
-          val navOptions =
-            when (actionConfig.popNavigationBackStack) {
-              false,
-              null, -> null
-              true ->
-                navController.currentDestination?.id?.let { currentDestId ->
-                  navOptions(resId = currentDestId, inclusive = true)
-                }
-            }
-          navController.navigate(
-            resId = MainNavigationScreen.Profile.route,
-            args = args,
-            navOptions = navOptions,
-          )
-        }
-      }
-      ApplicationWorkflow.LAUNCH_REGISTER -> {
-        val args =
-          bundleOf(
-            Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
-            Pair(NavigationArg.SCREEN_TITLE, actionConfig.display ?: navMenu?.display ?: ""),
-            Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
-            Pair(NavigationArg.PARAMS, interpolatedParams.toTypedArray()),
-          )
-
-        // If value != null, we are navigating FROM a register; disallow same register navigation
-        val currentRegisterId =
-          navController.currentBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
-        val sameRegisterNavigation =
-          args.getString(NavigationArg.REGISTER_ID) ==
-            navController.previousBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
-
-        if (!currentRegisterId.isNullOrEmpty() && sameRegisterNavigation) {
-          return
-        } else {
-          navController.navigate(
-            resId = MainNavigationScreen.Home.route,
-            args = args,
-            navOptions =
-              navController.currentDestination?.id?.let {
-                navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
-              },
-          )
-        }
-      }
-      ApplicationWorkflow.LAUNCH_REPORT -> {
-        val args =
-          bundleOf(
-            Pair(NavigationArg.REPORT_ID, actionConfig.id),
-            Pair(NavigationArg.RESOURCE_ID, practitionerId?.extractLogicalIdUuid() ?: ""),
-          )
-
-        navController.navigate(MainNavigationScreen.Reports.route, args)
-      }
-      ApplicationWorkflow.LAUNCH_SETTINGS ->
-        navController.navigate(MainNavigationScreen.Settings.route)
-      ApplicationWorkflow.LAUNCH_INSIGHT_SCREEN ->
-        navController.navigate(MainNavigationScreen.Insight.route)
-      ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
-      ApplicationWorkflow.LAUNCH_MAP -> {
-        val mapFragmentDestination = MainNavigationScreen.GeoWidgetLauncher.route
-
-        val isMapFragmentExists = navController.currentDestination?.id == mapFragmentDestination
-        if (isMapFragmentExists) {
-          navController.popBackStack(mapFragmentDestination, false)
-        } else {
-          navController.navigate(
-            resId = mapFragmentDestination,
-            args = bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id),
-            navOptions = navOptions(mapFragmentDestination, inclusive = true, singleOnTop = true),
-          )
-        }
-      }
-      ApplicationWorkflow.LAUNCH_DIALLER -> {
-        val actionParameter = interpolatedParams.first()
-        val patientPhoneNumber = actionParameter.value
-        val intent = Intent(Intent.ACTION_DIAL)
-        intent.data = Uri.parse("tel:$patientPhoneNumber")
-        ContextCompat.startActivity(navController.context, intent, null)
-      }
-      ApplicationWorkflow.COPY_TEXT -> {
-        val copyTextActionParameter = interpolatedParams.first()
-        val clipboardManager =
-          context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clipData = ClipData.newPlainText(null, copyTextActionParameter.value)
-        clipboardManager.setPrimaryClip(clipData)
-        context.showToast(
-          context.getString(R.string.copy_text_success_message, copyTextActionParameter.value),
-          Toast.LENGTH_LONG,
+        navController.navigate(
+          resId = MainNavigationScreen.Profile.route,
+          args = args,
+          navOptions = navOptions,
         )
       }
-      ApplicationWorkflow.LAUNCH_LOCATION_SELECTOR -> {
-        val args =
-          bundleOf(
-            NavigationArg.SCREEN_TITLE to (actionConfig.display ?: navMenu?.display ?: ""),
-            NavigationArg.MULTI_SELECT_VIEW_CONFIG to actionConfig.multiSelectViewConfig,
-          )
-        navController.navigate(MainNavigationScreen.LocationSelector.route, args)
-      }
-      else -> return
     }
+    ApplicationWorkflow.LAUNCH_REGISTER -> {
+      val args =
+        bundleOf(
+          Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
+          Pair(NavigationArg.SCREEN_TITLE, actionConfig.display ?: navMenu?.display ?: ""),
+          Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
+          Pair(NavigationArg.PARAMS, interpolatedParams.toTypedArray()),
+        )
+
+      // If value != null, we are navigating FROM a register; disallow same register navigation
+      val currentRegisterId =
+        navController.currentBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
+      val sameRegisterNavigation =
+        args.getString(NavigationArg.REGISTER_ID) ==
+          navController.previousBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
+
+      if (!currentRegisterId.isNullOrEmpty() && sameRegisterNavigation) {
+        return
+      } else {
+        navController.navigate(
+          resId = MainNavigationScreen.Home.route,
+          args = args,
+          navOptions =
+            navController.currentDestination?.id?.let {
+              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
+            },
+        )
+      }
+    }
+    ApplicationWorkflow.LAUNCH_REPORT -> {
+      val args =
+        bundleOf(
+          Pair(NavigationArg.REPORT_ID, actionConfig.id),
+          Pair(NavigationArg.RESOURCE_ID, practitionerId?.extractLogicalIdUuid() ?: ""),
+        )
+
+      navController.navigate(MainNavigationScreen.Reports.route, args)
+    }
+    ApplicationWorkflow.LAUNCH_SETTINGS ->
+      navController.navigate(MainNavigationScreen.Settings.route)
+    ApplicationWorkflow.LAUNCH_INSIGHT_SCREEN ->
+      navController.navigate(MainNavigationScreen.Insight.route)
+    ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
+    ApplicationWorkflow.LAUNCH_MAP -> {
+      val mapFragmentDestination = MainNavigationScreen.GeoWidgetLauncher.route
+
+      val isMapFragmentExists = navController.currentDestination?.id == mapFragmentDestination
+      if (isMapFragmentExists) {
+        navController.popBackStack(mapFragmentDestination, false)
+      } else {
+        navController.navigate(
+          resId = mapFragmentDestination,
+          args = bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id),
+          navOptions = navOptions(mapFragmentDestination, inclusive = true, singleOnTop = true),
+        )
+      }
+    }
+    ApplicationWorkflow.LAUNCH_DIALLER -> {
+      val actionParameter = interpolatedParams.first()
+      val phoneNumber = actionParameter.value
+      val intent = Intent(Intent.ACTION_DIAL)
+      intent.data = Uri.parse("tel:$phoneNumber")
+      ContextCompat.startActivity(navController.context, intent, null)
+    }
+    ApplicationWorkflow.COPY_TEXT -> {
+      val copyTextActionParameter = interpolatedParams.first()
+      val clipboardManager =
+        context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+      val clipData = ClipData.newPlainText(null, copyTextActionParameter.value)
+      clipboardManager.setPrimaryClip(clipData)
+      context.showToast(
+        context.getString(R.string.copy_text_success_message, copyTextActionParameter.value),
+        Toast.LENGTH_LONG,
+      )
+    }
+    ApplicationWorkflow.LAUNCH_LOCATION_SELECTOR -> {
+      val args =
+        bundleOf(
+          NavigationArg.SCREEN_TITLE to (actionConfig.display ?: navMenu?.display ?: ""),
+          NavigationArg.MULTI_SELECT_VIEW_CONFIG to actionConfig.multiSelectViewConfig,
+        )
+      navController.navigate(MainNavigationScreen.LocationSelector.route, args)
+    }
+    ApplicationWorkflow.LAUNCH_PDF_GENERATION -> {
+      val questionnaireConfig = actionConfig.questionnaire ?: return
+      val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
+      val appCompatActivity = (navController.context as AppCompatActivity)
+      PdfLauncherFragment.launch(
+        appCompatActivity,
+        questionnaireConfigInterpolated.encodeJson(),
+      )
+    }
+    else -> return
   }
 }
 

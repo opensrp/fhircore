@@ -20,7 +20,8 @@ import androidx.compose.ui.state.ToggleableState
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SyncLocationToggleableState(
+data class SyncLocationState(
   val locationId: String,
+  val parentLocationId: String?,
   val toggleableState: ToggleableState,
 )

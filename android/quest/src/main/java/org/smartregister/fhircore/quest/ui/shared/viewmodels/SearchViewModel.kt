@@ -19,7 +19,8 @@ package org.smartregister.fhircore.quest.ui.shared.viewmodels
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 
 class SearchViewModel : ViewModel() {
-  val searchText: MutableState<String> = mutableStateOf("")
+  val searchQuery: MutableState<SearchQuery> = mutableStateOf(SearchQuery.emptyText)
 }

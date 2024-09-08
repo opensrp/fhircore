@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="sync">Synchronisation manuelle</string>
+    <string name="manual_sync">Synchronisation manuelle</string>
     <string name="language">Langue</string>
     <string name="logout_as_user">Se déconnecter en tant que </string>
     <string name="show_overdue">Afficher les retards</string>
@@ -8,6 +8,7 @@
     <string name="sync_data">Synchronisation des données</string>
     <string name="scan_bar_code">Scan du code-barres</string>
     <string name="empty_client_list_message_title">Aucun résultat</string>
+    <string name="data_migration_version">Version de migration de données %1$s</string>
     <string name="empty_client_list_message_details">Désolé, nous n\'avons pas trouvé de client avec le nom ou l\'identifiant donné.</string>
     <string name="register_new_client">Enregistrer un nouveau client</string>
     <string name="app_logo">Logo de l\'application</string>
@@ -107,7 +108,6 @@
     <string name="incorrect_pin_please_retry">Code PIN incorrect, veuillez réessayer</string>
     <string name="pin_menu_login">Connexion</string>
     <string name="forgot_pin">Code PIN oublié ?</string>
-    <string name="please_contact_supervisor">Veuillez contacter votre superviseur.</string>
     <string name="logging_out">Déconnexion. Veuillez patienter...</string>
     <string name="session_expired">Session expirée, veuillez vous connecter à nouveau</string>
     <string name="sex">Sexe</string>

@@ -42,6 +42,7 @@ data class GeoWidgetConfiguration(
   val summaryBottomSheetConfig: SummaryBottomSheetConfig? = null,
   val actions: List<ActionConfig>? = emptyList(),
   val noResults: NoResultsConfig? = null,
+  val filterDataByRelatedEntityLocation: Boolean? = null,
 ) : Configuration()
 
 @Serializable

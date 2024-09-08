@@ -106,33 +106,51 @@ fun List(
                 .testTag(VERTICAL_ORIENTATION),
           ) {
             currentListResourceData.forEachIndexed { index, listResourceData ->
-              Spacer(modifier = modifier.height(6.dp))
-              Column(
-                modifier =
-                  Modifier.padding(
-                    horizontal = viewProperties.padding.dp,
-                    vertical = viewProperties.padding.div(4).dp,
-                  ),
-              ) {
-                AnimatedVisibility(
-                  visible = true,
-                  enter =
-                    slideInVertically {
-                      // Slide in from 40 dp from the top.
-                      with(density) { -40.dp.roundToPx() }
-                    },
-                ) {
-                  ViewRenderer(
-                    viewProperties = viewProperties.registerCard.views,
-                    resourceData = listResourceData,
-                    navController = navController,
-                    decodedImageMap = decodedImageMap,
-                  )
+              // Interpolate ViewProperties up-front to hide the child view spacers and divider when
+              // the child view is not visible
+              val interpolatedChildViewProperties =
+                viewProperties.registerCard.views.map { viewProperty ->
+                  viewProperty.interpolate(listResourceData.computedValuesMap)
                 }
-              }
-              Spacer(modifier = modifier.height(6.dp))
-              if (index < currentListResourceData.lastIndex && viewProperties.showDivider) {
-                Divider(color = DividerColor, thickness = 0.5.dp)
+              // At least 1 child view must be visible in order to show the spacers and divider
+              val areChildViewsVisible =
+                interpolatedChildViewProperties.any { viewProperty ->
+                  viewProperty.visible.toBooleanStrict()
+                }
+              if (areChildViewsVisible) {
+                Spacer(modifier = modifier.height(6.dp))
+                Column(
+                  modifier =
+                    Modifier.padding(
+                      horizontal = viewProperties.padding.dp,
+                      vertical = viewProperties.padding.div(4).dp,
+                    ),
+                ) {
+                  AnimatedVisibility(
+                    visible = true,
+                    enter =
+                      slideInVertically {
+                        // Slide in from 40 dp from the top.
+                        with(density) { -40.dp.roundToPx() }
+                      },
+                  ) {
+                    ViewRenderer(
+                      viewProperties = interpolatedChildViewProperties,
+                      resourceData = listResourceData,
+                      navController = navController,
+                      decodedImageMap = decodedImageMap,
+                      areViewPropertiesInterpolated =
+                        true, // Prevents double interpolation (in this function and inside the
+                      // ViewRenderer) which is a waste
+                    )
+                  }
+                }
+                Spacer(modifier = modifier.height(6.dp))
+                // viewProperties in this case belongs to the List, setting the showDivider will
+                // apply to all child items under the List
+                if (index < currentListResourceData.lastIndex && viewProperties.showDivider) {
+                  Divider(color = DividerColor, thickness = 0.5.dp)
+                }
               }
             }
           }

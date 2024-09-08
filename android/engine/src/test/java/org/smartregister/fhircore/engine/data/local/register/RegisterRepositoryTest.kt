@@ -63,7 +63,7 @@ import org.smartregister.fhircore.engine.domain.model.CountResultConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
-import org.smartregister.fhircore.engine.domain.model.SyncLocationToggleableState
+import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
@@ -496,7 +496,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       // Set locations
       ApplicationProvider.getApplicationContext<Application>()
         .syncLocationIdsProtoStore
-        .updateData { listOf(SyncLocationToggleableState(locationId, ToggleableState.On)) }
+        .updateData { mapOf(locationId to SyncLocationState(locationId, null, ToggleableState.On)) }
 
       // Prepare resources
       fhirEngine.run {

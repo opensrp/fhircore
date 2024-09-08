@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
-import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -53,12 +52,9 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -68,6 +64,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.ui.shared.viewmodels.SearchViewModel
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
@@ -142,14 +139,17 @@ class RegisterFragment : Fragment(), OnSyncListener {
             drawerContent = {
               AppDrawer(
                 appUiState = uiState,
+                appDrawerUIState = appMainViewModel.appDrawerUiState.value,
                 openDrawer = openDrawer,
                 onSideMenuClick = {
                   if (it is AppMainEvent.TriggerWorkflow) {
-                    searchViewModel.searchText.value = ""
+                    searchViewModel.searchQuery.value = SearchQuery.emptyText
                   }
                   appMainViewModel.onEvent(it)
                 },
                 navController = findNavController(),
+                unSyncedResourceCount = appMainViewModel.unSyncedResourcesCount,
+                onCountUnSyncedResources = appMainViewModel::updateUnSyncedResourcesCount,
               )
             },
             bottomBar = {
@@ -173,7 +173,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,
                 registerUiState = registerViewModel.registerUiState.value,
-                searchText = searchViewModel.searchText,
+                appDrawerUIState = appMainViewModel.appDrawerUiState.value,
+                onAppMainEvent = { appMainViewModel.onEvent(it) },
+                searchQuery = searchViewModel.searchQuery,
                 currentPage = registerViewModel.currentPage,
                 pagingItems = pagingItems,
                 navController = findNavController(),
@@ -193,49 +195,29 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
-      is CurrentSyncJobStatus.Running ->
-        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
+      is CurrentSyncJobStatus.Running -> {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
+          val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
+          val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+          val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
           lifecycleScope.launch {
-            registerViewModel.emitSnackBarState(
-              SnackBarMessageConfig(message = getString(R.string.syncing)),
+            appMainViewModel.updateAppDrawerUIState(
+              isSyncUpload = isSyncUpload,
+              currentSyncJobStatus = syncJobStatus,
+              percentageProgress = progressPercentage,
             )
           }
-        } else {
-          emitPercentageProgress(
-            syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress,
-            (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
-              SyncOperation.UPLOAD,
-          )
         }
+      }
       is CurrentSyncJobStatus.Succeeded -> {
         refreshRegisterData()
-        lifecycleScope.launch {
-          registerViewModel.emitSnackBarState(
-            SnackBarMessageConfig(
-              message = getString(R.string.sync_completed),
-              actionLabel = getString(R.string.ok).uppercase(),
-              duration = SnackbarDuration.Long,
-            ),
-          )
-        }
+        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
-        syncJobStatus.toString()
-        // Show error message in snackBar message
-        lifecycleScope.launch {
-          registerViewModel.emitSnackBarState(
-            SnackBarMessageConfig(
-              message = getString(R.string.sync_completed_with_errors),
-              duration = SnackbarDuration.Long,
-              actionLabel = getString(R.string.ok).uppercase(),
-            ),
-          )
-        }
+        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
       }
-      else -> {
-        // Do nothing
-      }
+      else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
     }
   }
 
@@ -256,6 +238,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
         )
       }
     }
+
+    appMainViewModel.updateUnSyncedResourcesCount()
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -277,6 +261,24 @@ class RegisterFragment : Fragment(), OnSyncListener {
           .launchIn(lifecycleScope)
       }
     }
+
+    appMainViewModel.resetRegisterFilters.observe(viewLifecycleOwner) { resetFilters ->
+      if (resetFilters) {
+        registerViewModel.registerFilterState.value = RegisterFilterState()
+        refreshRegisterData()
+        appMainViewModel.resetRegisterFilters.value = false
+      }
+    }
+  }
+
+  override fun onPause() {
+    super.onPause()
+    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+  }
+
+  override fun onDestroy() {
+    super.onDestroy()
+    appMainViewModel.updateAppDrawerUIState(false, null, 0)
   }
 
   suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
@@ -298,49 +300,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
     } else {
       refreshRegisterData(questionnaireSubmission.questionnaireResponse)
     }
-  }
-
-  fun emitPercentageProgress(
-    progressSyncJobStatus: SyncJobStatus.InProgress,
-    isUploadSync: Boolean,
-  ) {
-    lifecycleScope.launch {
-      val percentageProgress: Int = calculateActualPercentageProgress(progressSyncJobStatus)
-      registerViewModel.emitPercentageProgressState(percentageProgress, isUploadSync)
-    }
-  }
-
-  private fun getSyncProgress(completed: Int, total: Int) =
-    completed * 100 / if (total > 0) total else 1
-
-  private fun calculateActualPercentageProgress(
-    progressSyncJobStatus: SyncJobStatus.InProgress,
-  ): Int {
-    val totalRecordsOverall =
-      registerViewModel.sharedPreferencesHelper.read(
-        SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
-          progressSyncJobStatus.syncOperation.name,
-        1L,
-      )
-    val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
-    val currentProgress: Int
-    val currentTotalRecords =
-      if (isProgressTotalLess) {
-        currentProgress =
-          totalRecordsOverall.toInt() - progressSyncJobStatus.total +
-            progressSyncJobStatus.completed
-        totalRecordsOverall.toInt()
-      } else {
-        registerViewModel.sharedPreferencesHelper.write(
-          SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
-            progressSyncJobStatus.syncOperation.name,
-          progressSyncJobStatus.total.toLong(),
-        )
-        currentProgress = progressSyncJobStatus.completed
-        progressSyncJobStatus.total
-      }
-
-    return getSyncProgress(currentProgress, currentTotalRecords)
   }
 
   companion object {

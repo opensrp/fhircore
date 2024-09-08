@@ -22,11 +22,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.MultiPoint
@@ -47,7 +47,6 @@ import io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPlugin
 import io.ona.kujaku.plugin.switcher.layer.StreetsBaseLayer
 import io.ona.kujaku.utils.CoordinateUtils
 import io.ona.kujaku.views.KujakuMapView
-import kotlinx.coroutines.launch
 import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.configuration.geowidget.MapLayer
@@ -93,7 +92,9 @@ class GeoWidgetFragment : Fragment() {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    setupMapFeatures()
+    geoWidgetViewModel.features.observe(viewLifecycleOwner) { result ->
+      zoomToLocationsOnMap(result.map { it.toFeature() })
+    }
   }
 
   override fun onStart() {
@@ -129,14 +130,6 @@ class GeoWidgetFragment : Fragment() {
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
     mapView.onSaveInstanceState(outState)
-  }
-
-  private fun setupMapFeatures() {
-    viewLifecycleOwner.lifecycleScope.launch {
-      geoWidgetViewModel.features.observe(viewLifecycleOwner) { result ->
-        zoomToLocationsOnMap(result.map { it.toFeature() })
-      }
-    }
   }
 
   private fun setupViews(): LinearLayout {
@@ -179,6 +172,8 @@ class GeoWidgetFragment : Fragment() {
   }
 
   private fun addIconsLayer(mMapboxMapStyle: Style) {
+    addIconBaseImage(mMapboxMapStyle)
+
     val dynamicIconSize =
       Expression.interpolate(
         Expression.linear(),
@@ -193,10 +188,18 @@ class GeoWidgetFragment : Fragment() {
       val icon: Bitmap? =
         ResourceUtils.drawableToBitmap(
           ResourcesCompat.getDrawable(
-            resources,
-            servicePointType.drawableId,
-            requireContext().theme,
-          )!!,
+              resources,
+              servicePointType.drawableId,
+              requireContext().theme,
+            )!!
+            .apply {
+              setTint(
+                ContextCompat.getColor(
+                  requireContext(),
+                  org.smartregister.fhircore.engine.R.color.white,
+                ),
+              )
+            },
         )
       icon?.let {
         mMapboxMapStyle.addImage(key, icon)
@@ -209,7 +212,8 @@ class GeoWidgetFragment : Fragment() {
           PropertyFactory.iconImage(key),
           PropertyFactory.iconSize(dynamicIconSize),
           PropertyFactory.iconIgnorePlacement(false),
-          PropertyFactory.iconAllowOverlap(false),
+          PropertyFactory.iconAllowOverlap(true),
+          PropertyFactory.symbolSortKey(2f),
         )
         symbolLayer.setFilter(
           Expression.eq(
@@ -219,6 +223,43 @@ class GeoWidgetFragment : Fragment() {
         )
         mMapboxMapStyle.addLayer(symbolLayer)
       }
+    }
+  }
+
+  private fun addIconBaseImage(mMapboxMapStyle: Style) {
+    val baseIcon: Bitmap? =
+      ResourceUtils.drawableToBitmap(
+        ResourcesCompat.getDrawable(
+          resources,
+          org.smartregister.fhircore.engine.R.drawable.base_icon,
+          requireContext().theme,
+        )!!,
+      )
+
+    baseIcon?.let {
+      val dynamicBaseIconSize =
+        Expression.interpolate(
+          Expression.linear(),
+          Expression.zoom(),
+          Expression.literal(0.7f),
+          Expression.literal(0.67f),
+        )
+
+      val baseKey = "base-image"
+      mMapboxMapStyle.addImage(baseKey, it)
+      val symbolLayer =
+        SymbolLayer(
+          String.format("%s.layer", baseKey),
+          getString(R.string.data_set_quest),
+        )
+      symbolLayer.setProperties(
+        PropertyFactory.iconImage(baseKey),
+        PropertyFactory.iconSize(dynamicBaseIconSize),
+        PropertyFactory.iconAllowOverlap(true),
+        PropertyFactory.symbolSortKey(1f),
+        PropertyFactory.iconOffset(arrayOf(0f, 8.5f)),
+      )
+      mMapboxMapStyle.addLayerBelow(symbolLayer, getString(R.string.quest_data_points))
     }
   }
 

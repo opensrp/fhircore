@@ -84,6 +84,7 @@ fun ServiceCard(
   resourceData: ResourceData,
   navController: NavController,
 ) {
+  val serviceMemberIconsTint = serviceCardProperties.serviceMemberIconsTint.parseColor()
   if (serviceCardProperties.showVerticalDivider) {
     Row(
       horizontalArrangement = Arrangement.SpaceBetween,
@@ -109,6 +110,7 @@ fun ServiceCard(
         weight = 0.7f,
         details = serviceCardProperties.details,
         serviceMemberIcons = serviceCardProperties.serviceMemberIcons,
+        serviceMemberIconsTint = serviceMemberIconsTint,
         navController = navController,
         resourceData = resourceData,
       )
@@ -150,6 +152,7 @@ fun ServiceCard(
         weight = 0.55f,
         details = serviceCardProperties.details,
         serviceMemberIcons = serviceCardProperties.serviceMemberIcons,
+        serviceMemberIconsTint = serviceMemberIconsTint,
         navController = navController,
         resourceData = resourceData,
       )
@@ -169,6 +172,7 @@ private fun RowScope.RenderDetails(
   weight: Float,
   details: List<CompoundTextProperties>,
   serviceMemberIcons: String?,
+  serviceMemberIconsTint: Color,
   navController: NavController,
   resourceData: ResourceData,
 ) {
@@ -176,7 +180,7 @@ private fun RowScope.RenderDetails(
   val memberIcons = iconsSplit.map { it.capitalize().trim() }.take(NUMBER_OF_ICONS_DISPLAYED)
   Row(
     verticalAlignment = Alignment.CenterVertically,
-    modifier = Modifier.weight(weight).padding(end = 6.dp).fillMaxWidth(),
+    modifier = Modifier.weight(weight).padding(end = 10.dp).fillMaxWidth(),
     horizontalArrangement = Arrangement.SpaceBetween,
   ) {
     Column(
@@ -207,7 +211,7 @@ private fun RowScope.RenderDetails(
               painter = painterResource(id = ServiceMemberIcon.valueOf(it).icon),
               contentDescription = null,
               modifier = Modifier.size(18.dp).padding(0.dp),
-              tint = Color.Unspecified,
+              tint = serviceMemberIconsTint,
             )
           }
         }

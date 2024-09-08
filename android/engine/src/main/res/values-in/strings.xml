@@ -1,5 +1,5 @@
 <resources>
-    <string name="sync">Sinkronisasi manual</string>
+    <string name="manual_sync">Sinkronisasi manual</string>
     <string name="language">Bahasa</string>
     <string name="logout_as_user">Keluar sebagai </string>
     <string name="show_overdue">Tampilkan yang terlambat</string>
@@ -109,7 +109,6 @@
     <string name="incorrect_pin_please_retry">PIN salah, mohon coba lagi</string>
     <string name="pin_menu_login">Masuk</string>
     <string name="forgot_pin">Lupa PIN?</string>
-    <string name="please_contact_supervisor">Silakan hubungi supervisor Anda.</string>
     <string name="percentage" translatable="false">%</string>
     <string name="logging_out">Sedang keluar (log out). Mohon tunggu…</string>
     <string name="session_expired">Sesi telah kedaluwarsa dan harus login lagi</string>
@@ -174,4 +173,5 @@
     <string name="os_version">Versi OS</string>
     <string name="device_date">Tanggal</string>
     <string name="device">Perangkat</string>
+    <string name="data_migration_version">Versi migrasi data</string>
 </resources>

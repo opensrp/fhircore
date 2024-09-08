@@ -19,10 +19,13 @@ package org.smartregister.fhircore.quest.ui.main.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -50,7 +53,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -58,14 +63,19 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.domain.model.TopScreenSectionConfig
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.shared.components.Image
+import org.smartregister.fhircore.quest.ui.shared.models.SearchMode
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
+import org.smartregister.fhircore.quest.util.QrCodeScanUtils
 
 const val DRAWER_MENU = "Drawer Menu"
 const val SEARCH = "Search"
@@ -78,6 +88,8 @@ const val TOP_ROW_FILTER_ICON_TEST_TAG = "topRowFilterIconTestTag"
 const val OUTLINED_BOX_TEST_TAG = "outlinedBoxTestTag"
 const val TRAILING_ICON_TEST_TAG = "trailingIconTestTag"
 const val TRAILING_ICON_BUTTON_TEST_TAG = "trailingIconButtonTestTag"
+const val TRAILING_QR_SCAN_ICON_TEST_TAG = "qrCodeScanTrailingIconTestTag"
+const val TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG = "qrCodeScanTrailingIconButtonTestTag"
 const val LEADING_ICON_TEST_TAG = "leadingIconTestTag"
 const val SEARCH_FIELD_TEST_TAG = "searchFieldTestTag"
 const val TOP_ROW_TOGGLE_ICON_TEST_tAG = "topRowToggleIconTestTag"
@@ -86,21 +98,24 @@ const val TOP_ROW_TOGGLE_ICON_TEST_tAG = "topRowToggleIconTestTag"
 fun TopScreenSection(
   modifier: Modifier = Modifier,
   title: String,
+  navController: NavController,
   isSearchBarVisible: Boolean,
-  searchText: String,
+  searchQuery: SearchQuery,
+  showSearchByQrCode: Boolean = false,
   filteredRecordsCount: Long? = null,
   searchPlaceholder: String? = null,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
-  onSearchTextChanged: (String) -> Unit,
+  onSearchTextChanged: (SearchQuery) -> Unit = {},
   isFilterIconEnabled: Boolean = false,
   topScreenSection: TopScreenSectionConfig? = null,
-  navController: NavController,
-  onClick: (ToolbarClickEvent) -> Unit,
+  onClick: (ToolbarClickEvent) -> Unit = {},
 ) {
+  val currentContext = LocalContext.current
+
   // Trigger search automatically on launch if text is not empty
   LaunchedEffect(Unit) {
-    if (searchText.isNotEmpty()) {
-      onSearchTextChanged(searchText)
+    if (!searchQuery.isBlank()) {
+      onSearchTextChanged(searchQuery)
     }
   }
 
@@ -139,6 +154,8 @@ fun TopScreenSection(
       // https://m3.material.io/components/top-app-bar/guidelines#b1b64842-7d88-4c3f-8ffb-4183fe648c9e
       SetupToolbarIcons(topScreenSection?.menuIcons, navController, modifier, onClick)
 
+      if (isFilterIconEnabled) Spacer(modifier = Modifier.width(24.dp))
+
       if (isFilterIconEnabled) {
         BadgedBox(
           modifier = Modifier.padding(end = 8.dp),
@@ -169,8 +186,8 @@ fun TopScreenSection(
     if (isSearchBarVisible) {
       OutlinedTextField(
         colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
-        value = searchText,
-        onValueChange = { onSearchTextChanged(it) },
+        value = searchQuery.query,
+        onValueChange = { onSearchTextChanged(SearchQuery(it, mode = SearchMode.KeyboardInput)) },
         maxLines = 1,
         singleLine = true,
         placeholder = {
@@ -195,17 +212,45 @@ fun TopScreenSection(
           )
         },
         trailingIcon = {
-          if (searchText.isNotEmpty()) {
-            IconButton(
-              onClick = { onSearchTextChanged("") },
-              modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
-            ) {
-              Icon(
-                imageVector = Icons.Filled.Clear,
-                CLEAR,
-                tint = Color.Gray,
-                modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
-              )
+          Box(contentAlignment = Alignment.CenterEnd) {
+            when {
+              !searchQuery.isBlank() -> {
+                IconButton(
+                  onClick = { onSearchTextChanged(SearchQuery.emptyText) },
+                  modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
+                ) {
+                  Icon(
+                    imageVector = Icons.Filled.Clear,
+                    CLEAR,
+                    tint = Color.Gray,
+                    modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
+                  )
+                }
+              }
+              showSearchByQrCode -> {
+                IconButton(
+                  onClick = {
+                    currentContext.getActivity()?.let {
+                      QrCodeScanUtils.scanQrCode(it) { code ->
+                        onSearchTextChanged(
+                          SearchQuery(code ?: "", mode = SearchMode.QrCodeScan),
+                        )
+                      }
+                    }
+                  },
+                  modifier = modifier.testTag(TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG),
+                ) {
+                  Icon(
+                    painter =
+                      painterResource(id = org.smartregister.fhircore.quest.R.drawable.ic_qr_code),
+                    contentDescription =
+                      stringResource(
+                        id = org.smartregister.fhircore.quest.R.string.qr_code,
+                      ),
+                    modifier = modifier.testTag(TRAILING_QR_SCAN_ICON_TEST_TAG),
+                  )
+                }
+              }
             }
           }
         },
@@ -272,13 +317,25 @@ fun RenderMenuIcons(
 fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
   TopScreenSection(
     title = "All Clients",
-    searchText = "Eddy",
+    searchQuery = SearchQuery("Eddy"),
     filteredRecordsCount = 120,
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = true,
     onClick = {},
     isSearchBarVisible = true,
+    topScreenSection =
+      TopScreenSectionConfig(
+        searchBar = null,
+        menuIcons =
+          listOf(
+            ImageProperties(
+              imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_toggle_map_view"),
+              backgroundColor = Color.White.toString(),
+              size = 10,
+            ),
+          ),
+      ),
     navController = rememberNavController(),
   )
 }
@@ -288,7 +345,7 @@ fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
 fun TopScreenSectionWithFilterCountNinetyNinePreview() {
   TopScreenSection(
     title = "All Clients",
-    searchText = "Eddy",
+    searchQuery = SearchQuery("Eddy"),
     filteredRecordsCount = 99,
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
@@ -304,7 +361,7 @@ fun TopScreenSectionWithFilterCountNinetyNinePreview() {
 fun TopScreenSectionNoFilterIconPreview() {
   TopScreenSection(
     title = "All Clients",
-    searchText = "Eddy",
+    searchQuery = SearchQuery("Eddy"),
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = false,
@@ -328,7 +385,7 @@ fun TopScreenSectionNoFilterIconPreview() {
 fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
   TopScreenSection(
     title = "All Clients",
-    searchText = "Eddy",
+    searchQuery = SearchQuery("Eddy"),
     filteredRecordsCount = 120,
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
@@ -353,7 +410,7 @@ fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
 fun TopScreenSectionWithToggleIconPreview() {
   TopScreenSection(
     title = "All Clients",
-    searchText = "Eddy",
+    searchQuery = SearchQuery("Eddy"),
     filteredRecordsCount = 120,
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,

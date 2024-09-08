@@ -59,6 +59,7 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Procedure
@@ -1479,10 +1480,52 @@ class DefaultRepositoryTest : RobolectricTest() {
         )
 
       fhirEngine.create(group1, group2)
-      val resource = defaultRepository.retrieveUniqueIdAssignmentResource(uniqueIdAssignmentConfig)
+      val resource =
+        defaultRepository.retrieveUniqueIdAssignmentResource(uniqueIdAssignmentConfig, emptyMap())
       Assert.assertNotNull(resource)
       Assert.assertTrue(resource is Group)
       Assert.assertEquals("1234", (resource as Group).characteristic[0].valueCodeableConcept.text)
       Assert.assertFalse(resource.characteristic[1].exclude)
+    }
+
+  @Test
+  fun testRetrieveFlattenedSubLocationsShouldReturnCorrectLocations() =
+    runTest(timeout = 120.seconds) {
+      val location1 = Location().apply { id = "loc1" }
+      val location2 =
+        Location().apply {
+          id = "loc2"
+          partOf = location1.asReference()
+        }
+      val location3 =
+        Location().apply {
+          id = "loc3"
+          partOf = location1.asReference()
+        }
+      val location4 =
+        Location().apply {
+          id = "loc4"
+          partOf = location3.asReference()
+        }
+      val location5 =
+        Location().apply {
+          id = "loc5"
+          partOf = location4.asReference()
+        }
+
+      fhirEngine.create(location1, location2, location3, location4, location5, isLocalOnly = true)
+
+      val location1SubLocations =
+        defaultRepository.retrieveFlattenedSubLocations(location1.logicalId)
+      Assert.assertEquals(4, location1SubLocations.size)
+      Assert.assertEquals(location2.logicalId, location1SubLocations[0].logicalId)
+      Assert.assertEquals(location3.logicalId, location1SubLocations[1].logicalId)
+      Assert.assertEquals(location4.logicalId, location1SubLocations[2].logicalId)
+      Assert.assertEquals(location5.logicalId, location1SubLocations[3].logicalId)
+
+      val location4SubLocations =
+        defaultRepository.retrieveFlattenedSubLocations(location4.logicalId)
+      Assert.assertEquals(1, location4SubLocations.size)
+      Assert.assertEquals(location5.logicalId, location4SubLocations.first().logicalId)
     }
 }

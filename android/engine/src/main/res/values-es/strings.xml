@@ -1,0 +1,191 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="manual_sync">Sincronización manual</string>
+    <string name="language">Idioma</string>
+    <string name="logout_as_user">Cerrar sesión como </string>
+    <string name="show_overdue">Mostrar vencido</string>
+    <string name="search_hint">Buscar nombre o ID</string>
+    <string name="search">Buscar nombre</string>
+    <string name="sync_data">Sincronizar datos</string>
+    <string name="scan_bar_code">ESCANEAR CÓDIGO DE BARRAS</string>
+    <string name="empty_client_list_message_title">Sin resultados</string>
+    <string name="empty_client_list_message_details">Lo sentimos, no pudimos encontrar el cliente con su nombre o ID</string>
+    <string name="register_new_client">Registrar nuevo cliente</string>
+    <string name="default_app_title" translatable="false">Aplicación Fhir</string>
+    <string name="app_logo">Logotipo de la aplicación</string>
+    <string name="powered_by">Desarrollado por</string>
+    <string name="app_version">Versión de la aplicación %1$d(%2$s)</string>
+    <string name="data_migration_version">Versión de migración de datos %1$s</string>
+    <string name="last_sync">Última sincronización %1$s</string>
+    <string name="login_text">INICIAR</string>
+    <string name="login_call_fail_error_message">No se pudieron verificar las credenciales del servidor. Comprueba tu conexión a Internet</string>
+    <string name="userinfo_call_fail_error_message">No se pudo obtener información del usuario del servidor. Comprueba tu conexión a Internet</string>
+    <string name="select_language">Seleccionar idioma</string>
+    <string name="logout_user">Cerrar sesión como %1$s</string>
+    <string name="sync_completed">Sincronización completa</string>
+    <string name="syncing">Sincronización</string>
+    <string name="syncing_up">Sincronizando</string>
+    <string name="syncing_down">Sincronizando</string>
+    <string name="syncing_initiated">Sincronización iniciada&#8230;</string>
+    <string name="sync_failed">Error de sincronización. Verifique la conexión a Internet o vuelva a intentarlo más tarde</string>
+    <string name="sync_completed_with_errors"> Sincronización completada con errores. Reintentando…</string>
+    <string name="sync_unauthorised">La sincronización falló porque las credenciales de autenticación no son válidas.</string>
+    <string name="refresh_token_fail_error_message">No se pudieron recuperar las credenciales del servidor. Por favor verifique su conexión a Internet.</string>
+    <string name="try_again">Inténtalo de nuevo</string>
+    <string name="status_vaccinated">Vacunado</string>
+    <string name="status_overdue">Atrasado</string>
+    <string name="status_received_vaccine">Vacuna %1$d \n%2$s</string>
+    <string name="fully_vaccinated">"Completamente vacunado"</string>
+    <string name="already_fully_vaccinated">"No puedo recibir otra dosis. Ya estoy completamente vacunado"</string>
+    <string name="record_vaccine_nl">Registro\nVacuna</string>
+    <string name="date_last_seen">Visto por última vez %1$s</string>
+    <string name="date_last_visited">Última visita %1$s</string>
+    <string name="str_save">Guardar</string>
+    <string name="login_error">Error de inicio de sesión: %1$s</string>
+    <string name="str_next">SIGUIENTE</string>
+    <string name="str_previous">ANTERIOR</string>
+    <string name="str_page_info">Página %1$d de %2$d</string>
+    <string name="search_result">%1$d RESULTADO(S)</string>
+    <string name="no_results">Sin resultados</string>
+    <string name="no_results_message">Lo sentimos, no podemos encontrar a la persona con el nombre o ID proporcionado</string>
+    <string name="male">Hombre</string>
+    <string name="female">Mujer</string>
+    <string name="other">Otro</string>
+    <string name="unknown">Desconocido</string>
+    <string name="syncing_failed">Sincronización fallida</string>
+    <string name="syncing_retry">Reintentar sincronización</string>
+    <string name="syncing_in_progress">Sincronización en curso</string>
+    <string name="loading">Cargando</string>
+    <string name="error_logging_out">Mensaje de error al cerrar sesión: %1$s</string>
+    <string name="cannot_logout_user">No se puede cerrar sesión: ya se ha cerrado sesión o el dispositivo está desconectado.</string>
+    <string name="error_loading_config_http_error">No se pudo cargar la configuración. Inténtalo de nuevo más tarde</string>
+    <string name="error_loading_config_no_internet">No se pudo cargar la configuración. Por favor revisa tu conexión a Internet</string>
+    <string name="error_loading_config_general">Error al conectarse al servidor. Por favor contacte al administrador del sistema</string>
+    <string name="error_loading_form">Error al cargar el formulario</string>
+    <string name="error_saving_form">Error encontrado al no poder guardar el formulario</string>
+    <string name="form_progress_message">Procesando datos. Por favor espera</string>
+    <string name="questionnaire_alert_back_pressed_message">¿Estás seguro de que quieres volver?</string>
+    <string name="questionnaire_in_progress_alert_back_pressed_message">¿Estás seguro de que deseas descartar las respuestas?</string>
+    <string name="questionnaire_alert_back_pressed_title">Descartar cambios</string>
+    <string name="questionnaire_alert_back_pressed_button_title">Descartar</string>
+    <string name="questionnaire_alert_back_pressed_save_draft_button_title">Guardar borrador parcial</string>
+    <string name="questionnaire_alert_neutral_button_title">Cancelar</string>
+    <string name="questionnaire_alert_confirm_button_title">Sí</string>
+    <string name="questionnaire_alert_invalid_message">Los detalles proporcionados tienen errores de validación. Resolver errores y enviar de nuevo</string>
+    <string name="questionnaire_alert_invalid_title">Validación fallida</string>
+    <string name="questionnaire_alert_ack_button_title">Aceptar</string>
+    <string name="username">Nombre de usuario</string>
+    <string name="password">Contraseña</string>
+    <string name="forgot_password">Olvidé mi contraseña</string>
+    <string name="forgot_password_title">¡Olvidé mi contraseña!</string>
+    <string name="more">Más</string>
+    <string name="call_supervisor">Llame a su supervisor al %1$s</string>
+    <string name="cancel" tools:ignore="ButtonCase">CANCEL</string>
+    <string name="dial_number">MARCAR NÚMERO</string>
+    <string name="register">Registrarse</string>
+    <string name="visits">Visitas</string>
+    <string name="reports">Informes</string>
+    <string name="profile">Perfil</string>
+    <string name="settings">Configuración</string>
+    <string name="select_register">Seleccionar registro</string>
+    <string name="tick">Marca</string>
+    <string name="clients">Clientes</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="application_id">ID de aplicación</string>
+    <string name="app_id_sample" translatable="false">por ejemplo, ecbis, quest, cha</string>
+    <string name="load_configurations">CARGAR CONFIGURACIONES</string>
+    <string name="fhir_core_app" translatable="false">APLICACIÓN FHIRCORE</string>
+    <string name="remember_app">Recordar aplicación</string>
+    <string name="done">Listo</string>
+    <string name="replace_photo">Reemplazar foto</string>
+    <string name="take_photo">Tomar foto</string>
+    <string name="edit">Editar</string>
+    <string name="application_not_supported">Error al cargar las configuraciones de la aplicación %1$s</string>
+    <string name="eCBIS_app_name" translatable="false">eCBIS</string>
+    <string name="invalid_login_credentials">el nombre de usuario o la contraseña no son válidos</string>
+    <string name="invalid_form_id">ID de formulario adjunto no válido</string>
+    <string name="no">No</string>
+    <string name="yes">Sí</string>
+    <string name="required_constraint_validation_error_msg">No hay respuesta al campo requerido.</string>
+    <string name="set_pin">Establecer PIN</string>
+    <string name="set_pin_message">CHA utilizará este PIN para iniciar sesión</string>
+    <string name="enter_pin_for_user">Ingrese el PIN para %1$s</string>
+    <string name="incorrect_pin_please_retry">PIN incorrecto, inténtelo de nuevo</string>
+    <string name="pin_menu_login">Iniciar sesión</string>
+    <string name="forgot_pin">¿Olvidaste tu PIN?</string>
+    <string name="please_contact_supervisor">Por favor, póngase en contacto con su supervisor.</string>
+    <string name="percentage" translatable="false">%</string>
+    <string name="logging_out">Cerrar sesión. Por favor espera…</string>
+    <string name="session_expired">La sesión ha caducado y debes iniciar sesión nuevamente</string>
+    <string name="sex">Sexo</string>
+    <string name="age">Edad</string>
+    <string name="dob">fecha de nacimiento</string>
+    <string name="id" translatable="false">ID: %1$s</string>
+    <string name="see_all">VER TODO</string>
+    <string name="forms">FORMULARIOS</string>
+    <string name="medical_history">ANTECEDENTES MÉDICOS</string>
+    <string name="upcoming_services">PRÓXIMOS SERVICIOS</string>
+    <string name="service_card">TARJETA DE SERVICIO</string>
+    <string name="other_patients">Otros pacientes</string>
+    <string name="select_location">Seleccionar ubicación</string>
+    <string name="responses">RESPUESTAS (%1$s)</string>
+    <string name="multi_user_login_attempt">Intenté iniciar sesión con un proveedor diferente</string>
+    <string name="please_wait">Por favor espera…</string>
+    <string name="clear_database">Restablecer datos</string>
+    <string name="transfer_data">Transferir datos</string>
+    <string name="clear_database_title">¡Restablecer base de datos!</string>
+    <string name="clear_database_message">Restablecer la base de datos borrará todos los registros de su dispositivo. Esta acción no se puede deshacer.</string>
+    <string name="resetting_app">Restableciendo aplicación…</string>
+    <string name="sync_strategy_careteam_system" translatable="false">https://smartregister.org/care-team-tag-id</string>
+    <string name="sync_strategy_location_system" translatable="false">https://smartregister.org/location-tag-id</string>
+    <string name="sync_strategy_organization_system" translatable="false">https://smartregister.org/organization-tag-id</string>
+    <string name="sync_strategy_practitioner_system" translatable="false">https://smartregister.org/practitioner-tag-id</string>
+    <string name="sync_strategy_related_entity_location_system" translatable="false">https://smartregister.org/ related-entity-location-tag-id</string>
+    <string name="sync_strategy_related_entity_location_display" translatable="false">Ubicación de entidad relacionada</string>
+    <string name="sync_strategy_careteam_display" translatable="false">Equipo de atención de profesionales</string>
+    <string name="sync_strategy_location_display" translatable="false">Ubicación del practicante</string>
+    <string name="sync_strategy_organization_display" translatable="false">Organización profesional</string>
+    <string name="sync_strategy_practitioner_display" translatable="false">Practicante</string>
+    <string name="year">Año</string>
+    <string name="month">Mes</string>
+    <string name="weeks">Semana(s)</string>
+    <string name="days">Días(s)</string>
+    <string name="initializing">Inicializando configuración &#8230;</string>
+    <string name="username_sample" translatable="false">por ejemplo, JohnDoe</string>
+    <string name="percentage_progress" translatable="false">%1$d%%</string>
+    <string name="error_occurred">Algo salió mal…</string>
+    <string name="insights">Perspectivas</string>
+    <string name="contact_help">"Contactar con ayuda"</string>
+    <string name="offline_map">"Mapas sin conexión"</string>
+    <string name="dismiss">Descartar</string>
+    <string name="user_info">Información del usuario</string>
+    <string name="assignment_info">Información de la tarea</string>
+    <string name="app_info">Información de la aplicación</string>
+    <string name="device_info">Información del dispositivo</string>
+    <string name="refresh">Actualizar</string>
+    <string name="unsynced_resources">Recursos no sincronizados</string>
+    <string name="all_resources_synced">Todos los recursos sincronizados</string>
+    <string name="synced_statistics">Estadísticas sincronizadas</string>
+    <string name="all_data_synced">Todos los datos sincronizados</string>
+    <string name="invalid_offline_login_state">Se requiere configuración de usuario. Habilite su conexión a Internet </string>
+    <string name="select_month">Seleccionar mes</string>
+    <string name="user">Usuario</string>
+    <string name="team">Equipo</string>
+    <string name="locality">Localidad</string>
+    <string name="team_organization">Equipo(Organización)</string>
+    <string name="care_team">Equipo de atención</string>
+    <string name="location">Ubicación</string>
+    <string name="app_version_code">Código de versión de la aplicación</string>
+    <string name="build_date">Fecha de compilación</string>
+    <string name="manufacture">Fabricante</string>
+    <string name="app_versions">Versión de la aplicación</string>
+    <string name="os_version">Versión del sistema operativo</string>
+    <string name="device_date">Fecha</string>
+    <string name="device">Dispositivo</string>
+    <string name="ok">OK</string>
+    <string name="add">AÑADIR</string>
+    <string name="data_migration_started">Migración de datos iniciada desde la versión %1$d</string>
+    <string name="data_migration_completed">Datos de la aplicación migrados a la versión %1$d</string>
+    <string name="help">Ayuda</string>
+    <string name="no_data">Sin conjunto de datos</string>
+    <string name="default_html_title">archivo</string>
+</resources>

@@ -29,7 +29,9 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -37,12 +39,14 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.SettingsOptions
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.countUnSyncedResources
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
@@ -50,7 +54,6 @@ import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBack
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.fhircore.engine.util.extension.spaceByUppercase
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
@@ -70,6 +73,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val workManager: WorkManager,
   val dispatcherProvider: DispatcherProvider,
+  private val preferenceDataStore: PreferenceDataStore,
 ) : ViewModel() {
 
   val languages by lazy { configurationRegistry.fetchLanguages() }
@@ -101,6 +105,10 @@ constructor(
     sharedPreferencesHelper.read(SharedPreferenceKey.ORGANIZATION.name, null)
 
   fun retrieveCareTeam() = sharedPreferencesHelper.read(SharedPreferenceKey.CARE_TEAM.name, null)
+
+  fun retrieveDataMigrationVersion(): String = runBlocking {
+    (preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).firstOrNull() ?: 0).toString()
+  }
 
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
@@ -200,14 +208,7 @@ constructor(
     viewModelScope.launch {
       withContext(dispatcherProvider.io()) {
         showProgressIndicatorFlow.emit(true)
-        val unsyncedResources =
-          fhirEngine
-            .getUnsyncedLocalChanges()
-            .distinctBy { it.resourceId }
-            .groupingBy { it.resourceType.spaceByUppercase() }
-            .eachCount()
-            .map { it.key to it.value }
-
+        val unsyncedResources = fhirEngine.countUnSyncedResources()
         showProgressIndicatorFlow.emit(false)
         unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
       }

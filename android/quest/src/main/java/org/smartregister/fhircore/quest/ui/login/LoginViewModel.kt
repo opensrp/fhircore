@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.login
 
 import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -32,9 +33,9 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -50,9 +51,11 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.clearPasswordInMemory
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.model.location.LocationHierarchy
@@ -124,7 +127,7 @@ constructor(
       val passwordAsCharArray = password.value!!.trim().toCharArray()
 
       viewModelScope.launch(dispatcherProvider.io()) {
-        if (context.getActivity()!!.isDeviceOnline()) {
+        if (context.getActivity()?.isDeviceOnline() == true) {
           fetchToken(
             username = trimmedUsername,
             password = passwordAsCharArray,
@@ -179,9 +182,14 @@ constructor(
     }
   }
 
-  fun forgotPassword() {
-    // TODO load supervisor contact e.g.
-    _launchDialPad.value = "tel:0123456789"
+  fun forgotPassword(context: Context) {
+    val formattedNumber =
+      applicationConfiguration.loginConfig.supervisorContactNumber.formatPhoneNumber(context)
+    if (!formattedNumber.isNullOrBlank()) {
+      _launchDialPad.value = formattedNumber
+    } else {
+      context.showToast(context.getString(R.string.missing_supervisor_contact), Toast.LENGTH_LONG)
+    }
   }
 
   fun updateNavigateHome(navigateHome: Boolean = true) {
@@ -305,7 +313,6 @@ constructor(
     viewModelScope.launch {
       bundle.entry.forEach { entry ->
         val practitionerDetails = entry.resource as PractitionerDetails
-
         val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
         val organizations = practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()
         val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
@@ -316,42 +323,33 @@ constructor(
           practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
 
         val careTeamIds =
-          withContext(dispatcherProvider.io()) {
-            defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
-              careTeams.map { it.id.extractLogicalIdUuid() }
-            }
+          defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
+            careTeams.map { it.id.extractLogicalIdUuid() }
           }
+
         val organizationIds =
-          withContext(dispatcherProvider.io()) {
-            defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
-              organizations.map { it.id.extractLogicalIdUuid() }
-            }
+          defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
+            organizations.map { it.id.extractLogicalIdUuid() }
           }
+
         val locationIds =
-          withContext(dispatcherProvider.io()) {
-            defaultRepository.createRemote(false, *locations.toTypedArray()).run {
-              locations.map { it.id.extractLogicalIdUuid() }
-            }
+          defaultRepository.createRemote(false, *locations.toTypedArray()).run {
+            locations.map { it.id.extractLogicalIdUuid() }
           }
 
         val location =
-          withContext(dispatcherProvider.io()) {
-            defaultRepository.createRemote(false, *locations.toTypedArray()).run {
-              locations.map { it.name }
-            }
+          defaultRepository.createRemote(false, *locations.toTypedArray()).run {
+            locations.map { it.name }
           }
 
         val careTeam =
-          withContext(dispatcherProvider.io()) {
-            defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
-              careTeams.map { it.name }
-            }
+          defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
+            careTeams.map { it.name }
           }
+
         val organization =
-          withContext(dispatcherProvider.io()) {
-            defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
-              organizations.map { it.name }
-            }
+          defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
+            organizations.map { it.name }
           }
 
         defaultRepository.createRemote(false, *practitioners.toTypedArray())

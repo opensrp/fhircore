@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.launcher
+package org.smartregister.fhircore.quest.ui.geowidget
 
 import android.view.View
 import android.widget.FrameLayout
@@ -37,7 +37,11 @@ import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
+import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
+import org.smartregister.fhircore.quest.ui.shared.components.SyncBottomBar
+import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 @Composable
@@ -49,8 +53,11 @@ fun GeoWidgetLauncherScreen(
   fragmentManager: FragmentManager,
   geoWidgetFragment: Fragment,
   geoWidgetConfiguration: GeoWidgetConfiguration,
-  searchText: MutableState<String>,
+  searchQuery: MutableState<SearchQuery>,
   search: (String) -> Unit,
+  isFirstTimeSync: Boolean,
+  appDrawerUIState: AppDrawerUIState,
+  onAppMainEvent: (AppMainEvent) -> Unit,
 ) {
   val context = LocalContext.current
   Scaffold(
@@ -58,15 +65,17 @@ fun GeoWidgetLauncherScreen(
       Column {
         TopScreenSection(
           title = geoWidgetConfiguration.topScreenSection?.title ?: "",
-          searchText = searchText.value,
+          searchQuery = searchQuery.value,
           isSearchBarVisible = geoWidgetConfiguration.topScreenSection?.searchBar?.visible ?: true,
           searchPlaceholder = geoWidgetConfiguration.topScreenSection?.searchBar?.display,
+          showSearchByQrCode =
+            geoWidgetConfiguration.topScreenSection?.searchBar?.searchByQrCode ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
-          onSearchTextChanged = { text ->
-            searchText.value = text
+          onSearchTextChanged = { searchedQuery: SearchQuery ->
+            searchQuery.value = searchedQuery
             val computedRules = geoWidgetConfiguration.topScreenSection?.searchBar?.computedRules
             if (!computedRules.isNullOrEmpty()) {
-              search(searchText.value)
+              search(searchQuery.value.query)
             } else {
               context.showToast(context.getString(R.string.no_search_coonfigs_provided))
             }
@@ -87,6 +96,14 @@ fun GeoWidgetLauncherScreen(
           }
         }
       }
+    },
+    bottomBar = {
+      SyncBottomBar(
+        isFirstTimeSync = isFirstTimeSync,
+        appDrawerUIState = appDrawerUIState,
+        onAppMainEvent = onAppMainEvent,
+        openDrawer = openDrawer,
+      )
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {

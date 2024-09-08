@@ -25,4 +25,13 @@
     <color name="backgroundGray">#f2f5f6</color>
     <color name="status_gray">#9e9b9b</color>
     <color name="background_warning">#FFECD6</color>
+
+    <color name="background_neutral_100">#FFFFFF</color>
+    <color name="onBackground_neutral_10">#1F1F1F</color>
+
+    <color name="surface_neutral_100">#FFFFFF</color>
+    <color name="onSurface_neutral_10">#1F1F1F</color>
+
+    <color name="surfaceVariant_neutral_variant_90">#E1E3E1</color>
+    <color name="onSurfaceVariant_neutral_variant_30">#444746</color>
 </resources>

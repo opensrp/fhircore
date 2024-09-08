@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.launcher
+package org.smartregister.fhircore.quest.ui.geowidget
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -41,6 +41,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.flow.launchIn
@@ -52,10 +55,11 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
+import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
@@ -70,6 +74,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.ui.shared.viewmodels.SearchViewModel
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
@@ -77,13 +82,14 @@ import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 import timber.log.Timber
 
 @AndroidEntryPoint
-class GeoWidgetLauncherFragment : Fragment() {
+class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   @Inject lateinit var eventBus: EventBus
 
+  @Inject lateinit var syncListenerManager: SyncListenerManager
+
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
-  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
   private lateinit var geoWidgetFragment: GeoWidgetFragment
   private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
   private val navArgs by navArgs<GeoWidgetLauncherFragmentArgs>()
@@ -106,6 +112,7 @@ class GeoWidgetLauncherFragment : Fragment() {
         val coroutineScope = rememberCoroutineScope()
         val scaffoldState = rememberScaffoldState()
         val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
+        val appDrawerUIState = appMainViewModel.appDrawerUiState.value
         val openDrawer: (Boolean) -> Unit = { open: Boolean ->
           coroutineScope.launch {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
@@ -133,14 +140,17 @@ class GeoWidgetLauncherFragment : Fragment() {
             drawerContent = {
               AppDrawer(
                 appUiState = uiState,
+                appDrawerUIState = appDrawerUIState,
                 openDrawer = openDrawer,
                 onSideMenuClick = {
                   if (it is AppMainEvent.TriggerWorkflow) {
-                    searchViewModel.searchText.value = ""
+                    searchViewModel.searchQuery.value = SearchQuery.emptyText
                   }
                   appMainViewModel.onEvent(it)
                 },
                 navController = findNavController(),
+                unSyncedResourceCount = appMainViewModel.unSyncedResourcesCount,
+                onCountUnSyncedResources = appMainViewModel::updateUnSyncedResourcesCount,
               )
             },
             snackbarHost = { snackBarHostState ->
@@ -162,7 +172,7 @@ class GeoWidgetLauncherFragment : Fragment() {
                 fragmentManager = childFragmentManager,
                 geoWidgetFragment = fragment,
                 geoWidgetConfiguration = geoWidgetConfiguration,
-                searchText = searchViewModel.searchText,
+                searchQuery = searchViewModel.searchQuery,
                 search = { searchText ->
                   coroutineScope.launch {
                     val geoJsonFeatures =
@@ -182,6 +192,9 @@ class GeoWidgetLauncherFragment : Fragment() {
                     }
                   }
                 },
+                isFirstTimeSync = geoWidgetLauncherViewModel.isFirstTime(),
+                appDrawerUIState = appDrawerUIState,
+                onAppMainEvent = appMainViewModel::onEvent,
               )
             }
           }
@@ -190,16 +203,51 @@ class GeoWidgetLauncherFragment : Fragment() {
     }
   }
 
+  override fun onResume() {
+    super.onResume()
+    syncListenerManager.registerSyncListener(this, lifecycle)
+  }
+
+  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
+    when (syncJobStatus) {
+      is CurrentSyncJobStatus.Running -> {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
+          val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
+          val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+          val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
+          appMainViewModel.updateAppDrawerUIState(
+            isSyncUpload = isSyncUpload,
+            currentSyncJobStatus = syncJobStatus,
+            percentageProgress = progressPercentage,
+          )
+        }
+      }
+      is CurrentSyncJobStatus.Succeeded,
+      is CurrentSyncJobStatus.Failed, -> {
+        lifecycleScope.launch {
+          val geoJsonFeatures =
+            geoWidgetLauncherViewModel.retrieveLocations(
+              geoWidgetConfig = geoWidgetConfiguration,
+              searchText = searchViewModel.searchQuery.value.query,
+            )
+          geoWidgetViewModel.features.postValue(geoJsonFeatures)
+        }
+        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+      }
+      else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+    }
+  }
+
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     showSetLocationDialog()
-    lifecycleScope.launch(dispatcherProvider.io()) {
+    lifecycleScope.launch {
       // Retrieve if searchText is null; filter will be triggered automatically if text is not empty
-      if (searchViewModel.searchText.value.isEmpty()) {
+      if (searchViewModel.searchQuery.value.isBlank()) {
         val geoJsonFeatures =
           geoWidgetLauncherViewModel.retrieveLocations(
             geoWidgetConfig = geoWidgetConfiguration,
-            searchText = searchViewModel.searchText.value,
+            searchText = searchViewModel.searchQuery.value.query,
           )
         if (geoJsonFeatures.isNotEmpty()) {
           geoWidgetViewModel.features.postValue(geoJsonFeatures)
@@ -214,6 +262,16 @@ class GeoWidgetLauncherFragment : Fragment() {
         geoWidgetViewModel.features.postValue(geoWidgetViewModel.features.value?.plus(it))
       }
     }
+  }
+
+  override fun onPause() {
+    super.onPause()
+    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+  }
+
+  override fun onDestroy() {
+    super.onDestroy()
+    appMainViewModel.updateAppDrawerUIState(false, null, 0)
   }
 
   private fun buildGeoWidgetFragment() {

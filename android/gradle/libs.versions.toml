@@ -2,8 +2,9 @@
 accompanist = "0.23.1"
 activity-compose = "1.8.2"
 androidJunit5 = "1.8.2.1"
+androidx-camera = "1.4.0-rc01"
 androidx-paging = "3.3.0"
-androidx-test= "1.6.1"
+androidx-test = "1.6.1"
 appcompat = "1.7.0"
 benchmark-junit = "1.2.4"
 cardview = "1.0.0"
@@ -27,7 +28,7 @@ fhir-common-utils = "1.0.0-SNAPSHOT"
 fhir-sdk-contrib-barcode = "0.1.0-beta3-preview7-SNAPSHOT"
 fhir-sdk-contrib-locationwidget = "0.1.0-alpha01-preview2-SNAPSHOT"
 fhir-sdk-data-capture = "1.1.0-preview12-SNAPSHOT"
-fhir-sdk-engine = "1.0.0-preview11-SNAPSHOT"
+fhir-sdk-engine = "1.0.0-preview11.3-SNAPSHOT"
 fhir-sdk-knowledge = "0.1.0-alpha03-preview5-SNAPSHOT"
 fhir-sdk-workflow = "0.1.0-alpha04-preview10-SNAPSHOT"
 foundation = "1.6.8"
@@ -43,7 +44,7 @@ joda-time = "2.10.14"
 json = "20230618"
 jsonPath = "2.8.0"
 junit = "1.2.1"
-junit-jupiter = "5.9.3"
+junit-jupiter = "5.10.3"
 junit-ktx = "1.2.1"
 kotlin = "1.9.22"
 kotlin-serialization = "1.8.10"
@@ -51,11 +52,12 @@ kotlinx-coroutines = "1.8.1"
 kotlinx-serialization-json = "1.6.0"
 kt3k-coveralls-ver="2.12.0"
 ktlint = "0.50.0"
-kujaku-library = "0.10.2-SNAPSHOT"
+kujaku-library = "0.10.5-SNAPSHOT"
 leakcanary-android = "2.10"
 lifecycle= "2.8.3"
 mapbox-sdk-turf = "4.8.0"
 material = "1.12.0"
+mlkit-barcode-scanning = "17.3.0"
 mockk = "1.13.8"
 mockk-android = "1.13.8"
 msg-simple = "1.2"
@@ -64,7 +66,7 @@ okhttp = "4.12.0"
 okhttp-logging-interceptor = "4.12.0"
 orchestrator = "1.5.0"
 owasp = "8.2.1"
-p2p-lib = "0.6.9-SNAPSHOT"
+p2p-lib = "0.6.10-SNAPSHOT"
 playServicesLocation = "21.3.0"
 playServicesTasks = "18.2.0"
 preference-ktx = "1.2.1"
@@ -88,6 +90,11 @@ xercesImpl = "2.12.2"
 accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist" }
 accompanist-placeholder = { group = "com.google.accompanist", name = "accompanist-placeholder", version.ref = "accompanist" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
+androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "androidx-camera"}
+androidx-camera-extensions = { group = "androidx.camera", name = "camera-extensions", version.ref = "androidx-camera"}
+androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "androidx-camera"}
+androidx-camera-mlkit-vision = {group = "androidx.camera", name = "camera-mlkit-vision", version.ref = "androidx-camera"}
+androidx-camera-view = {group = "androidx.camera", name = "camera-view", version.ref = "androidx-camera"}
 activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity-compose" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 benchmark-junit = { group = "androidx.benchmark", name = "benchmark-junit4", version.ref = "benchmark-junit" }
@@ -154,6 +161,7 @@ lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 mapbox-sdk-turf = { group = "com.mapbox.mapboxsdk", name = "mapbox-sdk-turf", version.ref = "mapbox-sdk-turf" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+mlkit-barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "mlkit-barcode-scanning"}
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk-android" }
 msg-simple = { group = "com.github.java-json-tools", name = "msg-simple", version.ref = "msg-simple" }
@@ -206,6 +214,7 @@ org-owasp-dependencycheck = { id = "org.owasp.dependencycheck", version.ref = "o
 
 [bundles]
 accompanist = ["accompanist-placeholder", "accompanist-flowlayout"]
+cameraX = ["androidx-camera-camera2", "androidx-camera-extensions", "androidx-camera-lifecycle", "androidx-camera-mlkit-vision", "androidx-camera-view"]
 compose = ["activity-compose","activity-ktx", "ui", "ui-tooling-preview", "constraintlayout-compose", "foundation","runtime-livedata"]
 compose-ui-test = ["ui-test-junit4","ui-test-manifest"]
 coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
