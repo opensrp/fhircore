@@ -28,9 +28,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.MeasureReport
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
@@ -151,10 +149,7 @@ constructor(
   ): MeasureReport {
     return withContext(dispatcherProvider.io()) {
       fhirOperator.evaluateMeasure(
-        measure =
-          knowledgeManager
-            .loadResources(ResourceType.Measure.name, measureUrl, null, null, null)
-            .firstOrNull() as Measure,
+        measureUrl = measureUrl,
         start = startDateFormatted,
         end = endDateFormatted,
         reportType = reportType,
