@@ -38,6 +38,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Task
@@ -280,5 +281,23 @@ class FhirResourceUtilTest : RobolectricTest() {
     coVerify(inverse = true) { defaultRepository.update(task) }
 
     assertEquals(TaskStatus.REQUESTED, task.status)
+  }
+
+  @Test
+  fun testCloseCustomResources() {
+    val encounter =
+      Encounter().apply {
+        id = "test-Encounter"
+        period = Period().apply { start = Date().plusDays(-2) }
+        status = Encounter.EncounterStatus.INPROGRESS
+      }
+
+    runBlocking { fhirEngine.create(encounter) }
+
+    coEvery { defaultRepository.update(any()) } just runs
+
+    assertEquals(Encounter.EncounterStatus.INPROGRESS, encounter.status)
+
+    runBlocking { fhirResourceUtil.closeCustomResources() }
   }
 }
