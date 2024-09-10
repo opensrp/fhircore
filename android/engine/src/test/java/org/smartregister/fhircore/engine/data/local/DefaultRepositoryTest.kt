@@ -965,7 +965,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     fhirEngine.create(encounter)
     defaultRepository.updateResourcesRecursively(
       resourceConfig = eventWorkflow.eventResources[0],
-      eventWorkflow = eventWorkflow
+      eventWorkflow = eventWorkflow,
     )
     val resourceSlot = slot<Encounter>()
     val captured = resourceSlot.captured
