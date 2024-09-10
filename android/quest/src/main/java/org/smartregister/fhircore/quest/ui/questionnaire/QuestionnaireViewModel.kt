@@ -62,6 +62,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComp
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -70,6 +71,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.CodingSystemUsage
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.ContentCache
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.isEditable
@@ -149,7 +151,21 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
-    return defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)
+    var result =
+      ContentCache.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id)
+        ?.copy()
+    if (result == null) {
+      result =
+        defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also { questionnaire,
+          ->
+          ContentCache.saveResource(
+            questionnaireConfig.id,
+            questionnaire.copy(),
+          )
+        }
+    }
+
+    return result as Questionnaire
   }
 
   /**
@@ -639,8 +655,15 @@ constructor(
               StructureMapExtractionContext(
                 transformSupportServices = transformSupportServices,
                 structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
-                  structureMapUrl?.substringAfterLast("/")?.let {
-                    defaultRepository.loadResource(it)
+                  structureMapUrl?.substringAfterLast("/")?.let { smID ->
+                    ContentCache.getResource(ResourceType.StructureMap.name + "/" + smID)?.let {
+                      it as StructureMap
+                    }
+                      ?: run {
+                        defaultRepository.loadResource<StructureMap>(smID)?.also {
+                          ContentCache.saveResource(smID, it)
+                        }
+                      }
                   }
                 },
               ),
