@@ -24,6 +24,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.util.extension.decodeJson
@@ -71,15 +74,21 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
       .getString(SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name, null)
       ?.decodeJson<AuthCredentials>()
 
-  fun saveSessionPin(pin: CharArray) {
+  suspend fun saveSessionPin(pin: CharArray, onSavedPin: () -> Unit) {
     val randomSaltBytes = get256RandomBytes()
     secureSharedPreferences.edit {
       putString(
         SharedPreferenceKey.LOGIN_PIN_SALT.name,
         Base64.getEncoder().encodeToString(randomSaltBytes),
       )
-      putString(SharedPreferenceKey.LOGIN_PIN_KEY.name, pin.toPasswordHash(randomSaltBytes))
+      putString(
+        SharedPreferenceKey.LOGIN_PIN_KEY.name,
+        coroutineScope {
+          async(Dispatchers.Default) { pin.toPasswordHash(randomSaltBytes) }.await()
+        },
+      )
     }
+    onSavedPin()
   }
 
   @VisibleForTesting fun get256RandomBytes() = 256.getRandomBytesOfSize()

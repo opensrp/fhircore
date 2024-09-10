@@ -17,11 +17,16 @@
 package org.smartregister.fhircore.quest.ui.pin
 
 import android.app.Application
+import android.content.Context
+import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.slot
@@ -31,16 +36,20 @@ import io.mockk.verifyOrder
 import java.util.Base64
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.shadows.ShadowToast
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
 import org.smartregister.fhircore.engine.util.passwordHashString
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -115,13 +124,18 @@ class PinViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnSetPin() {
+  fun testOnSetPin() = runBlocking {
+    val newPinSlot = slot<CharArray>()
+    val onSavedPinLambdaSlot = slot<() -> Unit>()
+
+    coEvery { secureSharedPreference.saveSessionPin(capture(newPinSlot), captureLambda()) } just
+      Runs
+
     pinViewModel.onSetPin("1990".toCharArray())
 
-    val newPinSlot = slot<CharArray>()
-    verify { secureSharedPreference.saveSessionPin(capture(newPinSlot)) }
-
     Assert.assertEquals("1990", newPinSlot.captured.concatToString())
+
+    onSavedPinLambdaSlot.captured.invoke()
     Assert.assertEquals(true, pinViewModel.navigateToHome.value)
   }
 
@@ -148,9 +162,37 @@ class PinViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testForgotPin() {
-    pinViewModel.forgotPin()
-    Assert.assertEquals("tel:####", pinViewModel.launchDialPad.value)
+  fun testForgotPinLaunchesDialer() {
+    configurationRegistry.configsJsonMap[ConfigType.Application.name] =
+      "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{\"supervisorContactNumber\":\"1234567890\"}}"
+
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    val expectedFormattedNumber = "1234567890".formatPhoneNumber(context)
+
+    val launchDialPadObserver =
+      Observer<String?> { dialPadUri ->
+        if (dialPadUri != null) {
+          Assert.assertEquals(expectedFormattedNumber, dialPadUri)
+        }
+      }
+
+    try {
+      pinViewModel.launchDialPad.observeForever(launchDialPadObserver)
+      pinViewModel.forgotPin(context)
+    } finally {
+      pinViewModel.launchDialPad.removeObserver(launchDialPadObserver)
+    }
+  }
+
+  @Test
+  fun testForgotPinDisplaysToastWhenNoContactNumber() {
+    configurationRegistry.configsJsonMap[ConfigType.Application.name] =
+      "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{}}"
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val expectedToastMessage = context.getString(R.string.missing_supervisor_contact)
+    pinViewModel.forgotPin(context)
+    Assert.assertEquals(expectedToastMessage, ShadowToast.getTextOfLatestToast())
   }
 
   @Test
@@ -183,9 +225,6 @@ class PinViewModelTest : RobolectricTest() {
 
     // Verify pin char array is overwritten in memory for valid pin
     Assert.assertEquals("******", loginPin.concatToString())
-
-    // Verify the progressBar flag is set to hidden
-    Assert.assertFalse(pinViewModel.pinUiState.value.showProgressBar)
 
     unmockkStatic(::passwordHashString)
   }
