@@ -602,7 +602,7 @@ constructor(
        */
       try {
         if (resource is MetadataResource && resource.name != null) {
-          knowledgeManager.install(
+          knowledgeManager.index(
             writeToFile(resource.overwriteCanonicalURL()),
           )
         }
@@ -627,9 +627,14 @@ constructor(
         resource.idElement.idPart
       }
 
-    return File(context.filesDir, "$fileName.json").apply {
-      writeText(jsonParser.encodeResourceToString(resource))
-    }
+    return File(
+        context.filesDir,
+        "$KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER/${resource.resourceType}/$fileName.json",
+      )
+      .apply {
+        this.parentFile?.mkdirs()
+        writeText(jsonParser.encodeResourceToString(resource))
+      }
   }
 
   /**
@@ -821,6 +826,7 @@ constructor(
     const val PAGINATION_NEXT = "next"
     const val RESOURCES_PATH = "resources/"
     const val SYNC_LOCATION_IDS = "_syncLocations"
+    const val KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER = "km"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.

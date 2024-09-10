@@ -95,7 +95,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.formatDate
@@ -126,19 +125,16 @@ class DefaultRepositoryTest : RobolectricTest() {
   private val application = ApplicationProvider.getApplicationContext<Application>()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
-  private lateinit var dispatcherProvider: DefaultDispatcherProvider
   private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var defaultRepository: DefaultRepository
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    dispatcherProvider = DefaultDispatcherProvider()
     sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
         configService = configService,
@@ -551,7 +547,6 @@ class DefaultRepositoryTest : RobolectricTest() {
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
@@ -629,7 +624,6 @@ class DefaultRepositoryTest : RobolectricTest() {
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),

@@ -28,9 +28,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.MeasureReport
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
@@ -47,7 +45,6 @@ class MeasureReportRepository
 @Inject
 constructor(
   override val fhirEngine: FhirEngine,
-  override val dispatcherProvider: DispatcherProvider,
   override val sharedPreferencesHelper: SharedPreferencesHelper,
   override val configurationRegistry: ConfigurationRegistry,
   override val configService: ConfigService,
@@ -57,10 +54,10 @@ constructor(
   override val fhirPathDataExtractor: FhirPathDataExtractor,
   override val parser: IParser,
   @ApplicationContext override val context: Context,
+  val dispatcherProvider: DispatcherProvider,
 ) :
   DefaultRepository(
     fhirEngine = fhirEngine,
-    dispatcherProvider = dispatcherProvider,
     sharedPreferencesHelper = sharedPreferencesHelper,
     configurationRegistry = configurationRegistry,
     configService = configService,
@@ -91,31 +88,29 @@ constructor(
   ): List<MeasureReport> {
     val measureReport = mutableListOf<MeasureReport>()
     try {
-      withContext(dispatcherProvider.io()) {
-        if (subjects.isNotEmpty()) {
-          subjects
-            .map {
-              runMeasureReport(
-                measureUrl = measureUrl,
-                reportType = MeasureReportViewModel.SUBJECT,
-                startDateFormatted = startDateFormatted,
-                endDateFormatted = endDateFormatted,
-                subject = it,
-                practitionerId = practitionerId,
-              )
-            }
-            .forEach { subject -> measureReport.add(subject) }
-        } else {
-          runMeasureReport(
+      if (subjects.isNotEmpty()) {
+        subjects
+          .map {
+            runMeasureReport(
               measureUrl = measureUrl,
-              reportType = MeasureReportViewModel.POPULATION,
+              reportType = MeasureReportViewModel.SUBJECT,
               startDateFormatted = startDateFormatted,
               endDateFormatted = endDateFormatted,
-              subject = null,
+              subject = it,
               practitionerId = practitionerId,
             )
-            .also { measureReport.add(it) }
-        }
+          }
+          .forEach { subject -> measureReport.add(subject) }
+      } else {
+        runMeasureReport(
+            measureUrl = measureUrl,
+            reportType = MeasureReportViewModel.POPULATION,
+            startDateFormatted = startDateFormatted,
+            endDateFormatted = endDateFormatted,
+            subject = null,
+            practitionerId = practitionerId,
+          )
+          .also { measureReport.add(it) }
       }
 
       measureReport.forEach { report ->
@@ -152,17 +147,16 @@ constructor(
     subject: String?,
     practitionerId: String?,
   ): MeasureReport {
-    return fhirOperator.evaluateMeasure(
-      measure =
-        knowledgeManager
-          .loadResources(ResourceType.Measure.name, measureUrl, null, null, null)
-          .firstOrNull() as Measure,
-      start = startDateFormatted,
-      end = endDateFormatted,
-      reportType = reportType,
-      subjectId = subject,
-      practitioner = practitionerId.takeIf { it?.isNotBlank() == true },
-    )
+    return withContext(dispatcherProvider.io()) {
+      fhirOperator.evaluateMeasure(
+        measureUrl = measureUrl,
+        start = startDateFormatted,
+        end = endDateFormatted,
+        reportType = reportType,
+        subjectId = subject,
+        practitioner = practitionerId.takeIf { it?.isNotBlank() == true },
+      )
+    }
   }
 
   /**
