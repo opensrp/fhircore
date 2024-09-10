@@ -25,6 +25,8 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.knowledge.KnowledgeManager
+import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -37,6 +39,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.MeasureReport
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -67,6 +70,7 @@ constructor(
   val dispatcherProvider: DefaultDispatcherProvider,
   val fhirOperator: FhirOperator,
   val fhirEngine: FhirEngine,
+  private val knowledgeManager: KnowledgeManager,
   val workManager: WorkManager,
 ) : CoroutineWorker(appContext, workerParams) {
 
@@ -127,8 +131,11 @@ constructor(
     val measureReport: MeasureReport? =
       withContext(dispatcherProvider.io()) {
         try {
+          val measureUrlResources: Iterable<IBaseResource> =
+            knowledgeManager.loadResources(measureUrl)
+
           fhirOperator.evaluateMeasure(
-            measureUrl = measureUrl,
+            measure = measureUrlResources.first() as Measure,
             start = startDateFormatted,
             end = endDateFormatted,
             reportType = MeasureReportViewModel.POPULATION,

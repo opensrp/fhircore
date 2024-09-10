@@ -27,7 +27,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.exceptions.FHIRException
+import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.MeasureReport
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -148,8 +150,10 @@ constructor(
     practitionerId: String?,
   ): MeasureReport {
     return withContext(dispatcherProvider.io()) {
+      val measureUrlResources: Iterable<IBaseResource> = knowledgeManager.loadResources(measureUrl)
+
       fhirOperator.evaluateMeasure(
-        measureUrl = measureUrl,
+        measure = measureUrlResources.first() as Measure,
         start = startDateFormatted,
         end = endDateFormatted,
         reportType = reportType,
