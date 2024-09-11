@@ -39,7 +39,7 @@ data class RegisterConfiguration(
   val registerCard: RegisterCardConfig = RegisterCardConfig(),
   val fabActions: List<NavigationMenuConfig> = emptyList(),
   val noResults: NoResultsConfig? = null,
-  val pageSize: Int = 50,
+  val pageSize: Int = 15,
   val activeResourceFilters: List<ActiveResourceFilterConfig> =
     listOf(
       ActiveResourceFilterConfig(resourceType = ResourceType.Patient, active = true),
