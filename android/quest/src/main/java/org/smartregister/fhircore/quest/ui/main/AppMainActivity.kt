@@ -24,6 +24,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -51,6 +52,8 @@ import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.parcelable
@@ -152,6 +155,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       }
 
       setupLocationServices()
+      overrideOnBAckPressListener()
 
       findViewById<View>(R.id.mainScreenProgressBar).apply { visibility = View.GONE }
       findViewById<View>(R.id.mainScreenProgressBarText).apply { visibility = View.GONE }
@@ -297,5 +301,29 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         // Do Nothing
       }
     }
+  }
+
+  private fun overrideOnBAckPressListener() {
+    onBackPressedDispatcher.addCallback(
+      object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+          val title =
+            appMainViewModel.applicationConfiguration.appExitDialog?.title
+              ?: getString(R.string.exit_app)
+          val message =
+            appMainViewModel.applicationConfiguration.appExitDialog?.message
+              ?: getString(R.string.exit_app_message)
+          AlertDialogue.showAlert(
+            this@AppMainActivity,
+            alertIntent = AlertIntent.CONFIRM,
+            title = title,
+            message = message,
+            cancellable = false,
+            confirmButtonListener = { finish() },
+            neutralButtonListener = { dialog -> dialog.dismiss() },
+          )
+        }
+      },
+    )
   }
 }
