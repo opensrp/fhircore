@@ -19,11 +19,13 @@ package org.smartregister.fhircore.engine.data.local.register
 import android.content.Context
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -39,8 +41,10 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationIds
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
+import javax.inject.Inject
 
 class RegisterRepository
 @Inject
@@ -98,6 +102,51 @@ constructor(
     val baseResourceConfig = fhirResource.baseResource
     val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
     val filterByRelatedEntityLocation = registerConfiguration.filterDataByRelatedEntityLocation
+    val filterActiveResources  = registerConfiguration.activeResourceFilters
+    if (filterByRelatedEntityLocation) {
+      val syncLocationIds = context.retrieveRelatedEntitySyncLocationIds()
+      val locationIds =
+        syncLocationIds
+          .map { retrieveFlattenedSubLocations(it).map { subLocation -> subLocation.logicalId }}
+          .flatten()
+          .toHashSet()
+      val countSearch =
+        Search(baseResourceConfig.resource).apply {
+          applyConfiguredSortAndFilters(
+            resourceConfig = baseResourceConfig,
+            sortData = false,
+            filterActiveResources = filterActiveResources,
+            configComputedRuleValues = configComputedRuleValues,
+          )
+        }
+      val totalCount = fhirEngine.count(countSearch)
+      var searchResultsCount = 0L
+      var pageNumber = 0
+      var count = 0
+      while (count < totalCount) {
+        val baseResourceSearch =
+          createSearch(
+            baseResourceConfig = baseResourceConfig,
+            filterActiveResources = filterActiveResources,
+            configComputedRuleValues = configComputedRuleValues,
+            currentPage = pageNumber,
+            count = COUNT,
+          )
+        val result = fhirEngine.search<Resource>(baseResourceSearch)
+        searchResultsCount += (result.filter { searchResult ->
+          when (baseResourceConfig.resource) {
+            ResourceType.Location -> locationIds.contains(searchResult.resource.logicalId)
+            else -> searchResult.resource.meta.tag.any {
+              it.system == context.getString(R.string.sync_strategy_related_entity_location_system)
+                      && locationIds.contains(it.code)
+            }
+          }
+        }.size)
+        count += COUNT
+        pageNumber++
+      }
+      return searchResultsCount
+    }
     val search =
       Search(baseResourceConfig.resource).apply {
         applyConfiguredSortAndFilters(
@@ -105,10 +154,6 @@ constructor(
           sortData = false,
           filterActiveResources = registerConfiguration.activeResourceFilters,
           configComputedRuleValues = configComputedRuleValues,
-        )
-        applyFilterByRelatedEntityLocationMetaTag(
-          baseResourceType = baseResourceConfig.resource,
-          filterByRelatedEntityLocation = filterByRelatedEntityLocation,
         )
       }
     return search.count(
