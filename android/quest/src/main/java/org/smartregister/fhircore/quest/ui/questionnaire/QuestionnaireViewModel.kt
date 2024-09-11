@@ -33,7 +33,6 @@ import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -85,7 +84,6 @@ import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.checkResourceValid
 import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
@@ -214,63 +212,67 @@ constructor(
           context = context,
         )
 
-      saveExtractedResources(
-        bundle = bundle,
-        questionnaire = questionnaire,
-        questionnaireConfig = questionnaireConfig,
-        questionnaireResponse = currentQuestionnaireResponse,
-        context = context,
-      )
+      val doSaveOperations: suspend () -> Unit = {
+        saveExtractedResources(
+          bundle = bundle,
+          questionnaire = questionnaire,
+          questionnaireConfig = questionnaireConfig,
+          questionnaireResponse = currentQuestionnaireResponse,
+          context = context,
+        )
 
-      updateResourcesLastUpdatedProperty(actionParameters)
+        updateResourcesLastUpdatedProperty(actionParameters)
 
-      // Important to load subject resource to retrieve ID (as reference) correctly
-      val subjectIdType: IdType? =
-        if (currentQuestionnaireResponse.subject.reference.isNullOrEmpty()) {
-          null
-        } else {
-          IdType(currentQuestionnaireResponse.subject.reference)
-        }
-
-      if (subjectIdType != null) {
-        val subject =
-          loadResource(
-            ResourceType.valueOf(subjectIdType.resourceType),
-            subjectIdType.idPart,
-          )
-
-        if (subject != null && !questionnaireConfig.isReadOnly()) {
-          val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
-
-          val extractedResources = newBundle.entry.map { it.resource }
-          validateWithFhirValidator(*extractedResources.toTypedArray())
-
-          generateCarePlan(
-            subject = subject,
-            bundle = newBundle,
-            questionnaireConfig = questionnaireConfig,
-          )
-
-          withContext(dispatcherProvider.io()) {
-            executeCql(
-              subject = subject,
-              bundle = newBundle,
-              questionnaire = questionnaire,
-              questionnaireConfig = questionnaireConfig,
-            )
+        // Important to load subject resource to retrieve ID (as reference) correctly
+        val subjectIdType: IdType? =
+          if (currentQuestionnaireResponse.subject.reference.isNullOrEmpty()) {
+            null
+          } else {
+            IdType(currentQuestionnaireResponse.subject.reference)
           }
 
-          fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
-            questionnaireConfig = questionnaireConfig,
-            subject = subject,
-            bundle = newBundle,
-          )
+        if (subjectIdType != null) {
+          val subject =
+            loadResource(
+              ResourceType.valueOf(subjectIdType.resourceType),
+              subjectIdType.idPart,
+            )
+
+          if (subject != null && !questionnaireConfig.isReadOnly()) {
+            val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
+
+            val extractedResources = newBundle.entry.map { it.resource }
+            validateWithFhirValidator(*extractedResources.toTypedArray())
+
+            generateCarePlan(
+              subject = subject,
+              bundle = newBundle,
+              questionnaireConfig = questionnaireConfig,
+            )
+
+            withContext(dispatcherProvider.io()) {
+              executeCql(
+                subject = subject,
+                bundle = newBundle,
+                questionnaire = questionnaire,
+                questionnaireConfig = questionnaireConfig,
+              )
+            }
+
+            fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
+              questionnaireConfig = questionnaireConfig,
+              subject = subject,
+              bundle = newBundle,
+            )
+          }
         }
+
+        softDeleteResources(questionnaireConfig)
+
+        retireUsedQuestionnaireUniqueId(questionnaireConfig, currentQuestionnaireResponse)
       }
 
-      softDeleteResources(questionnaireConfig)
-
-      retireUsedQuestionnaireUniqueId(questionnaireConfig, currentQuestionnaireResponse)
+      defaultRepository.fhirEngine.withTransaction { doSaveOperations.invoke() }
 
       val idTypes =
         bundle.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }

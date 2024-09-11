@@ -201,6 +201,7 @@ dependencies {
     exclude(group = "com.google.android.fhir", module = "engine")
     exclude(group = "org.smartregister", module = "engine")
     exclude(group = "com.github.ben-manes.caffeine")
+    exclude(group = "org.smartregister", module = "engine")
   }
   api(libs.contrib.barcode) {
     isTransitive = true
