@@ -22,12 +22,16 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
@@ -44,6 +48,9 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
   @Inject lateinit var p2pSenderTransferDao: P2PSenderTransferDao
 
   @Inject lateinit var p2pReceiverTransferDao: P2PReceiverTransferDao
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   val pinViewModel by viewModels<PinViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,7 +68,11 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
         if (it) pinLoginActivity.navigateToHome()
         finish()
       }
-      launchDialPad.observe(pinLoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
+      launchDialPad.observe(pinLoginActivity) { phone ->
+        if (!phone.isNullOrBlank()) {
+          startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:$phone") })
+        }
+      }
       navigateToLogin.observe(pinLoginActivity) {
         if (it) pinLoginActivity.launchActivityWithNoBackStackHistory<LoginActivity>()
         finish()
@@ -73,24 +84,24 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
   @OptIn(ExperimentalMaterialApi::class)
   private fun navigateToHome() {
     startActivity(Intent(this, AppMainActivity::class.java))
-    // Initialize P2P only when username is provided then launch main activity
-    val username = secureSharedPreference.retrieveSessionUsername()
-    if (!username.isNullOrEmpty()) {
-      P2PLibrary.init(
-        P2PLibrary.Options(
-          context = applicationContext,
-          dbPassphrase = username,
-          username = username,
-          senderTransferDao = p2pSenderTransferDao,
-          receiverTransferDao = p2pReceiverTransferDao,
-        ),
-      )
-    }
-    finish()
-  }
 
-  private fun launchDialPad(phone: String) {
-    startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
+    lifecycleScope.launch {
+      // Initialize P2P only when username is provided then launch main activity
+      val username = secureSharedPreference.retrieveSessionUsername()
+      if (!username.isNullOrEmpty()) {
+        withContext(dispatcherProvider.main()) {
+          P2PLibrary.init(
+            P2PLibrary.Options(
+              context = applicationContext,
+              dbPassphrase = username,
+              username = username,
+              senderTransferDao = p2pSenderTransferDao,
+              receiverTransferDao = p2pReceiverTransferDao,
+            ),
+          )
+        }
+      }
+    }
   }
 
   companion object {

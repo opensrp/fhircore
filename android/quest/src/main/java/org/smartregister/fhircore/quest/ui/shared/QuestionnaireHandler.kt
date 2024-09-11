@@ -26,6 +26,13 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 
+const val ON_RESULT_TYPE = "onResultType"
+
+enum class ActivityOnResultType {
+  LOCATION,
+  QUESTIONNAIRE,
+}
+
 interface QuestionnaireHandler {
 
   val startForResult: ActivityResultLauncher<Intent>

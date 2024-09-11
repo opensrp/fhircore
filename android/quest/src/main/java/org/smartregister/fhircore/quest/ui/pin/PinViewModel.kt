@@ -16,7 +16,9 @@
 
 package org.smartregister.fhircore.quest.ui.pin
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
@@ -26,6 +28,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Base64
 import javax.inject.Inject
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -36,8 +39,11 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.clearPasswordInMemory
+import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.toPasswordHash
 
+@Suppress("UNUSED_EXPRESSION")
 @HiltViewModel
 class PinViewModel
 @Inject
@@ -68,15 +74,20 @@ constructor(
   val showError
     get() = _showError
 
+  private val _showProgressBar = MutableLiveData(false)
+  val showProgressBar
+    get() = _showProgressBar
+
   val pinUiState: MutableState<PinUiState> =
     mutableStateOf(
       PinUiState(message = "", appName = "", setupPin = false, pinLength = 0, showLogo = false),
     )
 
-  private val applicationConfiguration: ApplicationConfiguration by lazy {
+  val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
+  @SuppressLint("StringFormatInvalid")
   fun setPinUiState(setupPin: Boolean = false, context: Context) {
     val username = secureSharedPreference.retrieveSessionUsername()
     val loggedInUsers = secureSharedPreference.retrieveLoggedInUsernames()
@@ -114,7 +125,7 @@ constructor(
 
   fun onPinVerified(validPin: Boolean) {
     if (validPin) {
-      pinUiState.value = pinUiState.value.copy(showProgressBar = false)
+      showProgressBar(false)
       _navigateToHome.postValue(true)
     }
   }
@@ -127,21 +138,25 @@ constructor(
   }
 
   fun onShowPinError(showError: Boolean) {
-    pinUiState.value = pinUiState.value.copy(showProgressBar = false)
+    showProgressBar(false)
     _showError.postValue(showError)
   }
 
   fun onSetPin(newPin: CharArray) {
-    viewModelScope.launch(dispatcherProvider.io()) {
+    viewModelScope.launch {
+      showProgressBar(true)
       val username = secureSharedPreference.retrieveSessionUsername()
       username!!
-      pinUiState.value = pinUiState.value.copy(showProgressBar = true)
-      secureSharedPreference.saveSessionPin(username, newPin)
-      secureSharedPreference.saveSessionUsername(username)
-      pinUiState.value = pinUiState.value.copy(showProgressBar = false)
+      secureSharedPreference.saveSessionPin(username, newPin) {
+        secureSharedPreference.saveSessionUsername(username)
+        showProgressBar(false)
+        _navigateToHome.postValue(true)
+      }
     }
+  }
 
-    _navigateToHome.postValue(true)
+  fun showProgressBar(showProgressBar: Boolean) {
+    _showProgressBar.postValue(showProgressBar)
   }
 
   fun onMenuItemClicked(launchAppSettingScreen: Boolean) {
@@ -156,9 +171,14 @@ constructor(
     }
   }
 
-  fun forgotPin() {
-    // TODO use valid supervisor (Practitioner) telephone number
-    _launchDialPad.value = "tel:####"
+  fun forgotPin(context: Context) {
+    val formattedNumber =
+      applicationConfiguration.loginConfig.supervisorContactNumber.formatPhoneNumber(context)
+    if (!formattedNumber.isNullOrBlank()) {
+      _launchDialPad.value = formattedNumber
+    } else {
+      context.showToast(context.getString(R.string.missing_supervisor_contact), Toast.LENGTH_LONG)
+    }
   }
 
   fun pinLogin(enteredPin: CharArray, callback: (Boolean) -> Unit) {
@@ -167,19 +187,20 @@ constructor(
   }
 
   fun pinLogin(username: String, enteredPin: CharArray, callback: (Boolean) -> Unit) {
-    viewModelScope.launch(dispatcherProvider.io()) {
-      pinUiState.value = pinUiState.value.copy(showProgressBar = true)
-
+    viewModelScope.launch {
+      showProgressBar(true)
       val storedPinHash = secureSharedPreference.retrieveSessionUserPin(username)
       val salt = secureSharedPreference.retrieveSessionUserSalt(username)
-      val generatedHash = enteredPin.toPasswordHash(Base64.getDecoder().decode(salt))
+      val generatedHash =
+        async(dispatcherProvider.io()) {
+            enteredPin.toPasswordHash(Base64.getDecoder().decode(salt))
+          }
+          .await()
       val validPin = generatedHash == storedPinHash
-
       if (validPin) clearPasswordInMemory(enteredPin)
-
       callback.invoke(validPin)
-
       onPinVerified(username, validPin)
+      showProgressBar(false)
     }
   }
 }
