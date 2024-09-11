@@ -981,8 +981,6 @@ constructor(
             .map { retrieveFlattenedSubLocations(it).map { subLocation -> subLocation.logicalId }}
             .flatten()
             .toHashSet()
-
-        if (currentPage != null && pageSize != null) {
           val countSearch =
             Search(baseResourceConfig.resource).apply {
               applyConfiguredSortAndFilters(
@@ -995,7 +993,6 @@ constructor(
           val totalCount = fhirEngine.count(countSearch)
           val searchResults = mutableListOf<SearchResult<Resource>>()
           var pageNumber = 0
-          val requiredCount = (currentPage + 1) * pageSize
           var count = 0
           while (count < totalCount) {
             val baseResourceSearch =
@@ -1018,20 +1015,34 @@ constructor(
             })
             count += COUNT
             pageNumber++
-            if (searchResults.size >= requiredCount) break
+            if (currentPage != null && pageSize != null) {
+              val maxPageCount = (currentPage + 1) * pageSize
+              if (searchResults.size >= maxPageCount) break
+            }
           }
+
+        if (currentPage != null && pageSize != null) {
           val fromIndex = currentPage * pageSize
           val toIndex = (currentPage + 1) * pageSize
-          paginatedBaseResources.addAll(searchResults.subList(fromIndex, min(toIndex, searchResults.size)))
+          with(paginatedBaseResources) {
+            addAll(searchResults.subList(fromIndex, min(toIndex, searchResults.size)))
+            mapResourceToRepositoryResourceData(
+              relatedResourcesConfig = relatedResourcesConfig,
+              configComputedRuleValues = configComputedRuleValues,
+              secondaryResourceConfigs = secondaryResourceConfigs,
+              filterActiveResources = filterActiveResources,
+              baseResourceConfig = baseResourceConfig,
+            )
+          }
+        } else {
+          searchResults.mapResourceToRepositoryResourceData(
+            relatedResourcesConfig = relatedResourcesConfig,
+            configComputedRuleValues = configComputedRuleValues,
+            secondaryResourceConfigs = secondaryResourceConfigs,
+            filterActiveResources = filterActiveResources,
+            baseResourceConfig = baseResourceConfig,
+          )
         }
-
-        paginatedBaseResources.mapResourceToRepositoryResourceData(
-          relatedResourcesConfig = relatedResourcesConfig,
-          configComputedRuleValues = configComputedRuleValues,
-          secondaryResourceConfigs = secondaryResourceConfigs,
-          filterActiveResources = filterActiveResources,
-          baseResourceConfig = baseResourceConfig,
-        )
       } else {
         val baseFhirResources: List<SearchResult<Resource>> =
           kotlin
