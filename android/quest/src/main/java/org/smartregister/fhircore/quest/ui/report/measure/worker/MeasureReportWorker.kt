@@ -37,6 +37,7 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Calendar
 import java.util.Date
+import java.util.NoSuchElementException
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.instance.model.api.IBaseResource
@@ -144,6 +145,9 @@ constructor(
             practitionerId?.asReference(ResourceType.Practitioner)?.reference*/
           )
         } catch (exception: IllegalArgumentException) {
+          Timber.e(exception)
+          null
+        } catch (exception: NoSuchElementException) {
           Timber.e(exception)
           null
         }
