@@ -1,4 +1,24 @@
 <resources>
-    
+    <string name="submit_questionnaire">জমা দিন</string>
+    <string name="button_pagination_next">পরবর্তী</string>
+    <string name="button_pagination_previous">পূর্ববর্তী</string>
 
+    <string name="username">ইউজার নেম</string>
+    <string name="password">পাসওয়ার্ড</string>
+    <string name="forgot_password">পাসওয়ার্ড ভুলে গেছি</string>
+    <string name="forgot_password_title">পাসওয়ার্ড ভুলে গেছি!</string>
+    <string name="login_text">লগইন করুন</string>
+    <string name="questionnaire_alert_back_pressed_message">আপনি কি ফিরে যেতে চান? আপনার প্রবেশ করা সমস্ত তথ্য এই ফর্মটি থেকে সরানো হবে।</string>
+    <string name="questionnaire_in_progress_alert_back_pressed_message">আপনি কি উত্তরগুলি বাতিল করার বিষয়ে নিশ্চিত?</string>
+    <string name="questionnaire_alert_back_pressed_title">ফর্ম বন্ধ করতে চান?</string>
+    <string name="questionnaire_alert_back_pressed_button_title">হ্যাঁ</string>
+    <string name="questionnaire_alert_neutral_button_title">না</string>
+    <string name="application_alert_back_pressed_message">আপনি কি অ্যাপটি থেকে বেরিয়ে আসতে চান?</string>
+    <string name="application_alert_confirm_button_title">হ্যাঁ</string>
+
+    <string name="app_version">অ্যাপ ভার্সন %1$d(%2$s)</string>
+    <string name="powered_by">পাওয়ার্ড বাই</string>
+
+    <string name="integer_format_validation_error_msg">সংখ্যা অবশ্যই 0-এর বেশি হতে হবে এবং কোনো দশমিক স্থান অনুমোদিত নয়</string>
+    <string name="regex_validation_error_msg" >উত্তরটি প্রয়োজনীয়তার সাথে মেলে না</string>
 </resources>

@@ -178,6 +178,13 @@
         ]
       },
       {
+        "name": "familyRegisteredMember",
+        "condition": "true",
+        "actions": [
+          "data.put('familyRegisteredMember', fhirPath.extractValue(Group, \"Group.characteristic.code.where(coding.code='hh_member_count').text\"))"
+        ]
+      },
+      {
         "name": "dueTaskCount",
         "condition": "true",
         "actions": [
@@ -225,6 +232,7 @@
     "views": [
       {
         "viewType": "COLUMN",
+        "padding": 10,
         "children": [
           {
             "viewType": "SERVICE_CARD",
@@ -237,13 +245,13 @@
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "HH No: @{familyId}",
+                "primaryText": "{{hh.id.label}}: @{familyId}",
                 "fontSize": 14.0,
                 "primaryTextColor": "#000000"
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "Registered Member: @{familyMemberCount}",
+                "primaryText": "{{hh.member.count}} @{familyMemberCount} ({{hh.registered.member.count}} @{familyRegisteredMember})",
                 "fontSize": 14.0,
                 "primaryTextColor": "#000000"
               }
@@ -306,8 +314,7 @@
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
             "id": "2870",
-            "title": "Add Household",
-            "saveButtonText": "ADD HOUSEHOLD",
+            "title": "{{add.family}}",
             "setPractitionerDetails": true,
             "setOrganizationDetails": true,
             "snackBarMessage": {

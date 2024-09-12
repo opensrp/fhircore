@@ -2,7 +2,7 @@
   "appId": "app",
   "configType": "report",
   "id": "dashboardReport",
-  "showDateFilter": true,
+  "showDateFilter": false,
   "resources": [
     {
       "resource": "Group",
@@ -161,13 +161,6 @@
       ]
     },
     {
-      "name": "totalEncCount",
-      "condition": "true",
-      "actions": [
-        "data.put('totalEncCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('6487')\")))"
-      ]
-    },
-    {
       "name": "totalHHVisitCount",
       "condition": "true",
       "actions": [
@@ -213,7 +206,7 @@
       "name": "total18To36ChildCount",
       "condition": "true",
       "actions": [
-        "data.put('total18To36ChildCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4226') or QuestionnaireResponse.questionnaire.contains('4228')\")))"
+        "data.put('total18To36ChildCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4226')\")))"
       ]
     },
     {
@@ -242,27 +235,6 @@
       "condition": "true",
       "actions": [
         "data.put('totalNcdServiceCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4968')\")))"
-      ]
-    },
-    {
-      "name": "totalAdoServiceCount",
-      "condition": "true",
-      "actions": [
-        "data.put('totalAdoServiceCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4970')\")))"
-      ]
-    },
-    {
-      "name": "totalWomenServiceCount",
-      "condition": "true",
-      "actions": [
-        "data.put('totalWomenServiceCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4972')\")))"
-      ]
-    },
-    {
-      "name": "totalChildServiceCount",
-      "condition": "true",
-      "actions": [
-        "data.put('totalChildServiceCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4974')\")))"
       ]
     },
     {
@@ -991,102 +963,6 @@
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#FFFFFF",
                     "primaryText": "@{totalNcdServiceCount}"
-                  },
-                  {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryTextColor": "#ff0000",
-                    "primaryText": "0"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "viewType": "CARD",
-            "padding": 16,
-            "cardColor": "#FFA500",
-            "header": {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "শিশু কাউন্সেলিং",
-              "primaryTextColor": "#6F7274",
-              "primaryTextFontWeight": "BOLD",
-              "fontSize": 18.0,
-              "padding": 16
-            },
-            "content": [
-              {
-                "viewType": "ROW",
-                "fillMaxWidth": true,
-                "arrangement": "SPACE_BETWEEN",
-                "children": [
-                  {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryTextColor": "#FFFFFF",
-                    "primaryText": "@{totalChildServiceCount}"
-                  },
-                  {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryTextColor": "#ff0000",
-                    "primaryText": "0"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "viewType": "CARD",
-            "padding": 16,
-            "cardColor": "#FFA500",
-            "header": {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "নারী কাউন্সেলিং",
-              "primaryTextColor": "#6F7274",
-              "primaryTextFontWeight": "BOLD",
-              "fontSize": 18.0,
-              "padding": 16
-            },
-            "content": [
-              {
-                "viewType": "ROW",
-                "fillMaxWidth": true,
-                "arrangement": "SPACE_BETWEEN",
-                "children": [
-                  {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryTextColor": "#FFFFFF",
-                    "primaryText": "@{totalWomenServiceCount}"
-                  },
-                  {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryTextColor": "#ff0000",
-                    "primaryText": "0"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "viewType": "CARD",
-            "padding": 16,
-            "cardColor": "#FFA500",
-            "header": {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "কিশোরী কাউন্সেলিং",
-              "primaryTextColor": "#6F7274",
-              "primaryTextFontWeight": "BOLD",
-              "fontSize": 18.0,
-              "padding": 16
-            },
-            "content": [
-              {
-                "viewType": "ROW",
-                "fillMaxWidth": true,
-                "arrangement": "SPACE_BETWEEN",
-                "children": [
-                  {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryTextColor": "#FFFFFF",
-                    "primaryText": "@{totalAdoServiceCount}"
                   },
                   {
                     "viewType": "COMPOUND_TEXT",
@@ -2698,120 +2574,6 @@
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#FFFFFF",
                     "primaryText": "@{totalNcdServiceCount}"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "viewType": "SPACER",
-            "height": 16
-          },
-          {
-            "viewType": "CARD",
-            "padding": 16,
-            "cardColor": "#008000",
-            "content": [
-              {
-                "viewType": "ROW",
-                "fillMaxWidth": true,
-                "arrangement": "SPACE_BETWEEN",
-                "children": [
-                  {
-                    "viewType": "IMAGE",
-                    "tint": "#FFFFFF",
-                    "size": 30,
-                    "imageConfig": {
-                      "type": "local",
-                      "reference": "ic_women"
-                    }
-                  },
-                  {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryTextColor": "#FFFFFF",
-                    "weight": 1,
-                    "primaryText": "নারী কাউন্সেলিং"
-                  },
-                  {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryTextColor": "#FFFFFF",
-                    "primaryText": "@{totalWomenServiceCount}"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "viewType": "SPACER",
-            "height": 16
-          },
-          {
-            "viewType": "CARD",
-            "padding": 16,
-            "cardColor": "#008000",
-            "content": [
-              {
-                "viewType": "ROW",
-                "fillMaxWidth": true,
-                "arrangement": "SPACE_BETWEEN",
-                "children": [
-                  {
-                    "viewType": "IMAGE",
-                    "tint": "#FFFFFF",
-                    "size": 30,
-                    "imageConfig": {
-                      "type": "local",
-                      "reference": "ic_adolescent"
-                    }
-                  },
-                  {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryTextColor": "#FFFFFF",
-                    "weight": 1,
-                    "primaryText": "কিশোরী কাউন্সেলিং"
-                  },
-                  {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryTextColor": "#FFFFFF",
-                    "primaryText": "@{totalAdoServiceCount}"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "viewType": "SPACER",
-            "height": 16
-          },
-          {
-            "viewType": "CARD",
-            "padding": 16,
-            "cardColor": "#008000",
-            "content": [
-              {
-                "viewType": "ROW",
-                "fillMaxWidth": true,
-                "arrangement": "SPACE_BETWEEN",
-                "children": [
-                  {
-                    "viewType": "IMAGE",
-                    "tint": "#FFFFFF",
-                    "size": 30,
-                    "imageConfig": {
-                      "type": "local",
-                      "reference": "ic_kids"
-                    }
-                  },
-                  {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryTextColor": "#FFFFFF",
-                    "weight": 1,
-                    "primaryText": "শিশু কাউন্সেলিং"
-                  },
-                  {
-                    "viewType": "COMPOUND_TEXT",
-                    "primaryTextColor": "#FFFFFF",
-                    "primaryText": "@{totalChildServiceCount}"
                   }
                 ]
               }

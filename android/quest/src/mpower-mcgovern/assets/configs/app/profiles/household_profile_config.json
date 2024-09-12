@@ -410,7 +410,7 @@
   "topAppBar": {
     "title": {
       "viewType": "COMPOUND_TEXT",
-      "primaryText": "@{familyName} Family Profile",
+      "primaryText": "{{hh.profile}}",
       "primaryTextColor": "#FFFFFF",
       "fontSize": 16.0,
       "maxLines": 1,
@@ -440,7 +440,7 @@
                 "children": [
                   {
                     "viewType": "COMPOUND_TEXT",
-                    "primaryText": "Name: ",
+                    "primaryText": "{{hh.name.label}} ",
                     "primaryTextColor": "#FFFFFF",
                     "primaryTextFontWeight": "BOLD"
                   },
@@ -456,7 +456,7 @@
                 "children": [
                   {
                     "viewType": "COMPOUND_TEXT",
-                    "primaryText": "HH No: ",
+                    "primaryText": "{{hh.id.label}} ",
                     "primaryTextColor": "#FFFFFF",
                     "primaryTextFontWeight": "BOLD"
                   },
@@ -781,12 +781,12 @@
                         },
                         {
                           "viewType": "COMPOUND_TEXT",
-                          "primaryText": "{{patient.gender}}, {{patient.age}}",
+                          "primaryText": "{{patient.gender}}",
                           "primaryTextColor": "#939596"
                         },
                         {
                           "viewType": "COMPOUND_TEXT",
-                          "primaryText": "{{patient.relation}}",
+                          "primaryText": "{{patient.age}}",
                           "primaryTextColor": "#939596"
                         }
                       ]
@@ -832,7 +832,7 @@
               {
                 "viewType": "BUTTON",
                 "smallSized": "true",
-                "text": "Household Visit",
+                "text": "{{hh.due.visit}}",
                 "status": "DUE",
                 "enabled": "true",
                 "startIcon": {
@@ -845,8 +845,8 @@
                     "resourceType": "Group",
                     "questionnaire": {
                       "id": "6485",
-                      "title": "Household Visit",
-                      "saveButtonText": "Save",
+                      "title": "{{hh.due.visit}}",
+                      "saveButtonText": "{{question.submit.label}}",
                       "setPractitionerDetails": true,
                       "setOrganizationDetails": true,
                       "resourceIdentifier": "@{familyLogicalId}",
@@ -1275,7 +1275,6 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
-                          "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
                         },
@@ -1690,7 +1689,6 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
-                          "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
                         }
@@ -1728,7 +1726,7 @@
     {
       "title": "{{family.details}}",
       "titleColor": "#000000",
-      "visible": "true",
+      "visible": "false",
       "actions": [
         {
           "trigger": "ON_CLICK",
@@ -1736,7 +1734,6 @@
           "questionnaire": {
             "id": "2870",
             "title": "{{add.family}}",
-            "saveButtonText": "Update household details",
             "setPractitionerDetails": true,
             "setOrganizationDetails": true,
             "type": "EDIT",
