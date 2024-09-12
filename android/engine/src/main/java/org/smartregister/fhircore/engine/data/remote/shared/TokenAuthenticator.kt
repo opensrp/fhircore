@@ -40,6 +40,8 @@ import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.net.ssl.SSLHandshakeException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
@@ -213,8 +215,11 @@ constructor(
         addAccountExplicitly(newAccount, oAuthResponse.refreshToken, null)
         setAuthToken(newAccount, AUTH_TOKEN_TYPE, oAuthResponse.accessToken)
       }
+
       // Save credentials
-      secureSharedPreference.saveCredentials(username, password)
+      CoroutineScope(dispatcherProvider.io()).launch {
+        secureSharedPreference.saveCredentials(username, password)
+      }
     }
   }
 
