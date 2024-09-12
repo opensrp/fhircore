@@ -97,7 +97,7 @@
 
         <provider
             android:authorities="org.smartregister.opensrp.gizeir.fct"
-            android:name=".FCTProvider"
+            android:name=".FCTContentProvider"
             android:exported="true" />
 
     </application>

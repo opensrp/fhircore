@@ -4,13 +4,10 @@ import android.content.ContentProvider
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
-import android.database.DatabaseUtils
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.net.Uri
 import android.os.Bundle
-import androidx.core.os.bundleOf
-import androidx.paging.liveData
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -20,30 +17,26 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.ui.register.RegisterViewModel
 import timber.log.Timber
-import javax.inject.Inject
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import okhttp3.internal.wait
+import kotlinx.serialization.Serializable
 import okio.ByteString.Companion.toByteString
 import org.json.JSONArray
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
-import org.smartregister.fhircore.quest.ui.register.RegisterFilterState
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.Base64
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
-class FCTProvider : ContentProvider() {
+class FCTContentProvider : ContentProvider() {
     //private val registerViewModel by viewModels<RegisterViewModel>()
 
     private lateinit var registerViewModel: RegisterViewModel
@@ -142,18 +135,20 @@ class FCTProvider : ContentProvider() {
 
         if (method == "db_operation") {
 
-            val dbHelper = DBHelper(context, getDatabaseVersion())
+            val queryRequest = arg!!.decompress().decodeJson<QueryRequest>()
+
+            val dbHelper = DBHelper(context, queryRequest.database, getDatabaseVersion())
             val db = dbHelper.writableDatabase
 
-            val decodedArg = arg!!.decompress()
-            val data = when(getQueryType(decodedArg)) {
+            val query = queryRequest.query
+            val data = when(getQueryType(query)) {
                 QueryType.SELECT, QueryType.UNKNOWN -> {
 
                     var cursor: Cursor? = null
                     var result = ""
                     try {
-                        cursor = db.rawQuery(decodedArg, null)
-                        result = extractAllRecords(cursor)
+                        cursor = db.rawQuery(query, null)
+                        result = extractAllRecords(cursor, queryRequest)
                     } catch (ex: Exception) {
                         val jsonObject = JSONObject().apply {
                             put("success", false)
@@ -168,7 +163,7 @@ class FCTProvider : ContentProvider() {
                 else -> {
                     val jsonObject = JSONObject()
                     try {
-                        db.execSQL(decodedArg)
+                        db.execSQL(query)
                         jsonObject.put("success", true)
                     } catch (ex: Exception) {
                         jsonObject.put("success", false)
@@ -262,11 +257,13 @@ class FCTProvider : ContentProvider() {
         return pattern.toRegex(RegexOption.IGNORE_CASE).find(query.trim()) != null
     }
 
-    private fun extractAllRecords(cursor: Cursor): String {
+    private fun extractAllRecords(cursor: Cursor, queryRequest: QueryRequest): String {
         val jsonObject = JSONObject()
         val jsonArray = JSONArray()
 
-        if (cursor.moveToFirst()) {
+        jsonObject.put("count", cursor.count)
+
+        if (cursor.moveToPosition(queryRequest.offset)) {
             do {
                 val obj = JSONObject()
                 cursor.columnNames.forEachIndexed { columnIndex, columName ->
@@ -286,7 +283,7 @@ class FCTProvider : ContentProvider() {
                     }
                 }
                 jsonArray.put(obj)
-            } while (cursor.moveToNext())
+            } while (cursor.position < ((queryRequest.offset - 1) + queryRequest.limit) && cursor.moveToNext())
         }
 
         val columnNameJsonArray = JSONArray()
@@ -321,7 +318,7 @@ class FCTProvider : ContentProvider() {
         return GZIPInputStream(byteArrayInputStream).bufferedReader().use { it.readText() }
     }
 
-    class DBHelper(context: Context?, version: Int) : SQLiteOpenHelper(context, "resources.db", null, version) {
+    class DBHelper(context: Context?, database: String, version: Int) : SQLiteOpenHelper(context, database, null, version) {
         override fun onCreate(db: SQLiteDatabase?) {}
 
         override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {}
@@ -331,4 +328,13 @@ class FCTProvider : ContentProvider() {
     enum class QueryType {
         SELECT, INSERT, UPDATE, DELETE, UNKNOWN
     }
+
+    @Serializable
+    data class QueryRequest(
+        val database: String,
+        val query: String,
+        val sortColumn: String? = null,
+        val offset: Int,
+        val limit: Int,
+    )
 }
