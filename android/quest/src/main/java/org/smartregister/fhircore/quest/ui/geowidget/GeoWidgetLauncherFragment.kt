@@ -180,13 +180,12 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                         geoWidgetConfig = geoWidgetConfiguration,
                         searchText = searchText,
                       )
-                    if (geoJsonFeatures.isNotEmpty()) {
-                      geoWidgetViewModel.features.postValue(geoJsonFeatures)
-                    } else {
+                    geoWidgetViewModel.features.postValue(geoJsonFeatures)
+                    if (geoJsonFeatures.isEmpty()) {
                       geoWidgetLauncherViewModel.emitSnackBarState(
                         SnackBarMessageConfig(
                           message =
-                            getString(R.string.no_found_locations_matching_text, searchText),
+                          getString(R.string.no_found_locations_matching_text, searchText),
                         ),
                       )
                     }

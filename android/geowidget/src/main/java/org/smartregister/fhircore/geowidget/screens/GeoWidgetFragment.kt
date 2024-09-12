@@ -32,6 +32,7 @@ import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.MultiPoint
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.exceptions.MapboxConfigurationException
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
@@ -316,9 +317,13 @@ class GeoWidgetFragment : Fragment() {
       },
     )
   }
-
+=
   private fun zoomToLocationsOnMap(features: List<Feature>) {
-    if (features.isEmpty()) return
+    if (features.isEmpty()) {
+      geoJsonSource?.setGeoJson(null as FeatureCollection?)
+      mapView.getMapAsync { mapboxMap -> mapboxMap.easeCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.DEFAULT)) }
+      return
+    }
     featureCollection = FeatureCollection.fromFeatures(features)
 
     val locationPoints =
