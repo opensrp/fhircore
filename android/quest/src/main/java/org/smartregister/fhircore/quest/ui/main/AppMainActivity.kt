@@ -155,7 +155,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       }
 
       setupLocationServices()
-      overrideOnBAckPressListener()
+      overrideOnBackPressListener()
 
       findViewById<View>(R.id.mainScreenProgressBar).apply { visibility = View.GONE }
       findViewById<View>(R.id.mainScreenProgressBarText).apply { visibility = View.GONE }
@@ -303,7 +303,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     }
   }
 
-  private fun overrideOnBAckPressListener() {
+  private fun overrideOnBackPressListener() {
     onBackPressedDispatcher.addCallback(
       object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
