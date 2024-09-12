@@ -40,9 +40,11 @@ constructor(
 
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
-      fhirResourceUtil.expireOverdueTasks()
-      fhirResourceUtil.closeResourcesRelatedToCompletedServiceRequests()
-      fhirResourceUtil.closeCustomResources()
+      fhirResourceUtil.run {
+         expireOverdueTasks()
+         closeResourcesRelatedToCompletedServiceRequests()
+         closeCustomResources()
+      } 
       Result.success()
     }
   }
