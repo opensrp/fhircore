@@ -2214,7 +2214,7 @@
       ]
     },
     {
-      "title": "Pregnancy Outcome",
+      "title": "{{patient.menu.pregnancy.outcome}}",
       "titleColor": "@{patientTextColor}",
       "visible": "@{canOutcomePregnancy}",
       "enabled": "@{patientActive}",
@@ -2224,7 +2224,7 @@
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
             "id": "6056",
-            "title": "Pregnancy outcome",
+            "title": "{{patient.menu.pregnancy.outcome}}",
             "resourceIdentifier": "@{patientId}",
             "groupResource": {
               "groupIdentifier": "@{familyLogicalId}",
@@ -2239,14 +2239,14 @@
                     "eventResourceId": "ancCarePlanToBeClosed",
                     "matchAll": false,
                     "conditionalFhirPathExpressions": [
-                      "Patient.active and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='33455692-f8b4-4b90-809a-94352aad1e2f') and ((answer.value.exists()))).exists()"
+                      "Patient.active and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='33455692-f8b4-4b90-809a-94352aad1e2f' and answer.value.exists()).exists()"
                     ]
                   },
                   {
                     "eventResourceId": "ancConditionToBeClosed",
                     "matchAll": false,
                     "conditionalFhirPathExpressions": [
-                      "Patient.active and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='33455692-f8b4-4b90-809a-94352aad1e2f') and ((answer.value.exists()))).exists()"
+                      "Patient.active and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='33455692-f8b4-4b90-809a-94352aad1e2f' and answer.value.exists()).exists()"
                     ]
                   }
                 ],

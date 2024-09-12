@@ -251,7 +251,7 @@
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "{{hh.member.count}} @{familyMemberCount} ({{hh.registered.member.count}} @{familyRegisteredMember})",
+                "primaryText": "{{hh.member.count}} @{familyRegisteredMember} ({{hh.registered.member.count}} @{familyMemberCount})",
                 "fontSize": 14.0,
                 "primaryTextColor": "#000000"
               }
@@ -387,47 +387,5 @@
         }
       }
     }
-  ],
-  "registerFilter": {
-    "dataFilterActions": [
-      {
-        "trigger": "ON_CLICK",
-        "workflow": "LAUNCH_QUESTIONNAIRE",
-        "questionnaire": {
-          "id": "811730",
-          "title": "Filter Households",
-          "saveButtonText": "Apply Filters",
-          "saveQuestionnaireResponse": false,
-          "showClearAll": true
-        }
-      }
-    ],
-    "dataFilterFields": [
-      {
-        "filterId": "household",
-        "dataQueries": [
-          {
-            "paramName": "identifier",
-            "operation": "OR",
-            "filterCriteria": [
-              {
-                "dataFilterLinkId": "d8ec7c8a-a097-4c61-941e-6b0555cd85c9",
-                "dataType": "CODE"
-              }
-            ]
-          },
-          {
-            "paramName": "characteristic",
-            "operation": "OR",
-            "filterCriteria": [
-              {
-                "dataFilterLinkId": "b742852c-8774-47d1-81f2-9bbe0f2fd511",
-                "dataType": "CODE"
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  }
+  ]
 }

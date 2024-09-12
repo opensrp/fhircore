@@ -187,8 +187,7 @@
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
             "id": "4234",
-            "title": "Add household member",
-            "saveButtonText": "Add Member",
+            "title": "{{ add.member }}",
             "resourceType": "Patient",
             "groupResource": {
               "groupIdentifier": "@{familyLogicalId}",
@@ -231,6 +230,13 @@
               "dataType": "STRING",
               "key": "familySystemId",
               "value": "@{familyId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "e7fddd5f-85fc-48a6-b267-d93409315f2f",
+              "dataType": "STRING",
+              "key": "familyHeadName",
+              "value": "@{familyHeadName}"
             }
           ]
         }
@@ -313,6 +319,14 @@
       "condition": "true",
       "actions": [
         "data.put('familyMemberCount', size(Patient))"
+      ]
+    },
+    {
+      "name": "familyHeadName",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('familyHeadName', size(Patient) > 0 ? null : data.get('familyName'))"
       ]
     },
     {
