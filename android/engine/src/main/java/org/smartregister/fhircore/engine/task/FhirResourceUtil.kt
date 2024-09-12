@@ -249,7 +249,7 @@ constructor(
       }
   }
 
-  suspend fun closeCustomResources() {
+  suspend fun closeFhirResources() {
     val appRegistry =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
         ConfigType.Application,
