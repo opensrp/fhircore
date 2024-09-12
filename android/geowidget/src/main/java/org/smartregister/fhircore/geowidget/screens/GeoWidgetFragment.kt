@@ -317,7 +317,7 @@ class GeoWidgetFragment : Fragment() {
       },
     )
   }
-=
+
   private fun zoomToLocationsOnMap(features: List<Feature>) {
     if (features.isEmpty()) {
       geoJsonSource?.setGeoJson(null as FeatureCollection?)
