@@ -974,7 +974,6 @@ constructor(
       val configComputedRuleValues = configRules.configRulesComputedValues()
 
       if (filterByRelatedEntityLocationMetaTag) {
-        val paginatedBaseResources = mutableListOf<SearchResult<Resource>>()
         val syncLocationIds = context.retrieveRelatedEntitySyncLocationIds()
         val locationIds =
           syncLocationIds
@@ -991,7 +990,7 @@ constructor(
               )
             }
           val totalCount = fhirEngine.count(countSearch)
-          val searchResults = mutableListOf<SearchResult<Resource>>()
+          val searchResults = LinkedList<SearchResult<Resource>>()
           var pageNumber = 0
           var count = 0
           while (count < totalCount) {
@@ -1024,8 +1023,7 @@ constructor(
         if (currentPage != null && pageSize != null) {
           val fromIndex = currentPage * pageSize
           val toIndex = (currentPage + 1) * pageSize
-          with(paginatedBaseResources) {
-            addAll(searchResults.subList(fromIndex, min(toIndex, searchResults.size)))
+          with(searchResults.subList(fromIndex, min(toIndex, searchResults.size))) {
             mapResourceToRepositoryResourceData(
               relatedResourcesConfig = relatedResourcesConfig,
               configComputedRuleValues = configComputedRuleValues,

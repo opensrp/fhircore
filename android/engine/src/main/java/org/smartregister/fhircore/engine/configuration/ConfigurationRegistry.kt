@@ -29,16 +29,6 @@ import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.sync.download.ResourceSearchParams
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.InputStreamReader
-import java.net.UnknownHostException
-import java.util.LinkedList
-import java.util.Locale
-import java.util.PropertyResourceBundle
-import java.util.ResourceBundle
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -61,8 +51,6 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.di.NetworkModule
-import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -83,6 +71,16 @@ import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import retrofit2.HttpException
 import timber.log.Timber
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.InputStreamReader
+import java.net.UnknownHostException
+import java.util.LinkedList
+import java.util.Locale
+import java.util.PropertyResourceBundle
+import java.util.ResourceBundle
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ConfigurationRegistry
@@ -728,16 +726,6 @@ constructor(
         )
       }
     }
-  }
-
-  private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
-    this.baseResource.dependentResourceTypes(target)
-    this.relatedResources.forEach { it.dependentResourceTypes(target) }
-  }
-
-  private fun ResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
-    target.add(resource)
-    relatedResources.forEach { it.dependentResourceTypes(target) }
   }
 
   suspend fun loadResourceSearchParams():
