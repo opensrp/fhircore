@@ -30,7 +30,7 @@ import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.PdfConfig
 import org.smartregister.fhircore.engine.pdf.HtmlPopulator
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -38,7 +38,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 /**
  * A fragment for generating and displaying a PDF based on a questionnaire response.
  *
- * This fragment uses the provided [QuestionnaireConfig] to retrieve a questionnaire response,
+ * This fragment uses the provided [PdfConfig] to retrieve a questionnaire response,
  * populate an HTML template with the response data, and generate a PDF.
  */
 @AndroidEntryPoint
@@ -52,7 +52,7 @@ class PdfLauncherFragment : DialogFragment() {
     super.onCreate(savedInstanceState)
     if (!this::pdfGenerator.isInitialized) pdfGenerator = PdfGenerator(requireContext())
 
-    val questionnaireConfig = getQuestionnaireConfig()
+    val pdfConfig = getPdfConfig()
 
     val questionnaireId = questionnaireConfig.id.extractLogicalIdUuid()
     val subjectId = questionnaireConfig.resourceIdentifier!!.extractLogicalIdUuid()
@@ -75,12 +75,12 @@ class PdfLauncherFragment : DialogFragment() {
   /**
    * Retrieves and decodes the questionnaire configuration from the fragment arguments.
    *
-   * @return the decoded [QuestionnaireConfig] object.
+   * @return the decoded [PdfConfig] object.
    * @throws IllegalArgumentException if the questionnaire config is not found in arguments.
    */
-  private fun getQuestionnaireConfig(): QuestionnaireConfig {
+  private fun getPdfConfig(): PdfConfig {
     val jsonConfig =
-      requireArguments().getString(EXTRA_QUESTIONNAIRE_CONFIG_KEY)
+      requireArguments().getString(EXTRA_PDF_CONFIG_KEY)
         ?: throw IllegalArgumentException("Questionnaire config not found in arguments")
     return jsonConfig.decodeJson()
   }
@@ -123,10 +123,10 @@ class PdfLauncherFragment : DialogFragment() {
      */
     fun launch(appCompatActivity: AppCompatActivity, questionnaireConfigJson: String) {
       PdfLauncherFragment()
-        .apply { arguments = bundleOf(EXTRA_QUESTIONNAIRE_CONFIG_KEY to questionnaireConfigJson) }
+        .apply { arguments = bundleOf(EXTRA_PDF_CONFIG_KEY to questionnaireConfigJson) }
         .show(appCompatActivity.supportFragmentManager, PdfLauncherFragment::class.java.simpleName)
     }
 
-    @VisibleForTesting const val EXTRA_QUESTIONNAIRE_CONFIG_KEY = "questionnaire_config"
+    @VisibleForTesting const val EXTRA_PDF_CONFIG_KEY = "pdf_config"
   }
 }

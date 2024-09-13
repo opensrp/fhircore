@@ -32,7 +32,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.PdfConfig
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.app.fakes.HiltTestActivity
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -53,26 +53,27 @@ class PdfLauncherFragmentTest : RobolectricTest() {
 
   @Test
   fun testPdfGeneration() = runBlocking {
-    val questionnaireResponse = QuestionnaireResponse()
+    val questionnaireResponse = QuestionnaireResponse().apply { questionnaire = "Questionnaire/id" }
     val htmlBinary = Binary().apply { content = "mock content".toByteArray() }
 
     coEvery { pdfLauncherViewModel.retrieveQuestionnaireResponse(any(), any(), any()) } returns
       questionnaireResponse
     coEvery { pdfLauncherViewModel.retrieveBinary(any()) } returns htmlBinary
 
-    val questionnaireConfig =
-      QuestionnaireConfig(
-          id = "1",
-          resourceIdentifier = "123",
-          resourceType = ResourceType.Patient,
-          htmlBinaryId = "1234",
-          htmlTitle = "Title",
+    val pdfConfig =
+        PdfConfig(
+          pdfTitle = "title",
+          pdfTitleSuffix = "suffix",
+          pdfStructureReference = "Binary/id",
+          subjectReference = "Patient/id",
+          subjectType = ResourceType.Patient,
+          questionnaireReferences = listOf("QuestionnaireResponse/id")
         )
         .encodeJson()
 
     val fragmentArgs =
       Bundle().apply {
-        putString(PdfLauncherFragment.EXTRA_QUESTIONNAIRE_CONFIG_KEY, questionnaireConfig)
+        putString(PdfLauncherFragment.EXTRA_PDF_CONFIG_KEY, pdfConfig)
       }
 
     val activity = Robolectric.buildActivity(HiltTestActivity::class.java).create().resume().get()
@@ -99,19 +100,20 @@ class PdfLauncherFragmentTest : RobolectricTest() {
       questionnaireResponse
     coEvery { pdfLauncherViewModel.retrieveBinary(any()) } returns htmlBinary
 
-    val questionnaireConfig =
-      QuestionnaireConfig(
-          id = "1",
-          resourceIdentifier = "123",
-          resourceType = ResourceType.Patient,
-          htmlBinaryId = "1234",
-          htmlTitle = "Title",
+    val pdfConfig =
+      PdfConfig(
+          pdfTitle = "title",
+        pdfTitleSuffix = "suffix",
+          pdfStructureReference = "Binary/id",
+          subjectReference = "Patient/id",
+          subjectType = ResourceType.Patient,
+          questionnaireReferences = listOf("QuestionnaireResponse/id")
         )
         .encodeJson()
 
     val fragmentArgs =
       Bundle().apply {
-        putString(PdfLauncherFragment.EXTRA_QUESTIONNAIRE_CONFIG_KEY, questionnaireConfig)
+        putString(PdfLauncherFragment.EXTRA_PDF_CONFIG_KEY, pdfConfig)
       }
 
     val activity = Robolectric.buildActivity(HiltTestActivity::class.java).create().resume().get()
@@ -138,19 +140,20 @@ class PdfLauncherFragmentTest : RobolectricTest() {
       questionnaireResponse
     coEvery { pdfLauncherViewModel.retrieveBinary(any()) } returns htmlBinary
 
-    val questionnaireConfig =
-      QuestionnaireConfig(
-          id = "1",
-          resourceIdentifier = "123",
-          resourceType = ResourceType.Patient,
-          htmlBinaryId = "1234",
-          htmlTitle = "Title",
+    val pdfConfig =
+      PdfConfig(
+          pdfTitle = "title",
+          pdfTitleSuffix = "suffix",
+          pdfStructureReference = "Binary/id",
+          subjectReference = "Patient/id",
+          subjectType = ResourceType.Patient,
+          questionnaireReferences = listOf("QuestionnaireResponse/id")
         )
         .encodeJson()
 
     val fragmentArgs =
       Bundle().apply {
-        putString(PdfLauncherFragment.EXTRA_QUESTIONNAIRE_CONFIG_KEY, questionnaireConfig)
+        putString(PdfLauncherFragment.EXTRA_PDF_CONFIG_KEY, pdfConfig)
       }
 
     val activity = Robolectric.buildActivity(HiltTestActivity::class.java).create().resume().get()
@@ -177,19 +180,20 @@ class PdfLauncherFragmentTest : RobolectricTest() {
       questionnaireResponse
     coEvery { pdfLauncherViewModel.retrieveBinary(any()) } returns htmlBinary
 
-    val questionnaireConfig =
-      QuestionnaireConfig(
-          id = "1",
-          resourceIdentifier = "123",
-          resourceType = ResourceType.Patient,
-          htmlBinaryId = "1234",
-          htmlTitle = "Title",
+    val pdfConfig =
+      PdfConfig(
+          pdfTitle = "title",
+          pdfTitleSuffix = "suffix",
+          pdfStructureReference = "Binary/id",
+          subjectReference = "Patient/id",
+          subjectType = ResourceType.Patient,
+          questionnaireReferences = listOf("QuestionnaireResponse/id")
         )
         .encodeJson()
 
     val fragmentArgs =
       Bundle().apply {
-        putString(PdfLauncherFragment.EXTRA_QUESTIONNAIRE_CONFIG_KEY, questionnaireConfig)
+        putString(PdfLauncherFragment.EXTRA_PDF_CONFIG_KEY, pdfConfig)
       }
 
     val activity = Robolectric.buildActivity(HiltTestActivity::class.java).create().resume().get()
