@@ -27,7 +27,7 @@ The EIR package leverages the next-gen FHIR-native OpenSRP 2 platform, which ena
 ## Quickstart guide
 
 ### Core workflows
-Building a FHIR Based EIR (Electronic Immunization Registry) system involves integrating various healthcare workflows such as patient registration, vaccination, tracking, and reporting using standardized FHIR resources. Here’s a high-level breakdown for each component:
+Building a FHIR Based EIR (Electronic Immunization Registry) system involves integrating various healthcare workflows such as patient registration, vaccination, tracking, and reporting using standardized FHIR resources. Here’s a high-level breakdown for each component from a FHIR Resource Mapping perspective:
 
 1. Registration
 
@@ -114,19 +114,87 @@ Building a FHIR Based EIR (Electronic Immunization Registry) system involves int
 
 ### Deploying the health information infrastructure
 
-[TBC]
+Building a FHIR Core app using OpenSRP FHIRCore requires familiarity with both the OpenSRP platform and the HL7 FHIR (Fast Healthcare Interoperability Resources) standard. 
+The FHIRCore project, built on OpenSRP, is designed to facilitate the development of healthcare applications that interact with FHIR-compliant data stores. Here’s a step-by-step guide
+to help you build a FHIR Core app using this repository:
+
+Prerequisites
+
+	1.	Technical Knowledge:
+        •	Basic understanding of the FHIR standard.
+        •	Familiarity with Android development (Java/Kotlin).
+        •	Familiarity with Gradle, Docker, and possibly Kubernetes (if you are running OpenSRP in a containerized environment).
+	2.	Required Tools:
+        •	Java Development Kit (JDK 11 or above).
+        •	Android Studio.
+        •	Git (for cloning the repository).
+        •	Docker (optional for local server setup).
+	3.	FHIR Server:
+        •	See more here  - Link to server setup 
+
+Step-by-Step Guide
+
+1. Clone the FHIRCore Repository
+
+Start by cloning the repository to your local machine.
+
+````
+git clone https://github.com/opensrp/fhircore.git
+cd fhircore
+````
+2. Set Up Development Environment
+
+	•	Install the latest version of Android Studio and configure the SDK.
+	•	Open the cloned fhircore project in Android Studio.
+
+Ensure that you have the appropriate Android SDKs installed. The project usually targets SDK 30 (Android 11) or above, so make sure you have this version or later installed in your environment.
+
+3. Build the Project
+
+Before you can start working on the app, you will need to sync the project with Gradle to install dependencies and build the project.
+
+	•	Open Android Studio.
+	•	Navigate to the project folder and open the build.gradle file.
+	•	Click the Sync Project with Gradle Files button in Android Studio to install dependencies.
+
+Once synced, click on Build > Make Project to compile the code. And thne run the ssteps described here https://docs.opensrp.io/engineering/app/developer-setup 
+
+4. Contributions (Optional)
+
+If you want to contribute back to the OpenSRP FHIRCore project, you can create ......
+
 
 ### Deploying the reference content
 
-[TBC]
+The app is able to use content for configuration resources from the `configs/app/resources` directory in the assets directory. Ideally, any FHIR resource can be loaded into
+ the application through the assets.The current implementation loads the configuration resources declared in the Composition (including Questionnaires, StructureMaps, PlanDefs, Lists, etc) by retrieving them 
+from the server, which requires the device to be online. This enhancement should allow the user to create config directories for the resources inside `/configs/app/resources`.
+ The resources directory name should be in lowercase format e.g. `configs/app/resources/binary`, `configs/app/resources/questionnaire`, `configs/app/resources/structuremap`, 
+ `configs/app/resources/plandefinition`, etc.
 
 ### Configuration and adapting the content
 
 [TBC]
 
-## Reference app user guide
+**Example on how to Load a questionnaire from assets folder**
+1. Create a new file `config/app/resources/questionnaire/add_household.json`
+2. Update the questionnaire content
+3. Login to the app using `app/debug`
+4. Click on Household register
+5. Click on add household from the side navigation or configured fab
+6. Observe the questionnaire updated 
 
-[TBC]
+
+# FHIR Resources for the EIR OpenSRP 2 app
+
+To load into the OpenSRP FHIR Core app on demand, for debug and development, you can create a symbolic link using:
+
+```sh
+git clone git@github.com:ona-health/giz-eir-fhir-resources.git
+# assuming you have checked out fhircore in the same directory
+mkdir -p fhircore/android/quest/src/gizeir/assets/configs
+ln -s `pwd`/giz-eir-fhir-resources/app/* fhircore/android/quest/src/gizEir/assets/configs/gizeir
+```
 
 ### Logging in and getting started
 
@@ -137,6 +205,10 @@ Building a FHIR Based EIR (Electronic Immunization Registry) system involves int
 [TBC]
 
 ### Recording vaccinations
+
+[TBC]
+
+## Reference app user guide
 
 [TBC]
 
