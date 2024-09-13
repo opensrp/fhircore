@@ -225,10 +225,10 @@ fun ActionConfig.handleClickEvent(
       navController.navigate(MainNavigationScreen.LocationSelector.route, args)
     }
     ApplicationWorkflow.LAUNCH_PDF_GENERATION -> {
-        val pdfConfig = actionConfig.pdfConfig ?: return
-        val interpolatedPdfConfig = pdfConfig.interpolate(computedValuesMap)
-        val appCompatActivity = (navController.context as AppCompatActivity)
-        PdfLauncherFragment.launch(appCompatActivity, interpolatedPdfConfig.encodeJson())
+      val pdfConfig = actionConfig.pdfConfig ?: return
+      val interpolatedPdfConfig = pdfConfig.interpolate(computedValuesMap)
+      val appCompatActivity = (navController.context as AppCompatActivity)
+      PdfLauncherFragment.launch(appCompatActivity, interpolatedPdfConfig.encodeJson())
     }
     else -> return
   }

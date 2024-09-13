@@ -38,8 +38,8 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 /**
  * A fragment for generating and displaying a PDF based on a questionnaire response.
  *
- * This fragment uses the provided [PdfConfig] to retrieve a questionnaire response,
- * populate an HTML template with the response data, and generate a PDF.
+ * This fragment uses the provided [PdfConfig] to retrieve a questionnaire response, populate an
+ * HTML template with the response data, and generate a PDF.
  */
 @AndroidEntryPoint
 class PdfLauncherFragment : DialogFragment() {
@@ -55,10 +55,12 @@ class PdfLauncherFragment : DialogFragment() {
     val pdfConfig = getPdfConfig()
 
     val pdfStructureId = pdfConfig.pdfStructureReference!!.extractLogicalIdUuid()
-    val pdfTitle = StringBuilder().append(pdfConfig.pdfTitle ?: getString(R.string.default_html_title))
+    val pdfTitle =
+      StringBuilder().append(pdfConfig.pdfTitle ?: getString(R.string.default_html_title))
     val pdfTitleSuffix = pdfConfig.pdfTitleSuffix
     val subjectReference = pdfConfig.subjectReference!!
-    val questionnaireIds = pdfConfig.questionnaireReferences.map { it.extractLogicalIdUuid() } ?: emptyList()
+    val questionnaireIds =
+      pdfConfig.questionnaireReferences.map { it.extractLogicalIdUuid() } ?: emptyList()
 
     lifecycleScope.launch(Dispatchers.IO) {
       val questionnaireResponses =

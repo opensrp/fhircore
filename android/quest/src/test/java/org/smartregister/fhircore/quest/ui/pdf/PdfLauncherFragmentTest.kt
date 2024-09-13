@@ -27,7 +27,6 @@ import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -61,19 +60,17 @@ class PdfLauncherFragmentTest : RobolectricTest() {
     coEvery { pdfLauncherViewModel.retrieveBinary(any()) } returns htmlBinary
 
     val pdfConfig =
-        PdfConfig(
+      PdfConfig(
           pdfTitle = "title",
           pdfTitleSuffix = "suffix",
           pdfStructureReference = "Binary/id",
           subjectReference = "Patient/id",
-          questionnaireReferences = listOf("QuestionnaireResponse/id")
+          questionnaireReferences = listOf("QuestionnaireResponse/id"),
         )
         .encodeJson()
 
     val fragmentArgs =
-      Bundle().apply {
-        putString(PdfLauncherFragment.EXTRA_PDF_CONFIG_KEY, pdfConfig)
-      }
+      Bundle().apply { putString(PdfLauncherFragment.EXTRA_PDF_CONFIG_KEY, pdfConfig) }
 
     val activity = Robolectric.buildActivity(HiltTestActivity::class.java).create().resume().get()
 
@@ -102,17 +99,15 @@ class PdfLauncherFragmentTest : RobolectricTest() {
     val pdfConfig =
       PdfConfig(
           pdfTitle = "title",
-        pdfTitleSuffix = "suffix",
+          pdfTitleSuffix = "suffix",
           pdfStructureReference = "Binary/id",
           subjectReference = "Patient/id",
-          questionnaireReferences = listOf("QuestionnaireResponse/id")
+          questionnaireReferences = listOf("QuestionnaireResponse/id"),
         )
         .encodeJson()
 
     val fragmentArgs =
-      Bundle().apply {
-        putString(PdfLauncherFragment.EXTRA_PDF_CONFIG_KEY, pdfConfig)
-      }
+      Bundle().apply { putString(PdfLauncherFragment.EXTRA_PDF_CONFIG_KEY, pdfConfig) }
 
     val activity = Robolectric.buildActivity(HiltTestActivity::class.java).create().resume().get()
 
@@ -144,14 +139,12 @@ class PdfLauncherFragmentTest : RobolectricTest() {
           pdfTitleSuffix = "suffix",
           pdfStructureReference = "Binary/id",
           subjectReference = "Patient/id",
-          questionnaireReferences = listOf("QuestionnaireResponse/id")
+          questionnaireReferences = listOf("QuestionnaireResponse/id"),
         )
         .encodeJson()
 
     val fragmentArgs =
-      Bundle().apply {
-        putString(PdfLauncherFragment.EXTRA_PDF_CONFIG_KEY, pdfConfig)
-      }
+      Bundle().apply { putString(PdfLauncherFragment.EXTRA_PDF_CONFIG_KEY, pdfConfig) }
 
     val activity = Robolectric.buildActivity(HiltTestActivity::class.java).create().resume().get()
 
@@ -183,14 +176,12 @@ class PdfLauncherFragmentTest : RobolectricTest() {
           pdfTitleSuffix = "suffix",
           pdfStructureReference = "Binary/id",
           subjectReference = "Patient/id",
-          questionnaireReferences = listOf("QuestionnaireResponse/id")
+          questionnaireReferences = listOf("QuestionnaireResponse/id"),
         )
         .encodeJson()
 
     val fragmentArgs =
-      Bundle().apply {
-        putString(PdfLauncherFragment.EXTRA_PDF_CONFIG_KEY, pdfConfig)
-      }
+      Bundle().apply { putString(PdfLauncherFragment.EXTRA_PDF_CONFIG_KEY, pdfConfig) }
 
     val activity = Robolectric.buildActivity(HiltTestActivity::class.java).create().resume().get()
 

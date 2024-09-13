@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.configuration
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
@@ -29,7 +28,7 @@ data class PdfConfig(
   val pdfTitleSuffix: String? = null,
   val pdfStructureReference: String? = null,
   val subjectReference: String? = null,
-  val questionnaireReferences: List<String> = emptyList()
+  val questionnaireReferences: List<String> = emptyList(),
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =

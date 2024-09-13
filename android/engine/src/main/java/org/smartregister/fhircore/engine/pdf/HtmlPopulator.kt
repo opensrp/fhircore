@@ -16,31 +16,33 @@
 
 package org.smartregister.fhircore.engine.pdf
 
+import java.util.Date
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.engine.util.extension.allItems
 import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
+import org.smartregister.fhircore.engine.util.extension.allItems
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.valueToString
-import java.util.Date
 
 /**
  * HtmlPopulator class is responsible for processing an HTML template by replacing custom tags with
  * data from QuestionnaireResponses. The class uses various regex patterns to find and replace
- * custom tags such as @is-not-empty, @answer-as-list, @answer, @submitted-date, @contains, and
- * @is-questionnaire-submitted.
+ * custom tags such as @is-not-empty, @answer-as-list, @answer, @submitted-date, @contains,
+ * and @is-questionnaire-submitted.
  *
- * @property questionnaireResponses The QuestionnaireResponses object containing data for replacement.
+ * @property questionnaireResponses The QuestionnaireResponses object containing data for
+ *   replacement.
  */
 class HtmlPopulator(
   questionnaireResponses: List<QuestionnaireResponse>,
 ) {
   // Store answers as key-value pairs with link-id as key
-  private val answerMap: MutableMap<String, List<QuestionnaireResponseItemAnswerComponent>> = mutableMapOf()
+  private val answerMap: MutableMap<String, List<QuestionnaireResponseItemAnswerComponent>> =
+    mutableMapOf()
 
   // Store submitted-date of a questionnaire response with link-id as key
   private val submittedDateMap: MutableMap<String, Date> = mutableMapOf()
@@ -51,10 +53,11 @@ class HtmlPopulator(
   init {
     questionnaireResponses.forEach { questionnaireResponse ->
       val questionnaireId = questionnaireResponse.questionnaire.extractLogicalIdUuid()
-      val answerMap = questionnaireResponse.allItems.associateBy(
-        keySelector = { "$questionnaireId/${it.linkId}" },
-        valueTransform = { it.answer },
-      )
+      val answerMap =
+        questionnaireResponse.allItems.associateBy(
+          keySelector = { "$questionnaireId/${it.linkId}" },
+          valueTransform = { it.answer },
+        )
       this.answerMap.putAll(answerMap)
       this.submittedDateMap[questionnaireId] = questionnaireResponse.meta.lastUpdated ?: Date()
       this.questionnaireIds.add(questionnaireId)
@@ -141,8 +144,7 @@ class HtmlPopulator(
   private fun processAnswerAsList(i: Int, html: StringBuilder, matcher: Matcher) {
     val linkId = matcher.group(1)
     val answerAsList =
-      answerMap.getOrDefault(linkId, listOf()).joinToString(separator = "") {
-        answer ->
+      answerMap.getOrDefault(linkId, listOf()).joinToString(separator = "") { answer ->
         "<li>${answer.value.valueToString()}</li>"
       }
     html.replace(i, matcher.end() + i, answerAsList)
@@ -160,8 +162,9 @@ class HtmlPopulator(
     val dateFormat = matcher.group(2)
     val answer =
       answerMap.getOrDefault(linkId, listOf()).joinToString { answer ->
-        if (dateFormat == null) answer.value.valueToString()
-        else answer.value.valueToString(dateFormat)
+        if (dateFormat == null) {
+          answer.value.valueToString()
+        } else answer.value.valueToString(dateFormat)
       }
     html.replace(i, matcher.end() + i, answer)
   }
@@ -220,8 +223,9 @@ class HtmlPopulator(
   }
 
   /**
-   * Processes the @is-questionnaire-submitted tag by checking if the corresponding [QuestionnaireResponse] exists.
-   * Replaces the tag with the content if the indicator is true, otherwise removes the tag.
+   * Processes the @is-questionnaire-submitted tag by checking if the corresponding
+   * [QuestionnaireResponse] exists. Replaces the tag with the content if the indicator is true,
+   * otherwise removes the tag.
    *
    * @param i The starting index of the tag in the HTML.
    * @param html The StringBuilder containing the HTML.
@@ -244,10 +248,13 @@ class HtmlPopulator(
       Pattern.compile("@is-not-empty\\('([^']+)'\\)((?s).*?)@is-not-empty\\('\\1'\\)")
     private val answerAsListPattern = Pattern.compile("@answer-as-list\\('([^']+)'\\)")
     private val answerPattern = Pattern.compile("@answer\\('([^']+)'(?:,'([^']+)')?\\)")
-    private val submittedDatePattern = Pattern.compile("@submitted-date\\('([^']+)'(?:,'([^']+)')?\\)")
+    private val submittedDatePattern =
+      Pattern.compile("@submitted-date\\('([^']+)'(?:,'([^']+)')?\\)")
     private val containsPattern =
       Pattern.compile("@contains\\('([^']+)','([^']+)'\\)((?s).*?)@contains\\('\\1'\\)")
     private val isQuestionnaireSubmittedPattern =
-      Pattern.compile("@is-questionnaire-submitted\\('([^']+)'\\)((?s).*?)@is-questionnaire-submitted\\('\\1'\\)")
+      Pattern.compile(
+        "@is-questionnaire-submitted\\('([^']+)'\\)((?s).*?)@is-questionnaire-submitted\\('\\1'\\)",
+      )
   }
 }
