@@ -29,7 +29,6 @@ data class PdfConfig(
   val pdfTitleSuffix: String? = null,
   val pdfStructureReference: String? = null,
   val subjectReference: String? = null,
-  val subjectType: ResourceType? = null,
   val questionnaireReferences: List<String> = emptyList()
 ) : java.io.Serializable, Parcelable {
 

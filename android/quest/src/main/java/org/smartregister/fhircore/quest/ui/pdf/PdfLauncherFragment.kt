@@ -57,8 +57,7 @@ class PdfLauncherFragment : DialogFragment() {
     val pdfStructureId = pdfConfig.pdfStructureReference!!.extractLogicalIdUuid()
     val pdfTitle = StringBuilder().append(pdfConfig.pdfTitle ?: getString(R.string.default_html_title))
     val pdfTitleSuffix = pdfConfig.pdfTitleSuffix
-    val subjectReference = pdfConfig.subjectReference!!.extractLogicalIdUuid()
-    val subjectType = pdfConfig.subjectType!!
+    val subjectReference = pdfConfig.subjectReference!!
     val questionnaireIds = pdfConfig.questionnaireReferences.map { it.extractLogicalIdUuid() } ?: emptyList()
 
     lifecycleScope.launch(Dispatchers.IO) {
@@ -67,7 +66,6 @@ class PdfLauncherFragment : DialogFragment() {
           pdfLauncherViewModel.retrieveQuestionnaireResponse(
             questionnaireId,
             subjectReference,
-            subjectType,
           )
         }
       val htmlBinary = pdfLauncherViewModel.retrieveBinary(pdfStructureId)
