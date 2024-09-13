@@ -155,7 +155,7 @@ constructor(
     return withContext(dispatcherProvider.io()) {
       try {
         val measureUrlResources: Iterable<IBaseResource> =
-          knowledgeManager.loadResources(measureUrl)
+          knowledgeManager.loadResources(url = measureUrl)
 
         fhirOperator.evaluateMeasure(
           measure = measureUrlResources.first() as Measure,

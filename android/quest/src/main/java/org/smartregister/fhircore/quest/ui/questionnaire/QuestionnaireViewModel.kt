@@ -785,8 +785,7 @@ constructor(
       val librariesList =
         withContext(dispatcherProvider.io()) {
           knowledgeManager.loadResources(
-            ResourceType.Library.name,
-            libraryUrl,
+            url = libraryUrl,
           )
         }
 
