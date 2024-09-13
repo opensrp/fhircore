@@ -95,6 +95,10 @@ class HtmlPopulator(
           val matcher = containsPattern.matcher(html.substring(i))
           if (matcher.find()) processContains(i, html, matcher) else i++
         }
+        html.startsWith("@is-questionnaire-submitted", i) -> {
+          val matcher = isQuestionnaireSubmittedPattern.matcher(html.substring(i))
+          if (matcher.find()) processIsQuestionnaireSubmitted(i, html, matcher) else i++
+        }
         else -> i++
       }
     }
@@ -215,6 +219,25 @@ class HtmlPopulator(
     }
   }
 
+  /**
+   * Processes the @is-questionnaire-submitted tag by checking if the corresponding [QuestionnaireResponse] exists.
+   * Replaces the tag with the content if the indicator is true, otherwise removes the tag.
+   *
+   * @param i The starting index of the tag in the HTML.
+   * @param html The StringBuilder containing the HTML.
+   * @param matcher The Matcher object for the regex pattern.
+   */
+  private fun processIsQuestionnaireSubmitted(i: Int, html: StringBuilder, matcher: Matcher) {
+    val id = matcher.group(1)
+    val content = matcher.group(2) ?: ""
+    val doesQuestionnaireExists = questionnaireIds.contains(id)
+    if (doesQuestionnaireExists) {
+      html.replace(i, matcher.end() + i, content)
+    } else {
+      html.replace(i, matcher.end() + i, "")
+    }
+  }
+
   companion object {
     // Compile regex patterns for different tags
     private val isNotEmptyPattern =
@@ -224,5 +247,7 @@ class HtmlPopulator(
     private val submittedDatePattern = Pattern.compile("@submitted-date\\('([^']+)'(?:,'([^']+)')?\\)")
     private val containsPattern =
       Pattern.compile("@contains\\('([^']+)','([^']+)'\\)((?s).*?)@contains\\('\\1'\\)")
+    private val isQuestionnaireSubmittedPattern =
+      Pattern.compile("@is-questionnaire-submitted\\('([^']+)'\\)((?s).*?)@is-questionnaire-submitted\\('\\1'\\)")
   }
 }
