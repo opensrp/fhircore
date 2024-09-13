@@ -54,21 +54,27 @@ class PdfLauncherFragment : DialogFragment() {
 
     val pdfConfig = getPdfConfig()
 
-    val questionnaireId = questionnaireConfig.id.extractLogicalIdUuid()
-    val subjectId = questionnaireConfig.resourceIdentifier!!.extractLogicalIdUuid()
-    val subjectType = questionnaireConfig.resourceType!!
-    val htmlBinaryId = questionnaireConfig.htmlBinaryId!!.extractLogicalIdUuid()
-    val htmlTitle = questionnaireConfig.htmlTitle ?: getString(R.string.default_html_title)
+    val pdfStructureId = pdfConfig.pdfStructureReference!!.extractLogicalIdUuid()
+    val pdfTitle = StringBuilder().append(pdfConfig.pdfTitle ?: getString(R.string.default_html_title))
+    val pdfTitleSuffix = pdfConfig.pdfTitleSuffix
+    val subjectReference = pdfConfig.subjectReference!!.extractLogicalIdUuid()
+    val subjectType = pdfConfig.subjectType!!
+    val questionnaireIds = pdfConfig.questionnaireReferences.map { it.extractLogicalIdUuid() } ?: emptyList()
 
     lifecycleScope.launch(Dispatchers.IO) {
-      val questionnaireResponse =
-        pdfLauncherViewModel.retrieveQuestionnaireResponse(
-          questionnaireId,
-          subjectId,
-          subjectType,
-        )
-      val htmlBinary = pdfLauncherViewModel.retrieveBinary(htmlBinaryId)
-      generatePdf(questionnaireResponse, htmlBinary, htmlTitle)
+      val questionnaireResponses =
+        questionnaireIds.mapNotNull { questionnaireId ->
+          pdfLauncherViewModel.retrieveQuestionnaireResponse(
+            questionnaireId,
+            subjectReference,
+            subjectType,
+          )
+        }
+      val htmlBinary = pdfLauncherViewModel.retrieveBinary(pdfStructureId)
+
+      if (pdfTitleSuffix != null) pdfTitle.append(" - $pdfTitleSuffix")
+
+      generatePdf(questionnaireResponses, htmlBinary, pdfTitle.toString())
     }
   }
 
@@ -88,22 +94,22 @@ class PdfLauncherFragment : DialogFragment() {
   /**
    * Generates a PDF using the provided questionnaire response and HTML template.
    *
-   * @param questionnaireResponse the [QuestionnaireResponse] object containing user responses.
+   * @param questionnaireResponses containing user responses.
    * @param htmlBinary the [Binary] object containing the HTML template.
    * @param htmlTitle the title to be used for the generated PDF.
    */
   private suspend fun generatePdf(
-    questionnaireResponse: QuestionnaireResponse?,
+    questionnaireResponses: List<QuestionnaireResponse>,
     htmlBinary: Binary?,
     htmlTitle: String,
   ) {
-    if (questionnaireResponse == null || htmlBinary == null) {
+    if (questionnaireResponses.isEmpty() || htmlBinary == null) {
       dismiss()
       return
     }
 
     val htmlContent = htmlBinary.content.decodeToString()
-    val populatedHtml = HtmlPopulator(questionnaireResponse).populateHtml(htmlContent)
+    val populatedHtml = HtmlPopulator(questionnaireResponses).populateHtml(htmlContent)
 
     withContext(Dispatchers.Main) {
       pdfGenerator.generatePdfWithHtml(populatedHtml, htmlTitle) { dismiss() }
