@@ -55,7 +55,9 @@ constructor(
   ): QuestionnaireResponse? {
     val searchQuery =
       createQuestionnaireResponseSearchQuery(questionnaireId, subjectId, subjectType)
-    return defaultRepository.search<QuestionnaireResponse>(searchQuery).maxByOrNull { it.meta.lastUpdated }
+    return defaultRepository.search<QuestionnaireResponse>(searchQuery).maxByOrNull {
+      it.meta.lastUpdated
+    }
   }
 
   /**
