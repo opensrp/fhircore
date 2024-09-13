@@ -108,6 +108,7 @@ constructor(
       val locationIds =
         syncLocationIds
           .map { retrieveFlattenedSubLocations(it).map { subLocation -> subLocation.logicalId }}
+          .asSequence()
           .flatten()
           .toHashSet()
       val countSearch =
@@ -132,16 +133,18 @@ constructor(
             currentPage = pageNumber,
             count = COUNT,
           )
-        val result = fhirEngine.search<Resource>(baseResourceSearch)
-        searchResultsCount += (result.filter { searchResult ->
-          when (baseResourceConfig.resource) {
-            ResourceType.Location -> locationIds.contains(searchResult.resource.logicalId)
-            else -> searchResult.resource.meta.tag.any {
-              it.system == context.getString(R.string.sync_strategy_related_entity_location_system)
-                      && locationIds.contains(it.code)
-            }
+        searchResultsCount += fhirEngine.search<Resource>(baseResourceSearch)
+          .asSequence()
+          .map { it.resource }
+          .filter { resource ->
+            when (resource.resourceType) {
+              ResourceType.Location -> locationIds.contains(resource.logicalId)
+              else -> resource.meta.tag.any {
+                it.system == context.getString(R.string.sync_strategy_related_entity_location_system)
+                        && locationIds.contains(it.code)
+              }
           }
-        }.size)
+        }.count().toLong()
         count += COUNT
         pageNumber++
       }

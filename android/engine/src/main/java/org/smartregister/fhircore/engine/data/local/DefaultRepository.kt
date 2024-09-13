@@ -695,12 +695,14 @@ constructor(
           val includedResources: Map<ResourceType, List<Resource>>? =
             currentSearchResult.included
               ?.values
+              ?.asSequence()
               ?.flatten()
               ?.distinctBy { it.id }
               ?.groupBy { it.resourceType }
           val reverseIncludedResources: Map<ResourceType, List<Resource>>? =
             currentSearchResult.revIncluded
               ?.values
+              ?.asSequence()
               ?.flatten()
               ?.distinctBy { it.id }
               ?.groupBy { it.resourceType }
@@ -1206,8 +1208,7 @@ constructor(
     return locations
   }
 
-  private suspend fun retrieveSubLocations(locationId: String) =
-    withContext(dispatcherProvider.io()) {
+  private suspend fun retrieveSubLocations(locationId: String): LinkedList<Location> =
       fhirEngine
         .search<Location>(
           Search(type = ResourceType.Location).apply {
@@ -1218,7 +1219,6 @@ constructor(
           },
         )
         .mapTo(LinkedList()) { it.resource }
-    }
 
   /**
    * A wrapper data class to hold search results. All related resources are flattened into one Map
@@ -1230,7 +1230,7 @@ constructor(
   )
 
   companion object {
-    const val COUNT = 100
+    const val COUNT = 250
     const val SNOMED_SYSTEM = "http://hl7.org/fhir/R4B/valueset-condition-clinical.html"
     const val PATIENT_CONDITION_RESOLVED_CODE = "resolved"
     const val PATIENT_CONDITION_RESOLVED_DISPLAY = "Resolved"
