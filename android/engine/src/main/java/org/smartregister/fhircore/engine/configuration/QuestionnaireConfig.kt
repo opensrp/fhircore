@@ -68,6 +68,8 @@ data class QuestionnaireConfig(
   val linkIds: List<LinkIdConfig>? = null,
   val htmlBinaryId: String? = null,
   val htmlTitle: String? = null,
+  val showDisabledPreviousButton: Boolean = false,
+  val showDisabledNextButton: Boolean = false,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =

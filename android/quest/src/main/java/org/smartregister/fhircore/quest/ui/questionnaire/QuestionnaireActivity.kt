@@ -282,6 +282,8 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       )
       .showAsterisk(this.questionnaireConfig.showRequiredTextAsterisk)
       .showRequiredText(this.questionnaireConfig.showRequiredText)
+      .setShowDisabledPreviousButton(this.questionnaireConfig.showDisabledPreviousButton)
+      .setShowDisabledNextButton(this.questionnaireConfig.showDisabledNextButton)
       .apply {
         if (questionnaireResponse != null) {
           questionnaireResponse
