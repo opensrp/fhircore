@@ -16,16 +16,19 @@
 
 package org.smartregister.fhircore.quest.data
 
+import android.util.Log
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.XFhirQueryResolver
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Resource
+import timber.log.Timber
 
 @Singleton
 class QuestXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) : XFhirQueryResolver {
   override suspend fun resolve(xFhirQuery: String): List<Resource> {
+    Timber.tag("This is the content").d(xFhirQuery)
     return fhirEngine.search(xFhirQuery).map { it.resource }
   }
 }
