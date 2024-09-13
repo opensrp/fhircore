@@ -166,6 +166,15 @@ If you want to contribute back to the OpenSRP FHIRCore project, you can create .
 
 ### Deploying the reference content
 
+To load into the OpenSRP FHIR Core app on demand, for debug and development, you can create a symbolic link using:
+
+```sh
+git clone git@github.com:ona-health/giz-eir-fhir-resources.git
+# assuming you have checked out fhircore in the same directory
+mkdir -p fhircore/android/quest/src/gizeir/assets/configs
+ln -s `pwd`/giz-eir-fhir-resources/app/* fhircore/android/quest/src/gizEir/assets/configs/gizeir
+```
+
 The app is able to use content for configuration resources from the `configs/app/resources` directory in the assets directory. Ideally, any FHIR resource can be loaded into
  the application through the assets.The current implementation loads the configuration resources declared in the Composition (including Questionnaires, StructureMaps, PlanDefs, Lists, etc) by retrieving them 
 from the server, which requires the device to be online. This enhancement should allow the user to create config directories for the resources inside `/configs/app/resources`.
@@ -184,17 +193,6 @@ from the server, which requires the device to be online. This enhancement should
 5. Click on add household from the side navigation or configured fab
 6. Observe the questionnaire updated 
 
-
-# FHIR Resources for the EIR OpenSRP 2 app
-
-To load into the OpenSRP FHIR Core app on demand, for debug and development, you can create a symbolic link using:
-
-```sh
-git clone git@github.com:ona-health/giz-eir-fhir-resources.git
-# assuming you have checked out fhircore in the same directory
-mkdir -p fhircore/android/quest/src/gizeir/assets/configs
-ln -s `pwd`/giz-eir-fhir-resources/app/* fhircore/android/quest/src/gizEir/assets/configs/gizeir
-```
 
 ### Logging in and getting started
 
