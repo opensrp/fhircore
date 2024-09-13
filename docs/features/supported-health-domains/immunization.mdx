@@ -26,6 +26,7 @@ The EIR package leverages the next-gen FHIR-native OpenSRP 2 platform, which ena
 
 ## Quickstart guide
 
+### Core workflows
 Building a FHIR Based EIR (Electronic Immunization Registry) system involves integrating various healthcare workflows such as patient registration, vaccination, tracking, and reporting using standardized FHIR resources. Here’s a high-level breakdown for each component:
 
 1. Registration
@@ -49,28 +50,66 @@ Building a FHIR Based EIR (Electronic Immunization Registry) system involves int
 	•	If any observations (e.g., side effects, adverse reactions) are required during or after vaccination, capture them using the Observation resource.
 	Workflow:
 	•	After administering the vaccine, the system records the vaccination details in the Immunization resource.
-	•	The vaccine information such as type, batch number, and expiry is recorded using the Medication resource.
-	•	Any side effects are recorded as Observations.
+	•	The vaccine information such as type, batch number, and expiry is recorded using the Medication resource (optional).
+	•	Any side effects are recorded as Observations (optional).
 
 3. Tracking
 
 	•	FHIR Resources: Immunization, ImmunizationRecommendation, Schedule, Appointment
 	Details:
 	•	Use the Immunization resource to track all vaccinations given to a patient.
-	•	The ImmunizationRecommendation resource helps schedule follow-up doses based on patient age, vaccination history, and guidelines.
-	•	You can leverage Schedule and Appointment resources to schedule future vaccinations.
+	•	The ImmunizationRecommendation resource helps schedule follow-up doses based on patient age, vaccination history, and guidelines (optional).
+	•	You can leverage Schedule and Appointment resources to schedule future vaccinations (optional). Tasks resourece is being used in place of these 2 resource 
 	Workflow:
-	•	Once a patient receives their first dose, an ImmunizationRecommendation is generated for the next dose.
-	•	The system can generate a schedule for the patient’s remaining doses using Schedule and Appointment resources.
+	•	Once a patient receives their first dose, an ImmunizationRecommendation is generated for the next dose (optional).
+	•	The system can generate a schedule for the patient’s remaining doses using Schedule and Appointment resources. Tasks resourece is being used in place of these 2 resource 
+	Workflow:
 
 4. Reporting
-
 	•	FHIR Resources: Immunization, MeasureReport 
 	Details:
 	•	Aggregated vaccination data can be reported using the MeasureReport resource, which summarizes immunization status at individual and population levels.
 	Workflow:
 	•	Generate reports for public health officials on vaccination coverage and identify gaps.
 	•	Use the MeasureReport resource to analyze vaccination status by region, age group, or other demographic filters.
+
+
+### Additional workflows 
+
+1. MUAC (Mid-Upper Arm Circumference)
+
+	•	FHIR Resources: Observation
+	•	Details:
+        •	MUAC is a key indicator for assessing malnutrition in children. Use the Observation resource to capture the measurement of the arm circumference.
+        •	The value for MUAC will be recorded as a quantity with units (e.g., cm or mm) and will have a code indicating it is a MUAC measurement.
+	•	Workflow:
+        •	During the patient’s visit, the healthcare provider measures the child’s MUAC.
+        •	An Observation resource is created, capturing the measurement value, the method (e.g., tape measurement), and any interpretation (e.g., normal, moderate malnutrition, severe malnutrition).
+        •	Observation may also contain other related data, such as the practitioner who recorded the measurement and the encounter in which the observation occurred.
+
+2. Growth Monitoring
+
+    •	FHIR Resources: Observation, FamilyMemberHistory, Patient
+	•	Details:
+        •	Growth monitoring involves tracking height, weight, head circumference, and comparing these metrics to standardized growth charts.
+        •	Use the Observation resource to record parameters like weight (LOINC 3141-9), height (LOINC 8302-2), and head circumference (LOINC 8287-5).
+        •	FamilyMemberHistory can also be used to track genetic or hereditary conditions that may affect growth patterns(optional).
+	•	Workflow:
+        •	During a clinic visit, the system collects a child’s growth parameters (height, weight, etc.) and stores these as Observation resources.
+        •	These observations can be plotted against standard growth charts to evaluate if the child is growing at a normal rate.
+        •	If there are concerns (e.g., stunted growth), the healthcare provider can use Observation to indicate a need for follow-up.
+
+3. Adverse Reaction Tracking
+
+	•	FHIR Resources: AdverseEvent, AllergyIntolerance, Condition, Observation
+	•	Details:
+        •	Use the AdverseEvent resource to capture any adverse reactions following vaccination, such as fever, rash, or more severe reactions like anaphylaxis.
+        •	If the adverse reaction is related to an allergy, you may also use the AllergyIntolerance resource to track any long-term contraindications or allergic responses(optional).
+        •	Condition can also be used if the adverse reaction results in a medical condition that requires ongoing treatment.
+	•	Workflow:
+        •	After vaccination, if the patient reports an adverse reaction, the healthcare provider records the details in an AdverseEvent resource.
+        •	If necessary, further evaluations (e.g., temperature or blood pressure) can be recorded using Observation resources to monitor the reaction.
+        •	The system can trigger alerts for serious reactions, schedule follow-up visits, or provide contraindication warnings for future doses.
 
 
 ### Deploying the health information infrastructure
