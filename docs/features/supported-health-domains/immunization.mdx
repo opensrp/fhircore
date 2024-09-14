@@ -32,45 +32,73 @@ Building a FHIR Based EIR (Electronic Immunization Registry) system involves int
 1. Registration
 
 	•	FHIR Resources: Patient, Practitioner, Organization, Location
+
 	Details:
+
 	•	Use the Patient resource to manage patient demographics, contact information, and identifiers (like national IDs or health insurance numbers).
+
 	•	For healthcare providers or practitioners administering the vaccines, use the Practitioner resource.
+
 	•	Clinics or organizations that provide vaccinations can be represented with the Organization/Location(Type:Building) resource.
+
 	Workflow:
+
 	•	A patient registers at a vaccination site or via an online portal.
+
 	•	The system creates or updates a Patient resource and is visible in a Household/Patient Register
+
 	•	The Practitioner administering the vaccine is registered using the Practitioner resource from Patient Profiles
 
 2. Vaccination
 
 	•	FHIR Resources: Immunization, Medication, Observation
+
 	Details:
+
 	•	The Immunization resource is used to record the vaccine administered, the date, the manufacturer, the dose, and the route of administration.
+
 	•	Use the Medication resource to track vaccine details, including its lot number, expiry date, and ingredients.
+
 	•	If any observations (e.g., side effects, adverse reactions) are required during or after vaccination, capture them using the Observation resource.
+
 	Workflow:
+
 	•	After administering the vaccine, the system records the vaccination details in the Immunization resource.
+
 	•	The vaccine information such as type, batch number, and expiry is recorded using the Medication resource (optional).
+
 	•	Any side effects are recorded as Observations (optional).
 
 3. Tracking
 
 	•	FHIR Resources: Immunization, ImmunizationRecommendation, Schedule, Appointment
+
 	Details:
+
 	•	Use the Immunization resource to track all vaccinations given to a patient.
+
 	•	The ImmunizationRecommendation resource helps schedule follow-up doses based on patient age, vaccination history, and guidelines (optional).
+
 	•	You can leverage Schedule and Appointment resources to schedule future vaccinations (optional). Tasks resourece is being used in place of these 2 resource 
-	Workflow:
-	•	Once a patient receives their first dose, an ImmunizationRecommendation is generated for the next dose (optional).
-	•	The system can generate a schedule for the patient’s remaining doses using Schedule and Appointment resources. Tasks resourece is being used in place of these 2 resource 
+
 	Workflow:
 
+	•	Once a patient receives their first dose, an ImmunizationRecommendation is generated for the next dose (optional).
+
+	•	The system can generate a schedule for the patient’s remaining doses using Schedule and Appointment resources. Tasks resourece is being used in place of these 2 resource 
+
 4. Reporting
+
 	•	FHIR Resources: Immunization, MeasureReport 
+
 	Details:
+
 	•	Aggregated vaccination data can be reported using the MeasureReport resource, which summarizes immunization status at individual and population levels.
+
 	Workflow:
+
 	•	Generate reports for public health officials on vaccination coverage and identify gaps.
+
 	•	Use the MeasureReport resource to analyze vaccination status by region, age group, or other demographic filters.
 
 
@@ -79,36 +107,59 @@ Building a FHIR Based EIR (Electronic Immunization Registry) system involves int
 1. MUAC (Mid-Upper Arm Circumference)
 
 	•	FHIR Resources: Observation
+
 	•	Details:
+
         •	MUAC is a key indicator for assessing malnutrition in children. Use the Observation resource to capture the measurement of the arm circumference.
+
         •	The value for MUAC will be recorded as a quantity with units (e.g., cm or mm) and will have a code indicating it is a MUAC measurement.
+
 	•	Workflow:
+
         •	During the patient’s visit, the healthcare provider measures the child’s MUAC.
+
         •	An Observation resource is created, capturing the measurement value, the method (e.g., tape measurement), and any interpretation (e.g., normal, moderate malnutrition, severe malnutrition).
+
         •	Observation may also contain other related data, such as the practitioner who recorded the measurement and the encounter in which the observation occurred.
 
 2. Growth Monitoring
 
     •	FHIR Resources: Observation, FamilyMemberHistory, Patient
+
 	•	Details:
+
         •	Growth monitoring involves tracking height, weight, head circumference, and comparing these metrics to standardized growth charts.
+
         •	Use the Observation resource to record parameters like weight (LOINC 3141-9), height (LOINC 8302-2), and head circumference (LOINC 8287-5).
+
         •	FamilyMemberHistory can also be used to track genetic or hereditary conditions that may affect growth patterns(optional).
+
 	•	Workflow:
+
         •	During a clinic visit, the system collects a child’s growth parameters (height, weight, etc.) and stores these as Observation resources.
+
         •	These observations can be plotted against standard growth charts to evaluate if the child is growing at a normal rate.
+
         •	If there are concerns (e.g., stunted growth), the healthcare provider can use Observation to indicate a need for follow-up.
 
 3. Adverse Reaction Tracking
 
 	•	FHIR Resources: AdverseEvent, AllergyIntolerance, Condition, Observation
+
 	•	Details:
+
         •	Use the AdverseEvent resource to capture any adverse reactions following vaccination, such as fever, rash, or more severe reactions like anaphylaxis.
+
         •	If the adverse reaction is related to an allergy, you may also use the AllergyIntolerance resource to track any long-term contraindications or allergic responses(optional).
+
         •	Condition can also be used if the adverse reaction results in a medical condition that requires ongoing treatment.
+
 	•	Workflow:
+
         •	After vaccination, if the patient reports an adverse reaction, the healthcare provider records the details in an AdverseEvent resource.
+
         •	If necessary, further evaluations (e.g., temperature or blood pressure) can be recorded using Observation resources to monitor the reaction.
+
         •	The system can trigger alerts for serious reactions, schedule follow-up visits, or provide contraindication warnings for future doses.
 
 
@@ -121,15 +172,25 @@ to help you build a FHIR Core app using this repository:
 Prerequisites
 
 	1.	Technical Knowledge:
+
         •	Basic understanding of the FHIR standard.
+
         •	Familiarity with Android development (Java/Kotlin).
+
         •	Familiarity with Gradle, Docker, and possibly Kubernetes (if you are running OpenSRP in a containerized environment).
+
 	2.	Required Tools:
+
         •	Java Development Kit (JDK 11 or above).
+
         •	Android Studio.
+
         •	Git (for cloning the repository).
+
         •	Docker (optional for local server setup).
+
 	3.	FHIR Server:
+
         •	See more here  - Link to server setup 
 
 Step-by-Step Guide
@@ -145,6 +206,7 @@ cd fhircore
 2. Set Up Development Environment
 
 	•	Install the latest version of Android Studio and configure the SDK.
+
 	•	Open the cloned fhircore project in Android Studio.
 
 Ensure that you have the appropriate Android SDKs installed. The project usually targets SDK 30 (Android 11) or above, so make sure you have this version or later installed in your environment.
@@ -154,7 +216,9 @@ Ensure that you have the appropriate Android SDKs installed. The project usually
 Before you can start working on the app, you will need to sync the project with Gradle to install dependencies and build the project.
 
 	•	Open Android Studio.
+
 	•	Navigate to the project folder and open the build.gradle file.
+
 	•	Click the Sync Project with Gradle Files button in Android Studio to install dependencies.
 
 Once synced, click on Build > Make Project to compile the code. And thne run the ssteps described [here](https://docs.opensrp.io/engineering/app/developer-setup)
@@ -182,11 +246,17 @@ from the server, which requires the device to be online. This enhancement should
 [TBC]
 
 **Example on how to Load a questionnaire from assets folder**
+
 1. Create a new file `config/app/resources/questionnaire/add_household.json`
+
 2. Update the questionnaire content
+
 3. Login to the app using `app/debug`
+
 4. Click on Household register
+
 5. Click on add household from the side navigation or configured fab
+
 6. Observe the questionnaire updated 
 
 
