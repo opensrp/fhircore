@@ -191,123 +191,275 @@ from the server, which requires the device to be online. This enhancement should
 
 
 
-### App configs
+## App configs
+
+#### Implemntation Guide Config 
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/implementation_guide_config.json
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/composition_config.json
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/application_config.json
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/navigation_config.json
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/sync_config.json
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/list/locations.json
 
-
-![immunization config](/img/eir_configs/immunization-pd.png)
-![location list config](/img/eir_configs/list.png)
-![sync config](/img/eir_configs/sync-config.png)
-![navigation config](/img/eir_configs/navigation-config.png)
 ![ig config](/img/eir_configs/ig-config.png)
+
+#### Composition Config 
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/composition_config.json
+
 ![composition config](/img/eir_configs/composition-config.png)
+
+#### Application Config 
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/application_config.json
+
 ![application config](/img/eir_configs/application-config.png)
 
-### Geowidget Congigs
+#### Sync Config 
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/sync_config.json
+
+![sync config](/img/eir_configs/sync-config.png)
+
+#### Navigation Config 
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/navigation_config.json
+
+![navigation config](/img/eir_configs/navigation-config.png)
+
+#### List Config 
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/list/locations.json
+
+![location list config](/img/eir_configs/list.png)
+
+#### Geowidget Config
 
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/maps/location_map_config.json
 
 ![location config](/img/eir_configs/location-config.png)
 
 
-### Profiles Congigs
+### Profiles Config
+
+#### CCaregiver Profile Config
+
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/caregiver_profile_config.json
+![caregiver profile](/img/eir_configs/caregiver-profile.png)
+
+
+#### Child Profile Config
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/child_profile_config.json
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childadversereactions_profile_config.json
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childpastencounters_profile_config.json
+![child profile](/img/eir_configs/child-profile.png)
+
+
+#### Child Upcoming Immunizatiion Profile Config
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childupcomingencounters_profile_config.json
 
 
-![child profile](/img/eir_configs/child-profile.png)
-![caregiver profile](/img/eir_configs/caregiver-profile.png)
+#### Child Past Immunizatiion Profile Config
+
+
+#### Child Past Profile Config
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childpastencounters_profile_config.json
+
+#### Child Adverse Reaction Profile Config
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childadversereactions_profile_config.json
+
 
 
 ### Register Configs
 
+#### Caregiver Register Congig
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/caregiver_register_config.json
+
+![caregiver register config](/img/eir_configs/caregiver-register.png)
+
+#### Child Register Congig
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/child_register_config.json
 
 ![child register config](/img/eir_configs/child-register.png)
-![caregiver register config](/img/eir_configs/caregiver-register.png)
-
-
-
-### Multi Language strings files
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_config.properties
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_es_config.properties
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_fr_config.properties
-
-![spanish trnslations config](/img/eir_configs/strings-es.png)
-![english trnslations config](/img/eir_configs/strings-en.png)
-
-### Scheduling & tasking
-![immunization plandefinition](/img/eir_configs/immunization-pd.png)
-
-
-
 
 
 ### Logging in and getting started
-
 [TBC]
 
+import login from '/img/eir_screenshoots/login.png';
+
+<img src={login} style={{width: 250}} />
 
 
+
+import authneticate from '/img/eir_screenshoots/authentication.png';
+
+<img src={authneticate} style={{width: 250}} />
+
+import set_pin from '/img/eir_screenshoots/set-pin.png';
+
+<img src={set_pin} style={{width: 250}} />
+
+import sycning from '/img/eir_screenshoots/syncing.png';
+
+<img src={sycning} style={{width: 250}} />
+
+import sync_complete from '/img/eir_screenshoots/sync-complete.png';
+
+<img src={sync_complete} style={{width: 250}} />
 
 
 ### Registering a patient
 
 [TBC]
 
+import caregiver from '/img/eir_screenshoots/registration.png';
 
+<img src={caregiver} style={{width: 250}} />
+
+import child from '/img/eir_screenshoots/add-child.png';
+
+<img src={child} style={{width: 250}} />
+
+
+#### Scheduling & tasking
+![immunization config](/img/eir_configs/immunization-pd.png)
+
+[TBC]
 
 
 ### Recording vaccinations
 
-[TBC]
 
+import child_profile from '/img/eir_screenshoots/child-profile.png';
+
+<img src={child_profile} style={{width: 250}} />
+
+import immunization from '/img/eir_screenshoots/immunization-form.png';
+
+<img src={immunization} style={{width: 250}} />
 
 
 
 ### Multi-Language Support
 
+#### Multi Language strings files
+![english trnslations config](/img/eir_configs/strings-en.png)
+![spanish trnslations config](/img/eir_configs/strings-es.png)
 
 
 
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_config.properties
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_es_config.properties
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_fr_config.properties
 
 ## Reference app user guide
 
 [TBC]
 
-![login](/img/eir_screenshoots/login.png)
-![authneticate](/img/eir_screenshoots/authentication.png)
-![set pin](/img/eir_screenshoots/set-pin.png)
-![sycning](/img/eir_screenshoots/syncing.png)
-![sync complete](/img/eir_screenshoots/sync-complete.png)
-![caregiver search](/img/eir_screenshoots/caregiver-search.png)
-![permissions](/img/eir_screenshoots/permissions.png)
-![maps](/img/eir_screenshoots/maps.png)
-![caregiver register](/img/eir_screenshoots/caregiver-register.png)
-![nav drawer](/img/eir_screenshoots/navigation-drawer.png)
-![user settings](/img/eir_screenshoots/user-settings.png)
-![insights page](/img/eir_screenshoots/insights-page.png)
-![mls support](/img/eir_screenshoots/mls-support.png)
-![nav drawer es](/img/eir_screenshoots/navigation-drawer-es.png)
-![registration](/img/eir_screenshoots/registration-es.png)
-![caregiver profile](/img/eir_screenshoots/caregiver-profile.png)
-![overflow menu](/img/eir_screenshoots/overflow-menu.png)
-![child profile](/img/eir_screenshoots/child-profile.png)
-![immunization form](/img/eir_screenshoots/immunization-form.png)
-![adverse reaction](/img/eir_screenshoots/adverse-reaction.png)
-![revord adverse reaction](/img/eir_screenshoots/record-adverse-reaction.png)
-![past encounter](/img/eir_screenshoots/past-encounters.png)
-![upcoming encounter](/img/eir_screenshoots/upcoming-encounters.png)
-![pending sync](/img/eir_screenshoots/pending-sync.png)
+<img src={login} style={{width: 250}} />
+
+import auth_user from '/img/eir_screenshoots/authentication.png';
+
+<img src={auth_user} style={{width: 250}} />
+
+
+import set_pins from '/img/eir_screenshoots/set-pin.png';
+
+<img src={set_pins} style={{width: 250}} />
+
+import app_sycning from '/img/eir_screenshoots/syncing.png';
+
+<img src={app_sycning} style={{width: 250}} />
+
+import syncing_complete from '/img/eir_screenshoots/sync-complete.png';
+
+<img src={syncing_complete} style={{width: 250}} />
+
+
+import caregiver_search from '/img/eir_screenshoots/caregiver-search.png';
+
+<img src={caregiver_search} style={{width: 250}} />
+
+
+import permissions from '/img/eir_screenshoots/permissions.png';
+
+<img src={permissions} style={{width: 250}} />
+
+
+import maps from '/img/eir_screenshoots/maps.png';
+
+<img src={maps} style={{width: 250}} />
+
+
+import caregiver_register from '/img/eir_screenshoots/caregiver-register.png';
+
+<img src={caregiver_register} style={{width: 250}} />
+
+
+import nav_drawer from '/img/eir_screenshoots/navigation-drawer.png';
+
+<img src={nav_drawer} style={{width: 250}} />
+
+
+import user_settings from '/img/eir_screenshoots/user-settings.png';
+
+<img src={user_settings} style={{width: 250}} />
+
+
+import insights_page from '/img/eir_screenshoots/insights-page.png';
+
+<img src={insights_page} style={{width: 250}} />
+
+
+import mls_support from '/img/eir_screenshoots/mls-support.png';
+
+<img src={mls_support} style={{width: 250}} />
+
+
+import nav_drawer_es from '/img/eir_screenshoots/navigation-drawer-es.png';
+
+<img src={nav_drawer_es} style={{width: 250}} />
+
+
+import registration from '/img/eir_screenshoots/registration-es.png';
+
+<img src={registration} style={{width: 250}} />
+
+
+import caregiver_profile from '/img/eir_screenshoots/caregiver-profile.png';
+
+<img src={caregiver_profile} style={{width: 250}} />
+
+
+import overflow_menu from '/img/eir_screenshoots/overflow-menu.png';
+
+<img src={overflow_menu} style={{width: 250}} />
+
+
+import child_profile_view from '/img/eir_screenshoots/child-profile.png';
+
+<img src={child_profile_view} style={{width: 250}} />
+
+
+import immunization_form from '/img/eir_screenshoots/immunization-form.png';
+
+<img src={immunization_form} style={{width: 250}} />
+
+
+import adverse_reaction from '/img/eir_screenshoots/adverse-reaction.png';
+
+<img src={adverse_reaction} style={{width: 250}} />
+
+
+import revord_adverse_reaction from '/img/eir_screenshoots/record-adverse-reaction.png';
+
+<img src={revord_adverse_reaction} style={{width: 250}} />
+
+
+import past_encounter from '/img/eir_screenshoots/past-encounters.png';
+
+<img src={past_encounter} style={{width: 250}} />
+
+
+import upcoming_encounter from '/img/eir_screenshoots/upcoming-encounters.png';
+
+<img src={upcoming_encounter} style={{width: 250}} />
+
+
+import pending_sync from '/img/eir_screenshoots/pending-sync.png';
+
+<img src={pending_sync} style={{width: 250}} />
+
+
 
 
 ## Interoperability interfaces
