@@ -3,7 +3,6 @@
 This guides you through the process of setting up the backend server infrastructure needed to use the OpenSRP 2 app. We then discuss how to deploy optional extensions for administration, data warehousing, integrations, etc.
 
 # Applications to deploy
-
 * Postgresql
     1. Application Version - V14.* and above
 * Keycloak
@@ -38,192 +37,15 @@ This guides you through the process of setting up the backend server infrastruct
 
 
 # Configuring Applications
-
-* Reverse Proxy/Load Balancer consideration
-    * If a reverse proxy or load balancer is used to access the FHIR Applications ensure that the timeout set on the proxy (both read and send) is more that 60s, 300s is a recommended setting. The timeout on load balancer should be updated too.
-    * Increase the header buffer size supported by the reverse proxy to 40K.
-        * E.g in Nginx add large_client_header_buffers 4 40k;
-    * Increase the post body size supported. [https://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size](https://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size). (More than 10m).
-* Keycloak
-    * Resources
-        * Limits:
-            * RAM: 4GB
-        * Requests
-            * Cpu: 1000m (1cpu)
-            * RAM: 2GB
-* Postgresql
-    * Resources
-        * Limits:
-            * RAM: 6GB
-        * Requests
-            * Cpu: 1000m (1cpu)
-            * RAM: 1GB
-* FHIR Gateway Plugin
-    * Resources
-        * Limits:
-            * RAM: 6GB
-        * Requests
-            * Cpu: 1000m (1cpu)
-            * RAM: 2GB
-    * Helm Chart
-        * https://github.com/opensrp/fhir-gateway/tree/fhir-gateway-0.0.4/charts/fhir-gateway
-    * Configuration
-        * Environment Variables
-            * PROXY_TO: 
-                * http://&lt;internal-host-name-for-no-auth-fhir-server>:8080/fhir
-            * TOKEN_ISSUER:
-                * https://&lt;keycloak-domain>/auth/realms/&lt;keycloak-realm>
-            * ACCESS_CHECKER: (depends on project requirements)
-            * BACKEND_TYPE:
-                * HAPI
-            * RUN_MODE:
-                * PROD
-            * ALLOWED_QUERIES_FILE: (depends on project requirements)
-            * SYNC_FILTER_IGNORE_RESOURCES_FILE: (depends on project requirements)
-            * SPRING_APPLICATION_JSON:            {"server":{"max-http-header-size":"40KB"}}
-        * Health Probe Endpoint
-            * /fhir/.well-known/smart-configuration
-* FHIR Server
-    * Resources
-        * Limits:
-            * RAM: 6GB
-        * Requests
-            * Cpu: 1000m (1cpu)
-            * RAM: 4GB
-    * Helm Chart
-        * https://github.com/opensrp/helm-charts/tree/main/charts/hapi-fhir
-    * Configuration
-        * Shared
-            * Health Probe Endpoint
-                * /
-        * Auth Server
-            * Environment Variables
-                * SPRING_APPLICATION_JSON:
-                        * (update &lt;*> placeholders e.g &lt;postgres-username>)
-                * JAVA_OPTS: (use to update java heap)
-        * NoAuth Server
-            * Environment Variables
-                * SPRING_APPLICATION_JSON: 
-                        * 
-                        * (update &lt;*> placeholders e.g &lt;postgres-username>)
-                * JAVA_OPTS: (use to update java heap)
-* FHIR Web
-    * Resources
-        * Limits:
-            * RAM: 1GB
-        * Requests
-            * Cpu: 100m
-            * RAM: 250mb
-    * Helm chart
-        * https://github.com/opensrp/helm-charts/tree/main/charts/opensrp-web
-    * Configuration
-        *  Kindly assist.
-* Sentry
-    * Resources
-        * [https://github.com/getsentry/self-hosted/tree/master?tab=readme-ov-file#requirements](https://github.com/getsentry/self-hosted/tree/master?tab=readme-ov-file#requirements)
-    * Sentry on VM using docker-compose is recommended since sentry actively supports it and it does not have an official kubernetes helm chart. Moreover the sentry instance and its microservices deployed by community kubernetes helm chart is harder to maintain.
-
-# Monitoring
-
-Once the servers have been deployed it will be necessary to monitor the deployed applications. Sentry has been integrated on FHIR android app, web and server to aid application monitoring and logging.
-
-Apart from application monitoring one has to monitor the server resources and proxy logs. Graylog, fluent-bit(log forwarder) and prometheus are some of the tools one can use.
-
-Alerting can be configured  on these tools to help notify when a supposed threshold is reached.
-
-
-# Backup
-
-Ensure that a backup system exists on the infrastructure, especially for the database. 
-
-# PostDeployment Checklist (TPMs and Engineers)
-
-* Uploading FHIR resources.
-* Uploading the FHIR composition payload.
-* Create Keycloak Realm and client.
-* Create/Upload the keycloak roles and groups.
-* Create Users.
-
-## Optional extensions
 [TBC]
 
-### Admin dashboard
-[TBC]
-
-### Data warehouse
-[TBC]
-
-### Analytics dashboard
+## FHIR Store
+[Example with HAPI FHIR]
 [TBC]
 
 ## Identity and Access Management (IAM)
-
 [Example with Keycloak]
-
-
-Keycloak values.yaml  
-
-````
-replicas: 2
-
-image:
-  repository: quay.io/keycloak/keycloak
-  tag: "22.0.5"
-  digest: ""
-  pullPolicy: IfNotPresent
-
-ingress:
-  enabled: true
-  annotations:
-    ...
-
-serviceMonitor:
-  enabled: true
-
-metrics:
-  enabled: true
-
-health:
-  enabled: true
-
-resources:
-  requests:
-    cpu: "500m"
-    memory: "1024Mi"
-  limits:
-    memory: "2048Mi"
-
-database:
-  vendor: postgres
-  hostname: "<postgres-db-host>"
-  port: 5432
-  database: "<keycloak-db>"
-  username: <username>
-  password: <password>
-
-command:
-  - "/opt/keycloak/bin/kc.sh"
-  - "--verbose"
-  - "start"
-  - "--http-enabled=true"
-  - "--http-port=8080"
-  - "--hostname-strict=false"
-  - "--hostname-strict-https=false"
-  - "--spi-events-listener-jboss-logging-success-level=info"
-  - "--spi-events-listener-jboss-logging-error-level=warn"
-
-extraEnv: |
-  - name: KEYCLOAK_ADMIN
-    value: <admin-user>
-  - name: KEYCLOAK_ADMIN_PASSWORD
-    value: <password>
-  - name: JAVA_OPTS_APPEND
-    value: >-
-      -XX:+UseContainerSupport
-      -XX:MaxRAMPercentage=50.0
-      -Djava.awt.headless=true
-      -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless`
-````
+[TBC]
 
 ## FHIR Information Gateway
 [TBC]
@@ -239,3 +61,18 @@ extraEnv: |
 
 ### Analytics dashboard
 [TBC]
+
+# Monitoring
+Once the servers have been deployed it will be necessary to monitor the deployed applications. Sentry has been integrated on FHIR android app, web and server to aid application monitoring and logging.
+Apart from application monitoring one has to monitor the server resources and proxy logs. Graylog, fluent-bit(log forwarder) and prometheus are some of the tools one can use.
+Alerting can be configured  on these tools to help notify when a supposed threshold is reached.
+
+# Backup
+Ensure that a backup system exists on the infrastructure, especially for the database. 
+
+# PostDeployment Checklist (TPMs and Engineers)
+* Uploading FHIR resources.
+* Uploading the FHIR composition payload.
+* Create Keycloak Realm and client.
+* Create/Upload the keycloak roles and groups.
+* Create Users.
