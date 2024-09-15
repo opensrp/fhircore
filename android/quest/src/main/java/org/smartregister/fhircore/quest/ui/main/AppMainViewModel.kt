@@ -34,13 +34,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.text.SimpleDateFormat
-import java.time.OffsetDateTime
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
-import javax.inject.Inject
-import kotlin.time.Duration
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -85,9 +78,16 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMonthPeriodWorker
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
-import org.smartregister.fhircore.quest.util.extensions.decodeBinaryResourcesToBitmap
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import org.smartregister.fhircore.quest.util.extensions.resourceReferenceToBitMap
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
+import java.text.SimpleDateFormat
+import java.time.OffsetDateTime
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+import javax.inject.Inject
+import kotlin.time.Duration
 
 @HiltViewModel
 class AppMainViewModel
@@ -134,18 +134,19 @@ constructor(
   }
 
   fun retrieveIconsAsBitmap() {
-    navigationConfiguration.clientRegisters
-      .asSequence()
-      .filter {
-        it.menuIconConfig != null &&
-          it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
-          !it.menuIconConfig!!.reference.isNullOrEmpty()
-      }
-      .decodeBinaryResourcesToBitmap(
-        viewModelScope,
-        registerRepository,
-        configurationRegistry.decodedImageMap,
-      )
+    viewModelScope.launch (dispatcherProvider.io()){
+      navigationConfiguration.clientRegisters
+        .asSequence()
+        .filter {
+          it.menuIconConfig != null &&
+                  it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
+                  !it.menuIconConfig?.reference.isNullOrBlank()
+        }.mapNotNull { it.menuIconConfig!!.reference }
+        .resourceReferenceToBitMap(
+          fhirEngine = fhirEngine,
+          decodedImageMap = configurationRegistry.decodedImageMap,
+        )
+    }
   }
 
   fun retrieveAppMainUiState(refreshAll: Boolean = true) {
