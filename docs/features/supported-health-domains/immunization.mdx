@@ -481,7 +481,8 @@ https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/application_c
 
 		- This suggests that the synchronization strategy involves syncing data related to care teams. It might mean that data for care teams, such as patient rosters, are synchronized.
 
-	10.	loginConfig:•	
+	10.	loginConfig:
+
 			````json
 			{
 			"showLogo": true,
@@ -726,47 +727,47 @@ This section defines the client registers in the app. Each register has a unique
 	
 		-	type: "local" 
 
-	– Refers to a locally stored icon. 
+				– Refers to a locally stored icon. 
 	
 		-	reference: `"ic_baby_mother"` 
 
-	– The icon file. 
+			– The icon file. 
 	
-		-	actions: Defines actions related to the register: 
-	
-		-	ON_CLICK: Triggers when the register is clicked, launching the caregiver register. 
-	
-		-	ON_COUNT: Triggers when the count of entries is required.
+				-	actions: Defines actions related to the register: 
+			
+				-	ON_CLICK: Triggers when the register is clicked, launching the caregiver register. 
+			
+				-	ON_COUNT: Triggers when the count of entries is required.
 
 	2.	Child Register: 
 	
 		-	id: `"childRegister"` 
 
-	– ID for the child register. 
-	
+			– ID for the child register. 
+			
 		-	display: `"{{ 64e4aca4297806247f62a7b5f8cbd3df }}"` 
 
-	– Localized string for the display text. 
+			– Localized string for the display text. 
 	
 		-	showCount: true 
 
-	– Indicates that the count of entries will be shown. 
+			– Indicates that the count of entries will be shown. 
 	
 		-	menuIconConfig: Specifies the icon for the child register:
 
-	-	type: `"local"`  
+		-	type: `"local"`  
 	
-		-	Refers to a locally stored icon. 
+			-	Refers to a locally stored icon. 
 	
 		-	reference: `"ic_children"` 
 
-	– The icon file. 
+			– The icon file. 
 	
-	-	actions: 
-	
-		-	ON_CLICK: Triggers when the register is clicked, launching the child register. 
-	
-		-	ON_COUNT: Triggers when the count of entries is required.
+		-	actions: 
+		
+			-	ON_CLICK: Triggers when the register is clicked, launching the child register. 
+		
+			-	ON_COUNT: Triggers when the count of entries is required.
 
 Static Menu Configuration
 
@@ -776,29 +777,29 @@ This section defines static menu items that are always visible in the app.
 	
 		-	id: "settings" 
 
-	– The ID for the settings menu. 
-	
+			– The ID for the settings menu. 
+			
 		-	visible: true 
 
-	– The menu item is visible to users. 
-	
+			– The menu item is visible to users. 
+			
 		-	display: `"{{ f4f70727dc34561dfde1a3c529b6205c }}"` 
 
-	– Localized string for the settings label. 
-	
+			– Localized string for the settings label. 
+			
 		-	menuIconConfig: Specifies the icon for the settings menu: 
-	
+			
 		-	type: "local" 
 
-	– Refers to a locally stored icon. 
-	
+			– Refers to a locally stored icon. 
+			
 		-	reference: "ic_settings" 
 
-	– The icon file. 
-	
+			– The icon file. 
+			
 		-	actions: 
 	
-		-	ON_CLICK: Triggers the settings workflow when clicked, navigating to the settings screen.
+			-	ON_CLICK: Triggers the settings workflow when clicked, navigating to the settings screen.
 
 ### List Config 
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/list/locations.json
@@ -1139,14 +1140,98 @@ import child from '/img/eir_screenshoots/add-child.png';
 
 ### Scheduling & tasking
 
-[TBC]
+In an offline-first community health application, scheduling and tasking refer to systems and processes used to manage appointments, follow-ups, and task assignments for healthcare workers and community health programs. These features are designed to work seamlessly in environments with intermittent or no internet access, ensuring that healthcare activities continue without disruption. Here’s a breakdown of each concept:
 
-![immunization config](/img/eir_configs/immunization-pd.png)
+1. Scheduling in an Offline-First Community Health Application
 
+Scheduling involves planning and organizing patient visits, consultations, or any healthcare-related appointments. In an offline-first application, it requires the following components:
 
+Features:
+
+- **Appointment Booking**: Health workers can schedule appointments with patients for home visits, checkups, immunizations, or follow-up care. These appointments are saved locally and synchronized with the central server once connectivity is restored.
+- **Calendar and Reminders**: The app provides a calendar view of upcoming appointments and sends reminders (either through notifications or on-screen prompts) to healthcare workers about scheduled visits.
+- **Recurrence & Follow-Up Visits**: Many community health activities require regular follow-ups (e.g., maternal health visits, chronic disease management). The app allows scheduling of recurring appointments with automatic reminders.
+- **Task and Visit Status Tracking**: Scheduled tasks (such as immunizations or wellness checks) are tracked by status: completed, overdue, upcoming, or in-progress. Health workers can update task status offline, and this data syncs when the app reconnects.
+
+Offline-first Considerations:
+
+- **Local Data Storage**: Scheduling and appointment data are stored locally on the health worker’s device so they can access patient schedules and update visit details even without internet.
+- **Automatic Sync**: When internet connectivity is restored, the app automatically syncs appointments and scheduling data with a central database.
+
+2. Tasking in an Offline-First Community Health Application
+
+Tasking refers to assigning and tracking healthcare-related tasks that health workers must perform in the community, such as patient checkups, vaccination campaigns, or health education.
+
+Features:
+
+- **Task Assignment**: Health workers are assigned tasks by supervisors or the health management system. These tasks can include patient visits, data collection, or specific treatments. Tasks are stored locally and synced with the central system later.
+- **Task Types**: Tasks can be varied, including:
+  - **Clinical tasks**: Conducting patient assessments, administering medication, vaccinations.
+  - **Non-clinical tasks**: Collecting health data, providing health education, monitoring chronic illnesses.
+- **Task Prioritization and Status**: Tasks can be prioritized as high, medium, or low, and can be marked as completed, in-progress, or overdue by the health worker. This allows for better time management and resource allocation in low-connectivity areas.
+- **Dynamic Task Updates**: In some cases, tasks may change based on patient outcomes or additional needs identified during visits. Health workers can update task details offline, and the system will push these updates once connectivity is restored.
+- **Team Collaboration**: In larger teams, task assignments can be distributed among multiple health workers. Task progress is tracked so that health supervisors can monitor the completion of assignments once sync is completed.
+
+Offline-first Considerations:
+
+- **Task Creation & Assignment Offline**: Health workers can receive new tasks even while offline, either through pre-downloaded updates or user-defined task generation (e.g., scheduling a follow-up visit).
+- **Local Task Management**: Tasks are stored on the health worker’s device, and they can update task progress (such as marking it complete) without needing real-time connectivity.
+- **Synchronization**: When connectivity is re-established, the app syncs task completion, updates, and any newly assigned tasks with the main server. This ensures that tasks completed in offline mode are recognized centrally.
+
+Supporting Tasking using a PlanDefinition resource in FHIR 
+
+In FHIR (Fast Healthcare Interoperability Resources), PlanDefinition is a core resource used to describe workflows, protocols, or plans for healthcare activities, including scheduling and task management. A PlanDefinition supports the definition of various tasks and schedules that healthcare workers follow in community health applications. Here’s how PlanDefinition supports offline-first scheduling and tasking in such applications:
+
+1. Defining Workflows and Care Plans with PlanDefinition
+
+	•	PlanDefinition in FHIR is used to define a blueprint for care delivery workflows and task management.
+
+	•	It can outline tasks, actions, and schedules that healthcare workers need to follow. This can be particularly useful in creating reusable care plans, such as maternal care, child immunization campaigns, or chronic disease monitoring.
+
+2. Using PlanDefinition for Scheduling
+
+	•	PlanDefinition can define schedules for specific healthcare activities. The action element within a PlanDefinition specifies a sequence of activities, including scheduling appointments and follow-ups.
+
+	•	Each action can include timing rules (using timing[x]), recurrence patterns (for follow-up visits), and conditions for triggering the task.
+
+	•	In offline-first systems, these schedules are defined and stored on the local device, allowing healthcare workers to access them even without connectivity.
+
+3. Tasking with PlanDefinition
+
+	•	PlanDefinition supports task management by detailing specific tasks that healthcare workers must perform during a workflow.
+
+	•	A PlanDefinition can include multiple action elements, where each action represents a task (e.g., administer a vaccine, collect data, monitor vitals).
+
+	•	Tasks can also have dependencies, where certain tasks are triggered based on the completion or outcome of previous tasks.
+
+	•	The tasks can be configured to change dynamically based on patient outcomes or new needs that arise during care delivery.
+
+4. Handling Offline Synchronization
+
+	•	When the healthcare worker is offline, all scheduling and task-related data (defined by the PlanDefinition) are stored locally.
+
+	•	Once the healthcare worker regains connectivity, the app synchronizes the task progress, updates, and scheduling changes to the server.
+
+	•	This synchronization ensures that both the local app and central server have consistent data, allowing healthcare supervisors to monitor care delivery even in remote or low-connectivity regions.
+
+5. Using PlanDefinition with Other FHIR Resources
+
+	•	PlanDefinition often works in combination with other FHIR resources to support scheduling and tasking:
+
+	-	Task: Used to track the execution of actions defined in a PlanDefinition.
+	
+	-	CarePlan: Represents an individualized plan of care for a patient, using PlanDefinition as a template.
+
+	-	ServiceRequest: Represents a request for a service to be performed (e.g., a lab test, a procedure) as part of a task.
 
 ### Child Immunization 
 The PlanDefinition resource in FHIR defines several immunization-related activities for child immunization. Each ActivityDefinition outlines specific tasks, including the administration of vaccines, detailing the type of vaccine, schedule, and responsible parties.
+
+Example of scheduling with PlanDefinition:
+
+![immunization config](/img/eir_configs/immunization-pd.png)
+
+Reference PlanDefinition can  be found [here](https://github.com/ona-health/giz-eir-fhir-resources/blob/main/plan_definition/child_immunizations.fhir.json)
 
 General Setup (First Activity) - "Child Register Handler Activity":
 
@@ -1199,7 +1284,7 @@ Scheduled Services:
 
 This structure automates the generation of a child’s recurring care plan, ensuring that essential health services are administered at appropriate intervals.
 
-### Recording vaccinations
+### Recording vaccinations (and in some usecases Routine/Recurring Child Services)
 
 [TBC]
 
