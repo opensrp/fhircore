@@ -268,7 +268,7 @@ https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/implementatio
 
 ![ig config](/img/eir_configs/ig-config.png)
 
-An Implementation Guide (IG) is a document that defines how a specific organization or system uses FHIR resources to solve a particular use case. In this case, it’s related to the GIZ/PATH Electronic Immunization Registry (EIR). Here’s a breakdown of the fields:
+An Implementation Guide (IG) is a document that defines how a specific organization or system uses FHIR resources to solve a particular use case. 
 
 Main Structure:
 
@@ -298,11 +298,11 @@ Main Structure:
 
 	•	name: "giz-eir"
 
-	•	The name of the IG, which refers to the GIZ EIR (Electronic Immunization Registry).
+	•	The name of the IG 
 
 	•	title: "GIZ/PATH EIR Implementation Guide"
 
-	•	A more descriptive title for the Implementation Guide, indicating it’s a joint project by GIZ and PATH for the EIR system.
+	•	A more descriptive title for the Implementation Guide
 
 	•	status: "draft"
 
@@ -334,16 +334,7 @@ Package and Resource Definitions:
 	•	reference:
 	•	This points to a Composition resource (Composition/12965652), which likely contains additional narrative content, instructions, or descriptions related to the IG. The Composition resource is commonly used for documents or structured narratives.
 
-Summary:
 
-This Implementation Guide defines the specifications for the GIZ/PATH Electronic Immunization Registry (EIR), detailing how the EIR system should implement FHIR resources. The guide is in draft status, has been published by Ona Systems, Inc., and uses the Smart Register FHIR Core package as its foundation.
-
-It includes:
-
-	•	A contextual range (possibly age or system limits).
-	•	A reference to a Composition resource, which could provide more detailed documentation or guidelines for implementing the EIR system.
-
-This guide is part of the broader effort to standardize the use of FHIR for immunization records management.
 
 #### Composition Config 
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/composition_config.json
@@ -461,7 +452,7 @@ https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/application_c
 
 	1.	appId: "giz-eir"
 
-	•	This is the unique identifier for the application. In this case, it seems to refer to a specific implementation of an Electronic Immunization Registry (EIR) by GIZ (possibly a healthcare project).
+	•	This is the unique identifier for the application. 
 
 	2.	configType: "application"
 
@@ -766,19 +757,6 @@ This section defines static menu items that are always visible in the app.
 
 	•	ON_CLICK: Triggers the settings workflow when clicked, navigating to the settings screen.
 
-Summary
-
-This JSON configuration controls how users navigate through different parts of the GIZ/PATH EIR application. It defines:
-
-
-	•	A main action button that launches a questionnaire.
-
-	•	Two registers (caregiver and child) that display counts of entries and launch the respective registers when clicked.
-
-	•	A static settings menu that allows users to navigate to the settings screen.
-
-The configuration relies on placeholders for localized text `("{{ ... }}")` and includes dynamic parameters for prepopulating questionnaires.
-
 #### List Config 
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/list/locations.json
 
@@ -944,19 +922,7 @@ Top Screen Section
 
 	•	menuIcons: Contains an icon for service points, and clicking it launches the caregiver register.
 
-Summary
 
-This configuration defines a geo widget (map interface) for displaying and interacting with locations in a healthcare or resource management system. It allows users to:
-
-	•	Switch between different map layers (street, satellite).
-
-	•	View and interact with service points and their associated tasks, patients, and related persons.
-
-	•	Access detailed summaries of service points and launch caregiver profiles.
-
-	•	Filter and search for locations using various criteria (e.g., name, task status).
-
-The widget is highly configurable, with a focus on managing service points, tasks, and patients related to healthcare or service facilities.
 
 ### Profiles Config
 
@@ -1051,18 +1017,7 @@ This section defines the UI at the top of the screen.
 	•	viewType: "IMAGE" — Specifies an icon image.
 	•	actions: Clicking this icon triggers the LAUNCH_MAP action, opening the map view (locationMap).
 
-Summary
 
-This configuration defines a caregiver registration interface that interacts with FHIR resources like RelatedPerson, Patient, and Task. The UI is structured to display a list of caregivers (related persons) and their details, including tasks and associated patients. Users can search for caregivers by name or ID, and clicking on a caregiver profile allows access to more detailed information.
-
-Key features include:
-
-	•	Displaying caregivers and their associated patients and tasks.
-	•	Providing visit status (e.g., overdue, due) based on associated tasks.
-	•	Interaction through buttons to view profiles or launch a map.
-	•	Configurable search functionality to find caregivers easily by name or ID.
-
-This setup is likely part of a healthcare application where caregivers (related persons) are linked to patients and tasks, helping manage their roles and interactions efficiently.
 
 #### Child Register Congig
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/child_register_config.json
