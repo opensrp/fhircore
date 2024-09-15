@@ -193,9 +193,8 @@ constructor(
 
       val retrievedRelatedResources =
         retrieveRelatedResources(
-          resources = listOf(baseResource),
+          resource = baseResource,
           relatedResourcesConfigs = resourceConfig.relatedResources,
-          relatedResourceWrapper = RelatedResourceWrapper(),
           configComputedRuleValues = configComputedRuleValues,
         )
 

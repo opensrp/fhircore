@@ -32,8 +32,6 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
-import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.has
 import com.google.android.fhir.search.include
 import com.google.android.fhir.search.revInclude
@@ -474,77 +472,125 @@ constructor(
   }
 
   protected suspend fun retrieveRelatedResources(
-    resources: List<Resource>,
+    resource: Resource,
     relatedResourcesConfigs: List<ResourceConfig>?,
-    relatedResourceWrapper: RelatedResourceWrapper,
     configComputedRuleValues: Map<String, Any>,
   ): RelatedResourceWrapper {
-    val countResourceConfigs = relatedResourcesConfigs?.filter { it.resultAsCount }
-    countResourceConfigs?.forEach { resourceConfig ->
-      if (resourceConfig.searchParameter.isNullOrEmpty()) {
-        Timber.e("Search parameter require to perform count query. Current config: $resourceConfig")
-      }
+    val relatedResourceWrapper = RelatedResourceWrapper()
+    val relatedResourcesQueue = ArrayDeque<Pair<Resource, List<ResourceConfig>?>>().apply {
+      addFirst(Pair(resource, relatedResourcesConfigs))
+    }
+    while (!relatedResourcesQueue.isEmpty()) {
+      val (currentResource, currentRelatedResourceConfigs) = relatedResourcesQueue.removeFirst()
+      val filteredConfigs = relatedResourcesConfigs
+        ?.asSequence()
+        ?.filter { it.resultAsCount && !it.searchParameter.isNullOrEmpty() }
+        ?.toList()
 
-      // Count for each related resource or aggregate total count in one query; as configured
-      if (resourceConfig.resultAsCount && !resourceConfig.searchParameter.isNullOrEmpty()) {
+      filteredConfigs?.forEach { resourceConfig ->
+        val search = Search(resourceConfig.resource).apply {
+          filter(
+            ReferenceClientParam(resourceConfig.searchParameter),
+            { value = currentResource.asReference().reference }
+          )
+          applyConfiguredSortAndFilters(
+            resourceConfig = resourceConfig,
+            sortData = true,
+            configComputedRuleValues = configComputedRuleValues
+          )
+        }
+
+        val key = resourceConfig.id ?: resourceConfig.resource.name
         if (resourceConfig.countResultConfig?.sumCounts == true) {
-          val search =
-            Search(resourceConfig.resource).apply {
-              val filters =
-                resources.map {
-                  val apply: ReferenceParamFilterCriterion.() -> Unit = {
-                    value = it.logicalId.asReference(it.resourceType).reference
-                  }
-                  apply
-                }
-              filter(
-                ReferenceClientParam(resourceConfig.searchParameter),
-                *filters.toTypedArray(),
-              )
-              applyConfiguredSortAndFilters(
-                resourceConfig = resourceConfig,
-                sortData = true,
-                configComputedRuleValues = configComputedRuleValues,
-              )
-            }
-          val key = resourceConfig.id ?: resourceConfig.resource.name
           search.count(
             onSuccess = {
               relatedResourceWrapper.relatedResourceCountMap[key] =
+                //TODO decide whether to use a single instance of the LinkedList or create new one
                 LinkedList<RelatedResourceCount>().apply {
                   add(
                     RelatedResourceCount(
-                      count = it,
-                    ),
+                    count = it,
+                    relatedResourceType = resourceConfig.resource,
+                      parentResourceId = resource.logicalId
+                    )
                   )
                 }
             },
             onFailure = {
               Timber.e(
                 it,
-                "Error retrieving total count for all related resourced identified by $key",
+                "Error retrieving total count for all related resources identified by $key"
               )
-            },
+            }
           )
-        } else {
-          computeCountForEachRelatedResource(
-            resources = resources,
-            resourceConfig = resourceConfig,
+        }
+      }
+
+      val searchResults =  searchIncludedResources(
+        relatedResourcesConfigs = relatedResourcesConfigs,
+        resource = currentResource,
+        configComputedRuleValues = configComputedRuleValues
+      )
+
+      val fwdIncludedRelatedConfigsMap =
+        currentRelatedResourceConfigs?.revIncludeRelatedResourceConfigs(false)
+          ?.groupBy { it.searchParameter!! }?.mapValues { it.value.first() }
+
+      val revIncludedRelatedConfigsMap =
+        currentRelatedResourceConfigs?.revIncludeRelatedResourceConfigs(true)
+          ?.groupBy { "${it.resource.name}_${it.searchParameter}".lowercase() }
+          ?.mapValues { it.value.first() }
+
+      searchResults.forEach { searchResult ->
+        searchResult.included?.forEach { entry ->
+          updateResourceWrapperAndQueue(
+            key = entry.key,
+            defaultKey = entry.value.firstOrNull()?.resourceType?.name,
+            value = entry.value,
+            relatedResourcesConfigsMap = fwdIncludedRelatedConfigsMap,
             relatedResourceWrapper = relatedResourceWrapper,
-            configComputedRuleValues = configComputedRuleValues,
+            relatedResourcesQueue = relatedResourcesQueue
+          )
+        }
+        searchResult.revIncluded?.forEach { entry ->
+          val (resourceType, searchParam) = entry.key
+          val key = "${resourceType.name}_$searchParam".lowercase()
+          updateResourceWrapperAndQueue(
+            key = key,
+            defaultKey = entry.value.firstOrNull()?.resourceType?.name,
+            value = entry.value,
+            relatedResourcesConfigsMap = revIncludedRelatedConfigsMap,
+            relatedResourceWrapper = relatedResourceWrapper,
+            relatedResourcesQueue = relatedResourcesQueue
           )
         }
       }
     }
-
-    searchIncludedResources(
-      relatedResourcesConfigs = relatedResourcesConfigs,
-      resources = resources,
-      relatedResourceWrapper = relatedResourceWrapper,
-      configComputedRuleValues = configComputedRuleValues,
-    )
-
     return relatedResourceWrapper
+  }
+
+  private fun updateResourceWrapperAndQueue(
+    key: String,
+    defaultKey: String?,
+    value: List<Resource>,
+    relatedResourcesConfigsMap: Map<String, ResourceConfig>?,
+    relatedResourceWrapper: RelatedResourceWrapper,
+    relatedResourcesQueue: ArrayDeque<Pair<Resource, List<ResourceConfig>?>>) {
+      val resourceConfigs = relatedResourcesConfigsMap?.get(key)
+      val id = resourceConfigs?.id ?:defaultKey
+      if (!id.isNullOrBlank()) {
+        relatedResourceWrapper.relatedResourceMap[id] =
+          relatedResourceWrapper.relatedResourceMap.getOrPut(id) { LinkedList() }.apply {
+            addAll(value)
+          }
+        value.forEach { resource ->
+          with(resourceConfigs?.relatedResources) {
+            if (!this.isNullOrEmpty()) {
+              relatedResourcesQueue.addLast(Pair(resource, this))
+            }
+          }
+        }
+      }
   }
 
   protected suspend fun Search.count(
@@ -562,54 +608,6 @@ constructor(
       .onFailure { throwable -> onFailure(throwable) }
       .getOrDefault(0)
 
-  private suspend fun computeCountForEachRelatedResource(
-    resources: List<Resource>,
-    resourceConfig: ResourceConfig,
-    relatedResourceWrapper: RelatedResourceWrapper,
-    configComputedRuleValues: Map<String, Any>,
-  ) {
-    val relatedResourceCountLinkedList = LinkedList<RelatedResourceCount>()
-    val key = resourceConfig.id ?: resourceConfig.resource.name
-    resources.forEach { baseResource ->
-      val search =
-        Search(type = resourceConfig.resource).apply {
-          filter(
-            ReferenceClientParam(resourceConfig.searchParameter),
-            { value = baseResource.logicalId.asReference(baseResource.resourceType).reference },
-          )
-          applyConfiguredSortAndFilters(
-            resourceConfig = resourceConfig,
-            sortData = false,
-            configComputedRuleValues = configComputedRuleValues,
-          )
-        }
-      search.count(
-        onSuccess = {
-          relatedResourceCountLinkedList.add(
-            RelatedResourceCount(
-              relatedResourceType = resourceConfig.resource,
-              parentResourceId = baseResource.logicalId,
-              count = it,
-            ),
-          )
-        },
-        onFailure = {
-          Timber.e(
-            it,
-            "Error retrieving count for ${
-                            baseResource.logicalId.asReference(
-                                baseResource.resourceType,
-                            )
-                        } for related resource identified ID $key",
-          )
-        },
-      )
-    }
-
-    // Add each related resource count query result to map
-    relatedResourceWrapper.relatedResourceCountMap[key] = relatedResourceCountLinkedList
-  }
-
   /**
    * This function searches for reverse/forward included resources as per the configuration;
    * [RelatedResourceWrapper] data class is then used to wrap the maps used to store Search Query
@@ -617,41 +615,30 @@ constructor(
    */
   private suspend fun searchIncludedResources(
     relatedResourcesConfigs: List<ResourceConfig>?,
-    resources: List<Resource>,
-    relatedResourceWrapper: RelatedResourceWrapper,
+    resource: Resource,
     configComputedRuleValues: Map<String, Any>,
-  ) {
-    val relatedResourcesConfigsMap = relatedResourcesConfigs?.groupBy { it.resource }
-
-    if (!relatedResourcesConfigsMap.isNullOrEmpty()) {
-      if (resources.isEmpty()) return
-
-      val firstResourceType = resources.first().resourceType
+  ): List<SearchResult<Resource>> {
       val search =
-        Search(firstResourceType).apply {
-          val filters =
-            resources.map {
-              val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.logicalId) }
-              apply
-            }
-          filter(Resource.RES_ID, *filters.toTypedArray())
+        Search(resource.resourceType).apply {
+          filter(Resource.RES_ID, { value = of(resource.logicalId) })
         }
 
-      // Forward include related resources e.g. Members (Patient) referenced in Group resource
+      // Forward include related resources e.g. a member or managingEntity of a Group resource
       val forwardIncludeResourceConfigs =
-        relatedResourcesConfigs.revIncludeRelatedResourceConfigs(false)
+        relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(false)
 
-      // Reverse include related resources e.g. All CarePlans, Immunization for Patient resource
+      // Reverse include related resources e.g. all CarePlans, Immunizations for Patient resource
       val reverseIncludeResourceConfigs =
-        relatedResourcesConfigs.revIncludeRelatedResourceConfigs(true)
+        relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(true)
 
       search.apply {
-        reverseIncludeResourceConfigs.forEach { resourceConfig ->
+        val thisSearch = this
+        reverseIncludeResourceConfigs?.forEach { resourceConfig ->
           revInclude(
             resourceConfig.resource,
             ReferenceClientParam(resourceConfig.searchParameter),
           ) {
-            (this as Search).applyConfiguredSortAndFilters(
+            thisSearch.applyConfiguredSortAndFilters(
               resourceConfig = resourceConfig,
               sortData = true,
               configComputedRuleValues = configComputedRuleValues,
@@ -659,12 +646,12 @@ constructor(
           }
         }
 
-        forwardIncludeResourceConfigs.forEach { resourceConfig ->
+        forwardIncludeResourceConfigs?.forEach { resourceConfig ->
           include(
             resourceConfig.resource,
             ReferenceClientParam(resourceConfig.searchParameter),
           ) {
-            (this as Search).applyConfiguredSortAndFilters(
+            thisSearch.applyConfiguredSortAndFilters(
               resourceConfig = resourceConfig,
               sortData = true,
               configComputedRuleValues = configComputedRuleValues,
@@ -672,80 +659,10 @@ constructor(
           }
         }
       }
-
-      searchRelatedResources(
-        search = search,
-        relatedResourcesConfigsMap = relatedResourcesConfigsMap,
-        relatedResourceWrapper = relatedResourceWrapper,
-        configComputedRuleValues = configComputedRuleValues,
-      )
-    }
-  }
-
-  private suspend fun searchRelatedResources(
-    search: Search,
-    relatedResourcesConfigsMap: Map<ResourceType, List<ResourceConfig>>,
-    relatedResourceWrapper: RelatedResourceWrapper,
-    configComputedRuleValues: Map<String, Any>,
-  ) {
-    kotlin
+   return kotlin
       .runCatching { fhirEngine.search<Resource>(search) }
-      .onSuccess { searchResult ->
-        searchResult.forEach { currentSearchResult ->
-          val includedResources: Map<ResourceType, List<Resource>>? =
-            currentSearchResult.included
-              ?.values
-              ?.asSequence()
-              ?.flatten()
-              ?.distinctBy { it.id }
-              ?.groupBy { it.resourceType }
-          val reverseIncludedResources: Map<ResourceType, List<Resource>>? =
-            currentSearchResult.revIncluded
-              ?.values
-              ?.asSequence()
-              ?.flatten()
-              ?.distinctBy { it.id }
-              ?.groupBy { it.resourceType }
-          val theRelatedResourcesMap =
-            mutableMapOf<ResourceType, List<Resource>>().apply {
-              includedResources?.let { putAll(it) }
-              reverseIncludedResources?.let { putAll(it) }
-            }
-          theRelatedResourcesMap.forEach { entry ->
-            val currentResourceConfigs = relatedResourcesConfigsMap[entry.key]
-
-            val key = // Use configured id as key otherwise default to ResourceType
-              if (relatedResourcesConfigsMap.containsKey(entry.key)) {
-                currentResourceConfigs?.firstOrNull()?.id ?: entry.key.name
-              } else {
-                entry.key.name
-              }
-
-            // All nested resources flattened to one map by adding to existing list
-            relatedResourceWrapper.relatedResourceMap[key] =
-              relatedResourceWrapper.relatedResourceMap
-                .getOrPut(key) { LinkedList() }
-                .plus(entry.value)
-
-            currentResourceConfigs?.forEach { resourceConfig ->
-              if (resourceConfig.relatedResources.isNotEmpty()) {
-                retrieveRelatedResources(
-                  resources = entry.value,
-                  relatedResourcesConfigs = resourceConfig.relatedResources,
-                  relatedResourceWrapper = relatedResourceWrapper,
-                  configComputedRuleValues = configComputedRuleValues,
-                )
-              }
-            }
-          }
-        }
-      }
-      .onFailure {
-        Timber.e(
-          it,
-          "Error fetching configured related resources: $relatedResourcesConfigsMap",
-        )
-      }
+       .onFailure { Timber.e(it, "Error fetching related resources") }
+       .getOrDefault(emptyList())
   }
 
   private fun List<ResourceConfig>.revIncludeRelatedResourceConfigs(isRevInclude: Boolean) =
@@ -781,7 +698,6 @@ constructor(
           }
         }
 
-      Timber.i("Computed values map = ${computedValuesMap.values}")
       val search =
         Search(resourceConfig.resource).apply {
           applyConfiguredSortAndFilters(
@@ -802,27 +718,26 @@ constructor(
         closeResource(resource = it, eventWorkflow = eventWorkflow)
       }
 
-      val retrievedRelatedResources =
-        retrieveRelatedResources(
-          resources = resources,
+      resources.forEach { resource ->
+        val retrievedRelatedResources = retrieveRelatedResources(
+          resource = resource,
           relatedResourcesConfigs = resourceConfig.relatedResources,
-          relatedResourceWrapper = RelatedResourceWrapper(),
           configComputedRuleValues = computedValuesMap,
         )
+        retrievedRelatedResources.relatedResourceMap.forEach { resourcesMap ->
+          val filteredRelatedResources =
+            filterResourcesByFhirPathExpression(
+              resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
+              resources = resourcesMap.value,
+            )
 
-      retrievedRelatedResources.relatedResourceMap.forEach { resourcesMap ->
-        val filteredRelatedResources =
-          filterResourcesByFhirPathExpression(
-            resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
-            resources = resourcesMap.value,
-          )
-
-        filteredRelatedResources.forEach { resource ->
-          Timber.i(
-            "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}",
-          )
-          if (filterRelatedResource(resource, resourceConfig)) {
-            closeResource(resource = resource, eventWorkflow = eventWorkflow)
+          filteredRelatedResources.forEach { resource ->
+            Timber.i(
+              "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}",
+            )
+            if (filterRelatedResource(resource, resourceConfig)) {
+              closeResource(resource = resource, eventWorkflow = eventWorkflow)
+            }
           }
         }
       }
@@ -992,7 +907,7 @@ constructor(
               )
             }
           val totalCount = fhirEngine.count(countSearch)
-          val searchResults = LinkedList<SearchResult<Resource>>()
+          val searchResults = ArrayDeque<SearchResult<Resource>>()
           var pageNumber = 0
           var count = 0
           while (count < totalCount) {
@@ -1085,9 +1000,8 @@ constructor(
     this.map { searchResult ->
       val retrievedRelatedResources =
         retrieveRelatedResources(
-          resources = listOf(searchResult.resource),
+          resource = searchResult.resource,
           relatedResourcesConfigs = relatedResourcesConfig,
-          relatedResourceWrapper = RelatedResourceWrapper(),
           configComputedRuleValues = configComputedRuleValues,
         )
       val secondaryRepositoryResourceData =
@@ -1193,22 +1107,19 @@ constructor(
     return null
   }
 
-  suspend fun retrieveFlattenedSubLocations(locationId: String): LinkedList<Location> {
-    val locations = LinkedList<Location>()
-    val resources: LinkedList<Location> = retrieveSubLocations(locationId)
-
+  suspend fun retrieveFlattenedSubLocations(locationId: String): ArrayDeque<Location> {
+    val locations = ArrayDeque<Location>()
+    val resources: ArrayDeque<Location> = retrieveSubLocations(locationId)
     while (resources.isNotEmpty()) {
       val currentResource = resources.removeFirst()
       locations.add(currentResource)
       retrieveSubLocations(currentResource.logicalId).forEach(resources::addLast)
     }
-
-    // Include parent Location
-    loadResource<Location>(locationId).let { parentLocation -> locations.addFirst(parentLocation) }
+    loadResource<Location>(locationId)?.let { parentLocation -> locations.addFirst(parentLocation) }
     return locations
   }
 
-  private suspend fun retrieveSubLocations(locationId: String): LinkedList<Location> =
+  private suspend fun retrieveSubLocations(locationId: String): ArrayDeque<Location> =
       fhirEngine
         .search<Location>(
           Search(type = ResourceType.Location).apply {
@@ -1218,15 +1129,15 @@ constructor(
             )
           },
         )
-        .mapTo(LinkedList()) { it.resource }
+        .mapTo(ArrayDeque()) { it.resource }
 
   /**
    * A wrapper data class to hold search results. All related resources are flattened into one Map
    * including the nested related resources as required by the Rules Engine facts.
    */
   data class RelatedResourceWrapper(
-    val relatedResourceMap: MutableMap<String, List<Resource>> = mutableMapOf(),
-    val relatedResourceCountMap: MutableMap<String, List<RelatedResourceCount>> = mutableMapOf(),
+    val relatedResourceMap: MutableMap<String, LinkedList<Resource>> = mutableMapOf(),
+    val relatedResourceCountMap: MutableMap<String, LinkedList<RelatedResourceCount>> = mutableMapOf(),
   )
 
   companion object {
