@@ -36,7 +36,6 @@ import org.smartregister.fhircore.engine.ui.multiselect.TreeBuilder
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import java.util.LinkedList
 import javax.inject.Inject
 
 @HiltViewModel
@@ -161,9 +160,9 @@ constructor(
           rootTreeNodeMap[rootTreeNode.id] = rootTreeNode
           return@forEach
         }
-        val childrenList = LinkedList(rootTreeNode.children)
-        while (childrenList.isNotEmpty()) {
-          val currentNode = childrenList.removeFirst()
+        val treeNodeArrayDeque = ArrayDeque(rootTreeNode.children)
+        while (treeNodeArrayDeque.isNotEmpty()) {
+          val currentNode = treeNodeArrayDeque.removeFirst()
           if (currentNode.data.contains(other = searchTerm, ignoreCase = true)) {
             when {
               rootTreeNodeMap.containsKey(rootTreeNode.id) -> return@forEach
@@ -173,7 +172,7 @@ constructor(
               }
             }
           }
-          currentNode.children.forEach { childrenList.add(it) }
+          currentNode.children.forEach { treeNodeArrayDeque.addLast(it) }
         }
       }
       rootTreeNodes.addAll(rootTreeNodeMap.values)

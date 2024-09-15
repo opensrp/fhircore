@@ -91,8 +91,8 @@ import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyn
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.engine.util.pmap
 import timber.log.Timber
-import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.math.min
@@ -505,8 +505,7 @@ constructor(
           search.count(
             onSuccess = {
               relatedResourceWrapper.relatedResourceCountMap[key] =
-                //TODO decide whether to use a single instance of the LinkedList or create new one
-                LinkedList<RelatedResourceCount>().apply {
+                mutableListOf<RelatedResourceCount>().apply {
                   add(
                     RelatedResourceCount(
                     count = it,
@@ -577,10 +576,10 @@ constructor(
     relatedResourceWrapper: RelatedResourceWrapper,
     relatedResourcesQueue: ArrayDeque<Pair<Resource, List<ResourceConfig>?>>) {
       val resourceConfigs = relatedResourcesConfigsMap?.get(key)
-      val id = resourceConfigs?.id ?:defaultKey
+      val id = resourceConfigs?.id ?: defaultKey
       if (!id.isNullOrBlank()) {
         relatedResourceWrapper.relatedResourceMap[id] =
-          relatedResourceWrapper.relatedResourceMap.getOrPut(id) { LinkedList() }.apply {
+          relatedResourceWrapper.relatedResourceMap.getOrPut(id) { mutableListOf() }.apply {
             addAll(value)
           }
         value.forEach { resource ->
@@ -987,7 +986,7 @@ constructor(
           baseResourceConfig = baseResourceConfig,
         )
       }
-    }
+    } as List<RepositoryResourceData>
   }
 
   private suspend fun List<SearchResult<Resource>>.mapResourceToRepositoryResourceData(
@@ -997,7 +996,7 @@ constructor(
     filterActiveResources: List<ActiveResourceFilterConfig>?,
     baseResourceConfig: ResourceConfig,
   ) =
-    this.map { searchResult ->
+    this.pmap { searchResult ->
       val retrievedRelatedResources =
         retrieveRelatedResources(
           resource = searchResult.resource,
@@ -1047,10 +1046,10 @@ constructor(
   /** This function fetches other resources that are not linked to the base/primary resource. */
   protected suspend fun List<FhirResourceConfig>?.retrieveSecondaryRepositoryResourceData(
     filterActiveResources: List<ActiveResourceFilterConfig>?,
-  ): LinkedList<RepositoryResourceData> {
-    val secondaryRepositoryResourceDataLinkedList = LinkedList<RepositoryResourceData>()
+  ): List<RepositoryResourceData> {
+    val secondaryRepositoryResourceDataList = mutableListOf<RepositoryResourceData>()
     this?.forEach {
-      secondaryRepositoryResourceDataLinkedList.addAll(
+      secondaryRepositoryResourceDataList.addAll(
         searchResourcesRecursively(
           fhirResourceConfig = it,
           filterActiveResources = filterActiveResources,
@@ -1060,7 +1059,7 @@ constructor(
         ),
       )
     }
-    return secondaryRepositoryResourceDataLinkedList
+    return secondaryRepositoryResourceDataList
   }
 
   suspend fun retrieveUniqueIdAssignmentResource(
@@ -1136,8 +1135,8 @@ constructor(
    * including the nested related resources as required by the Rules Engine facts.
    */
   data class RelatedResourceWrapper(
-    val relatedResourceMap: MutableMap<String, LinkedList<Resource>> = mutableMapOf(),
-    val relatedResourceCountMap: MutableMap<String, LinkedList<RelatedResourceCount>> = mutableMapOf(),
+    val relatedResourceMap: MutableMap<String, MutableList<Resource>> = mutableMapOf(),
+    val relatedResourceCountMap: MutableMap<String, MutableList<RelatedResourceCount>> = mutableMapOf(),
   )
 
   companion object {

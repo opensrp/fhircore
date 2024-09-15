@@ -75,7 +75,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.net.UnknownHostException
-import java.util.LinkedList
 import java.util.Locale
 import java.util.PropertyResourceBundle
 import java.util.ResourceBundle
@@ -374,7 +373,7 @@ constructor(
    * @return A list of strings of config files.
    */
   private fun retrieveAssetConfigs(context: Context, appId: String): MutableList<String> {
-    val filesQueue = LinkedList<String>()
+    val filesQueue = ArrayDeque<String>()
     val configFiles = mutableListOf<String>()
     context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
       if (!supportedFileExtensions.contains(it.fileExtension)) {
