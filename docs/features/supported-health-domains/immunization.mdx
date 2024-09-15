@@ -239,7 +239,7 @@ from the server, which requires the device to be online. This enhancement should
 
 ## App configs
 
-#### Implemntation Guide Config 
+### Implemntation Guide Config 
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/implementation_guide_config.json
 
 ![ig config](/img/eir_configs/ig-config.png)
@@ -322,7 +322,7 @@ Package and Resource Definitions:
 
 
 
-#### Composition Config 
+### Composition Config 
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/composition_config.json
 
 ![composition config](/img/eir_configs/composition-config.png)
@@ -437,7 +437,7 @@ Each section contains a specific configuration for different parts of the applic
 		- Defines the Geo Widget configuration, stored in a Binary resource. This likely deals with mapping or geolocation services within the application.
 
 
-#### Application Config 
+### Application Config 
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/application_config.json
 
 ![application config](/img/eir_configs/application-config.png)
@@ -509,7 +509,7 @@ https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/application_c
 
 		- "INSIGHTS": This might be an option to view data insights or reports.
 
-#### Sync Config 
+### Sync Config 
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/sync_config.json
 
 ![sync config](/img/eir_configs/sync-config.png)
@@ -593,7 +593,7 @@ Search Parameters:
 		-	The expression indicates that the parameter refers to the number of results or “count” of items to be returned during a query. It’s probably used for pagination or limiting the size of the results.
 
 
-#### Navigation Config 
+### Navigation Config 
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/navigation_config.json
 
 ![navigation config](/img/eir_configs/navigation-config.png)
@@ -800,7 +800,7 @@ This section defines static menu items that are always visible in the app.
 	
 		-	ON_CLICK: Triggers the settings workflow when clicked, navigating to the settings screen.
 
-#### List Config 
+### List Config 
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/list/locations.json
 
 ![location list config](/img/eir_configs/list.png)
@@ -875,7 +875,7 @@ This section contains the individual entries or items in the list, each referenc
 	-	item: Each item contains a reference to a specific health facility location in the FHIR Location resource.
 	-	Example: "reference": `"Location/1f4c76e1-9734-42d9-b5b8-4b213ee48d45"` refers to a health facility with a specific Location resource ID.
 
-#### Geowidget Config
+### Geowidget Config
 
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/maps/location_map_config.json
 
@@ -990,30 +990,39 @@ Top Screen Section
 
 ### Profiles Config
 
+More [here](http://localhost:3000/engineering/app/configuring/config-types/profile) on how to configure profiles
+
 #### Caregiver Profile Config
 
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/caregiver_profile_config.json
 ![caregiver profile](/img/eir_configs/caregiver-profile.png)
 
+[TBC]
 
 #### Child Profile Config
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/child_profile_config.json
 ![child profile](/img/eir_configs/child-profile.png)
 
+[TBC]
 
 #### Child Upcoming Immunizatiion Profile Config
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childupcomingencounters_profile_config.json
 
+[TBC]
 
 #### Child Past Immunizatiion Profile Config
 
+[TBC]
 
 #### Child Past Profile Config
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childpastencounters_profile_config.json
 
+[TBC]
+
 #### Child Adverse Reaction Profile Config
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childadversereactions_profile_config.json
 
+[TBC]
 
 
 ### Register Configs
@@ -1089,14 +1098,14 @@ https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/chi
 ![child register config](/img/eir_configs/child-register.png)
 
 
-### Logging in and getting started
+## Logging in and getting started
 [TBC]
+
+# Are we doing a new user guide in the docs here ?
 
 import login from '/img/eir_screenshoots/login.png';
 
 <img src={login} style={{width: 250}} />
-
-
 
 import authneticate from '/img/eir_screenshoots/authentication.png';
 
@@ -1128,12 +1137,15 @@ import child from '/img/eir_screenshoots/add-child.png';
 <img src={child} style={{width: 250}} />
 
 
-#### Scheduling & tasking
-![immunization config](/img/eir_configs/immunization-pd.png)
+### Scheduling & tasking
 
 [TBC]
 
-##### Child Immunization 
+![immunization config](/img/eir_configs/immunization-pd.png)
+
+
+
+### Child Immunization 
 The PlanDefinition resource in FHIR defines several immunization-related activities for child immunization. Each ActivityDefinition outlines specific tasks, including the administration of vaccines, detailing the type of vaccine, schedule, and responsible parties.
 
 General Setup (First Activity) - "Child Register Handler Activity":
@@ -1162,7 +1174,7 @@ For each immunization, the `ActivityDefinition` includes:
 These definitions help automate the creation and management of a child's immunization schedule within a care plan in FHIR-based healthcare systems.
 
 
-##### Child Recurring Services
+### Child Recurring Services
 
 Key Components:
 
@@ -1189,6 +1201,7 @@ This structure automates the generation of a child’s recurring care plan, ensu
 
 ### Recording vaccinations
 
+[TBC]
 
 import child_profile from '/img/eir_screenshoots/child-profile.png';
 
@@ -1202,11 +1215,11 @@ import immunization from '/img/eir_screenshoots/immunization-form.png';
 
 ### Multi-Language Support
 
+[TBC]
+
 #### Multi Language strings files
 ![english trnslations config](/img/eir_configs/strings-en.png)
 ![spanish trnslations config](/img/eir_configs/strings-es.png)
-
-
 
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_config.properties
 https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_es_config.properties
@@ -1237,6 +1250,8 @@ https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/
 ## Reference app user guide
 
 [TBC]
+
+# Are we doing a new user guide in the docs here ?
 
 <img src={login} style={{width: 250}} />
 
