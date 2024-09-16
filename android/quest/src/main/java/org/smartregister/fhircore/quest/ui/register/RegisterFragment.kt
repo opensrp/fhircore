@@ -228,13 +228,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
           updateRegisterFilterState(registerId, questionnaireResponse)
         }
 
-        pagesDataCache.clear()
-
         retrieveRegisterUiState(
           registerId = registerId,
           screenTitle = screenTitle,
           params = params,
-          clearCache = false,
+          clearCache = true,
         )
       }
     }

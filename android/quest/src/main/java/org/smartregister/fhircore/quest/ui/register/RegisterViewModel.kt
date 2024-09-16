@@ -85,7 +85,7 @@ constructor(
   private val _totalRecordsCount = mutableLongStateOf(0L)
   private val _filteredRecordsCount = mutableLongStateOf(-1L)
   private lateinit var registerConfiguration: RegisterConfiguration
-  private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
+  private var completeRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
   private val _currentSyncJobStatusFlow: MutableSharedFlow<CurrentSyncJobStatus?> =
@@ -106,7 +106,7 @@ constructor(
   ) {
     if (clearCache) {
       pagesDataCache.clear()
-      allPatientRegisterData = null
+      completeRegisterData = null
     }
     registerData.value =
       pagesDataCache.getOrPut(currentPage.value) {
@@ -154,41 +154,49 @@ constructor(
     return registerConfiguration
   }
 
-  private fun retrieveAllPatientRegisterData(registerId: String): Flow<PagingData<ResourceData>> {
-    // Ensure that we only initialize this flow once
-    if (allPatientRegisterData == null) {
-      allPatientRegisterData = getPager(registerId, true).flow.cachedIn(viewModelScope)
+  private fun retrieveCompleteRegisterData(registerId: String, forceRefresh: Boolean):
+          Flow<PagingData<ResourceData>> {
+    if (completeRegisterData == null || forceRefresh) {
+      completeRegisterData = getPager(registerId, true).flow.cachedIn(viewModelScope)
     }
-    return allPatientRegisterData!!
+    return completeRegisterData!!
   }
 
-  fun onEvent(event: RegisterEvent) =
+  fun onEvent(event: RegisterEvent) {
+    val registerId = registerUiState.value.registerId
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
         if (event.searchQuery.isBlank()) {
-          paginateRegisterData(registerUiState.value.registerId)
+          val regConfig = retrieveRegisterConfiguration(registerId)
+          if (regConfig.infiniteScroll) {
+            registerData.value = retrieveCompleteRegisterData(registerId, false)
+          } else  paginateRegisterData(registerId)
         } else {
           filterRegisterData(event.searchQuery.query)
         }
       }
+
       is RegisterEvent.MoveToNextPage -> {
         currentPage.value = currentPage.value.plus(1)
-        paginateRegisterData(registerUiState.value.registerId)
+        paginateRegisterData(registerId)
       }
+
       is RegisterEvent.MoveToPreviousPage -> {
         currentPage.value.let { if (it > 0) currentPage.value = it.minus(1) }
-        paginateRegisterData(registerUiState.value.registerId)
+        paginateRegisterData(registerId)
       }
+
       RegisterEvent.ResetFilterRecordsCount -> _filteredRecordsCount.longValue = -1
-    }
+      }
+  }
 
   fun filterRegisterData(searchText: String) {
     val searchBar = registerUiState.value.registerConfiguration?.searchBar
     // computedRules (names of pre-computed rules) must be provided for search to work.
     if (searchBar?.computedRules != null) {
       registerData.value =
-        retrieveAllPatientRegisterData(registerUiState.value.registerId).map {
+        retrieveCompleteRegisterData(registerUiState.value.registerId, false).map {
           pagingData: PagingData<ResourceData> ->
           pagingData.filter { resourceData: ResourceData ->
             searchBar.computedRules!!.any { ruleName ->
@@ -448,7 +456,7 @@ constructor(
       viewModelScope.launch {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
         if (currentRegisterConfiguration.infiniteScroll) {
-          registerData.value = retrieveAllPatientRegisterData(currentRegisterConfiguration.id)
+          registerData.value = retrieveCompleteRegisterData(currentRegisterConfiguration.id, clearCache)
         } else {
           _totalRecordsCount.longValue =
             registerRepository.countRegisterData(registerId = registerId, paramsMap = paramsMap)
