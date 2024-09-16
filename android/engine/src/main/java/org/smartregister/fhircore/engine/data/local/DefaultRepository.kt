@@ -479,7 +479,7 @@ constructor(
     val relatedResourcesQueue = ArrayDeque<Pair<Resource, List<ResourceConfig>?>>().apply {
       addFirst(Pair(resource, relatedResourcesConfigs))
     }
-    while (!relatedResourcesQueue.isEmpty()) {
+    while (relatedResourcesQueue.isNotEmpty()) {
       val (currentResource, currentRelatedResourceConfigs) = relatedResourcesQueue.removeFirst()
       val relatedResourceCountConfigs = currentRelatedResourceConfigs
         ?.asSequence()
@@ -525,7 +525,7 @@ constructor(
       }
 
       val searchResults =  searchIncludedResources(
-        relatedResourcesConfigs = relatedResourcesConfigs,
+        relatedResourcesConfigs = currentRelatedResourceConfigs,
         resource = currentResource,
         configComputedRuleValues = configComputedRuleValues
       )
@@ -579,7 +579,7 @@ constructor(
       if (!id.isNullOrBlank()) {
         relatedResourceWrapper.relatedResourceMap[id] =
           relatedResourceWrapper.relatedResourceMap.getOrPut(id) { mutableListOf() }.apply {
-            addAll(value)
+            addAll(value.distinctBy { it.logicalId })
           }
         value.forEach { resource ->
           with(resourceConfigs?.relatedResources) {
@@ -601,7 +601,7 @@ constructor(
     },
   ): Long =
     kotlin
-      .runCatching { withContext(dispatcherProvider.io()) { fhirEngine.count(this@count) } }
+      .runCatching { fhirEngine.count(this@count) }
       .onSuccess { count -> onSuccess(count) }
       .onFailure { throwable -> onFailure(throwable) }
       .getOrDefault(0)
@@ -630,13 +630,12 @@ constructor(
         relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(true)
 
       search.apply {
-        val thisSearch = this
         reverseIncludeResourceConfigs?.forEach { resourceConfig ->
           revInclude(
             resourceConfig.resource,
             ReferenceClientParam(resourceConfig.searchParameter),
           ) {
-            thisSearch.applyConfiguredSortAndFilters(
+            (this as Search).applyConfiguredSortAndFilters(
               resourceConfig = resourceConfig,
               sortData = true,
               configComputedRuleValues = configComputedRuleValues,
@@ -649,7 +648,7 @@ constructor(
             resourceConfig.resource,
             ReferenceClientParam(resourceConfig.searchParameter),
           ) {
-            thisSearch.applyConfiguredSortAndFilters(
+            (this as Search).applyConfiguredSortAndFilters(
               resourceConfig = resourceConfig,
               sortData = true,
               configComputedRuleValues = configComputedRuleValues,
