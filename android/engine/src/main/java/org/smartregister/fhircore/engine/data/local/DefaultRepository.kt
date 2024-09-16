@@ -93,6 +93,7 @@ import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyn
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.engine.util.pmap
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
@@ -997,7 +998,7 @@ constructor(
           filterActiveResources = filterActiveResources,
           baseResourceConfig = baseResourceConfig,
         )
-      }
+      } as List<RepositoryResourceData>
     }
   }
 
@@ -1008,7 +1009,7 @@ constructor(
     filterActiveResources: List<ActiveResourceFilterConfig>?,
     baseResourceConfig: ResourceConfig,
   ) =
-    this.map { searchResult ->
+    this.pmap { searchResult ->
       val retrievedRelatedResources =
         retrieveRelatedResources(
           resource = searchResult.resource,
