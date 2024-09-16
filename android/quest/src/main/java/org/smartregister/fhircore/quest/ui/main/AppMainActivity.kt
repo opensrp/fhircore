@@ -307,21 +307,29 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     onBackPressedDispatcher.addCallback(
       object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
-          val title =
-            appMainViewModel.applicationConfiguration.appExitDialog?.title
-              ?: getString(R.string.exit_app)
-          val message =
-            appMainViewModel.applicationConfiguration.appExitDialog?.message
-              ?: getString(R.string.exit_app_message)
-          AlertDialogue.showAlert(
-            this@AppMainActivity,
-            alertIntent = AlertIntent.CONFIRM,
-            title = title,
-            message = message,
-            cancellable = false,
-            confirmButtonListener = { finish() },
-            neutralButtonListener = { dialog -> dialog.dismiss() },
-          )
+          val navController =
+            (supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment)
+              .navController
+          if (
+            navController.currentDestination?.id?.equals(R.id.geoWidgetLauncherFragment)!! ||
+              navController.currentDestination?.id?.equals(R.id.registerFragment)!!
+          ) {
+            val title =
+              appMainViewModel.applicationConfiguration.appExitDialog?.title
+                ?: getString(R.string.exit_app)
+            val message =
+              appMainViewModel.applicationConfiguration.appExitDialog?.message
+                ?: getString(R.string.exit_app_message)
+            AlertDialogue.showAlert(
+              this@AppMainActivity,
+              alertIntent = AlertIntent.CONFIRM,
+              title = title,
+              message = message,
+              cancellable = false,
+              confirmButtonListener = { finish() },
+              neutralButtonListener = { dialog -> dialog.dismiss() },
+            )
+          } else navController.navigateUp()
         }
       },
     )
