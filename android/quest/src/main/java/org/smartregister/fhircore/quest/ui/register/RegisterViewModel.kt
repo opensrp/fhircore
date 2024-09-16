@@ -52,6 +52,7 @@ import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
+import org.smartregister.fhircore.engine.domain.model.NestedSearchConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
@@ -244,15 +245,19 @@ constructor(
           baseResource.copy(
             dataQueries = newBaseResourceDataQueries ?: baseResource.dataQueries,
             nestedSearchResources =
-              baseResourceRegisterFilterField?.nestedSearchResources?.map { nestedSearchConfig ->
-                nestedSearchConfig.copy(
-                  dataQueries =
-                    createQueriesForRegisterFilter(
-                      dataQueries = nestedSearchConfig.dataQueries,
-                      qrItemMap = qrItemMap,
-                    ),
+              getValidatedNestedSearchResources(
+                  baseResourceRegisterFilterField?.nestedSearchResources,
+                  qrItemMap,
                 )
-              } ?: baseResource.nestedSearchResources,
+                ?.map { nestedSearchConfig ->
+                  nestedSearchConfig.copy(
+                    dataQueries =
+                      createQueriesForRegisterFilter(
+                        dataQueries = nestedSearchConfig.dataQueries,
+                        qrItemMap = qrItemMap,
+                      ),
+                  )
+                } ?: baseResource.nestedSearchResources,
           ),
         relatedResources = newRelatedResources,
       )
@@ -263,6 +268,19 @@ constructor(
       )
     Timber.i("New ResourceConfig for register data filter: ${fhirResourceConfig.encodeJson()}")
   }
+
+  private fun getValidatedNestedSearchResources(
+    nestedSearchResources: List<NestedSearchConfig>?,
+    qrItemMap: Map<String, QuestionnaireResponse.QuestionnaireResponseItemComponent>,
+  ) =
+    nestedSearchResources?.filter { nestedSearchConfig ->
+      nestedSearchConfig.dataQueries?.any { dataQuery ->
+        dataQuery.filterCriteria.any { filterCriterionConfig ->
+          filterCriterionConfig.dataFilterLinkId.isNullOrEmpty() ||
+            qrItemMap[filterCriterionConfig.dataFilterLinkId]?.answer?.isNotEmpty() == true
+        }
+      } ?: false
+    }
 
   private fun createFilterRelatedResources(
     registerDataFilterFieldsMap: Map<String, RegisterFilterField>?,
