@@ -181,10 +181,7 @@ fun RegisterScreen(
         Box(
           modifier = Modifier.fillMaxWidth().background(Color.White).weight(1f),
         ) {
-          if (
-            registerUiState.totalRecordsCount > 0 &&
-              registerUiState.registerConfiguration?.registerCard != null
-          ) {
+          if (registerUiState.registerConfiguration?.registerCard != null) {
             RegisterCardList(
               modifier = modifier.fillMaxSize().testTag(REGISTER_CARD_TEST_TAG),
               registerCardConfig = registerUiState.registerConfiguration.registerCard,
@@ -194,7 +191,8 @@ fun RegisterScreen(
               onEvent = onEvent,
               registerUiState = registerUiState,
               currentPage = currentPage,
-              showPagination = searchQuery.value.isBlank(),
+              showPagination = !registerUiState.registerConfiguration.infiniteScroll &&
+                      searchQuery.value.isBlank(),
               onSearchByQrSingleResultAction = { resourceData ->
                 if (
                   !searchQuery.value.isBlank() && searchQuery.value.mode == SearchMode.QrCodeScan

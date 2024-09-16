@@ -21,7 +21,7 @@ dagger-hilt = "2.51"
 datastore = "1.1.1"
 desugar-jdk-libs = "2.0.4"
 dokkaBase = "1.8.20"
-easyRulesCore = "1.0.7"
+easyRulesCore = "4.1.1-SNAPSHOT"
 espresso-core = "3.6.1"
 fhir-common-utils = "1.0.0-SNAPSHOT"
 fhir-sdk-contrib-barcode = "0.1.0-beta3-preview7-SNAPSHOT"
@@ -119,7 +119,7 @@ data-capture = { group = "org.smartregister", name = "data-capture", version.ref
 datastore = { group = "androidx.datastore", name = "datastore", version.ref = "datastore" }
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore"}
 dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokkaBase" }
-easy-rules-jexl = { module = "io.github.dvgaba:easy-rules-jexl", version.ref = "easyRulesCore" }
+easy-rules-jexl = { group = "org.smartregister", name = "easy-rules-jexl",  version.ref = "easyRulesCore"  }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
 fhir-common-utils = { group = "org.smartregister", name = "fhir-common-utils", version.ref = "fhir-common-utils" }
 fhir-engine = { group = "org.smartregister", name = "engine", version.ref = "fhir-sdk-engine" }

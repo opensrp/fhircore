@@ -91,7 +91,6 @@ import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyn
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.engine.util.pmap
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
@@ -482,12 +481,12 @@ constructor(
     }
     while (!relatedResourcesQueue.isEmpty()) {
       val (currentResource, currentRelatedResourceConfigs) = relatedResourcesQueue.removeFirst()
-      val filteredConfigs = relatedResourcesConfigs
+      val relatedResourceCountConfigs = currentRelatedResourceConfigs
         ?.asSequence()
         ?.filter { it.resultAsCount && !it.searchParameter.isNullOrEmpty() }
         ?.toList()
 
-      filteredConfigs?.forEach { resourceConfig ->
+      relatedResourceCountConfigs?.forEach { resourceConfig ->
         val search = Search(resourceConfig.resource).apply {
           filter(
             ReferenceClientParam(resourceConfig.searchParameter),
@@ -504,8 +503,8 @@ constructor(
         if (resourceConfig.countResultConfig?.sumCounts == true) {
           search.count(
             onSuccess = {
-              relatedResourceWrapper.relatedResourceCountMap[key] =
-                mutableListOf<RelatedResourceCount>().apply {
+              relatedResourceWrapper.relatedResourceCountMap.getOrPut(key)  { mutableListOf()}
+               .apply {
                   add(
                     RelatedResourceCount(
                     count = it,
@@ -986,7 +985,7 @@ constructor(
           baseResourceConfig = baseResourceConfig,
         )
       }
-    } as List<RepositoryResourceData>
+    }
   }
 
   private suspend fun List<SearchResult<Resource>>.mapResourceToRepositoryResourceData(
@@ -996,7 +995,7 @@ constructor(
     filterActiveResources: List<ActiveResourceFilterConfig>?,
     baseResourceConfig: ResourceConfig,
   ) =
-    this.pmap { searchResult ->
+    this.map { searchResult ->
       val retrievedRelatedResources =
         retrieveRelatedResources(
           resource = searchResult.resource,

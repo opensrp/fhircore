@@ -39,7 +39,7 @@ data class RegisterConfiguration(
   val registerCard: RegisterCardConfig = RegisterCardConfig(),
   val fabActions: List<NavigationMenuConfig> = emptyList(),
   val noResults: NoResultsConfig? = null,
-  val pageSize: Int = 15,
+  val pageSize: Int = 10,
   val activeResourceFilters: List<ActiveResourceFilterConfig> =
     listOf(
       ActiveResourceFilterConfig(resourceType = ResourceType.Patient, active = true),
@@ -50,6 +50,7 @@ data class RegisterConfiguration(
   val filterDataByRelatedEntityLocation: Boolean = false,
   val topScreenSection: TopScreenSectionConfig? = null,
   val onSearchByQrSingleResultActions: List<ActionConfig>? = null,
+  val infiniteScroll: Boolean = false
 ) : Configuration() {
   val onSearchByQrSingleResultValidActions =
     onSearchByQrSingleResultActions?.filter { it.trigger == ActionTrigger.ON_SEARCH_SINGLE_RESULT }
