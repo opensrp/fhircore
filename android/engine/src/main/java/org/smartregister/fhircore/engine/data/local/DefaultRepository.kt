@@ -32,6 +32,8 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
+import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.has
 import com.google.android.fhir.search.include
 import com.google.android.fhir.search.revInclude
@@ -476,11 +478,11 @@ constructor(
     configComputedRuleValues: Map<String, Any>,
   ): RelatedResourceWrapper {
     val relatedResourceWrapper = RelatedResourceWrapper()
-    val relatedResourcesQueue = ArrayDeque<Pair<Resource, List<ResourceConfig>?>>().apply {
-      addFirst(Pair(resource, relatedResourcesConfigs))
+    val relatedResourcesQueue = ArrayDeque<Pair<List<Resource>, List<ResourceConfig>?>>().apply {
+      addFirst(Pair(listOf(resource), relatedResourcesConfigs))
     }
     while (relatedResourcesQueue.isNotEmpty()) {
-      val (currentResource, currentRelatedResourceConfigs) = relatedResourcesQueue.removeFirst()
+      val (currentResources, currentRelatedResourceConfigs) = relatedResourcesQueue.removeFirst()
       val relatedResourceCountConfigs = currentRelatedResourceConfigs
         ?.asSequence()
         ?.filter { it.resultAsCount && !it.searchParameter.isNullOrEmpty() }
@@ -488,9 +490,16 @@ constructor(
 
       relatedResourceCountConfigs?.forEach { resourceConfig ->
         val search = Search(resourceConfig.resource).apply {
+          val filters =
+            currentResources.map {
+              val apply: ReferenceParamFilterCriterion.() -> Unit = {
+                value = it.logicalId.asReference(it.resourceType).reference
+              }
+              apply
+            }
           filter(
             ReferenceClientParam(resourceConfig.searchParameter),
-            { value = currentResource.asReference().reference }
+            *filters.toTypedArray(),
           )
           applyConfiguredSortAndFilters(
             resourceConfig = resourceConfig,
@@ -526,7 +535,7 @@ constructor(
 
       val searchResults =  searchIncludedResources(
         relatedResourcesConfigs = currentRelatedResourceConfigs,
-        resource = currentResource,
+        resources = currentResources,
         configComputedRuleValues = configComputedRuleValues
       )
 
@@ -544,7 +553,7 @@ constructor(
           updateResourceWrapperAndQueue(
             key = entry.key,
             defaultKey = entry.value.firstOrNull()?.resourceType?.name,
-            value = entry.value,
+            resources = entry.value,
             relatedResourcesConfigsMap = fwdIncludedRelatedConfigsMap,
             relatedResourceWrapper = relatedResourceWrapper,
             relatedResourcesQueue = relatedResourcesQueue
@@ -556,7 +565,7 @@ constructor(
           updateResourceWrapperAndQueue(
             key = key,
             defaultKey = entry.value.firstOrNull()?.resourceType?.name,
-            value = entry.value,
+            resources = entry.value,
             relatedResourcesConfigsMap = revIncludedRelatedConfigsMap,
             relatedResourceWrapper = relatedResourceWrapper,
             relatedResourcesQueue = relatedResourcesQueue
@@ -570,21 +579,21 @@ constructor(
   private fun updateResourceWrapperAndQueue(
     key: String,
     defaultKey: String?,
-    value: List<Resource>,
+    resources: List<Resource>,
     relatedResourcesConfigsMap: Map<String, ResourceConfig>?,
     relatedResourceWrapper: RelatedResourceWrapper,
-    relatedResourcesQueue: ArrayDeque<Pair<Resource, List<ResourceConfig>?>>) {
+    relatedResourcesQueue: ArrayDeque<Pair<List<Resource>, List<ResourceConfig>?>>) {
       val resourceConfigs = relatedResourcesConfigsMap?.get(key)
       val id = resourceConfigs?.id ?: defaultKey
       if (!id.isNullOrBlank()) {
         relatedResourceWrapper.relatedResourceMap[id] =
           relatedResourceWrapper.relatedResourceMap.getOrPut(id) { mutableListOf() }.apply {
-            addAll(value.distinctBy { it.logicalId })
+            addAll(resources.distinctBy { it.logicalId })
           }
-        value.forEach { resource ->
+        resources.chunked(COUNT) { item ->
           with(resourceConfigs?.relatedResources) {
             if (!this.isNullOrEmpty()) {
-              relatedResourcesQueue.addLast(Pair(resource, this))
+              relatedResourcesQueue.addLast(Pair(item, this))
             }
           }
         }
@@ -613,12 +622,17 @@ constructor(
    */
   private suspend fun searchIncludedResources(
     relatedResourcesConfigs: List<ResourceConfig>?,
-    resource: Resource,
+    resources: List<Resource>,
     configComputedRuleValues: Map<String, Any>,
   ): List<SearchResult<Resource>> {
       val search =
-        Search(resource.resourceType).apply {
-          filter(Resource.RES_ID, { value = of(resource.logicalId) })
+        Search(resources.first().resourceType).apply {
+          val filters =
+            resources.map {
+              val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.logicalId) }
+              apply
+            }
+          filter(Resource.RES_ID, *filters.toTypedArray())
         }
 
       // Forward include related resources e.g. a member or managingEntity of a Group resource
