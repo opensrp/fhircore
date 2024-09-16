@@ -171,7 +171,7 @@ constructor(
       } catch (exception: NoSuchElementException) {
         Timber.e(exception)
         throw IllegalStateException(
-          "No Measure library found in Knowledge Manager with URL $measureUrl",
+          "No FHIR resource found in Knowledge Manager with URL $measureUrl",
         )
       }
     }
