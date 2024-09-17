@@ -87,7 +87,9 @@ fun <T> MultiSelectCheckbox(
           imageVector =
             if (collapsedState.value) {
               Icons.Default.ArrowDropDown
-            } else Icons.AutoMirrored.Filled.ArrowRight,
+            } else {
+              Icons.AutoMirrored.Filled.ArrowRight
+            },
           contentDescription = null,
           tint = Color.Gray,
           modifier = Modifier.clickable { collapsedState.value = !collapsedState.value },

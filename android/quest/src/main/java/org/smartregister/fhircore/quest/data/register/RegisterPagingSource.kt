@@ -66,8 +66,11 @@ class RegisterPagingSource(
       val prevKey =
         if (_registerPagingSourceState.loadAll && currentPage > 0) currentPage - 1 else null
       val nextKey =
-        if (_registerPagingSourceState.loadAll && registerData.isNotEmpty()) currentPage + 1
-        else null
+        if (_registerPagingSourceState.loadAll && registerData.isNotEmpty()) {
+          currentPage + 1
+        } else {
+          null
+        }
 
       val data =
         registerData.map { repositoryResourceData ->

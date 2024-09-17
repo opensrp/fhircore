@@ -31,11 +31,14 @@ import android.os.LocaleList
 import android.os.Parcelable
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.state.ToggleableState
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import java.io.Serializable
+import java.util.Locale
 import kotlinx.coroutines.flow.firstOrNull
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
@@ -46,9 +49,6 @@ import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import timber.log.Timber
-import java.io.Serializable
-import java.util.Locale
-import androidx.compose.ui.graphics.Color as ComposeColor
 
 const val ERROR_COLOR = "errorColor"
 const val PRIMARY_COLOR = "primaryColor"

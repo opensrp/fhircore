@@ -32,7 +32,9 @@ object ViewPropertiesSerializer :
   ): DeserializationStrategy<ViewProperties> {
     val jsonObject = element.jsonObject
     val viewType = jsonObject[VIEW_TYPE]?.jsonPrimitive?.content
-    require(viewType != null && ViewType.entries.toTypedArray().contains(ViewType.valueOf(viewType))) {
+    require(
+      viewType != null && ViewType.entries.toTypedArray().contains(ViewType.valueOf(viewType)),
+    ) {
       """Ensure that supported `viewType` property is included in your register view properties configuration.
          Supported types: ${ViewType.entries.toTypedArray()}
          Parsed JSON: $jsonObject

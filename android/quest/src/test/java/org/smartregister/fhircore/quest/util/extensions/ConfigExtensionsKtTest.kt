@@ -36,7 +36,11 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+<<<<<<< HEAD
 import kotlinx.coroutines.Dispatchers
+=======
+import javax.inject.Inject
+>>>>>>> 77d16628c (Run spotlessApply)
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
@@ -79,8 +83,11 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+<<<<<<< HEAD
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
+=======
+>>>>>>> 77d16628c (Run spotlessApply)
 
 @HiltAndroidTest
 class ConfigExtensionsKtTest : RobolectricTest() {
@@ -675,7 +682,13 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   @Test
   fun decodeBinaryResourcesToBitmapOnNavigationMenuClientRegistersDoneCorrectly(): Unit =
     runBlocking {
+<<<<<<< HEAD
       val navigationMenuConfigs = sequenceOf(navigationMenuConfig).mapNotNull { it.menuIconConfig?.reference }
+=======
+      defaultRepository.create(addResourceTags = true, binaryImage)
+      val navigationMenuConfigs =
+        sequenceOf(navigationMenuConfig).mapNotNull { it.menuIconConfig?.reference }
+>>>>>>> 77d16628c (Run spotlessApply)
       val decodedImageMap = mutableStateMapOf<String, Bitmap>()
       withContext(dispatcherProvider.io()){
         defaultRepository.create(addResourceTags = true, binaryImage)
@@ -692,10 +705,18 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   fun decodeBinaryResourcesToBitmapOnOverflowMenuConfigDoneCorrectly(): Unit = runTest {
     val navigationMenuConfigs = sequenceOf(overflowMenuItemConfig).mapNotNull { it.icon?.reference }
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+<<<<<<< HEAD
     withContext(Dispatchers.IO){
       defaultRepository.create(addResourceTags = true, binaryImage)
       navigationMenuConfigs.resourceReferenceToBitMap( fhirEngine = fhirEngine,
         decodedImageMap = decodedImageMap,)
+=======
+    runBlocking {
+      navigationMenuConfigs.resourceReferenceToBitMap(
+        fhirEngine = fhirEngine,
+        decodedImageMap = decodedImageMap,
+      )
+>>>>>>> 77d16628c (Run spotlessApply)
     }
     Assert.assertTrue(decodedImageMap.isNotEmpty())
     Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
@@ -742,10 +763,16 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     val listViewProperties = cardViewProperties.content[0] as ListProperties
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+<<<<<<< HEAD
     withContext(Dispatchers.IO){
       defaultRepository.create(addResourceTags = true, binaryImage)
       listOf(listViewProperties.registerCard.views[0]).decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
     }
+=======
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    listOf(listViewProperties.registerCard.views[0])
+      .decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+>>>>>>> 77d16628c (Run spotlessApply)
     Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
     Assert.assertTrue(decodedImageMap.isNotEmpty())
   }

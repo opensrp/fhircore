@@ -22,7 +22,6 @@ import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
-
 const val ICON_TYPE_LOCAL = "local"
 const val ICON_TYPE_REMOTE = "remote"
 

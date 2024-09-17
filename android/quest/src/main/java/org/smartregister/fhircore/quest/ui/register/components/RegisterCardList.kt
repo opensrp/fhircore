@@ -117,12 +117,17 @@ fun RegisterCardList(
     // Register pagination
     item {
       val fabActions = registerUiState.registerConfiguration?.fabActions
-      Box(modifier = Modifier.padding(
-        bottom =
-        if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
-          PADDING_BOTTOM_WITH_FAB.dp
-        } else PADDING_BOTTOM_WITHOUT_FAB.dp,
-      )) {
+      Box(
+        modifier =
+          Modifier.padding(
+            bottom =
+              if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
+                PADDING_BOTTOM_WITH_FAB.dp
+              } else {
+                PADDING_BOTTOM_WITHOUT_FAB.dp
+              },
+          ),
+      ) {
         if (pagingItems.itemCount > 0 && showPagination) {
           RegisterFooter(
             resultCount = pagingItems.itemCount,

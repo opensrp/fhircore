@@ -43,7 +43,6 @@ const val SEARCH_FOOTER_PREVIOUS_BUTTON_TAG = "searchFooterPreviousButtonTag"
 const val SEARCH_FOOTER_NEXT_BUTTON_TAG = "searchFooterNextButtonTag"
 const val SEARCH_FOOTER_PAGINATION_TAG = "searchFooterPaginationTag"
 
-
 @Composable
 fun RegisterFooter(
   resultCount: Int,
