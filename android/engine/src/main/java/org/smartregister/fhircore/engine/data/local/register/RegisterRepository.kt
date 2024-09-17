@@ -22,6 +22,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -44,7 +45,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationIds
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
-import javax.inject.Inject
 
 class RegisterRepository
 @Inject
@@ -134,18 +134,24 @@ constructor(
               currentPage = pageNumber,
               count = COUNT,
             )
-          searchResultsCount += fhirEngine.search<Resource>(baseResourceSearch)
-            .asSequence()
-            .map { it.resource }
-            .filter { resource ->
-              when (resource.resourceType) {
-                ResourceType.Location -> locationIds.contains(resource.logicalId)
-                else -> resource.meta.tag.any {
-                  it.system == context.getString(R.string.sync_strategy_related_entity_location_system)
-                          && locationIds.contains(it.code)
+          searchResultsCount +=
+            fhirEngine
+              .search<Resource>(baseResourceSearch)
+              .asSequence()
+              .map { it.resource }
+              .filter { resource ->
+                when (resource.resourceType) {
+                  ResourceType.Location -> locationIds.contains(resource.logicalId)
+                  else ->
+                    resource.meta.tag.any {
+                      it.system ==
+                        context.getString(R.string.sync_strategy_related_entity_location_system) &&
+                        locationIds.contains(it.code)
+                    }
                 }
               }
-            }.count().toLong()
+              .count()
+              .toLong()
           count += COUNT
           pageNumber++
         }
@@ -164,7 +170,7 @@ constructor(
           onFailure = {
             Timber.e(
               it,
-              "Error counting register data for register id: ${registerConfiguration.id}"
+              "Error counting register data for register id: ${registerConfiguration.id}",
             )
           },
         )

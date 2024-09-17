@@ -171,7 +171,9 @@ fun RegisterScreen(
               id =
                 if (appDrawerUIState.isSyncUpload == true) {
                   R.string.syncing_up
-                } else R.string.syncing_down,
+                } else {
+                  R.string.syncing_down
+                },
             ),
           showPercentageProgress = true,
         )
@@ -191,8 +193,9 @@ fun RegisterScreen(
               onEvent = onEvent,
               registerUiState = registerUiState,
               currentPage = currentPage,
-              showPagination = !registerUiState.registerConfiguration.infiniteScroll &&
-                      searchQuery.value.isBlank(),
+              showPagination =
+                !registerUiState.registerConfiguration.infiniteScroll &&
+                  searchQuery.value.isBlank(),
               onSearchByQrSingleResultAction = { resourceData ->
                 if (
                   !searchQuery.value.isBlank() && searchQuery.value.mode == SearchMode.QrCodeScan

@@ -34,6 +34,13 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.text.SimpleDateFormat
+import java.time.OffsetDateTime
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+import javax.inject.Inject
+import kotlin.time.Duration
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -81,13 +88,6 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.resourceReferenceToBitMap
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
-import java.text.SimpleDateFormat
-import java.time.OffsetDateTime
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
-import javax.inject.Inject
-import kotlin.time.Duration
 
 @HiltViewModel
 class AppMainViewModel
@@ -134,14 +134,15 @@ constructor(
   }
 
   fun retrieveIconsAsBitmap() {
-    viewModelScope.launch (dispatcherProvider.io()){
+    viewModelScope.launch(dispatcherProvider.io()) {
       navigationConfiguration.clientRegisters
         .asSequence()
         .filter {
           it.menuIconConfig != null &&
-                  it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
-                  !it.menuIconConfig?.reference.isNullOrBlank()
-        }.mapNotNull { it.menuIconConfig!!.reference }
+            it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
+            !it.menuIconConfig?.reference.isNullOrBlank()
+        }
+        .mapNotNull { it.menuIconConfig!!.reference }
         .resourceReferenceToBitMap(
           fhirEngine = fhirEngine,
           decodedImageMap = configurationRegistry.decodedImageMap,
@@ -291,11 +292,15 @@ constructor(
           NavigationArg.SCREEN_TITLE to
             if (startDestinationConfig.screenTitle.isNullOrEmpty()) {
               topMenuConfig.display
-            } else startDestinationConfig.screenTitle,
+            } else {
+              startDestinationConfig.screenTitle
+            },
           NavigationArg.REGISTER_ID to
             if (startDestinationConfig.id.isNullOrEmpty()) {
               clickAction?.id ?: topMenuConfig.id
-            } else startDestinationConfig.id,
+            } else {
+              startDestinationConfig.id
+            },
         )
       }
       LauncherType.MAP -> bundleOf(NavigationArg.GEO_WIDGET_ID to startDestinationConfig.id)

@@ -25,6 +25,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -59,7 +60,6 @@ import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.resourceReferenceToBitMap
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
-import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel
@@ -149,7 +149,7 @@ constructor(
       withContext(dispatcherProvider.io()) {
         profileConfigs.views.decodeImageResourcesToBitmap(
           fhirEngine = registerRepository.fhirEngine,
-          decodedImageMap = configurationRegistry.decodedImageMap
+          decodedImageMap = configurationRegistry.decodedImageMap,
         )
       }
     }

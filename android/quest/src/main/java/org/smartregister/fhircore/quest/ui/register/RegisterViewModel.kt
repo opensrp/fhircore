@@ -29,6 +29,8 @@ import androidx.paging.cachedIn
 import androidx.paging.filter
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlin.math.ceil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,8 +64,6 @@ import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
-import javax.inject.Inject
-import kotlin.math.ceil
 
 @HiltViewModel
 class RegisterViewModel
@@ -154,8 +154,10 @@ constructor(
     return registerConfiguration
   }
 
-  private fun retrieveCompleteRegisterData(registerId: String, forceRefresh: Boolean):
-          Flow<PagingData<ResourceData>> {
+  private fun retrieveCompleteRegisterData(
+    registerId: String,
+    forceRefresh: Boolean,
+  ): Flow<PagingData<ResourceData>> {
     if (completeRegisterData == null || forceRefresh) {
       completeRegisterData = getPager(registerId, true).flow.cachedIn(viewModelScope)
     }
@@ -171,24 +173,23 @@ constructor(
           val regConfig = retrieveRegisterConfiguration(registerId)
           if (regConfig.infiniteScroll) {
             registerData.value = retrieveCompleteRegisterData(registerId, false)
-          } else  paginateRegisterData(registerId)
+          } else {
+            paginateRegisterData(registerId)
+          }
         } else {
           filterRegisterData(event.searchQuery.query)
         }
       }
-
       is RegisterEvent.MoveToNextPage -> {
         currentPage.value = currentPage.value.plus(1)
         paginateRegisterData(registerId)
       }
-
       is RegisterEvent.MoveToPreviousPage -> {
         currentPage.value.let { if (it > 0) currentPage.value = it.minus(1) }
         paginateRegisterData(registerId)
       }
-
       RegisterEvent.ResetFilterRecordsCount -> _filteredRecordsCount.longValue = -1
-      }
+    }
   }
 
   fun filterRegisterData(searchText: String) {
@@ -456,7 +457,8 @@ constructor(
       viewModelScope.launch {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
         if (currentRegisterConfiguration.infiniteScroll) {
-          registerData.value = retrieveCompleteRegisterData(currentRegisterConfiguration.id, clearCache)
+          registerData.value =
+            retrieveCompleteRegisterData(currentRegisterConfiguration.id, clearCache)
         } else {
           _totalRecordsCount.longValue =
             registerRepository.countRegisterData(registerId = registerId, paramsMap = paramsMap)
@@ -491,11 +493,11 @@ constructor(
             filteredRecordsCount = _filteredRecordsCount.longValue,
             pagesCount =
               ceil(
-                  (
-                          if (registerFilterState.value.fhirResourceConfig != null) {
-                            _filteredRecordsCount.longValue
-                          } else _totalRecordsCount.longValue
-                   )
+                  (if (registerFilterState.value.fhirResourceConfig != null) {
+                      _filteredRecordsCount.longValue
+                    } else {
+                      _totalRecordsCount.longValue
+                    })
                     .toDouble()
                     .div(currentRegisterConfiguration.pageSize.toLong()),
                 )

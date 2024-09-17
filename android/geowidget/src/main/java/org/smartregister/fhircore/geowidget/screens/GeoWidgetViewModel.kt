@@ -19,10 +19,10 @@ package org.smartregister.fhircore.geowidget.screens
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.ServicePointType
-import javax.inject.Inject
 
 @HiltViewModel
 class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherProvider) :

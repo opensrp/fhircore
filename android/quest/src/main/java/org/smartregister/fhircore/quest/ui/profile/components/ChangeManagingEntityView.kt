@@ -154,7 +154,9 @@ private fun ChangeManagingEntityBottomBar(
               id =
                 if (isEnabled) {
                   org.smartregister.fhircore.engine.R.color.colorPrimary
-                } else org.smartregister.fhircore.engine.R.color.white,
+                } else {
+                  org.smartregister.fhircore.engine.R.color.white
+                },
             ),
         ),
     ) {
@@ -165,7 +167,9 @@ private fun ChangeManagingEntityBottomBar(
             id =
               if (isEnabled) {
                 org.smartregister.fhircore.engine.R.color.white
-              } else org.smartregister.fhircore.engine.R.color.colorPrimary,
+              } else {
+                org.smartregister.fhircore.engine.R.color.colorPrimary
+              },
           ),
         text = stringResource(id = org.smartregister.fhircore.engine.R.string.str_save).uppercase(),
       )
