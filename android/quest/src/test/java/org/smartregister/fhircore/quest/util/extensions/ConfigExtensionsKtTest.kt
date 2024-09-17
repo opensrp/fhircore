@@ -36,8 +36,8 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
@@ -674,9 +674,10 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   @Test
   fun decodeBinaryResourcesToBitmapOnNavigationMenuClientRegistersDoneCorrectly(): Unit =
     runBlocking {
-      val navigationMenuConfigs = sequenceOf(navigationMenuConfig).mapNotNull { it.menuIconConfig?.reference }
+      val navigationMenuConfigs =
+        sequenceOf(navigationMenuConfig).mapNotNull { it.menuIconConfig?.reference }
       val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-      withContext(Dispatchers.IO){
+      withContext(dispatcherProvider.io()) {
         defaultRepository.create(addResourceTags = true, binaryImage)
         navigationMenuConfigs.resourceReferenceToBitMap(
           fhirEngine = fhirEngine,
@@ -718,7 +719,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   fun testImageBitmapUpdatedCorrectlyGivenCardViewProperties(): Unit = runTest {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-    withContext(Dispatchers.IO){
+    withContext(Dispatchers.IO) {
       defaultRepository.create(addResourceTags = true, binaryImage)
       listOf(cardViewProperties).decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
     }
@@ -730,9 +731,10 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   fun testImageBitmapUpdatedCorrectlyGivenListViewProperties(): Unit = runTest {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-    withContext(Dispatchers.IO){
+    withContext(Dispatchers.IO) {
       defaultRepository.create(addResourceTags = true, binaryImage)
-      listOf(cardViewProperties.content[0]).decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+      listOf(cardViewProperties.content[0])
+        .decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
     }
     Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
     Assert.assertTrue(decodedImageMap.isNotEmpty())
@@ -743,9 +745,10 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     val listViewProperties = cardViewProperties.content[0] as ListProperties
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-    withContext(Dispatchers.IO){
+    withContext(Dispatchers.IO) {
       defaultRepository.create(addResourceTags = true, binaryImage)
-      listOf(listViewProperties.registerCard.views[0]).decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+      listOf(listViewProperties.registerCard.views[0])
+        .decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
     }
     Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
     Assert.assertTrue(decodedImageMap.isNotEmpty())
@@ -757,7 +760,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     val listViewProperties = cardViewProperties.content[0] as ListProperties
     val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-    withContext(Dispatchers.IO){
+    withContext(Dispatchers.IO) {
       defaultRepository.create(addResourceTags = true, binaryImage)
       listOf(columnProperties.children[0]).decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
     }
@@ -784,7 +787,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
           ),
       )
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-    withContext(Dispatchers.IO){
+    withContext(Dispatchers.IO) {
       listOf(rowProperties).decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
     }
     Assert.assertTrue(decodedImageMap.isEmpty())
