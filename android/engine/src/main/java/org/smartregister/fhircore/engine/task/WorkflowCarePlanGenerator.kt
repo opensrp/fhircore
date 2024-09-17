@@ -41,8 +41,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.opencds.cqf.fhir.cql.LibraryEngine
-import org.opencds.cqf.fhir.cr.plandefinition.PlanDefinitionProcessor
-import org.opencds.cqf.fhir.utility.monad.Eithers
+import org.opencds.cqf.fhir.cr.plandefinition.r4.PlanDefinitionProcessor
 import org.opencds.cqf.fhir.utility.r4.Parameters.part
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import timber.log.Timber
@@ -129,7 +128,9 @@ constructor(
     params.addParameter(part("%subject", subject))
 
     return planDefProcessor.apply(
-      Eithers.forRight3(planDefinition),
+      null,
+      null,
+      planDefinition,
       "Patient/${subject.id}",
       null,
       null,

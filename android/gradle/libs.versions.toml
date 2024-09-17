@@ -17,20 +17,20 @@ converter-gson = "2.9.0"
 core-ktx = "1.13.1"
 core-testing = "2.2.0"
 coverallsGradlePlugin = "2.12.2"
-cqfFhirCr = "3.8.0"
+cqfFhirCr = "3.0.0-PRE9"
 dagger-hilt = "2.51"
 datastore = "1.1.1"
 desugar-jdk-libs = "2.1.2"
 dokkaBase = "1.9.20"
 easy-rules-jexl = "4.1.1-SNAPSHOT"
 espresso-core = "3.6.1"
-fhir-common-utils = "1.0.0-SNAPSHOT"
+fhir-sdk-common-utils = "1.0.0-SNAPSHOT"
 fhir-sdk-contrib-barcode = "0.1.0-beta3-preview7-SNAPSHOT"
 fhir-sdk-contrib-locationwidget = "0.1.0-alpha01-preview2-SNAPSHOT"
 fhir-sdk-data-capture = "1.1.0-preview14.1-SNAPSHOT"
 fhir-sdk-engine = "1.0.0-preview14.2-SNAPSHOT"
 fhir-sdk-knowledge = "0.1.0-alpha03-preview5-SNAPSHOT"
-fhir-sdk-workflow = "0.1.0-alpha04-preview10.2DEV-SNAPSHOT"
+fhir-sdk-workflow = "0.1.0-alpha04-preview10-SNAPSHOT"
 fragment-ktx = "1.8.2"
 glide = "4.16.0"
 gradle = "8.3.2"
@@ -121,7 +121,7 @@ datastore-preferences = { group = "androidx.datastore", name = "datastore-prefer
 dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokkaBase" }
 easy-rules-jexl = { group = "org.smartregister", name = "easy-rules-jexl", version.ref = "easy-rules-jexl" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
-fhir-common-utils = { group = "org.smartregister", name = "fhir-common-utils", version.ref = "fhir-common-utils" }
+fhir-common-utils = { group = "org.smartregister", name = "fhir-common-utils", version.ref = "fhir-sdk-common-utils" }
 fhir-engine = { group = "org.smartregister", name = "engine", version.ref = "fhir-sdk-engine" }
 foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "compose-ui" }
 fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragment-ktx" }

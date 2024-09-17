@@ -1081,7 +1081,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           )
         }
 
-      knowledgeManager.index(
+      knowledgeManager.install(
         File.createTempFile(cqlLibrary.name, ".json").apply {
           this.writeText(cqlLibrary.encodeResourceToString())
         },
