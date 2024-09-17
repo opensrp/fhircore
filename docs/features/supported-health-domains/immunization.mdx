@@ -6,1337 +6,828 @@ The EIR package leverages the next-gen FHIR-native OpenSRP 2 platform, which ena
 
 ![immunization record](/img/iz-domain/iz-profile-register.png)
 
-## Features and functionality
+## Core features and functionality
 
-- *Patient registration and management* - register patients, capture demographic data and assign unique user ids while checking to prevent duplicate registrations.
-- *WHO Immunization Care Guidelines* - automatically creates immunization schedules based on WHO guidelines.  The EIR package currently supports all WHO child immunization, Covid-19 and HPV vaccine recommendations.  It can be expanded to support new vaccines (eg. Malaria) and localized to align with MoH country guidelines.
-- *Record Services* - record patient immunizations including the antigen/vaccine, dose, lot and date given.  Track when vaccines are refused and capture the reason why.
-- *Optimizes for on and off-line settings* - Works offline and is designed to work equally well in a facility or outreach setting.
-- *CHW Companion App* - ensure no child is missed with an included CHW application that enables team based care between facility staff and CHWs at the community level.  Eg. All children registered by CHWs will automatically enroll for care at the facility.
-- *Safety monitoring* - record when a patient experiences adverse events and link this to the specific vaccine and lot number to help ensure patient follow-up.
-- *Growth Monitoring* - the application supports growth and nutrition monitoring including automatic Z-score calculation and MUAC measurements.
-- *Stock Management* - a built in stock module supports stock-taking, resupply, consumption tracking, and wastage that is automatically calculated based on usage in the app.  The stock module can be integrated with LMIS helping to provide important visibility on vaccine demand to prevent stockouts.
-- *Vital Statistics* - optional CRVS module to capture birth and death notifications and/or registrations and the issuance of birth certificates.
-- *In-app Reporting* - automatically calculate immunization service data statistics eliminating the need for time consuming paper-based tally sheets.
-- *Real-time Analytics* - visualize program data on interactive dashboards with rich geospatial support to show coverage and risk areas.
-- *Client Messaging* - leverage built integrations with platforms like RapidPro and Turn to send immunization reminders and educational messaging that can increase vaccine demand and uptake.
-- *Precision health* - leverage the built in geo-widget to target at risk communities and households for service delivery.
-- *Integrations* - built in integration ensures all data flows seamlessly into DHIS2. Integrations with common LMIS, CRVS are also possible.
-- *Interoperability* - OpenSRP is HL7 FHIR native ensuring best-in class interoperability to enable seamless two-way data flows with other systems.
+The EIR app for Community Health Workers (CHWs) in health applications typically serves as a digital platform to streamline vaccination services and improve healthcare delivery. Its core functions can include the following:
 
-## Quickstart guide
+1. Patient Registration and Profile Management
 
-### Core workflows
-Building a FHIR Based EIR (Electronic Immunization Registry) system involves integrating various healthcare workflows such as patient registration, vaccination, tracking, and reporting using standardized FHIR resources. Here’s a high-level breakdown for each component from a FHIR Resource Mapping perspective:
+	* Patient Data Collection: Allows CHWs to register newborns, children, and adults, capturing essential details like name, age, date of birth, address, and contact information.
 
-1. Registration
+	* Profile Updates: Facilitates updating patient information such as contact details, address, or family status.
 
-	-	FHIR Resources: Patient, Practitioner, Organization, Location
+2. Vaccination Tracking and Scheduling
 
-	Details:
+	* Immunization Records: Tracks each patient’s immunization history, including past vaccinations and due vaccines.
 
-	-	Use the Patient resource to manage patient demographics, contact information, and identifiers (like national IDs or health insurance numbers).
-	-	For healthcare providers or practitioners administering the vaccines, use the Practitioner resource.
-	-	Clinics or organizations that provide vaccinations can be represented with the Organization/Location(Type:Building) resource.
+	* Vaccine Scheduling: Automatically generates personalized immunization schedules based on patient age and national vaccine guidelines.
 
-	Workflow:
+	* Alerts & Reminders: Sends alerts to CHWs and caregivers about upcoming or missed vaccinations.
 
-	-	A patient registers at a vaccination site or via an online portal.
-	-	The system creates or updates a Patient resource and is visible in a Household/Patient Register
-	-	The Practitioner administering the vaccine is registered using the Practitioner resource from Patient Profiles
+3. Health Data Collection and Reporting
 
-2. Vaccination
+	* Data Entry for Health Interventions: Allows CHWs to log additional health services provided (e.g., growth monitoring, vitamin A supplementation, deworming).
 
-	-	FHIR Resources: Immunization, Medication, Observation
+	* Real-time Reporting: Provides local health authorities with access to up-to-date data for monitoring immunization coverage and gaps.
 
-	Details:
+	* Analytics: Includes dashboards for CHWs to monitor performance, coverage rates, and identify high-risk populations.
 
-	-	The Immunization resource is used to record the vaccine administered, the date, the manufacturer, the dose, and the route of administration.
-	-	Use the Medication resource to track vaccine details, including its lot number, expiry date, and ingredients.
-	-	If any observations (e.g., side effects, adverse reactions) are required during or after vaccination, capture them using the Observation resource.
+4. Inventory Management
 
-	Workflow:
+	* Vaccine Stock Management: Tracks the availability of vaccines in stock, preventing shortages and overstocking at health facilities.
 
-	-	fter administering the vaccine, the system records the vaccination details in the Immunization resource.
-	-	The vaccine information such as type, batch number, and expiry is recorded using the Medication resource (optional).
-	-	Any side effects are recorded as Observations (optional).
+	* Supply Chain Alerts: Notifies CHWs and supervisors of stock level fluctuations and the need for resupply.
 
-3. Tracking
+5. Geo-Tracking and Outreach Support
 
-	-	FHIR Resources: Immunization, ImmunizationRecommendation, Schedule, Appointment
+	* Location Services: Uses GPS to identify patients’ locations for follow-up visits and mapping immunization coverage areas.
 
-	Details:
+	* Outreach Planning: Helps CHWs plan community outreach campaigns based on the geographic distribution of unvaccinated individuals.
 
-	-	Use the Immunization resource to track all vaccinations given to a patient.
-	-	The ImmunizationRecommendation resource helps schedule follow-up doses based on patient age, vaccination history, and guidelines (optional).
-	-	You can leverage Schedule and Appointment resources to schedule future vaccinations (optional). Tasks resourece is being used in place of these 2 resource 
+6. Data Synchronization and Offline Functionality
 
-	Workflow:
+	* Offline Access: Allows CHWs to use the app in areas with limited or no connectivity, with data syncing when internet access is available.
 
-	-	Once a patient receives their first dose, an ImmunizationRecommendation is generated for the next dose (optional).
-	-	The system can generate a schedule for the patient’s remaining doses using Schedule and Appointment resources. Tasks resourece is being used in place of these 2 resource 
+	* Data Backup: Ensures that patient and vaccination data is securely stored and backed up for long-term access.
 
-4. Reporting
+7. Security and Confidentiality
 
-	-	FHIR Resources: Immunization, MeasureReport 
+	* Data Protection: Uses encryption and authentication protocols to protect sensitive patient data.
 
-	Details:
-	-	Aggregated vaccination data can be reported using the MeasureReport resource, which summarizes immunization status at individual and population levels.
+	* Role-based Access: Ensures that only authorized CHWs and health workers can access specific patient data, based on their roles.
 
-	Workflow:
+These functions ensure effective immunization service delivery, better health record management, and improved healthcare outcomes for communities.
 
-	-	Generate reports for public health officials on vaccination coverage and identify gaps.
-	-	Use the MeasureReport resource to analyze vaccination status by region, age group, or other demographic filters.
+## Registering households
 
+Household registration in a health app, such as an Electronic Immunization Registry (EIR) or community health platform, captures key information about the household as a unit, linking family members to provide a holistic view of health and wellness. This registration process helps healthcare workers track and manage healthcare interventions at the household level. Household registration plays a crucial role in improving access to healthcare, identifying at-risk families, and facilitating effective delivery of health services, particularly in community-based settings.
 
-### Additional workflows 
+### Household registration workflow
 
-1. MUAC (Mid-Upper Arm Circumference)
+	* Visit to the Household: CHW visits the household for registration.
 
-•	FHIR Resources: Observation
+	* Household Information Gathering: Collects household details, member information, location, and health indicators.
 
-	Details:
+	* Data Entry in the App: CHW enters all collected information into the app.
 
-	-	MUAC is a key indicator for assessing malnutrition in children. Use the Observation resource to capture the measurement of the arm circumference.
-	-	The value for MUAC will be recorded as a quantity with units (e.g., cm or mm) and will have a code indicating it is a MUAC measurement.
+	* Verification and Consent: The household head verifies the information, and consent is recorded.
 
-	Workflow:
+	* Link to Healthcare Facility: The household is linked to a nearby health facility or community health center.
 
-	-	During the patient’s visit, the healthcare provider measures the child’s MUAC.
-	-	An Observation resource is created, capturing the measurement value, the method (e.g., tape measurement), and any interpretation (e.g., normal, moderate malnutrition, severe malnutrition).
-	-	Observation may also contain other related data, such as the practitioner who recorded the measurement and the encounter in which the observation occurred.
+	* Follow-up Scheduling: Depending on the household’s health needs, a follow-up schedule is created for further healthcare services.
 
-2. Growth Monitoring
 
-•	FHIR Resources: Observation, FamilyMemberHistory, Patient
+### Household register features
 
-	Details:
+Key Information Collected During Household Registration
 
-	-	Growth monitoring involves tracking height, weight, head circumference, and comparing these metrics to standardized growth charts.
-	-	Use the Observation resource to record parameters like weight (LOINC 3141-9), height (LOINC 8302-2), and head circumference (LOINC 8287-5).
-	-	FamilyMemberHistory can also be used to track genetic or hereditary conditions that may affect growth patterns(optional).
+1. Household Identification
 
- 	Workflow:
+	* Household Name/Head:
 
-	-	During a clinic visit, the system collects a child’s growth parameters (height, weight, etc.) and stores these as Observation resources.
-	-	These observations can be plotted against standard growth charts to evaluate if the child is growing at a normal rate.
-	-	If there are concerns (e.g., stunted growth), the healthcare provider can use Observation to indicate a need for follow-up.
+		* The name of the household head, typically the primary decision-maker or breadwinner (e.g., mother, father, grandparent, guardian).
 
-3. Adverse Reaction Tracking
+	* Household ID:
 
-•	FHIR Resources: AdverseEvent, AllergyIntolerance, Condition, Observation
+		* A unique identifier is automatically generated by the system for each household to ensure easy retrieval and avoid duplication.
 
-	Details:
+	* Relationship to Household Head:
 
-	-	Use the AdverseEvent resource to capture any adverse reactions following vaccination, such as fever, rash, or more severe reactions like anaphylaxis.
-	-	If the adverse reaction is related to an allergy, you may also use the AllergyIntolerance resource to track any long-term contraindications or allergic responses(optional).
-	-	Condition can also be used if the adverse reaction results in a medical condition that requires ongoing treatment.
+		* Details the relationship between household members and the head (e.g., spouse, child, sibling, other).
 
-	Workflow:
+2. Location and Address Information
 
-	-	After vaccination, if the patient reports an adverse reaction, the healthcare provider records the details in an AdverseEvent resource.
-	-	If necessary, further evaluations (e.g., temperature or blood pressure) can be recorded using Observation resources to monitor the reaction.
-	-	The system can trigger alerts for serious reactions, schedule follow-up visits, or provide contraindication warnings for future doses.
+	* Physical Address:
 
+		* The home address of the household, including street, village/town, district, or any other locally used identifying landmarks.
 
-### Deploying the health information infrastructure
+	* GPS Coordinates:
 
-Building a FHIR Core app using OpenSRP FHIRCore requires familiarity with both the OpenSRP platform and the HL7 FHIR (Fast Healthcare Interoperability Resources) standard. 
-The FHIRCore project, built on OpenSRP, is designed to facilitate the development of healthcare applications that interact with FHIR-compliant data stores. Here’s a step-by-step guide
-to help you build a FHIR Core app using this repository:
+		* Geolocation data (latitude and longitude) may be captured to help CHWs accurately locate households during field visits, particularly in rural or hard-to-reach areas.
 
-#### Prerequisites
+	* Landmarks:
 
-	1.	Technical Knowledge:
+		* CHWs may note nearby landmarks to help identify the home’s location (e.g., near a school, market, or specific tree).
 
-		-	Basic understanding of the FHIR standard.
-		-	Familiarity with Android development (Java/Kotlin).
-		-	Familiarity with Gradle, Docker, and possibly Kubernetes (if you are running OpenSRP in a containerized environment).
+3. Contact Information
 
-	2.	Required Tools:
+	* Phone Number:
 
-		-	Java Development Kit (JDK 11 or above).
-		-	Android Studio.
-		-	Git (for cloning the repository).
-		-	Docker (optional for local server setup).
+		* The phone number of the household head or another key family member for communication purposes, especially for sending reminders about upcoming health services.
 
-	3.	FHIR Server:
+	* Email Address (if applicable):
 
-		-	See more here  - [Link to server setup](/docs/engineering/getting-started/server-setup.mdx)
+		* For some systems, an email address may also be collected for digital communication.
 
-#### Step-by-Step Guide
+4. Household Members
 
-1. Clone the FHIRCore Repository
+	* List of Household Members:
 
-Start by cloning the repository to your local machine.
+		* A complete list of individuals living in the household, including:
 
-````
-git clone https://github.com/opensrp/fhircore.git
-cd fhircore
-````
-2. Set Up Development Environment
+		* Full name
 
-	-	Install the latest version of Android Studio and configure the SDK.
+		* Date of birth (or estimated age)
 
-	-	Open the cloned fhircore project in Android Studio.
+		* Gender
 
-Ensure that you have the appropriate Android SDKs installed. The project usually targets SDK 30 (Android 11) or above, so make sure you have this version or later installed in your environment.
+		* Relationship to the household head
 
-3. Build the Project
+	* Patient Profiles Linked:
 
-Before you can start working on the app, you will need to sync the project with Gradle to install dependencies and build the project.
+		* Each household member’s individual patient profile is linked to the household profile, ensuring that their health data (vaccinations, growth monitoring, etc.) is connected to the broader household context.
 
-	-	Open Android Studio.
+	* Demographics:
 
-	-	Navigate to the project folder and open the build.gradle file.
+		* Additional details such as occupation and education level of adult members, especially relevant for outreach programs focused on social determinants of health.
 
-	-	Click the Sync Project with Gradle Files button in Android Studio to install dependencies.
+5. Household Health Indicators
 
-	-	Update local.properties file by providing the required Keycloak credentials to enable syncing of data to and from the HAPI FHIR server:
+	* Vaccination Status of Members:
 
-		````
-		#oauth configurations
-		OAUTH_BASE_URL=https://keycloak-stage.smartregister.org/auth/realms/FHIR_Android/
-		OAUTH_CLIENT_ID="provide client id"
-		OAUTH_SCOPE=openid
+			* Overview of the immunization status of all household members, showing who is up-to-date on vaccines and who may have missed appointments.
 
-		#fhir store base url
-		FHIR_BASE_URL=https://fhir.labs.smartregister.org/fhir/
+	* Nutritional Status:
 
-		#sentry dsn
-		SENTRY_DSN=<https://your/sentry/project/dsn>
+			* The nutritional status of children in the household based on growth monitoring data, with any malnutrition risks flagged.
 
-		#Optional: Application id for a specific build variant
-		#OPENSRP_APP_ID="app/debug"
+	* Health Risks:
 
-		````
+			* Identifies any household members who are at high risk (e.g., pregnant women, elderly, people with chronic conditions).
 
-Once synced, click on Build > Make Project to compile the code. 
+6. Household Socioeconomic Information
 
-For more infomration read more [here](https://docs.opensrp.io/engineering/app/developer-setup)
+	* Source of Income:
 
+		* Details on how the household earns a living (e.g., farming, business, wage employment), which can impact their access to health services.
 
-### Deploying the reference content
+	* Household Size and Dependency:
 
-To load into the OpenSRP FHIR Core app on demand, for debug and development, you can create a symbolic link using:
+		* Number of people in the household and any dependencies (e.g., children, elderly, or disabled family members).
 
-```sh
-git clone git@github.com:ona-health/giz-eir-fhir-resources.git
-# assuming you have checked out fhircore in the same directory
-mkdir -p fhircore/android/quest/src/gizeir/assets/configs
-ln -s `pwd`/giz-eir-fhir-resources/app/* fhircore/android/quest/src/gizEir/assets/configs/gizeir
-```
+	* Housing Conditions:
 
-The app is able to use content for configuration resources from the `configs/app/resources` directory in the assets directory. Ideally, any FHIR resource can be loaded into
- the application through the assets.The current impleme. ntation loads the configuration resources declared in the Composition (including Questionnaires, StructureMaps, PlanDefs, Lists, etc) by retrieving them 
-from the server, which requires the device to be online. This enhancement should allow the user to create config directories for the resources inside `/configs/app/resources`.
- The resources directory name should be in lowercase format e.g. `configs/app/resources/binary`, `configs/app/resources/questionnaire`, `configs/app/resources/structuremap`, 
- `configs/app/resources/plandefinition`, etc.
+		* Information on the type of housing (permanent, semi-permanent, temporary), access to electricity, water supply, and sanitation facilities, which influence the household’s health environment.
 
+	* Transportation Access:
 
+		* Whether the household has access to transportation (e.g., bicycle, motorbike, vehicle) for seeking healthcare services.
 
+7. Water, Sanitation, and Hygiene (WASH) Data
 
+	* Water Source:
 
-## App configs
+		* Details on the source of drinking water (e.g., piped water, well, river), which is crucial for preventing waterborne diseases.
 
-### Implemntation Guide Config 
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/implementation_guide_config.json
+	* Sanitation Facilities:
 
-![ig config](/img/eir_configs/ig-config.png)
+		* Information on the household’s sanitation facilities (e.g., flush toilet, pit latrine, none), highlighting risks for sanitation-related health issues.
 
-An Implementation Guide (IG) is a document that defines how a specific organization or system uses FHIR resources to solve a particular use case. 
+	* Hygiene Practices:
 
-Main Structure:
+		* Details on hygiene behaviors such as handwashing facilities and the use of soap, to monitor hygiene-related health risks.
 
-- resourceType: "ImplementationGuide"	
+8. Referral Information
 
-		- This indicates that the resource type is an Implementation Guide (IG), which provides detailed guidance for how FHIR resources are used in a specific context or implementation.
+	* Healthcare Facility Linkage:
 
-- id: "13057302"
+		* Links the household to a local healthcare facility or CHW responsible for their care.
 
-		- A unique identifier for this specific Implementation Guide.
+	* Referral History:
 
-- meta:
+		* Tracks any referrals made for household members to visit health facilities for further care, noting the outcomes of those referrals.
 
-		- This contains metadata about the Implementation Guide.
 
-- versionId: "1" – The version of this IG document.
+9. Consent and Data Privacy
 
-		- lastUpdated: "2024-05-27T14:42:53.345+00:00" – The date and time when this Implementation Guide was last updated (in ISO 8601 format).
+	* Informed Consent:
 
-- url: "https://fhir.eir.smartregister.org/fhir/ImplementationGuide/giz-eir"
+		* CHWs collect consent from the household head or another responsible adult to collect and store household information in the system.
 
-		- The URL where this Implementation Guide can be accessed. It seems to be hosted at fhir.eir.smartregister.org under the path /fhir/ImplementationGuide/giz-eir.
+	* Data Security:
 
-- version: "1.0.0"
+		* The app ensures that the household’s data is stored securely, and access is restricted to authorized health workers only.
 
-		- The version of the Implementation Guide, indicating it’s the first official release (1.0.0).
+10. Notes and Special Observations
 
-- name: "giz-eir"
+	* CHW Observations:
 
-		- The name of the IG 
+		* CHWs can make notes on specific challenges faced by the household, such as social, economic, or health-related issues, to inform future interventions.
 
-- title: "GIZ/PATH EIR Implementation Guide"
+	* Follow-up Action Plans:
 
-		- A more descriptive title for the Implementation Guide
+		* Action plans for follow-up visits, based on specific household needs or health risks identified during registration (e.g., need for immunizations, nutrition interventions, health education).
 
-- status: "draft"
+11. Household-Level Interventions
 
-		- The status of the IG, which is still in a draft state (not finalized or published as an official version).
+	* Community Support Programs:
 
-- date: "2024-05-27"
+		* The system can record household eligibility for community-based programs like malaria prevention (bed nets), nutritional supplements, or water and sanitation programs.
 
-	-	The date when the guide was created or last updated.
+	* Household Health Summary:
 
-- publisher: "Ona Systems, Inc."
+		* A summary that shows the overall household health status, including any interventions provided and outcomes tracked over time.
 
-	-	This field indicates that the guide was published by Ona Systems, Inc., which is a tech company involved in health system development.
+## Patient registration
 
-Context:
+Patient registration in an Electronic Immunization Registry (EIR) app is a crucial step that enables health care workers to capture and manage patient information effectively. A Patient Register within a health application or an Electronic Immunization Registry (EIR) serves as a digital log of patients and their health data. Its key functions and highlights are crucial for effective health management and patient care.
 
-- useContext:
+### Patient register workflow
 
-		- This section provides contextual information about how or where the Implementation Guide should be used.
+Here’s a step-by-step breakdown of how patient registration is typically done in the app:
 
-- valueRange:
+1. Initial Data Entry
 
-		- This particular useContext seems to suggest a value range with a high value of 11. This could relate to patient age, system thresholds, or another contextual element specific to the EIR.
+	* Personal Information:
 
-Package and Resource Definitions:
+	* The CHW starts by entering basic details such as:
 
-- packageId: "org.smartregister.fhircore"
+		* Full name
 
-		- This defines the package ID for the IG, which seems to be part of the Smart Register FHIR Core system, likely the underlying framework powering the EIR system.
+		* Date of birth (or estimated age)
 
-- definition:
+		* Gender
 
-		- This contains definitions for resources included in the Implementation Guide.
+		* Caregiver’s name (for children) and relationship to the patient
 
-- resource:
+		* National ID number (if available) or other forms of identification
 
-		- A list of resources referenced by this Implementation Guide.
+	* Contact Information:
 
-- reference:
+		* The CHW records the patient’s or caregiver’s phone number and email (if available) for future communication and appointment reminders.
 
-		- This points to a Composition resource (Composition/12965652), which likely contains additional narrative content, instructions, or descriptions related to the IG. The Composition resource is commonly used for documents or structured narratives.
+2. Geographical and Address Details
 
+	* Home Address:
 
+		* The CHW inputs the patient’s home address, including village/town, district, province/state, and any specific landmarks or directions.
 
-### Composition Config 
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/composition_config.json
+	* Geolocation (GPS):
 
-![composition config](/img/eir_configs/composition-config.png)
+		* The app may capture the GPS coordinates of the patient’s residence to help with follow-up visits and outreach planning.
 
-Core Composition Information
+		* Health Facility/Community Assignment:
 
-- resourceType: "Composition"
+		* The patient is assigned to a specific health facility or community center that will manage their immunization and health records.
 
-		- This indicates that the resource is a FHIR Composition resource, which typically represents a collection of content or sections.
+3. Demographic and Health Information
 
-- id: "12965652"
+	* Demographic Data:
 
-		- A unique identifier for this Composition resource.
+		* Additional information such as ethnic group, socioeconomic status, and education level (for adults) might be collected to assess healthcare access patterns and risks.
 
-- meta:
+	* Birth History (for Newborns/Infants):
 
-		- Contains metadata.
+		* Information on birth weight, place of birth, mode of delivery, and any complications during birth is recorded for newborns to monitor early health risks.
 
-- versionId: "22"
-		- The current version of this Composition document.
+4. Medical History
 
-- lastUpdated: "2024-09-10T12:33:34.976+00:00" 
-		- The timestamp when the Composition was last updated.
+	* Immunization History:
 
-- identifier:
+		* If the patient has a previous immunization record (e.g., from a health card or another EIR system), the CHW can enter or upload details of past vaccinations.
 
-	-	use: "official" 
-		- Indicates that this identifier is an official one.
+	* Pre-existing Conditions:
 
-	-	value: "giz-eir" 
-		- The identifier for the GIZ EIR configuration.
+		* The app allows the CHW to record any chronic illnesses or allergies that may affect immunization or general health interventions.
 
-- status: "final"
+5. Unique Patient Identification
 
-	-	The Composition is marked as final, meaning it’s in a complete and stable state.
+	* Unique ID Generation:
 
-	-	type:
+		* The app automatically generates a unique patient ID for each registered individual, ensuring that their data is securely linked and easily retrievable.
 
-	-	system: "http://smartregister.org" 
-		- The system for coding the type of composition.
+	* This ID may be a combination of numbers, letters, or a barcode/QR code.
 
-- code: "1156600005" 
-	
-		- Code for “Device setting parameter.”
 
-- display: "Device setting parameter" 
-	
-		- Describes the document as relating to device configuration settings.
+6. Linking with Family or Household
 
-- date: "2022-09-16"
+	* Household Registration:
 
-		- The date when this Composition was created or finalized.
+		* If other family members are registered in the system, the app can link the patient’s profile to the household or family group to track group immunization status and ensure family-wide coverage.
 
-- title: "Device configurations"
+	* Caregiver Information:
 
-		- The title of the Composition document, which indicates that it holds device configuration settings.
+		* For children, the app registers the primary caregiver responsible for bringing the child to immunization appointments, with their contact information.
 
-- confidentiality: "L"
+7. Consent and Data Privacy
 
-		- A confidentiality level of “L,” which usually means low confidentiality (public information).
+	* Informed Consent:
 
-Sections Breakdown
+		* CHWs may need to record the consent of the patient (or caregiver) to collect and store their data in the EIR system.
 
-Each section contains a specific configuration for different parts of the application.
+	* Data Privacy and Security:
 
-	1.	Profile Configurations:
+		* The app ensures that patient information is securely stored and only accessible to authorized health workers. Consent forms may be signed digitally or acknowledged within the app.
 
-		- Contains various configuration profiles for the Child (e.g., child profile, past and upcoming encounters, adverse reactions) and Caregiver.
+8. Confirmation and Record Generation
 
-		- The focus field references Binary resources that hold the actual configuration data, identified by their IDs and values.
+	* Record Summary:
 
-	2.	Register Configurations:
+		* Once all the data is entered, the app generates a registration summary with the patient’s ID and details of the next steps (e.g., upcoming vaccination appointments).
 
-		- Specifies register settings for Children and Caregivers.
+	* Appointment Scheduling:
 
-		- Similar to profiles, the focus references Binary resources that contain register configurations.
+		* If relevant, the app schedules the patient’s next vaccination date and informs the caregiver through the app or via SMS alerts.
 
-	3.	Translation Configurations:
+9.  Offline Functionality and Synchronization
 
-		- Contains translation settings for English, Spanish, and French. Each of these sections refers to a Binary resource that holds translation strings.
+	* Offline Registration:
 
-	4.	Application Configuration:
+	* If the CHW is working in a low-connectivity area, the app can capture and temporarily store registration data offline. Once the device is connected to the internet, the data is synced to the central system.
 
-		- Refers to the application configuration, stored in a Binary resource, which likely holds the general app settings.
+This process ensures efficient and accurate registration, facilitating better health tracking and follow-up care.
 
-	5.	Navigation Configuration:
+### Patient register features
 
-		- Specifies the navigation configuration for the application, also stored in a Binary resource.
+Below are the core features and highlights of a patient register:
 
-	6.	Sync Configuration:
+1. Comprehensive Patient Information
 
-		- Defines the synchronization settings for the application, stored in a Binary resource.
+	* Basic Personal Data:
 
-	7.	Health Facility Locations:
+		* Stores essential details like name, age, date of birth, gender, address, and contact information for each patient.
 
-		- Refers to a List resource containing health facility locations.
+	* Unique Patient Identifier:
 
-	8.	PlanDefinitions:
+		* Each patient is assigned a unique ID to prevent duplication and ensure easy retrieval of records.
 
-		- Provides definitions for care plans, particularly focusing on Child Immunization and Child Recurring Services.
+	* Caregiver/Guardian Information:
 
-	9.	Questionnaires:
+		* For children, includes the name and contact details of caregivers, ensuring proper communication for follow-ups.
 
-		- Lists several questionnaire configurations related to patient management, such as adding a patient, recording doses, registering filters, and muting/unmuting patients.
+2. Immunization History
 
-	10.	StructureMaps:
+	* Complete Vaccination Records:
 
-		- Specifies mappings for various operations like patient and child registration, dose recording, and adverse event reporting, using StructureMap resources.
+		* Displays a patient’s entire immunization history, including vaccines received, dates administered, and the healthcare provider who administered them.
 
-	11.	Geo Widget Configurations:
+	* Missed Vaccinations and Catch-Up Schedules:
 
-		- Defines the Geo Widget configuration, stored in a Binary resource. This likely deals with mapping or geolocation services within the application.
+		* Highlights missed vaccines and automatically generates catch-up schedules for delayed immunizations.
 
+	* Vaccine Inventory Tracking:
 
-### Application Config 
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/application_config.json
+		* Links patient immunization records with vaccine stock to ensure accurate inventory management and reduce the risk of missed vaccinations due to stockouts.
 
-![application config](/img/eir_configs/application-config.png)
+3. Growth Monitoring and Health Status
 
+	* Growth Metrics:
 
- Here’s a detailed breakdown of the various fields in the config:
+		* Includes data such as height, weight, and head circumference, tracking the child’s growth over time.
 
-	1.	appId: "giz-eir"
+	* Mid-Upper Arm Circumference (MUAC) Monitoring:
 
-		- This is the unique identifier for the application. 
+		* Displays MUAC measurements to assess the child’s nutrition status and flag any instances of malnutrition.
 
-	2.	configType: "application"
 
-		- Specifies the type of configuration; here, it indicates the configuration is for an application.
+4. Medical History and Health Interventions
 
-	3.	theme: "DEFAULT"
+	* Previous Medical Conditions:
 
-		- Defines the UI theme to be used in the application. Here, it’s set to DEFAULT, which probably corresponds to the app’s standard design.
+		* Logs any pre-existing conditions or chronic diseases, helping healthcare providers understand the patient’s overall health status.
 
-	4.	appTitle: "EIR"
+	* Other Health Interventions:
 
-		- The title of the application, which in this case is “EIR” (Electronic Immunization Registry).
+		* Includes details of non-immunization interventions such as vitamin supplementation, deworming, and health education.
 
-	5.	remoteSyncPageSize: 250
+	* Allergies and Contraindications:
 
-		- Specifies the number of records to be fetched or synced from the server at a time during synchronization. Here, it is set to 250 records per sync operation.
+		* Highlights any allergies or medical contraindications, which is important for safe vaccine administration.
 
-	6.	languages: ["en", "es", "fr"]
+5. Appointment Scheduling and Reminders
 
-		- The application supports multiple languages, specifically English (en), Spanish (es), and French (fr).
+	* Vaccination Scheduling:
 
-	7.	useDarkTheme: false
+		* Displays upcoming vaccine appointments based on the patient’s immunization schedule.
 
-		- Indicates whether the app uses a dark theme. This is set to false, so a light theme is used by default.
+	* Reminders and Alerts:
 
-	8.	syncInterval: 30
+		* Generates reminders for CHWs and caregivers for scheduled or overdue vaccinations and growth monitoring checkups. Notifications can be sent via SMS or in-app alerts.
 
-		- This specifies how frequently (in minutes) the app will automatically synchronize with the server. In this case, it syncs every 30 minutes.
+	* Follow-up Appointments:
 
-	9.	syncStrategy: ["CareTeam"]
+		* Records any follow-up visits, especially for missed immunizations, malnutrition interventions, or further medical evaluations.
 
-		- This suggests that the synchronization strategy involves syncing data related to care teams. It might mean that data for care teams, such as patient rosters, are synchronized.
+6. Data Filtering and Search Functions
 
-	10.	loginConfig:
+	* Searchable Database:
 
-			````json
-			{
-			"showLogo": true,
-			"enablePin": true,
-			"pinLength": 4
-			}
-			````
-	This section defines the configuration for the login screen.
+		* Provides an easy-to-use search function for CHWs to find patients quickly by name, unique ID, or other identifiers (age, location, caregiver name).
 
-		- "showLogo": true ensures that a logo is displayed on the login screen.
+7. Reporting and Analytics (done on a Web Dashboard post online app sync)
 
-		- "enablePin": true allows users to log in using a PIN.
+	* Real-Time Data Access:
 
-		- "pinLength": 4 specifies that the PIN should be 4 digits long.
+		* Displays real-time data on patient health, immunization coverage, and service delivery.
 
-	11.	settingsScreenMenuOptions: ["MANUAL_SYNC", "SWITCH_LANGUAGES", "RESET_DATA", "INSIGHTS"]
+	* Coverage Reports:
 
-		- Defines the menu options available on the settings screen:
+		* Generates reports showing vaccination coverage rates within a community or health facility, helping CHWs and supervisors identify gaps and plan outreach activities.
 
-		- "MANUAL_SYNC": Allows users to trigger a manual synchronization.
+	* Risk and Priority Alerts:
 
-		- "SWITCH_LANGUAGES": Provides an option to switch between the supported languages.
+		* Flags high-risk patients (e.g., those with malnutrition or missed vaccines) to prioritize them for immediate intervention.
 
-		- "RESET_DATA": Lets users reset the app’s data.
+8. Referral System and Follow-Up
 
-		- "INSIGHTS": This might be an option to view data insights or reports.
+	* Referral Tracking:
 
-### Sync Config 
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/sync_config.json
+		* Logs any referrals to higher-level facilities for specialized care, such as for children with severe malnutrition or complicated health conditions.
 
-![sync config](/img/eir_configs/sync-config.png)
+	* Referral Outcomes:
 
-This configuration is related to synchronization settings, specifically defining search parameters for resource filtering during FHIR-based data sync operations. Here’s a breakdown of the fields and what they represent:
+		* Allows CHWs to track the outcomes of referrals, ensuring that patients receive necessary care and follow-up appointments.
 
-Main Structure:
+9. Data Privacy and Security
 
-	-	resourceType: "Parameters"
+	* Confidentiality:
 
-		- This indicates that the root resource type is Parameters, which is a FHIR resource type used to pass configuration and operational data in the form of parameters.
+		* Protects patient information through data encryption and user authentication, ensuring that only authorized personnel can access sensitive health data.
 
-	-	configType: "sync"
+	* Consent Management:
 
-		- This specifies that the configuration type is related to data synchronization.
+		* Records informed consent from patients or caregivers, ensuring legal compliance regarding the collection and use of personal health data.
 
-	-	parameter:
+10. Offline and Synchronization Features
 
-		- This is an array containing search parameters for synchronization. Each element in the array defines a SearchParameter resource that is used to filter data during sync operations. These parameters define which fields or data types are used in the syncing queries.
+	* Offline Functionality:
 
-Search Parameters:
+		* Allows patient data entry and updates even in areas without internet connectivity, with automatic syncing when the device reconnects to the network.
 
-	1.	First Search Parameter: _id
+	* Auto-Backup:
 
-	-	resourceType: "SearchParameter"
+		* Ensures that patient records are regularly backed up to a centralized system to prevent data loss.
 
-		-	Defines that this is a SearchParameter resource.
+11. Household or Family Linkage
 
-	-	name: "_id"
+	* Household Data:
 
-		-	The name of the search parameter is _id. This is likely the unique identifier of each resource (i.e., the resource’s ID).
+		* Links patients to a family or household group, enabling CHWs to view the immunization status and health conditions of all members.
 
-	-	code: "_id"
+	* Household-Level Interventions:
 
-		-	The search code is _id, corresponding to the resource’s ID.
+		* Facilitates targeted health interventions at the family or household level, ensuring comprehensive care for all family members.
 
-	-		base:
+12. Real-Time Synchronization with Central Systems
 
-			- The base field lists the FHIR resource types to which this search parameter applies. In this case, the search parameter can filter by _id on the following resource types:
+	* Integration with National Systems:
 
-					- CarePlan
+		* Automatically syncs with national or regional health systems, ensuring that patient data is available for use in broader health planning and reporting.
 
-					- Condition
+	* Interoperability:
 
-					- Consent
+		* Enables the exchange of data with other health systems or registries (such as birth or nutrition registers), promoting a holistic view of patient health.
 
-					- Encounter
+13. Auditing and Accountability
 
-					- Group
+	* Activity Logs:
 
-					- Immunization
+		* Keeps track of actions taken by CHWs, such as updates to patient records, vaccines administered, and referrals made, which aids in performance tracking and accountability.
 
-					- etc.
+	* Error and Data Correction:
 
-	2.	Second Search Parameter: count
+		* Allows CHWs or supervisors to correct any data entry errors and maintain accurate patient records.
 
-	-	resourceType: "SearchParameter"
+These key functions in a patient register enable CHWs to manage patient data efficiently, ensuring timely vaccinations, accurate growth monitoring, and improved overall health outcomes for their communities.
 
-		-	Defines another search parameter resource.
+## Household and patient profiles
 
-	-	name: "count"
+In an Electronic Immunization Registry (EIR) or health app, the Patient Profile and Household Profile are essential components that allow for detailed tracking of individual health data and the broader health status of families or groups.
 
-		-	The name of this search parameter is count. It likely refers to the number of results or records to be returned.
+### Household and patient profile workflow
 
-	-	code: "_count"
+The core immunization workflow in a health app, such as an Electronic Immunization Registry (EIR), is designed to ensure that children and other eligible populations receive timely vaccinations, that records are properly maintained, and that healthcare workers (CHWs) can easily track immunization coverage and follow up on missed vaccinations. Below is a step-by-step breakdown of how this workflow typically operates:
 
-		-	The code for the search parameter is _count, which limits the number of records returned in a query.
+1. Patient Registration
 
-	-	base:
+The first step in the immunization workflow involves registering the patient into the system. This can occur either at a health facility or during an outreach visit.
 
-		-	his search parameter can also apply to the same resource types as _id:
+	* New Patient Entry: If the patient (child or adult) is not already in the system, the CHW or health worker creates a new patient profile by collecting:
 
-		-	CarePlan, Condition, Consent, Encounter, etc.
+	* Full name, date of birth, and gender.
 
-		-	type: "token"
+	* Unique identifier (generated by the system or linked to a national ID).
 
-		-	The parameter type is token, indicating that the value is expected to be a discrete value like a code, identifier, or string literal.
+	* Address and contact information.
 
-	-	expression: "#count"
+	* Caregiver information (for children).
 
-		-	The expression indicates that the parameter refers to the number of results or “count” of items to be returned during a query. It’s probably used for pagination or limiting the size of the results.
+	* Existing Patient Search: If the patient has already been registered, the health worker can use the search function to pull up their existing profile using their unique ID, name, or other identifiers.
 
+2. Verification of Immunization Status
 
-### Navigation Config 
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/navigation_config.json
+Once the patient is registered or located, the health worker will check their immunization history in the app to determine what vaccines have been administered and which ones are due or overdue.
 
-![navigation config](/img/eir_configs/navigation-config.png)
+	* Vaccination History: The app will display a list of all past vaccinations, including dates and doses.
 
-Core Information
+	* Scheduled Vaccinations: Based on the patient’s age and previous vaccinations, the system will generate a schedule of due and upcoming vaccines.
 
-	-	appId: "giz-eir"
+	* Missed Vaccinations: The system flags any missed doses and recommends a catch-up schedule based on national immunization guidelines.
 
-	-	Identifies the application as the GIZ EIR.
+3. Vaccine Administration
 
-	-	configType: "navigation"
+When the patient is due for a vaccine, the healthcare worker administers the vaccine and records the details in the app.
 
-	-	Specifies that this configuration deals with the navigation elements of the app.
+	* Vaccine Selection: The health worker selects the appropriate vaccine from a drop-down list based on what is due (e.g., BCG, DPT, OPV, MMR).
 
-Main Action Button Configuration
+	* Dose and Batch Information: The app prompts the worker to enter the dose number (e.g., 1st, 2nd, 3rd), the batch number, and the expiry date of the vaccine being administered.
 
-	-	menuActionButton:
+	* Administration Method: The method of administration (e.g., oral, intramuscular) and site (e.g., arm, thigh) can also be logged.
 
-	-	id: "mainActionButton" 
+4. Recording the Vaccination
 
-		-	The unique identifier for the main action button in the app.
+Once the vaccine is administered, the health worker updates the patient’s immunization record in the app.
 
-	-	visible: true 
+	* Date of Vaccination: The date is automatically logged or manually entered.
 
-		-	Indicates that this button is visible to users.
+	* Vaccine Details: The app records the specific vaccine, dose, batch number, and location where it was administered.
 
-	-	display: `"{{ dece90802392bb0289660c633eddd5e4 }}"` 
+	* Healthcare Provider Information: The name of the health worker administering the vaccine is usually automatically logged for accountability and traceability.
 
-		-	A placeholder or string ID for the text displayed on the button, likely referring to a localized string.
+5. Generating Next Vaccination Schedule
 
-	-	actions: Defines what happens when the button is clicked:
+After recording the current vaccination, the system automatically updates the patient’s profile with the next scheduled vaccination based on their age and national immunization guidelines.
 
-	-	trigger: "ON_CLICK" 
+	* Auto-Scheduling: The system calculates the next due date for vaccinations, ensuring that CHWs can keep track of upcoming vaccinations.
 
-		-	The action is triggered when the button is clicked.
+	* Catch-up Schedule: If the patient has missed vaccines, the system creates a catch-up schedule that ensures all missed doses are given at appropriate intervals.
 
-	-	workflow: "LAUNCH_QUESTIONNAIRE" 
-	
-		-	Launches a questionnaire when clicked.
+6. Providing Immunization Card (Optional)
 
-	-	questionnaire: Describes the specific questionnaire that will be launched:
+In some settings, the health worker provides an updated immunization card or booklet for the caregiver to keep. This card serves as a physical record for the patient’s caregiver and is often used in tandem with digital records.
 
-	-	id: "13030180" 
+	* Printed Records: Some systems allow the printing of vaccination records directly from the app.
 
-		-	The questionnaire ID.
+7. Sending Reminders and Notifications
 
-	-	title: `"{{ dece90802392bb0289660c633eddd5e4 }}"` 
+The system sends automated reminders and notifications to caregivers and healthcare providers about upcoming vaccinations or missed doses.
 
-		-	The title of the questionnaire, using a localized string placeholder.
+	* SMS Reminders: The app can send an SMS reminder to the caregiver before the next vaccination is due using RapidPro
 
-	-	saveButtonText: `"{{ c9cc8cce247e49bae79f15173ce97354 }}"`  
-	
-		-	Text for the save button, also using a localized string.
+	* CHW Alerts: The CHW or health facility receives alerts if patients are overdue for a vaccination, enabling them to follow up directly.
 
-	-	groupResource: Defines how to handle group-related data in the questionnaire.
+8. Reporting and Analytics
 
-	-	groupIdentifier: `"@{familyLogicalId}"`  
-	
-		-	Uses a dynamic value for the group.
+The app collects and aggregates immunization data to provide real-time reports that can be used for monitoring vaccination coverage, identifying gaps, and planning outreach programs.
 
-	-	memberResourceType: "Patient" – Specifies that group members are patients.
+	* Coverage Reports: The system generates vaccination coverage reports for different age groups, geographic areas, and specific vaccines (e.g., how many children received all their doses of the DPT vaccine).
 
-	-	snackBarMessage: A message displayed to users after an action:
+	* Missed Opportunities: Identifies areas with high rates of missed vaccinations and suggests targeted outreach activities.
 
-	-	message: `"{{ 8b41faf441db854f6c4066bbbb6837f2 }}"`  
-	
-		-	The snackbar message, using a localized string.
+	* Data Export: Reports can be exported to central health systems or ministries for national-level tracking and decision-making.
 
-	-	actionLabel: "UNDO"  
-	
-		-	Text for the undo button.
 
-	-	duration: "Short"  
-	
-		-	The duration for which the message is displayed.
+9. Integration with Other Health Services
 
-	-	configRules: Defines rules for dynamically configuring the questionnaire.
+The system can also be integrated with other health interventions to streamline healthcare delivery. For example:
 
-	-	The rule here generates a six-digit human-readable ID.
+	* Growth Monitoring: Some systems include growth monitoring features (e.g., tracking height, weight, and MUAC) during vaccination visits.
 
-	-	extraParams: Additional parameters to prepopulate the form:
+	* Referrals: If a patient has a health issue identified during a vaccination visit, the app can generate a referral to another healthcare provider for further care.
 
-	-	paramType: "PREPOPULATE"  
-	
-		-	The type of parameter.
+10. Data Privacy and Security
 
-	-	linkId: `"0d77d40f-098b-4329-9199-33b6e77aa864"` 	 
-	
-		-	ID of the element in the form to populate.
+Throughout the workflow, the system ensures that all patient data is securely stored and accessible only to authorized health personnel.
 
-	-	dataType: "INTEGER"  
-	
-		-	The type of data.
+	* Encryption and Authentication: Data is encrypted, and health workers need proper credentials to access or modify records.
 
-	-	key: "opensrpId"  
-	
-		-	The key for the value.
+	* Informed Consent: Before entering patient data, the caregiver’s consent is usually obtained.
 
-	-	value: `"@{humanReadableId}"`  
-	
-		-	The dynamically generated value.
+11. Offline Functionality and Syncing
 
-	-	setPractitionerDetails: true  
-	
-		-	Ensures practitioner details are included.
+In areas with limited connectivity, the app often allows for offline data entry. CHWs can record immunizations during outreach, and the system syncs the data when connectivity is restored.
 
-	-	: true  
-	
-		-	Ensures organization details are included.
+	* Offline Mode: CHWs can still register new patients, update immunization records, and schedule follow-ups without internet access.
 
-Client Registers Configuration
+	* Automatic Syncing: When back online, the app automatically uploads all stored data to the central server.
 
-This section defines the client registers in the app. Each register has a unique ID, display text, and actions associated with it.
+Immunization Workflow Summary:
 
-	1.	Caregiver Register: 
-	
-		-	id: `"caregiverRegister"` 
+	1.	Register the patient or locate their profile in the system.
 
-	– ID for the caregiver register. 
-	
-		-	display: `"{{ 34fc9c26c4ad487a175c2e7b85eb9b6d }}"` 
+	2.	Verify immunization status (check history, see what’s due).
 
-	– Localized string for the display text. 
-	
-		-	showCount: true 
+	3.	Administer the vaccine and record the details.
 
-	– Indicates that the count of entries will be shown. 
-	
-		-	menuIconConfig: Specifies the icon for this register: 
-	
-		-	type: "local" 
+	4.	Update the patient’s profile with the new vaccination information.
 
-				– Refers to a locally stored icon. 
-	
-		-	reference: `"ic_baby_mother"` 
+	5.	Schedule the next vaccination (or create a catch-up plan).
 
-			– The icon file. 
-	
-				-	actions: Defines actions related to the register: 
-			
-				-	ON_CLICK: Triggers when the register is clicked, launching the caregiver register. 
-			
-				-	ON_COUNT: Triggers when the count of entries is required.
+	6.	Provide reminders to caregivers and health workers.
 
-	2.	Child Register: 
-	
-		-	id: `"childRegister"` 
+	7.	Follow-up on missed vaccinations and track defaulters.
 
-			– ID for the child register. 
-			
-		-	display: `"{{ 64e4aca4297806247f62a7b5f8cbd3df }}"` 
+	8.	Generate reports and analytics for monitoring and decision-making.
 
-			– Localized string for the display text. 
-	
-		-	showCount: true 
+This core immunization workflow ensures that patients are vaccinated on time, their records are accurately maintained, and healthcare providers can efficiently monitor coverage and follow up on any missed doses.
 
-			– Indicates that the count of entries will be shown. 
-	
-		-	menuIconConfig: Specifies the icon for the child register:
+### Household and patient profile features
 
-		-	type: `"local"`  
-	
-			-	Refers to a locally stored icon. 
-	
-		-	reference: `"ic_children"` 
+Here’s how each is typically structured and their key features:
 
-			– The icon file. 
-	
-		-	actions: 
-		
-			-	ON_CLICK: Triggers when the register is clicked, launching the child register. 
-		
-			-	ON_COUNT: Triggers when the count of entries is required.
+1. Patient Profile
 
-Static Menu Configuration
+The Patient Profile provides a detailed view of an individual’s health data, focusing on personal information, medical history, vaccination status, and more.
 
-This section defines static menu items that are always visible in the app.
+Key Features of a Patient Profile:
 
-	1.	Settings Menu: 
-	
-		-	id: "settings" 
+a. Personal Information
 
-			– The ID for the settings menu. 
-			
-		-	visible: true 
+	* Full Name: The patient’s legal name.
 
-			– The menu item is visible to users. 
-			
-		-	display: `"{{ f4f70727dc34561dfde1a3c529b6205c }}"` 
+	* Date of Birth: Used to calculate the patient’s age for determining appropriate immunization schedules.
 
-			– Localized string for the settings label. 
-			
-		-	menuIconConfig: Specifies the icon for the settings menu: 
-			
-		-	type: "local" 
+	* Gender: Male, female, or other, which can influence certain health interventions.
 
-			– Refers to a locally stored icon. 
-			
-		-	reference: "ic_settings" 
+	* Identification: National ID number, birth registration number, or an internally generated unique patient ID.
 
-			– The icon file. 
-			
-		-	actions: 
-	
-			-	ON_CLICK: Triggers the settings workflow when clicked, navigating to the settings screen.
+	* Address: Residential address, along with GPS coordinates for precise location tracking.
 
-### List Config 
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/list/locations.json
+	* Contact Information: Phone number, email, and emergency contact details (for children, this is usually the caregiver).
 
-![location list config](/img/eir_configs/list.png)
+b. Vaccination History
 
-Core Information
+	* Complete Immunization Record: Details all vaccines the patient has received, along with dates, batch numbers, and the healthcare provider who administered them.
 
-	-	resourceType: "List" 
-	
-		-	Specifies that this is a FHIR List resource.
+	* Upcoming Vaccinations: Lists any vaccines that are scheduled based on the patient’s age or national guidelines.
 
-	-	id: "0571e685-362e-4d8b-b227-a3678ad5420c-420" 
-	
-		-	The unique identifier for this list.
+	* Missed Vaccinations: Highlights any missed vaccines and suggests a catch-up schedule.
 
-	-	meta: Contains metadata about the resource.
+	* Contraindications: Any allergies or medical conditions that might affect immunization.
 
-	-	versionId: "1"  
-	
-		-	The version of this resource.
+c. Medical History
 
-	-	lastUpdated: "2024-07-07T19:28:30.567+00:00"  
-	
-		-	Timestamp of the last update to this resource.
-	
-	-	identifier: An official identifier for the list.
+	* Chronic Conditions: Lists any long-term illnesses or conditions (e.g., asthma, diabetes).
 
-	-	use: "official"  
-	
-		-	Indicates that this is the official identifier.
+	* Acute Conditions: Records any recent illnesses or hospitalizations.
 
-	-	value: "0571e685-362e-4d8b-b227-a3678ad5420c-420"  
-	
-		-	The value of the identifier.
+	* Growth Monitoring:
 
-	-	status: "current" 
-	
-		-	Indicates that the list is active and currently used.
+	* Tracks key growth indicators like height, weight, head circumference, and BMI.
 
-	-	mode: "working" 
-	
-		-	The mode of the list, indicating that it is actively being worked on or used.
+	* Includes visual growth charts and growth trend analysis.
 
-	-	title: "Health Facility Locations" 
-	
-		-	The title of the list.
+	* Mid-Upper Arm Circumference (MUAC): Records measurements to assess the nutritional status, with color-coded alerts (green, yellow, red) to indicate normal, moderate, or severe malnutrition.
 
-	-	code: Specifies the coding details for the list.
+d. Caregiver Information (for Children)
 
-	-	coding: A list of coding elements describing the resource:
+	* Primary Caregiver: Name and contact details of the caregiver (mother, father, guardian) responsible for the child’s health and vaccinations.
 
-	-	system: "http://ona.io"  
-	
-		-	The system that defines the code (in this case, Ona). 
-	
-	-	code: "health-facility-locations"  
-	
-		-	The specific code for health facility locations.
+	* Caregiver’s Relationship: Defines the caregiver’s relationship to the child (e.g., mother, father, grandparent).
 
-	-	display: "Health Facility Locations" 
-	
-		-	The display text for the code.
+e. Appointment Scheduling and Reminders
 
-	-	text: "Health Facility Locations"  
-	
-		-	A human-readable description of the list.
+	* Scheduled Appointments: Lists future vaccination or health checkup appointments.
 
+	* Missed Appointments: Tracks any missed appointments with automatic reminders to CHWs and caregivers for rescheduling.
 
-Entries
+	* Reminder System: Sends SMS or in-app notifications for upcoming vaccinations, follow-up visits, or growth monitoring sessions.
 
-This section contains the individual entries or items in the list, each referencing a health facility location. Each entry is represented by an item with a reference to a location resource.
+f. Health Interventions
 
-	-	item: Each item contains a reference to a specific health facility location in the FHIR Location resource.
-	-	Example: "reference": `"Location/1f4c76e1-9734-42d9-b5b8-4b213ee48d45"` refers to a health facility with a specific Location resource ID.
+	* Non-Immunization Interventions: Records any other health services provided, such as deworming, vitamin supplementation, and routine health checkups.
 
-### Geowidget Config
+	* Referrals: Tracks any referrals to other healthcare facilities for specialized care (e.g., malnutrition treatment, medical emergencies).
 
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/maps/location_map_config.json
+2. Household Profile
 
-![location config](/img/eir_configs/location-config.png)
+A Household Profile provides a comprehensive view of the health status of all members of a family or group living in the same residence. This allows for a more holistic approach to healthcare, where CHWs can address issues at the household level, such as vaccination gaps, malnutrition, or disease outbreaks.
 
+Key Features of a Household Profile:
 
-Core Information
+a. Household Identification
 
-	-	appId: "giz-eir" 
-	
-		-	The application ID, likely for a specific healthcare or resource tracking system.
-	
-	-	id: "locationMap" 
-	
-		-	Identifier for this specific widget (in this case, a map).
+	* Household Name/Head: Name of the head of the household (e.g., mother, father, or guardian).
 
-	-	configType: "geoWidget" 
-	
-		-	The configuration type is a geo widget, indicating that this component will display geographic or location-based information.
+	* Household ID: A unique identification number for the household to group individual members under one profile.
 
-	-	profileId: "caregiverProfile" 
-	
-		-	Indicates the profile type, likely related to caregivers in this application.
+	* Address and Location: Physical address and GPS coordinates for follow-up visits and planning outreach programs.
 
-Map Layers
+	* Contact Information: Phone number and/or email of the head of the household for communication regarding health matters.
 
-	-	mapLayers: A list of available map layers with their activation states:
+b. Household Members
 
-	-	STREET: Active.
-	
-	-	SATELLITE: Inactive.
+	* List of Members: A detailed list of all family members or individuals living in the household, each linked to their individual patient profiles.
 
-	-	STREET_SATELLITE: Inactive.
+	* Demographic Data: Includes names, ages, genders, and relationships of all household members.
 
-Registration Questionnaire
+	* Vaccination Status Summary:
 
-	-	registrationQuestionnaire: Defines a questionnaire associated with location registration.
+		* Displays the immunization status of each member, highlighting any missed vaccines across the household.
 
-	-	id: "13030180" 
-	
-		-	title and saveButtonText: Referencing strings using placeholders (e.g., `{{ a3401a36929da1f4e0ee28f9d5d52ba7 }}`), likely translated or dynamically inserted text. 
-	
-		-	setPractitionerDetails and setOrganizationDetails: Both set to true, indicating that practitioner and organization details are to be set during registration.
+		* Provides a household-wide vaccination coverage percentage.
 
-Resource Configuration
+	* Health Risks:
 
-	-	resourceConfig: Configuration related to the Location resource.
+		* Flags households where there are unvaccinated children or high-risk members (e.g., pregnant women, elderly individuals).
 
-	-	baseResource: Refers to Location, and includes a query to filter locations by type (238497).
+c. Household Health Overview
 
-	-	relatedResources: Describes relationships to other resources:
+	* Shared Health Conditions:
 
-	-	servicePointInventoryItems: A List resource related to the location.
+		* Identifies common health issues or risk factors affecting the household, such as malnutrition or communicable diseases (e.g., TB, malaria).
 
-	-	availableRelatedPersons: A RelatedPerson resource, tied to the service point.
+	* Nutritional Status:
 
-	-	availablePatients: A Patient resource, linked through related persons.
+		* Provides a summary of the nutritional status of children in the household, particularly those flagged as malnourished or at risk, based on growth monitoring and MUAC assessments.
 
-	-	availableTasks: A Task resource, linked through patients, used for task tracking (e.g., due or overdue tasks).
+	* Water, Sanitation, and Hygiene (WASH) Information:
 
-Service Point Configuration
+		* Data on access to clean water, sanitation, and hygiene, which can affect the overall health status of household members.
 
-	-	servicePointConfig: Defines rules for managing service points, such as:
+d. Community and Outreach Support
 
-	-	childCount: Calculates the number of children associated with the service point.
+	* Household-Level Interventions:
 
-	-	dueTaskList and overdueTaskList: Filters available tasks by their status (e.g., “ready” or “in-progress”).
+		* Displays any community outreach programs or household-wide interventions (e.g., deworming, malaria bed-net distribution).
 
-	-	taskStatus: Determines the status of tasks (e.g., overdue or due).
+	* Educational Materials:
 
-	-	servicePointId, name, locationId, status, type, servicePointType: Various metadata associated with the service point, including the location type, its status, and a service point image.
+		* Provides health education resources on vaccination, nutrition, and hygiene that CHWs can share with the family.
 
-	-	servicePointProperties: Dynamic properties used in the UI for a service point, such as the task status, name, type, and counts of children and tasks.
+	* Outreach Planning:
 
-Summary Bottom Sheet
+		* Helps CHWs identify which households need targeted interventions based on health trends, vaccination status, or geographic location.
 
-	-	summaryBottomSheetConfig: Defines a summary view or pop-up that shows detailed information in a card-like layout.
+e. Referral Tracking
 
-	-	Contains compound text (e.g., primary text, font size, color), buttons (e.g., “View Profile”), and actions triggered when the button is clicked (launches a profile view using the caregiverProfile ID).
+	* Household Referrals:
 
-Display Options
+		* Tracks any household members who have been referred to other healthcare providers, with details of the referral reason (e.g., for malnutrition treatment or chronic illness management).
 
-	-	showAddLocation: false  
-	
-		-	Indicates whether the “add location” option is visible.
+	* Follow-up Actions:
 
-	-	showPlaneSwitcher: true 
-	
-		-	Enables switching between map layers (e.g., street, satellite).
+		* Lists any recommended follow-up actions for the household as a whole (e.g., household nutrition intervention, health education on hygiene).
 
-	-	showLocation: true 
-	
-		-	Indicates that locations are visible on the map.
+f. Household Visit Scheduling and Follow-Up
 
-Actions
+	* Scheduled Visits:
 
-	-	actions: Defines triggers for when a user interacts with the map or specific elements. For example:
+		* Shows a schedule of planned household visits for immunization drives, nutritional assessments, or health interventions.
 
-	-	summaryBottomSheet: When clicked, launches a summary view using parameters like servicePointId.
+	* Missed Visits:
 
-Top Screen Section
+		* Flags households that missed previous health checkups or immunization visits, prompting CHWs to reschedule.
 
-	-	topScreenSection: Contains configuration for the top section of the map screen.
+Integration of Patient and Household Profiles
 
-	-	title: Placeholder for the screen’s title.
+	* Linked Data: The Household Profile integrates data from each individual’s Patient Profile, ensuring that CHWs can view both individual and household health data in one system.
 
-	-	searchBar: Visible search bar that allows users to search by name.
+	* Holistic Care: By viewing a family’s overall health status, CHWs can address broader health challenges that may affect more than one individual, improving care efficiency.
 
-	-	menuIcons: Contains an icon for service points, and clicking it launches the caregiver register.
+These profiles help streamline healthcare services, improve data tracking, and support more coordinated health interventions, especially in underserved or remote communities.
 
+## Advanced functions of the EIR for CHWs
 
+Incorporating growth monitoring and Mid-Upper Arm Circumference (MUAC) assessments into the EIR app for CHWs would expand its functionality to support broader child health and nutrition monitoring. By adding growth monitoring and MUAC tracking, the EIR app could help CHWs detect malnutrition and growth delays early, support targeted interventions, and improve child health outcomes. Here’s how these functions could be integrated:
 
-### Profiles Config
+1. Growth Monitoring
 
-More [here](http://localhost:3000/engineering/app/configuring/config-types/profile) on how to configure profiles
+	* Anthropometric Data Recording:
 
-#### Caregiver Profile Config
+		* Allows CHWs to input key growth indicators such as height, weight, and head circumference for children at regular intervals.
 
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/caregiver_profile_config.json
-![caregiver profile](/img/eir_configs/caregiver-profile.png)
+2. MUAC (Mid-Upper Arm Circumference) Monitoring
 
-[TBC]
+	* MUAC Measurement Recording:
 
-#### Child Profile Config
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/child_profile_config.json
-![child profile](/img/eir_configs/child-profile.png)
+		* Allows CHWs to log MUAC measurements as a quick and effective way to assess acute malnutrition in children.
 
-[TBC]
+3. Integrated Reporting and Alerts
 
-#### Child Upcoming Immunizatiion Profile Config
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childupcomingencounters_profile_config.json
+	* Comprehensive Health Reports:
 
-[TBC]
+		* Summary Indicators of all interventions that are being recorded and tracked on the app
 
-#### Child Past Immunizatiion Profile Config
+4. Data Sharing and Coordination
 
-[TBC]
+	* Peer to Peer ssync between
 
-#### Child Past Profile Config
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childpastencounters_profile_config.json
+		* Supervisors
 
-[TBC]
+		* CHWs in the same location hierachy levels
 
-#### Child Adverse Reaction Profile Config
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childadversereactions_profile_config.json
+5. Offline Functionality
 
-[TBC]
+	* Offline Data Entry:
 
+		* Enables CHWs to data even in areas without internet connectivity, with synchronization occurring when the device is back online.
 
-### Register Configs
+6. Covid 19 for Adult Vaccination
 
-#### Caregiver Register Congig
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/caregiver_register_config.json
+	* Register patients and log COVID-19 status.
 
-![caregiver register config](/img/eir_configs/caregiver-register.png)
+	* Schedule and record COVID-19 tests.
 
-Breakdown of the Configuration:
-
-1. General Information
-
-	-	appId: "giz-eir" — The application ID (likely related to a healthcare or resource management app).
-	-	configType: "register" — Specifies that this is a registration configuration.
-	-	id: "caregiverRegister" — The unique ID for this caregiver registration page.
-
-2. FHIR Resource Configuration
-
-	-	fhirResource: This section defines the FHIR (Fast Healthcare Interoperability Resources) resource model used in the app.
-	-	baseResource: The primary resource is "RelatedPerson", which seems to represent a caregiver or person linked to a patient.
-	-	sortConfigs: The caregiver entries are sorted by their last update date (`_lastUpdated`) in descending order (newest first).
-	-	relatedResources:
-	-	availablePatients: A list of Patient resources associated with the RelatedPerson.
-	-	availableTasks: A list of Task resources linked to patients (using the subject search parameter). This can represent tasks like appointments, follow-ups, or other responsibilities.
-
-3. Register Card
-
-The registerCard contains rules for displaying and managing caregiver information.
-
-	-	Rules: The rules extract specific fields from the RelatedPerson and related resources, allowing them to be used in the UI. Examples include:
-	-	relatedPersonId, relatedPersonFirstName, relatedPersonMiddleName, relatedPersonLastName: These rules extract personal information like the caregiver’s ID, first name, middle name, and last name.
-	-	relatedPersonGender: Determines the gender of the caregiver.
-	-	relatedPersonAge: Extracts the caregiver’s age.
-	-	formattedRelatedPersonInfo: Combines the first name, last name, gender, and age into a formatted string.
-	-	relatedPersonIdentifier: Retrieves the identifier (e.g., ID number) for the caregiver.
-	-	numberOfChildren: Calculates the number of children (patients) associated with the caregiver.
-	-	visitStatus: Determines the caregiver’s visit status based on the availability of tasks (e.g., “OVERDUE”, “DUE”, “UPCOMING”).
-	-	Views: Specifies the UI layout for the caregiver card:
-	-	viewType: "COLUMN" — Indicates a columnar layout.
-	-	SERVICE_CARD: Displays details of the caregiver such as:
-	-	COMPOUND_TEXT: Displays text fields with caregiver information.
-	-	serviceButton: A button that shows the number of children associated with the caregiver and their visit status (e.g., OVERDUE, DUE, UPCOMING).
-	 Clicking the button or the card triggers the LAUNCH_PROFILE action to display more details.
-
-4. Search Bar
-
-The searchBar allows users to search for caregivers using specific fields.
-
-	-	visible: true — The search bar is visible.
-	-	display: `"{{ search.name.or.id }}"` — Allows searching by name or ID.
-	-	computedRules: Specifies which fields to search:
-	-	relatedPersonIdentifier
-	-	relatedPersonFirstName
-	-	relatedPersonMiddleName
-	-	relatedPersonLastName
-
-5. Top Screen Section
-
-This section defines the UI at the top of the screen.
-
-	-	title: Dynamic title using the placeholder `"{{ 6a31766a4a17ff69f259bc76f812ecfa }}"`.
-	-	searchBar: Another search bar specific to locations, with the ability to search by servicePointName.
-	-	menuIcons: A list of icons for additional actions:
-	-	viewType: "IMAGE" — Specifies an icon image.
-	-	actions: Clicking this icon triggers the LAUNCH_MAP action, opening the map view (locationMap).
-
-
-
-#### Child Register Congig
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/child_register_config.json
-
-![child register config](/img/eir_configs/child-register.png)
-
-
-## Logging in and getting started
-[TBC]
-
-# Are we doing a new user guide in the docs here ?  
-
-import login from '/img/eir_screenshoots/login.png';
-
-<img src={login} style={{width: 250}} />
-
-import authneticate from '/img/eir_screenshoots/authentication.png';
-
-<img src={authneticate} style={{width: 250}} />
-
-import set_pin from '/img/eir_screenshoots/set-pin.png';
-
-<img src={set_pin} style={{width: 250}} />
-
-import sycning from '/img/eir_screenshoots/syncing.png';
-
-<img src={sycning} style={{width: 250}} />
-
-import sync_complete from '/img/eir_screenshoots/sync-complete.png';
-
-<img src={sync_complete} style={{width: 250}} />
-
-
-### Registering a patient
-
-[TBC]
-
-import caregiver from '/img/eir_screenshoots/registration.png';
-
-<img src={caregiver} style={{width: 250}} />
-
-import child from '/img/eir_screenshoots/add-child.png';
-
-<img src={child} style={{width: 250}} />
-
-
-### Scheduling & tasking
-
-In an offline-first community health application, scheduling and tasking refer to systems and processes used to manage appointments, follow-ups, and task assignments for healthcare workers and community health programs. These features are designed to work seamlessly in environments with intermittent or no internet access, ensuring that healthcare activities continue without disruption. Here’s a breakdown of each concept:
-
-1. Scheduling in an Offline-First Community Health Application
-
-Scheduling involves planning and organizing patient visits, consultations, or any healthcare-related appointments. In an offline-first application, it requires the following components:
-
-Features:
-
-- **Appointment Booking**: Health workers can schedule appointments with patients for home visits, checkups, immunizations, or follow-up care. These appointments are saved locally and synchronized with the central server once connectivity is restored.
-- **Calendar and Reminders**: The app provides a calendar view of upcoming appointments and sends reminders (either through notifications or on-screen prompts) to healthcare workers about scheduled visits.
-- **Recurrence & Follow-Up Visits**: Many community health activities require regular follow-ups (e.g., maternal health visits, chronic disease management). The app allows scheduling of recurring appointments with automatic reminders.
-- **Task and Visit Status Tracking**: Scheduled tasks (such as immunizations or wellness checks) are tracked by status: completed, overdue, upcoming, or in-progress. Health workers can update task status offline, and this data syncs when the app reconnects.
-
-Offline-first Considerations:
-
-- **Local Data Storage**: Scheduling and appointment data are stored locally on the health worker’s device so they can access patient schedules and update visit details even without internet.
-- **Automatic Sync**: When internet connectivity is restored, the app automatically syncs appointments and scheduling data with a central database.
-
-2. Tasking in an Offline-First Community Health Application
-
-Tasking refers to assigning and tracking healthcare-related tasks that health workers must perform in the community, such as patient checkups, vaccination campaigns, or health education.
-
-Features:
-
-- **Task Assignment**: Health workers are assigned tasks by supervisors or the health management system. These tasks can include patient visits, data collection, or specific treatments. Tasks are stored locally and synced with the central system later.
-- **Task Types**: Tasks can be varied, including:
-  - **Clinical tasks**: Conducting patient assessments, administering medication, vaccinations.
-  - **Non-clinical tasks**: Collecting health data, providing health education, monitoring chronic illnesses.
-- **Task Prioritization and Status**: Tasks can be prioritized as high, medium, or low, and can be marked as completed, in-progress, or overdue by the health worker. This allows for better time management and resource allocation in low-connectivity areas.
-- **Dynamic Task Updates**: In some cases, tasks may change based on patient outcomes or additional needs identified during visits. Health workers can update task details offline, and the system will push these updates once connectivity is restored.
-- **Team Collaboration**: In larger teams, task assignments can be distributed among multiple health workers. Task progress is tracked so that health supervisors can monitor the completion of assignments once sync is completed.
-
-Offline-first Considerations:
-
-- **Task Creation & Assignment Offline**: Health workers can receive new tasks even while offline, either through pre-downloaded updates or user-defined task generation (e.g., scheduling a follow-up visit).
-- **Local Task Management**: Tasks are stored on the health worker’s device, and they can update task progress (such as marking it complete) without needing real-time connectivity.
-- **Synchronization**: When connectivity is re-established, the app syncs task completion, updates, and any newly assigned tasks with the main server. This ensures that tasks completed in offline mode are recognized centrally.
-
-Supporting Tasking using a PlanDefinition resource in FHIR 
-
-In FHIR (Fast Healthcare Interoperability Resources), PlanDefinition is a core resource used to describe workflows, protocols, or plans for healthcare activities, including scheduling and task management. A PlanDefinition supports the definition of various tasks and schedules that healthcare workers follow in community health applications. Here’s how PlanDefinition supports offline-first scheduling and tasking in such applications:
-
-1. Defining Workflows and Care Plans with PlanDefinition
-
-	•	PlanDefinition in FHIR is used to define a blueprint for care delivery workflows and task management.
-
-	•	It can outline tasks, actions, and schedules that healthcare workers need to follow. This can be particularly useful in creating reusable care plans, such as maternal care, child immunization campaigns, or chronic disease monitoring.
-
-2. Using PlanDefinition for Scheduling
-
-	•	PlanDefinition can define schedules for specific healthcare activities. The action element within a PlanDefinition specifies a sequence of activities, including scheduling appointments and follow-ups.
-
-	•	Each action can include timing rules (using timing[x]), recurrence patterns (for follow-up visits), and conditions for triggering the task.
-
-	•	In offline-first systems, these schedules are defined and stored on the local device, allowing healthcare workers to access them even without connectivity.
-
-3. Tasking with PlanDefinition
-
-	•	PlanDefinition supports task management by detailing specific tasks that healthcare workers must perform during a workflow.
-
-	•	A PlanDefinition can include multiple action elements, where each action represents a task (e.g., administer a vaccine, collect data, monitor vitals).
-
-	•	Tasks can also have dependencies, where certain tasks are triggered based on the completion or outcome of previous tasks.
-
-	•	The tasks can be configured to change dynamically based on patient outcomes or new needs that arise during care delivery.
-
-4. Handling Offline Synchronization
-
-	•	When the healthcare worker is offline, all scheduling and task-related data (defined by the PlanDefinition) are stored locally.
-
-	•	Once the healthcare worker regains connectivity, the app synchronizes the task progress, updates, and scheduling changes to the server.
-
-	•	This synchronization ensures that both the local app and central server have consistent data, allowing healthcare supervisors to monitor care delivery even in remote or low-connectivity regions.
-
-5. Using PlanDefinition with Other FHIR Resources
-
-	•	PlanDefinition often works in combination with other FHIR resources to support scheduling and tasking:
-
-	-	Task: Used to track the execution of actions defined in a PlanDefinition.
-	
-	-	CarePlan: Represents an individualized plan of care for a patient, using PlanDefinition as a template.
-
-	-	ServiceRequest: Represents a request for a service to be performed (e.g., a lab test, a procedure) as part of a task.
-
-### Child Immunization 
-The PlanDefinition resource in FHIR defines several immunization-related activities for child immunization. Each ActivityDefinition outlines specific tasks, including the administration of vaccines, detailing the type of vaccine, schedule, and responsible parties.
-
-Example of scheduling with PlanDefinition:
-
-![immunization config](/img/eir_configs/immunization-pd.png)
-
-Reference PlanDefinition can  be found [here](https://github.com/ona-health/giz-eir-fhir-resources/blob/main/plan_definition/child_immunizations.fhir.json)
-
-General Setup (First Activity) - "Child Register Handler Activity":
-
-This activity handles the initial setup of a care plan when a child is registered.
-It dynamically sets attributes like title, description, status, and care plan start and end dates based on the child's birthdate.
-The activity also assigns a general practitioner as the performer and sets up an ongoing task to manage the care plan.
-Specific Immunization Tasks: Each subsequent `ActivityDefinition` outlines a different immunization task:
-
-1. BCG Immunization: Administered shortly after birth, with a booster scheduled later.
-2. OPV (Oral Poliovirus Vaccine): Multiple doses scheduled at various weeks (6, 10, and 14 weeks).
-3. PENTA Immunization: Similar to OPV with a series of three doses, followed by a booster.
-4. ROTA Immunization: Administered in a two-dose series for protection against rotavirus.
-5. PCV (Pneumococcal Vaccine): Three doses to protect against pneumococcal infections, with a booster.
-6. IPV (Inactivated Poliovirus Vaccine): Single dose of inactivated polio vaccine.
-7. Measles Immunization: Scheduled at 9 months and then a booster at 18 months.
-
-For each immunization, the `ActivityDefinition` includes:
-
-- Status: `"active"` indicating the task is currently in progress.
-- Description: Provides a short description of the immunization.
-- Kind: Indicates the task type (in this case, all are "Task").
-- Coding: Maps the immunization to a specific procedure code.
-- Dosage Information: Specifies the sequence of doses, timing, and intervals for each vaccine.
-
-These definitions help automate the creation and management of a child's immunization schedule within a care plan in FHIR-based healthcare systems.
-
-
-### Child Recurring Services
-
-Key Components:
-
-Contained Activity Definitions: These are activities defined within the care plan for various recurring services for children.
-
-1. `careplan-init-activity`: Initializes the care plan when the child is registered, pulling dynamic values (such as the child’s ID and birthdate) to populate the CarePlan resource.
-2. `careplan-vita-ifc-task-activity`: Specifies the administration of Vitamin A IFC service, scheduled every 6 months.
-3. `careplan-vita-task-activity`: Another Vitamin A service scheduled more frequently, with 10 occurrences over a period of 6 months each.
-4. `careplan-deworming-task-activity`: Defines the deworming service, administered every 6 months, recurring 9 times.
-5. `careplan-itn-task-activity`: Specifies the ITN (Insecticide-treated net) service, provided every 6 months, up to 5 times.
-
-Dynamic Values: In the careplan-init-activity, FHIRPath expressions are used to dynamically set values in the care plan based on the child’s details. For instance:
-
-- The title and description of the care plan are set to the values from the root resource.
-- The care plan’s start period is set to the child’s birthdate, and the end period is calculated to be approximately 11 years later (4017 days).
-- The author and performer of the activities are based on the first general practitioner assigned to the child.
-
-Scheduled Services:
-
-- Timing and Dosage: Each ActivityDefinition for services like Vitamin A, Deworming, and ITN provides the timing details of when the service is administered. This includes how many times the service is repeated (e.g., every 6 months).
-- Status and Kind: All activities are marked as active, with the kind set to Task, indicating that these are recurring, scheduled services.
-
-This structure automates the generation of a child’s recurring care plan, ensuring that essential health services are administered at appropriate intervals.
-
-### Recording vaccinations (and in some usecases Routine/Recurring Child Services)
-
-[TBC]
-
-import child_profile from '/img/eir_screenshoots/child-profile.png';
-
-<img src={child_profile} style={{width: 250}} />
-
-import immunization from '/img/eir_screenshoots/immunization-form.png';
-
-<img src={immunization} style={{width: 250}} />
-
-
-
-### Multi-Language Support
-
-[TBC]
-
-#### Multi Language strings files
-![english trnslations config](/img/eir_configs/strings-en.png)
-![spanish trnslations config](/img/eir_configs/strings-es.png)
-
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_config.properties
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_es_config.properties
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_fr_config.properties
-
-### Configuration and adapting the content
-
-[TBC]
-
-**Example on how to Load a questionnaire from assets folder**
-
-1. Create a new file e.g. `config/app/resources/questionnaire/register_caregiver.json`
-
-2. Update the questionnaire content
-
-3. Make sure the Questionnaire ID (`13030180`)is similar to the on referenced in the Naviagtion config or the Primary register (in this case Caregiver Register)
-
-![questionnaire config](/img/eir_configs/questionnaire_config.png)
-
-4. Login to the app using `app/debug`
-
-5. Click on Household register
-
-6. Click on add household from the side navigation or configured fab
-
-7. Observe the questionnaire updated 
+	* Record and track vaccinations (including reminders for doses).
 
 ## Reference app user guide
 
 [TBC]
 
-# Are we doing a new user guide in the docs here ?
+### Are we doing a new user guide in the docs here?
+
+import login from '/img/eir_screenshoots/login.png';
 
 <img src={login} style={{width: 250}} />
 
