@@ -54,10 +54,10 @@ class PdfLauncherFragment : DialogFragment() {
 
     val pdfConfig = getPdfConfig()
 
-    val pdfStructureId = pdfConfig.pdfStructureReference!!.extractLogicalIdUuid()
-    val pdfTitle =
-      StringBuilder().append(pdfConfig.pdfTitle ?: getString(R.string.default_html_title))
-    val pdfTitleSuffix = pdfConfig.pdfTitleSuffix
+    val structureId = pdfConfig.structureReference!!.extractLogicalIdUuid()
+    val title =
+      StringBuilder().append(pdfConfig.title ?: getString(R.string.default_html_title))
+    val titleSuffix = pdfConfig.titleSuffix
     val subjectReference = pdfConfig.subjectReference!!
     val questionnaireIds =
       pdfConfig.questionnaireReferences.map { it.extractLogicalIdUuid() } ?: emptyList()
@@ -70,11 +70,11 @@ class PdfLauncherFragment : DialogFragment() {
             subjectReference,
           )
         }
-      val htmlBinary = pdfLauncherViewModel.retrieveBinary(pdfStructureId)
+      val htmlBinary = pdfLauncherViewModel.retrieveBinary(structureId)
 
-      if (pdfTitleSuffix != null) pdfTitle.append(" - $pdfTitleSuffix")
+      if (titleSuffix != null) title.append(" - $titleSuffix")
 
-      generatePdf(questionnaireResponses, htmlBinary, pdfTitle.toString())
+      generatePdf(questionnaireResponses, htmlBinary, title.toString())
     }
   }
 

@@ -40,28 +40,30 @@ import org.smartregister.fhircore.engine.util.extension.valueToString
 class HtmlPopulator(
   questionnaireResponses: List<QuestionnaireResponse>,
 ) {
-  // Store answers as key-value pairs with link-id as key
-  private val answerMap: MutableMap<String, List<QuestionnaireResponseItemAnswerComponent>> =
-    mutableMapOf()
-
-  // Store submitted-date of a questionnaire response with link-id as key
-  private val submittedDateMap: MutableMap<String, Date> = mutableMapOf()
-
-  // Store questionnaire-id related to each questionnaire-response
-  private val questionnaireIds: MutableList<String> = mutableListOf()
+  private var answerMap: Map<String, List<QuestionnaireResponseItemAnswerComponent>>
+  private var submittedDateMap: Map<String, Date>
+  private var questionnaireIds: List<String>
 
   init {
+    val answerMap = mutableMapOf<String, List<QuestionnaireResponseItemAnswerComponent>>()
+    val submittedDateMap = mutableMapOf<String, Date>()
+    val questionnaireIds = mutableListOf<String>()
+
     questionnaireResponses.forEach { questionnaireResponse ->
       val questionnaireId = questionnaireResponse.questionnaire.extractLogicalIdUuid()
-      val answerMap =
-        questionnaireResponse.allItems.associateBy(
+      questionnaireResponse.allItems
+        .associateBy(
           keySelector = { "$questionnaireId/${it.linkId}" },
           valueTransform = { it.answer },
         )
-      this.answerMap.putAll(answerMap)
-      this.submittedDateMap[questionnaireId] = questionnaireResponse.meta.lastUpdated ?: Date()
-      this.questionnaireIds.add(questionnaireId)
+        .let { answerMap.putAll(it) }
+      submittedDateMap[questionnaireId] = questionnaireResponse.meta.lastUpdated ?: Date()
+      questionnaireIds.add(questionnaireId)
     }
+
+    this.answerMap = answerMap
+    this.submittedDateMap = submittedDateMap
+    this.questionnaireIds = questionnaireIds
   }
 
   /**

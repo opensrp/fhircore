@@ -61,9 +61,9 @@ class PdfLauncherFragmentTest : RobolectricTest() {
 
     val pdfConfig =
       PdfConfig(
-          pdfTitle = "title",
-          pdfTitleSuffix = "suffix",
-          pdfStructureReference = "Binary/id",
+          title = "title",
+          titleSuffix = "suffix",
+          structureReference = "Binary/id",
           subjectReference = "Patient/id",
           questionnaireReferences = listOf("QuestionnaireResponse/id"),
         )
@@ -98,9 +98,9 @@ class PdfLauncherFragmentTest : RobolectricTest() {
 
     val pdfConfig =
       PdfConfig(
-          pdfTitle = "title",
-          pdfTitleSuffix = "suffix",
-          pdfStructureReference = "Binary/id",
+          title = "title",
+          titleSuffix = "suffix",
+          structureReference = "Binary/id",
           subjectReference = "Patient/id",
           questionnaireReferences = listOf("QuestionnaireResponse/id"),
         )
@@ -135,9 +135,9 @@ class PdfLauncherFragmentTest : RobolectricTest() {
 
     val pdfConfig =
       PdfConfig(
-          pdfTitle = "title",
-          pdfTitleSuffix = "suffix",
-          pdfStructureReference = "Binary/id",
+          title = "title",
+          titleSuffix = "suffix",
+          structureReference = "Binary/id",
           subjectReference = "Patient/id",
           questionnaireReferences = listOf("QuestionnaireResponse/id"),
         )
@@ -172,9 +172,9 @@ class PdfLauncherFragmentTest : RobolectricTest() {
 
     val pdfConfig =
       PdfConfig(
-          pdfTitle = "title",
-          pdfTitleSuffix = "suffix",
-          pdfStructureReference = "Binary/id",
+          title = "title",
+          titleSuffix = "suffix",
+          structureReference = "Binary/id",
           subjectReference = "Patient/id",
           questionnaireReferences = listOf("QuestionnaireResponse/id"),
         )

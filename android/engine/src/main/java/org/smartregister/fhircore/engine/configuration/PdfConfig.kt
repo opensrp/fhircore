@@ -24,17 +24,18 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 @Serializable
 @Parcelize
 data class PdfConfig(
-  val pdfTitle: String? = null,
-  val pdfTitleSuffix: String? = null,
-  val pdfStructureReference: String? = null,
+  val title: String? = null,
+  val titleSuffix: String? = null,
+  val structureReference: String? = null,
   val subjectReference: String? = null,
   val questionnaireReferences: List<String> = emptyList(),
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
     this.copy(
-      pdfTitle = pdfTitle?.interpolate(computedValuesMap),
-      pdfStructureReference = pdfStructureReference?.interpolate(computedValuesMap),
+      title = title?.interpolate(computedValuesMap),
+      titleSuffix = titleSuffix?.interpolate(computedValuesMap),
+      structureReference = structureReference?.interpolate(computedValuesMap),
       subjectReference = subjectReference?.interpolate(computedValuesMap),
       questionnaireReferences = questionnaireReferences.map { it.interpolate(computedValuesMap) },
     )
