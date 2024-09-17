@@ -30,7 +30,6 @@ import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import com.google.android.fhir.FhirEngine
-import kotlin.collections.set
 import org.hl7.fhir.r4.model.Binary
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
@@ -63,6 +62,7 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherFragment
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
+import kotlin.collections.set
 
 const val PRACTITIONER_ID = "practitionerId"
 
@@ -184,16 +184,23 @@ fun ActionConfig.handleClickEvent(
       navController.navigate(MainNavigationScreen.Insight.route)
     ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
     ApplicationWorkflow.LAUNCH_MAP -> {
-      val mapFragmentDestination = MainNavigationScreen.GeoWidgetLauncher.route
-
-      val isMapFragmentExists = navController.currentDestination?.id == mapFragmentDestination
-      if (isMapFragmentExists) {
-        navController.popBackStack(mapFragmentDestination, false)
+      val args = bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id)
+      // If value != null, we are navigating FROM a map; disallow same map navigation
+      val currentGeoWidgetId =
+        navController.currentBackStackEntry?.arguments?.getString(NavigationArg.GEO_WIDGET_ID)
+      val sameGeoWidgetNavigation =
+        args.getString(NavigationArg.GEO_WIDGET_ID) ==
+          navController.previousBackStackEntry?.arguments?.getString(NavigationArg.GEO_WIDGET_ID)
+      if (!currentGeoWidgetId.isNullOrEmpty() && sameGeoWidgetNavigation) {
+        return
       } else {
         navController.navigate(
-          resId = mapFragmentDestination,
-          args = bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id),
-          navOptions = navOptions(mapFragmentDestination, inclusive = true, singleOnTop = true),
+          resId = MainNavigationScreen.GeoWidgetLauncher.route,
+          args = args,
+          navOptions =
+            navController.currentDestination?.id?.let {
+              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
+            },
         )
       }
     }
