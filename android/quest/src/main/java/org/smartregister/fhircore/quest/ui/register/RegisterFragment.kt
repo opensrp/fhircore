@@ -46,7 +46,6 @@ import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -69,6 +68,7 @@ import org.smartregister.fhircore.quest.ui.shared.viewmodels.SearchViewModel
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
+import javax.inject.Inject
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
@@ -128,11 +128,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
         AppTheme {
           val pagingItems =
-            registerViewModel.paginatedRegisterData
+            registerViewModel.registerData
               .collectAsState(emptyFlow())
               .value
               .collectAsLazyPagingItems()
-          // Register screen provides access to the side navigation
+
           Scaffold(
             drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
             scaffoldState = scaffoldState,
@@ -228,13 +228,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
           updateRegisterFilterState(registerId, questionnaireResponse)
         }
 
-        pagesDataCache.clear()
-
         retrieveRegisterUiState(
           registerId = registerId,
           screenTitle = screenTitle,
           params = params,
-          clearCache = false,
+          clearCache = true,
         )
       }
     }

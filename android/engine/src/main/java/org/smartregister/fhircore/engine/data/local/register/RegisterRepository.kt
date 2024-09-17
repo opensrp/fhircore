@@ -97,70 +97,79 @@ constructor(
     fhirResourceConfig: FhirResourceConfig?,
     paramsMap: Map<String, String>?,
   ): Long {
-    val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
-    val fhirResource = fhirResourceConfig ?: registerConfiguration.fhirResource
-    val baseResourceConfig = fhirResource.baseResource
-    val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
-    val filterByRelatedEntityLocation = registerConfiguration.filterDataByRelatedEntityLocation
-    val filterActiveResources  = registerConfiguration.activeResourceFilters
-    if (filterByRelatedEntityLocation) {
-      val syncLocationIds = context.retrieveRelatedEntitySyncLocationIds()
-      val locationIds =
-        syncLocationIds
-          .map { retrieveFlattenedSubLocations(it).map { subLocation -> subLocation.logicalId }}
-          .flatten()
-          .toHashSet()
-      val countSearch =
-        Search(baseResourceConfig.resource).apply {
-          applyConfiguredSortAndFilters(
-            resourceConfig = baseResourceConfig,
-            sortData = false,
-            filterActiveResources = filterActiveResources,
-            configComputedRuleValues = configComputedRuleValues,
-          )
-        }
-      val totalCount = fhirEngine.count(countSearch)
-      var searchResultsCount = 0L
-      var pageNumber = 0
-      var count = 0
-      while (count < totalCount) {
-        val baseResourceSearch =
-          createSearch(
-            baseResourceConfig = baseResourceConfig,
-            filterActiveResources = filterActiveResources,
-            configComputedRuleValues = configComputedRuleValues,
-            currentPage = pageNumber,
-            count = COUNT,
-          )
-        val result = fhirEngine.search<Resource>(baseResourceSearch)
-        searchResultsCount += (result.filter { searchResult ->
-          when (baseResourceConfig.resource) {
-            ResourceType.Location -> locationIds.contains(searchResult.resource.logicalId)
-            else -> searchResult.resource.meta.tag.any {
-              it.system == context.getString(R.string.sync_strategy_related_entity_location_system)
-                      && locationIds.contains(it.code)
-            }
+    return withContext(dispatcherProvider.io()) {
+      val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
+      val fhirResource = fhirResourceConfig ?: registerConfiguration.fhirResource
+      val baseResourceConfig = fhirResource.baseResource
+      val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
+      val filterByRelatedEntityLocation = registerConfiguration.filterDataByRelatedEntityLocation
+      val filterActiveResources = registerConfiguration.activeResourceFilters
+      if (filterByRelatedEntityLocation) {
+        val syncLocationIds = context.retrieveRelatedEntitySyncLocationIds()
+        val locationIds =
+          syncLocationIds
+            .map { retrieveFlattenedSubLocations(it).map { subLocation -> subLocation.logicalId } }
+            .asSequence()
+            .flatten()
+            .toHashSet()
+        val countSearch =
+          Search(baseResourceConfig.resource).apply {
+            applyConfiguredSortAndFilters(
+              resourceConfig = baseResourceConfig,
+              sortData = false,
+              filterActiveResources = filterActiveResources,
+              configComputedRuleValues = configComputedRuleValues,
+            )
           }
-        }.size)
-        count += COUNT
-        pageNumber++
-      }
-      return searchResultsCount
-    }
-    val search =
-      Search(baseResourceConfig.resource).apply {
-        applyConfiguredSortAndFilters(
-          resourceConfig = baseResourceConfig,
-          sortData = false,
-          filterActiveResources = registerConfiguration.activeResourceFilters,
-          configComputedRuleValues = configComputedRuleValues,
+        val totalCount = fhirEngine.count(countSearch)
+        var searchResultsCount = 0L
+        var pageNumber = 0
+        var count = 0
+        while (count < totalCount) {
+          val baseResourceSearch =
+            createSearch(
+              baseResourceConfig = baseResourceConfig,
+              filterActiveResources = filterActiveResources,
+              configComputedRuleValues = configComputedRuleValues,
+              currentPage = pageNumber,
+              count = COUNT,
+            )
+          searchResultsCount += fhirEngine.search<Resource>(baseResourceSearch)
+            .asSequence()
+            .map { it.resource }
+            .filter { resource ->
+              when (resource.resourceType) {
+                ResourceType.Location -> locationIds.contains(resource.logicalId)
+                else -> resource.meta.tag.any {
+                  it.system == context.getString(R.string.sync_strategy_related_entity_location_system)
+                          && locationIds.contains(it.code)
+                }
+              }
+            }.count().toLong()
+          count += COUNT
+          pageNumber++
+        }
+        searchResultsCount
+      } else {
+        val search =
+          Search(baseResourceConfig.resource).apply {
+            applyConfiguredSortAndFilters(
+              resourceConfig = baseResourceConfig,
+              sortData = false,
+              filterActiveResources = registerConfiguration.activeResourceFilters,
+              configComputedRuleValues = configComputedRuleValues,
+            )
+          }
+        search.count(
+          onFailure = {
+            Timber.e(
+              it,
+              "Error counting register data for register id: ${registerConfiguration.id}"
+            )
+          },
         )
       }
-    return search.count(
-      onFailure = {
-        Timber.e(it, "Error counting register data for register id: ${registerConfiguration.id}")
-      },
-    )
+    }
   }
 
   override suspend fun loadProfileData(
@@ -190,9 +199,8 @@ constructor(
 
       val retrievedRelatedResources =
         retrieveRelatedResources(
-          resources = listOf(baseResource),
+          resource = baseResource,
           relatedResourcesConfigs = resourceConfig.relatedResources,
-          relatedResourceWrapper = RelatedResourceWrapper(),
           configComputedRuleValues = configComputedRuleValues,
         )
 

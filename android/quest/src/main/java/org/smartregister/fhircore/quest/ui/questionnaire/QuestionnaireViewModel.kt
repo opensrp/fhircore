@@ -36,11 +36,6 @@ import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.Date
-import java.util.LinkedList
-import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Provider
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -100,6 +95,10 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
+import java.util.Date
+import java.util.UUID
+import javax.inject.Inject
+import javax.inject.Provider
 
 @HiltViewModel
 class QuestionnaireViewModel
@@ -1042,7 +1041,7 @@ constructor(
   ): List<Resource> {
     return when {
       subjectResourceType != null && subjectResourceIdentifier != null ->
-        LinkedList<Resource>().apply {
+        mutableListOf<Resource>().apply {
           loadResource(subjectResourceType, subjectResourceIdentifier)?.let { add(it) }
           val actionParametersExcludingSubject =
             actionParameters.filterNot {
@@ -1052,7 +1051,7 @@ constructor(
             }
           addAll(retrievePopulationResources(actionParametersExcludingSubject))
         }
-      else -> LinkedList(retrievePopulationResources(actionParameters))
+      else -> retrievePopulationResources(actionParameters)
     }
   }
 

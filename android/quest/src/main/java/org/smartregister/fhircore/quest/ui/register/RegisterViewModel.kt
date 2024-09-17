@@ -29,8 +29,6 @@ import androidx.paging.cachedIn
 import androidx.paging.filter
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import kotlin.math.ceil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -64,6 +62,8 @@ import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
+import javax.inject.Inject
+import kotlin.math.ceil
 
 @HiltViewModel
 class RegisterViewModel
@@ -79,14 +79,13 @@ constructor(
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
   val registerUiState = mutableStateOf(RegisterUiState())
   val currentPage: MutableState<Int> = mutableIntStateOf(0)
-  val paginatedRegisterData: MutableStateFlow<Flow<PagingData<ResourceData>>> =
-    MutableStateFlow(emptyFlow())
+  val registerData: MutableStateFlow<Flow<PagingData<ResourceData>>> = MutableStateFlow(emptyFlow())
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
   val registerFilterState = mutableStateOf(RegisterFilterState())
   private val _totalRecordsCount = mutableLongStateOf(0L)
   private val _filteredRecordsCount = mutableLongStateOf(-1L)
   private lateinit var registerConfiguration: RegisterConfiguration
-  private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
+  private var completeRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
   private val _currentSyncJobStatusFlow: MutableSharedFlow<CurrentSyncJobStatus?> =
@@ -107,9 +106,9 @@ constructor(
   ) {
     if (clearCache) {
       pagesDataCache.clear()
-      allPatientRegisterData = null
+      completeRegisterData = null
     }
-    paginatedRegisterData.value =
+    registerData.value =
       pagesDataCache.getOrPut(currentPage.value) {
         getPager(registerId, loadAll).flow.cachedIn(viewModelScope)
       }
@@ -118,7 +117,7 @@ constructor(
   private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, ResourceData> {
     val currentRegisterConfigs = retrieveRegisterConfiguration(registerId)
     val ruleConfigs = currentRegisterConfigs.registerCard.rules
-    val pageSize = currentRegisterConfigs.pageSize // Default 10
+    val pageSize = currentRegisterConfigs.pageSize
 
     return Pager(
       config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
@@ -155,41 +154,49 @@ constructor(
     return registerConfiguration
   }
 
-  private fun retrieveAllPatientRegisterData(registerId: String): Flow<PagingData<ResourceData>> {
-    // Ensure that we only initialize this flow once
-    if (allPatientRegisterData == null) {
-      allPatientRegisterData = getPager(registerId, true).flow.cachedIn(viewModelScope)
+  private fun retrieveCompleteRegisterData(registerId: String, forceRefresh: Boolean):
+          Flow<PagingData<ResourceData>> {
+    if (completeRegisterData == null || forceRefresh) {
+      completeRegisterData = getPager(registerId, true).flow.cachedIn(viewModelScope)
     }
-    return allPatientRegisterData!!
+    return completeRegisterData!!
   }
 
-  fun onEvent(event: RegisterEvent) =
+  fun onEvent(event: RegisterEvent) {
+    val registerId = registerUiState.value.registerId
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
         if (event.searchQuery.isBlank()) {
-          paginateRegisterData(registerUiState.value.registerId)
+          val regConfig = retrieveRegisterConfiguration(registerId)
+          if (regConfig.infiniteScroll) {
+            registerData.value = retrieveCompleteRegisterData(registerId, false)
+          } else  paginateRegisterData(registerId)
         } else {
           filterRegisterData(event.searchQuery.query)
         }
       }
+
       is RegisterEvent.MoveToNextPage -> {
         currentPage.value = currentPage.value.plus(1)
-        paginateRegisterData(registerUiState.value.registerId)
+        paginateRegisterData(registerId)
       }
+
       is RegisterEvent.MoveToPreviousPage -> {
         currentPage.value.let { if (it > 0) currentPage.value = it.minus(1) }
-        paginateRegisterData(registerUiState.value.registerId)
+        paginateRegisterData(registerId)
       }
+
       RegisterEvent.ResetFilterRecordsCount -> _filteredRecordsCount.longValue = -1
-    }
+      }
+  }
 
   fun filterRegisterData(searchText: String) {
     val searchBar = registerUiState.value.registerConfiguration?.searchBar
     // computedRules (names of pre-computed rules) must be provided for search to work.
     if (searchBar?.computedRules != null) {
-      paginatedRegisterData.value =
-        retrieveAllPatientRegisterData(registerUiState.value.registerId).map {
+      registerData.value =
+        retrieveCompleteRegisterData(registerUiState.value.registerId, false).map {
           pagingData: PagingData<ResourceData> ->
           pagingData.filter { resourceData: ResourceData ->
             searchBar.computedRules!!.any { ruleName ->
@@ -448,21 +455,23 @@ constructor(
       val paramsMap: Map<String, String> = params.toParamDataMap()
       viewModelScope.launch {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
+        if (currentRegisterConfiguration.infiniteScroll) {
+          registerData.value = retrieveCompleteRegisterData(currentRegisterConfiguration.id, clearCache)
+        } else {
+          _totalRecordsCount.longValue =
+            registerRepository.countRegisterData(registerId = registerId, paramsMap = paramsMap)
 
-        _totalRecordsCount.longValue =
-          registerRepository.countRegisterData(registerId = registerId, paramsMap = paramsMap)
-
-        // Only count filtered data when queries are updated
-        if (registerFilterState.value.fhirResourceConfig != null) {
-          _filteredRecordsCount.longValue =
-            registerRepository.countRegisterData(
-              registerId = registerId,
-              paramsMap = paramsMap,
-              fhirResourceConfig = registerFilterState.value.fhirResourceConfig,
-            )
+          // Only count filtered data when queries are updated
+          if (registerFilterState.value.fhirResourceConfig != null) {
+            _filteredRecordsCount.longValue =
+              registerRepository.countRegisterData(
+                registerId = registerId,
+                paramsMap = paramsMap,
+                fhirResourceConfig = registerFilterState.value.fhirResourceConfig,
+              )
+          }
+          paginateRegisterData(registerId = registerId, loadAll = false, clearCache = clearCache)
         }
-
-        paginateRegisterData(registerId, loadAll = false, clearCache = clearCache)
 
         registerUiState.value =
           RegisterUiState(
@@ -482,9 +491,11 @@ constructor(
             filteredRecordsCount = _filteredRecordsCount.longValue,
             pagesCount =
               ceil(
-                  (if (registerFilterState.value.fhirResourceConfig != null) {
-                      _filteredRecordsCount.longValue
-                    } else _totalRecordsCount.longValue)
+                  (
+                          if (registerFilterState.value.fhirResourceConfig != null) {
+                            _filteredRecordsCount.longValue
+                          } else _totalRecordsCount.longValue
+                   )
                     .toDouble()
                     .div(currentRegisterConfiguration.pageSize.toLong()),
                 )

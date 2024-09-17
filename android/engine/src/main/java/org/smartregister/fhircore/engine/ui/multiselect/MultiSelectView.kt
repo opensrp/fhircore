@@ -39,7 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
-import java.util.LinkedList
 import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 
 @Composable
@@ -134,17 +133,17 @@ fun <T> MultiSelectCheckbox(
           }
 
           // Select all the nested checkboxes
-          val linkedList = LinkedList(currentTreeNode.children)
+          val treeNodeArrayDeque = ArrayDeque(currentTreeNode.children)
 
-          while (linkedList.isNotEmpty()) {
-            val currentNode = linkedList.removeFirst()
+          while (treeNodeArrayDeque.isNotEmpty()) {
+            val currentNode = treeNodeArrayDeque.removeFirst()
             syncLocationStateMap[currentNode.id] =
               SyncLocationState(
                 currentNode.id,
                 currentNode.parent?.id,
                 ToggleableState(checked.value),
               )
-            currentNode.children.forEach { linkedList.add(it) }
+            currentNode.children.forEach { treeNodeArrayDeque.addLast(it) }
           }
         },
         modifier = Modifier.padding(0.dp),
