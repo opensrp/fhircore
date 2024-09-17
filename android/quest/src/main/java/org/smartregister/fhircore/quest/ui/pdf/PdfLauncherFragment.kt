@@ -55,8 +55,7 @@ class PdfLauncherFragment : DialogFragment() {
     val pdfConfig = getPdfConfig()
 
     val structureId = pdfConfig.structureReference!!.extractLogicalIdUuid()
-    val title =
-      StringBuilder().append(pdfConfig.title ?: getString(R.string.default_html_title))
+    val title = StringBuilder().append(pdfConfig.title ?: getString(R.string.default_html_title))
     val titleSuffix = pdfConfig.titleSuffix
     val subjectReference = pdfConfig.subjectReference!!
     val questionnaireIds =
