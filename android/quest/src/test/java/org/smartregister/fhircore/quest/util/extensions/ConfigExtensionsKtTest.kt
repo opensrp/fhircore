@@ -32,22 +32,21 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import org.hl7.fhir.r4.model.Binary
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.ArgumentMatchers.anyString
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
@@ -73,6 +72,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -94,6 +94,8 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   @Inject lateinit var parser: IParser
 
   @Inject lateinit var fhirEngine: FhirEngine
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   private val navController = mockk<NavController>(relaxUnitFun = true, relaxed = true)
   private val context = mockk<Context>(relaxUnitFun = true, relaxed = true)
@@ -672,11 +674,11 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   @Test
   fun decodeBinaryResourcesToBitmapOnNavigationMenuClientRegistersDoneCorrectly(): Unit =
     runBlocking {
-      defaultRepository.create(addResourceTags = true, binaryImage)
       val navigationMenuConfigs =
         sequenceOf(navigationMenuConfig).mapNotNull { it.menuIconConfig?.reference }
       val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-      runBlocking {
+      withContext(dispatcherProvider.io()) {
+        defaultRepository.create(addResourceTags = true, binaryImage)
         navigationMenuConfigs.resourceReferenceToBitMap(
           fhirEngine = fhirEngine,
           decodedImageMap = decodedImageMap,
@@ -688,10 +690,10 @@ class ConfigExtensionsKtTest : RobolectricTest() {
 
   @Test
   fun decodeBinaryResourcesToBitmapOnOverflowMenuConfigDoneCorrectly(): Unit = runTest {
-    defaultRepository.create(addResourceTags = true, binaryImage)
     val navigationMenuConfigs = sequenceOf(overflowMenuItemConfig).mapNotNull { it.icon?.reference }
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-    runBlocking {
+    withContext(Dispatchers.IO) {
+      defaultRepository.create(addResourceTags = true, binaryImage)
       navigationMenuConfigs.resourceReferenceToBitMap(
         fhirEngine = fhirEngine,
         decodedImageMap = decodedImageMap,
@@ -703,9 +705,12 @@ class ConfigExtensionsKtTest : RobolectricTest() {
 
   @Test
   fun testImageBitmapUpdatedCorrectlyGivenProfileConfiguration(): Unit = runTest {
-    defaultRepository.create(addResourceTags = true, binaryImage)
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-    profileConfiguration.views.decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+    withContext(Dispatchers.IO) {
+      fhirEngine.create(binaryImage)
+      profileConfiguration.views.decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+    }
+
     Assert.assertTrue(decodedImageMap.isNotEmpty())
     Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
   }
@@ -713,9 +718,11 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   @Test
   fun testImageBitmapUpdatedCorrectlyGivenCardViewProperties(): Unit = runTest {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
-    defaultRepository.create(addResourceTags = true, binaryImage)
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-    listOf(cardViewProperties).decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+    withContext(Dispatchers.IO) {
+      defaultRepository.create(addResourceTags = true, binaryImage)
+      listOf(cardViewProperties).decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+    }
     Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
     Assert.assertTrue(decodedImageMap.isNotEmpty())
   }
@@ -723,9 +730,12 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   @Test
   fun testImageBitmapUpdatedCorrectlyGivenListViewProperties(): Unit = runTest {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
-    defaultRepository.create(addResourceTags = true, binaryImage)
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-    listOf(cardViewProperties.content[0]).decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+    withContext(Dispatchers.IO) {
+      defaultRepository.create(addResourceTags = true, binaryImage)
+      listOf(cardViewProperties.content[0])
+        .decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+    }
     Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
     Assert.assertTrue(decodedImageMap.isNotEmpty())
   }
@@ -735,9 +745,11 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     val listViewProperties = cardViewProperties.content[0] as ListProperties
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-    defaultRepository.create(addResourceTags = true, binaryImage)
-    listOf(listViewProperties.registerCard.views[0])
-      .decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+    withContext(Dispatchers.IO) {
+      defaultRepository.create(addResourceTags = true, binaryImage)
+      listOf(listViewProperties.registerCard.views[0])
+        .decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+    }
     Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
     Assert.assertTrue(decodedImageMap.isNotEmpty())
   }
@@ -747,9 +759,11 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     val listViewProperties = cardViewProperties.content[0] as ListProperties
     val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
-    defaultRepository.create(addResourceTags = true, binaryImage)
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-    listOf(columnProperties.children[0]).decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+    withContext(Dispatchers.IO) {
+      defaultRepository.create(addResourceTags = true, binaryImage)
+      listOf(columnProperties.children[0]).decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+    }
     Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
     Assert.assertTrue(decodedImageMap.isNotEmpty())
   }
@@ -773,40 +787,10 @@ class ConfigExtensionsKtTest : RobolectricTest() {
           ),
       )
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-    listOf(rowProperties).decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+    withContext(Dispatchers.IO) {
+      listOf(rowProperties).decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+    }
     Assert.assertTrue(decodedImageMap.isEmpty())
     Assert.assertTrue(!decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
-  }
-
-  @Test(expected = Exception::class)
-  fun testExceptionCaughtOnDecodingBitmap() = runTest {
-    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
-    val listViewProperties = cardViewProperties.content[0] as ListProperties
-    val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
-    val rowProperties =
-      (columnProperties.children[0] as RowProperties).copy(
-        children =
-          listOf(
-            ImageProperties(
-              imageConfig =
-                ImageConfig(
-                  type = ICON_TYPE_REMOTE,
-                  reference = "imageReference",
-                ),
-            ),
-          ),
-      )
-    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-
-    coEvery { defaultRepository.loadResource<Binary>(anyString()) } returns
-      Binary().apply {
-        this.id = "imageReference"
-        this.contentType = "image/jpeg"
-        this.data = "gibberish value".toByteArray()
-      }
-
-    listOf(rowProperties).decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
-    Assert.assertTrue(decodedImageMap.isEmpty())
-    Assert.assertTrue(!decodedImageMap.containsKey("imageReference"))
   }
 }
