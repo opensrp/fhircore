@@ -166,7 +166,7 @@ constructor(
     context: Context,
     onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit,
   ) {
-    viewModelScope.launch(SupervisorJob()) {
+    viewModelScope.launch(dispatcherProvider.io() + SupervisorJob()) {
       val questionnaireResponseValid =
         validateQuestionnaireResponse(
           questionnaire = questionnaire,
@@ -672,7 +672,7 @@ constructor(
    * has an answer.
    */
   fun saveDraftQuestionnaire(questionnaireResponse: QuestionnaireResponse) {
-    viewModelScope.launch {
+    viewModelScope.launch(dispatcherProvider.io()) {
       val questionnaireHasAnswer =
         questionnaireResponse.item.any {
           it.answer.any { answerComponent -> answerComponent.hasValue() }
