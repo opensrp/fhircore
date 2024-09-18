@@ -50,10 +50,12 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -83,6 +85,24 @@ fun List<ActionConfig>.handleClickEvent(
     }
 
   onClickAction?.handleClickEvent(navController, resourceData, navMenu, context)
+}
+
+fun List<NavigationMenuConfig>.handleFabOptions(
+  navController: NavController,
+  resourceData: ResourceData? = null,
+  navMenu: NavigationMenuConfig? = null,
+  context: Context? = null,
+) {
+  (navController.context.getActivity())?.let { activity ->
+    RegisterBottomSheetFragment(
+      navigationMenuConfigs = this,
+      menuClickListener = {
+        it.actions?.handleClickEvent(navController, resourceData, navMenu, context)
+      },
+      title = navMenu?.display,
+    )
+      .run { show(activity.supportFragmentManager, RegisterBottomSheetFragment.TAG) }
+  }
 }
 
 fun ActionConfig.handleClickEvent(

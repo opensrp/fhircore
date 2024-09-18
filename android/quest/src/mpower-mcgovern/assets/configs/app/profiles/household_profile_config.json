@@ -181,62 +181,158 @@
         "type": "local",
         "reference": "ic_profile"
       },
-      "actions": [
+      "subRegisters": [
         {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "4234",
-            "title": "{{ add.member }}",
-            "resourceType": "Patient",
-            "groupResource": {
-              "groupIdentifier": "@{familyLogicalId}",
-              "memberResourceType": "Patient"
-            },
-            "planDefinitions": [
-              "4242"
-            ],
-            "snackBarMessage": {
-              "message": "Household member has been added",
-              "actionLabel": "",
-              "duration": "Short"
-            }
+          "id": "ActionButton1",
+          "visible": true,
+          "animate": false,
+          "display": "{{ add.member.other }}",
+          "menuIconConfig": {
+            "type": "local",
+            "reference": "ic_profile"
           },
-          "params": [
+          "actions": [
             {
-              "paramType": "PREPOPULATE",
-              "linkId": "ed77104e-c279-4030-ab20-8cd99ca99ca9",
-              "dataType": "INTEGER",
-              "key": "opensrpId",
-              "value": "@{humanReadableId}"
-            },
+              "trigger": "ON_CLICK",
+              "workflow": "LAUNCH_QUESTIONNAIRE",
+              "questionnaire": {
+                "id": "4234",
+                "title": "{{ add.member }}",
+                "resourceType": "Patient",
+                "groupResource": {
+                  "groupIdentifier": "@{familyLogicalId}",
+                  "memberResourceType": "Patient"
+                },
+                "planDefinitions": [
+                  "4242"
+                ],
+                "snackBarMessage": {
+                  "message": "Household member has been added",
+                  "actionLabel": "",
+                  "duration": "Short"
+                }
+              },
+              "params": [
+                {
+                  "paramType": "PREPOPULATE",
+                  "linkId": "ed77104e-c279-4030-ab20-8cd99ca99ca9",
+                  "dataType": "INTEGER",
+                  "key": "opensrpId",
+                  "value": "@{humanReadableId}"
+                },
+                {
+                  "paramType": "PREPOPULATE",
+                  "linkId": "toggle-is-family-head",
+                  "dataType": "INTEGER",
+                  "key": "isFamilyHeadExists",
+                  "value": "@{isFamilyHeadExists}"
+                },
+                {
+                  "paramType": "PREPOPULATE",
+                  "linkId": "2588ee71-9699-440d-8364-6ac7c1e63ccd",
+                  "dataType": "STRING",
+                  "key": "familyMemberId",
+                  "value": "@{familyMemberId}"
+                },
+                {
+                  "paramType": "PREPOPULATE",
+                  "linkId": "6f5d14d9-9e6e-47c9-9c62-00e76a3f767c",
+                  "dataType": "STRING",
+                  "key": "familySystemId",
+                  "value": "@{familyId}"
+                },
+                {
+                  "paramType": "PREPOPULATE",
+                  "linkId": "e7fddd5f-85fc-48a6-b267-d93409315f2f",
+                  "dataType": "STRING",
+                  "key": "familyHeadName",
+                  "value": "@{familyHeadName}"
+                },
+                {
+                  "paramType": "PREPOPULATE",
+                  "linkId": "64758eff-3f4c-491d-8cf6-307860b18850",
+                  "dataType": "STRING",
+                  "key": "otherMemberRegistration",
+                  "value": "@{otherMemberRegistration}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ActionButton2",
+          "visible": true,
+          "animate": false,
+          "display": "{{ add.member.child }}",
+          "menuIconConfig": {
+            "type": "local",
+            "reference": "ic_kids"
+          },
+          "actions": [
             {
-              "paramType": "PREPOPULATE",
-              "linkId": "toggle-is-family-head",
-              "dataType": "INTEGER",
-              "key": "isFamilyHeadExists",
-              "value": "@{isFamilyHeadExists}"
-            },
-            {
-              "paramType": "PREPOPULATE",
-              "linkId": "2588ee71-9699-440d-8364-6ac7c1e63ccd",
-              "dataType": "STRING",
-              "key": "familyMemberId",
-              "value": "@{familyMemberId}"
-            },
-            {
-              "paramType": "PREPOPULATE",
-              "linkId": "6f5d14d9-9e6e-47c9-9c62-00e76a3f767c",
-              "dataType": "STRING",
-              "key": "familySystemId",
-              "value": "@{familyId}"
-            },
-            {
-              "paramType": "PREPOPULATE",
-              "linkId": "e7fddd5f-85fc-48a6-b267-d93409315f2f",
-              "dataType": "STRING",
-              "key": "familyHeadName",
-              "value": "@{familyHeadName}"
+              "trigger": "ON_CLICK",
+              "workflow": "LAUNCH_QUESTIONNAIRE",
+              "questionnaire": {
+                "id": "4234",
+                "title": "{{ add.member }}",
+                "resourceType": "Patient",
+                "groupResource": {
+                  "groupIdentifier": "@{familyLogicalId}",
+                  "memberResourceType": "Patient"
+                },
+                "planDefinitions": [
+                  "4242"
+                ],
+                "snackBarMessage": {
+                  "message": "Household member has been added",
+                  "actionLabel": "",
+                  "duration": "Short"
+                }
+              },
+              "params": [
+                {
+                  "paramType": "PREPOPULATE",
+                  "linkId": "ed77104e-c279-4030-ab20-8cd99ca99ca9",
+                  "dataType": "INTEGER",
+                  "key": "opensrpId",
+                  "value": "@{humanReadableId}"
+                },
+                {
+                  "paramType": "PREPOPULATE",
+                  "linkId": "toggle-is-family-head",
+                  "dataType": "INTEGER",
+                  "key": "isFamilyHeadExists",
+                  "value": "@{isFamilyHeadExists}"
+                },
+                {
+                  "paramType": "PREPOPULATE",
+                  "linkId": "2588ee71-9699-440d-8364-6ac7c1e63ccd",
+                  "dataType": "STRING",
+                  "key": "familyMemberId",
+                  "value": "@{familyMemberId}"
+                },
+                {
+                  "paramType": "PREPOPULATE",
+                  "linkId": "6f5d14d9-9e6e-47c9-9c62-00e76a3f767c",
+                  "dataType": "STRING",
+                  "key": "familySystemId",
+                  "value": "@{familyId}"
+                },
+                {
+                  "paramType": "PREPOPULATE",
+                  "linkId": "e7fddd5f-85fc-48a6-b267-d93409315f2f",
+                  "dataType": "STRING",
+                  "key": "familyHeadName",
+                  "value": "@{familyHeadName}"
+                },
+                {
+                  "paramType": "PREPOPULATE",
+                  "linkId": "64758eff-3f4c-491d-8cf6-307860b18850",
+                  "dataType": "STRING",
+                  "key": "childMemberRegistration",
+                  "value": "@{childMemberRegistration}"
+                }
+              ]
             }
           ]
         }
@@ -294,6 +390,55 @@
       ]
     },
     {
+      "name": "familySerial",
+      "condition": "true",
+      "actions": [
+        "data.put('familySerial', fhirPath.extractValue(Group, \"Group.characteristic.where(code.coding.code='hh_serial').code.text\"))"
+      ]
+    },
+    {
+      "name": "familyMobile",
+      "condition": "true",
+      "actions": [
+        "data.put('familyMobile', fhirPath.extractValue(Group, \"Group.characteristic.where(code.coding.code='hh_phone').code.text\"))"
+      ]
+    },
+    {
+      "name": "familyMember",
+      "condition": "true",
+      "actions": [
+        "data.put('familyMember', fhirPath.extractValue(Group, \"Group.characteristic.where(code.coding.code='hh_member_count').code.text\"))"
+      ]
+    },
+    {
+      "name": "familyIncome",
+      "condition": "true",
+      "actions": [
+        "data.put('familyIncome', fhirPath.extractValue(Group, \"Group.characteristic.where(code.coding.code='224167002').code.text\"))"
+      ]
+    },
+    {
+      "name": "familyType",
+      "condition": "true",
+      "actions": [
+        "data.put('familyType', fhirPath.extractValue(Group, \"Group.characteristic.where(code.text='hh_type').code.coding.code\"))"
+      ]
+    },
+    {
+      "name": "familyHeadOccupation",
+      "condition": "true",
+      "actions": [
+        "data.put('familyHeadOccupation', fhirPath.extractValue(Group, \"Group.characteristic.where(code.text='head_occupation').code.coding.code\"))"
+      ]
+    },
+    {
+      "name": "familyHeadOccupationOther",
+      "condition": "true",
+      "actions": [
+        "data.put('familyHeadOccupationOther', fhirPath.extractValue(Group, \"Group.characteristic.where(code.coding.code='184104002').code.text\"))"
+      ]
+    },
+    {
       "name": "humanReadableId",
       "condition": "true",
       "actions": [
@@ -322,11 +467,32 @@
       ]
     },
     {
+      "name": "familyAdultMemberCount",
+      "condition": "true",
+      "actions": [
+        "data.put('familyAdultMemberCount', size(service.filterResources(Patient, \"Patient.birthDate < today() - 5 'years'\")))"
+      ]
+    },
+    {
+      "name": "childMemberRegistration",
+      "condition": "true",
+      "actions": [
+        "data.put('childMemberRegistration', true)"
+      ]
+    },
+    {
+      "name": "otherMemberRegistration",
+      "condition": "true",
+      "actions": [
+        "data.put('otherMemberRegistration', false)"
+      ]
+    },
+    {
       "name": "familyHeadName",
       "condition": "true",
       "priority": 2,
       "actions": [
-        "data.put('familyHeadName', size(Patient) > 0 ? null : data.get('familyName'))"
+        "data.put('familyHeadName', data.get('familyAdultMemberCount') > 0 ? null : data.get('familyName'))"
       ]
     },
     {
@@ -885,6 +1051,62 @@
                         "dataType": "STRING",
                         "key": "familyId",
                         "value": "@{familyId}"
+                      },
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "6598bf2d-bba4-4a8f-ced8-2579cb04aefb",
+                        "dataType": "STRING",
+                        "key": "familyType",
+                        "value": "@{familyType}"
+                      },
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "68d0a7b5-23bb-41cd-fce5-7ff26ef0a1c4",
+                        "dataType": "STRING",
+                        "key": "familyHeadOccupation",
+                        "value": "@{familyHeadOccupation}"
+                      },
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "b0da990f-0711-4082-8068-d39c5c42a583",
+                        "dataType": "STRING",
+                        "key": "familyMember",
+                        "value": "@{familyMember}"
+                      },
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "7baca7ef-08ca-4a81-c4ed-2dda0c9eafe8",
+                        "dataType": "STRING",
+                        "key": "familyIncome",
+                        "value": "@{familyIncome}"
+                      },
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "30c16801-3742-4631-888e-0732bd748d77",
+                        "dataType": "STRING",
+                        "key": "familySerial",
+                        "value": "@{familySerial}"
+                      },
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "aaafd263-5e5b-4b78-bbc6-e01be0eb72ec",
+                        "dataType": "STRING",
+                        "key": "familyName",
+                        "value": "@{familyName}"
+                      },
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "3193ad83-4864-419f-851f-4f5d82948bb8",
+                        "dataType": "STRING",
+                        "key": "familyMobile",
+                        "value": "@{familyMobile}"
+                      },
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "9ea9fc08-0545-42e9-80e0-dab3da021c35",
+                        "dataType": "STRING",
+                        "key": "familyHeadOccupationOther",
+                        "value": "@{familyHeadOccupationOther}"
                       }
                     ]
                   }

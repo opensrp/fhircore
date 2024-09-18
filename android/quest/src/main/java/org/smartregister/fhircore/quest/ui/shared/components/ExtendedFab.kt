@@ -42,6 +42,7 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import org.smartregister.fhircore.quest.util.extensions.handleFabOptions
 import org.smartregister.fhircore.quest.util.extensions.isScrollingUp
 
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
@@ -66,6 +67,12 @@ fun ExtendedFab(
     shape = CircleShape,
     onClick = {
       if (firstFabEnabled) {
+        firstFabAction.subRegisters.ifEmpty { null } ?.handleFabOptions(
+          navController = navController,
+          resourceData = resourceData,
+          navMenu = firstFabAction
+        )
+
         firstFabAction.actions?.handleClickEvent(
           navController = navController,
           resourceData = resourceData,
