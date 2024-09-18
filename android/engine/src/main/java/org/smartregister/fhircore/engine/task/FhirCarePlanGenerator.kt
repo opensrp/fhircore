@@ -405,7 +405,9 @@ constructor(
           end =
             if (durationExpression.isNotBlank() && offsetDate.hasValue()) {
               evaluateToDate(offsetDate, "\$this + $durationExpression")?.value
-            } else carePlan.period.end
+            } else {
+              carePlan.period.end
+            }
         }
         .also { taskPeriods.add(it) }
     }

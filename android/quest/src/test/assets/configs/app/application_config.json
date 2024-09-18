@@ -29,6 +29,54 @@
       "QuestionnaireResponse"
     ]
   },
+  "eventWorkflows": [
+    {
+      "eventType": "RESOURCE_CLOSURE",
+      "triggerConditions": [
+        {
+          "eventResourceId": "encounterToBeClosed",
+          "matchAll": false,
+          "conditionalFhirPathExpressions": [
+            "true"
+          ]
+        }
+      ],
+      "eventResources": [
+        {
+          "id": "encounterToBeClosed",
+          "resource": "Encounter",
+          "configRules": [],
+          "dataQueries": [
+            {
+              "paramName": "reason-code",
+              "filterCriteria": [
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://smartregister.org/",
+                    "code": "SVISIT"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "updateValues": [
+        {
+          "jsonPathExpression": "Encounter.status",
+          "value": "finished",
+          "resourceType": "Encounter"
+        }
+      ],
+      "resourceFilterExpression": {
+        "conditionalFhirPathExpressions": [
+          "Encounter.period.end < now()"
+        ],
+        "matchAll": true
+      }
+    }
+  ],
   "logGpsLocation": [
     "QUESTIONNAIRE"
   ]

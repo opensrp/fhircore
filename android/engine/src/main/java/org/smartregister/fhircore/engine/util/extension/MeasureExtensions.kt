@@ -92,7 +92,7 @@ fun MeasureReport.StratifierGroupComponent.findPercentage(
 ): String {
   return if (denominator == 0) {
     "0"
-  } else
+  } else {
     findPopulation(MeasurePopulationType.NUMERATOR)
       ?.count
       ?.toBigDecimal()
@@ -103,6 +103,7 @@ fun MeasureReport.StratifierGroupComponent.findPercentage(
         reportConfiguration?.roundingStrategy?.value ?: DEFAULT_ROUNDING_STRATEGY.value,
       )
       .toString()
+  }
 }
 
 val MeasureReport.StratifierGroupComponent.displayText

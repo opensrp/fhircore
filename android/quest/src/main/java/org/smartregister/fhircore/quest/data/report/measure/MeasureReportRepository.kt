@@ -56,7 +56,7 @@ constructor(
   override val fhirPathDataExtractor: FhirPathDataExtractor,
   override val parser: IParser,
   @ApplicationContext override val context: Context,
-  val dispatcherProvider: DispatcherProvider,
+  override val dispatcherProvider: DispatcherProvider,
 ) :
   DefaultRepository(
     fhirEngine = fhirEngine,
@@ -67,6 +67,7 @@ constructor(
     fhirPathDataExtractor = fhirPathDataExtractor,
     parser = parser,
     context = context,
+    dispatcherProvider = dispatcherProvider,
   ) {
 
   /**
