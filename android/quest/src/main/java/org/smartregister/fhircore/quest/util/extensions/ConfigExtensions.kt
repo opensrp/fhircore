@@ -30,6 +30,7 @@ import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import com.google.android.fhir.FhirEngine
+import kotlin.collections.set
 import org.hl7.fhir.r4.model.Binary
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
@@ -62,7 +63,6 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherFragment
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
-import kotlin.collections.set
 
 const val PRACTITIONER_ID = "practitionerId"
 

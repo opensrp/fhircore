@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,7 +29,13 @@ import org.smartregister.fhircore.geowidget.model.ServicePointType
 class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherProvider) :
   ViewModel() {
 
-  val features = MutableLiveData<List<GeoJsonFeature>>(mutableListOf())
+  private val _features = MutableLiveData<List<GeoJsonFeature>>(mutableListOf())
+  val features: LiveData<List<GeoJsonFeature>>
+    get() = _features
+
+  fun submitFeatures(geoJsonFeatures: List<GeoJsonFeature>) {
+    _features.postValue(geoJsonFeatures)
+  }
 
   fun getServicePointKeyToType(): Map<String, ServicePointType> {
     val map: MutableMap<String, ServicePointType> = HashMap()

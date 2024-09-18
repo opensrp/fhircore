@@ -76,99 +76,92 @@ class GeoWidgetFragment : Fragment() {
   internal var showCurrentLocationButton: Boolean = true
   internal var showPlaneSwitcherButton: Boolean = true
   internal var showAddLocationButton: Boolean = true
-  private lateinit var mapView: KujakuMapView
-  private lateinit var featureCollection: FeatureCollection
-  private var geoJsonSource: GeoJsonSource? = null
+  private var mapView: KujakuMapView? = null
+  private val mapFeatures = ArrayDeque<Feature>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?,
   ): View {
-    Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
-    val view = setupViews()
-    mapView.onCreate(savedInstanceState)
-    return view
-  }
-
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    geoWidgetViewModel.features.observe(viewLifecycleOwner) { result ->
-      zoomToLocationsOnMap(result.map { it.toFeature() })
-    }
-  }
-
-  override fun onStart() {
-    super.onStart()
-    mapView.onStart()
-  }
-
-  override fun onResume() {
-    super.onResume()
-    mapView.onResume()
-  }
-
-  override fun onPause() {
-    super.onPause()
-    mapView.onPause()
-  }
-
-  override fun onStop() {
-    super.onStop()
-    mapView.onStop()
-  }
-
-  override fun onDestroy() {
-    super.onDestroy()
-    mapView.onDestroy()
-  }
-
-  override fun onLowMemory() {
-    super.onLowMemory()
-    mapView.onLowMemory()
-  }
-
-  override fun onSaveInstanceState(outState: Bundle) {
-    super.onSaveInstanceState(outState)
-    mapView.onSaveInstanceState(outState)
-  }
-
-  private fun setupViews(): LinearLayout {
-    mapView = setUpMapView()
-    featureCollection =
-      FeatureCollection.fromFeatures(
-        geoWidgetViewModel.features.value?.map { it.toFeature() } ?: listOf(),
-      )
+    setUpMapView(savedInstanceState)
     return LinearLayout(requireContext()).apply {
       orientation = LinearLayout.VERTICAL
       addView(mapView)
     }
   }
 
-  private fun setUpMapView(): KujakuMapView {
-    return try {
-      KujakuMapView(requireActivity()).apply {
-        id = R.id.kujaku_widget
-        val builder = Style.Builder().fromUri(context.getString(R.string.style_map_fhir_core))
-        getMapAsync { mapboxMap ->
-          mapboxMap.setStyle(builder) { style ->
-            geoJsonSource = style.getSourceAs(context.getString(R.string.data_set_quest))
-            if (geoJsonSource != null) {
-              geoJsonSource!!.setGeoJson(featureCollection)
-            }
-            addIconsLayer(style)
-            addMapStyle(style)
-          }
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    geoWidgetViewModel.features.observe(viewLifecycleOwner) { result ->
+      if (result.isNotEmpty()) {
+        // Limit features to be displayed to 1000
+        if (mapFeatures.size <= MAP_FEATURES_LIMIT) {
+          mapFeatures.addAll(result.map { it.toFeature() })
         }
-
-        if (showAddLocationButton) {
-          setOnAddLocationListener(this)
-        }
-        setOnClickLocationListener(this)
+        zoomMapWithFeatures()
       }
-    } catch (e: MapboxConfigurationException) {
-      Timber.e(e)
-      mapView
     }
+  }
+
+  override fun onStart() {
+    super.onStart()
+    mapView?.onStart()
+  }
+
+  override fun onResume() {
+    super.onResume()
+    mapView?.onResume()
+  }
+
+  override fun onPause() {
+    super.onPause()
+    mapView?.onPause()
+  }
+
+  override fun onStop() {
+    super.onStop()
+    mapView?.onStop()
+  }
+
+  override fun onDestroy() {
+    super.onDestroy()
+    mapView?.onDestroy()
+  }
+
+  override fun onLowMemory() {
+    super.onLowMemory()
+    mapView?.onLowMemory()
+  }
+
+  override fun onSaveInstanceState(outState: Bundle) {
+    super.onSaveInstanceState(outState)
+    mapView?.onSaveInstanceState(outState)
+  }
+
+  private fun setUpMapView(savedInstanceState: Bundle?) {
+    Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
+    mapView =
+      try {
+        KujakuMapView(requireActivity()).apply {
+          id = R.id.kujaku_widget
+          val builder = Style.Builder().fromUri(context.getString(R.string.style_map_fhir_core))
+          getMapAsync { mapboxMap ->
+            mapboxMap.setStyle(builder) { style ->
+              addIconsLayer(style)
+              addMapStyle(style)
+            }
+          }
+
+          if (showAddLocationButton) {
+            setOnAddLocationListener(this)
+          }
+          setOnClickLocationListener(this)
+        }
+      } catch (mapboxConfigurationException: MapboxConfigurationException) {
+        Timber.e(mapboxConfigurationException)
+        null
+      }
+    mapView?.onCreate(savedInstanceState)
   }
 
   private fun addIconsLayer(mMapboxMapStyle: Style) {
@@ -270,7 +263,11 @@ class GeoWidgetFragment : Fragment() {
       mapLayers.forEach {
         when (it.layer) {
           MapLayer.STREET -> addBaseLayer(MapBoxSatelliteLayer(), it.active)
-          MapLayer.SATELLITE -> addBaseLayer(StreetsBaseLayer(requireContext()), it.active)
+          MapLayer.SATELLITE ->
+            addBaseLayer(
+              StreetsBaseLayer(requireContext()),
+              it.active,
+            )
           MapLayer.STREET_SATELLITE ->
             addBaseLayer(StreetSatelliteLayer(requireContext()), it.active)
         }
@@ -317,25 +314,28 @@ class GeoWidgetFragment : Fragment() {
     )
   }
 
-  private fun zoomToLocationsOnMap(features: List<Feature>) {
-    if (features.isEmpty()) return
-    featureCollection = FeatureCollection.fromFeatures(features)
+  private fun zoomMapWithFeatures() {
+    mapView?.getMapAsync { mapboxMap ->
+      val featureCollection = FeatureCollection.fromFeatures(mapFeatures.toList())
+      val locationPoints =
+        featureCollection
+          .features()
+          ?.asSequence()
+          ?.filter { it.geometry() is Point }
+          ?.map { it.geometry() as Point }
+          ?.toMutableList() ?: emptyList()
 
-    val locationPoints =
-      featureCollection
-        .features()
-        ?.asSequence()
-        ?.filter { it.geometry() is Point }
-        ?.map { it.geometry() as Point }
-        ?.toMutableList() ?: emptyList()
+      val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(locationPoints))
+      val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, 1000.0)
+      val bounds = LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0])
+      val finalCameraPosition = CameraUpdateFactory.newLatLngBounds(bounds, 50)
 
-    val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(locationPoints))
-    val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, 1000.0)
-    val bounds = LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0])
-    val finalCameraPosition = CameraUpdateFactory.newLatLngBounds(bounds, 50)
-
-    geoJsonSource?.setGeoJson(featureCollection)
-    mapView.getMapAsync { mapboxMap -> mapboxMap.easeCamera(finalCameraPosition) }
+      with(mapboxMap) {
+        (style?.getSourceAs(requireContext().getString(R.string.data_set_quest)) as GeoJsonSource?)
+          ?.apply { setGeoJson(featureCollection) }
+        easeCamera(finalCameraPosition)
+      }
+    }
   }
 
   class Builder {
@@ -392,6 +392,8 @@ class GeoWidgetFragment : Fragment() {
   }
 
   companion object {
+    const val MAP_FEATURES_LIMIT = 1000
+
     fun builder() = Builder()
   }
 }
