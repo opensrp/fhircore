@@ -15,35 +15,26 @@
  */
 
 package org.smartregister.fhircore.quest.pdf
+
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
 import com.google.android.fhir.search.Search
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.mockk
+import java.util.Date
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
-import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.yesterday
-import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.app.testDispatcher
-import org.smartregister.fhircore.quest.assertResourceEquals
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherViewModel
-import java.util.*
-import javax.inject.Inject
-import javax.inject.Provider
-import kotlin.time.Duration.Companion.seconds
 
 class PdfLauncherViewModelTest : RobolectricTest() {
 
@@ -55,40 +46,47 @@ class PdfLauncherViewModelTest : RobolectricTest() {
   fun setUp() {
     fhirEngine = mockk()
     defaultRepository =
-        DefaultRepository(
-          fhirEngine = fhirEngine,
-          dispatcherProvider = mockk(),
-          sharedPreferencesHelper = mockk(),
-          configurationRegistry = mockk(),
-          configService = mockk(),
-          configRulesExecutor = mockk(),
-          fhirPathDataExtractor = mockk(),
-          parser = mockk(),
-          context = mockk(),
-        )
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = mockk(),
+        sharedPreferencesHelper = mockk(),
+        configurationRegistry = mockk(),
+        configService = mockk(),
+        configRulesExecutor = mockk(),
+        fhirPathDataExtractor = mockk(),
+        parser = mockk(),
+        context = mockk(),
+      )
     viewModel = PdfLauncherViewModel(defaultRepository)
   }
 
   @Test
-  fun `testRetrieveQuestionnaireResponseReturnsLatestResponse`() = runTest {
+  fun testRetrieveQuestionnaireResponseReturnsLatestResponse() = runTest {
     val patient = Patient().apply { id = "p1" }
     val questionnaire = Questionnaire().apply { id = "q1" }
-    val olderQuestionnaireResponse = QuestionnaireResponse().apply {
-      id = "qr2"
-      meta.lastUpdated = yesterday()
-      subject = patient.asReference()
-      setQuestionnaire(questionnaire.asReference().reference)
-    }
-    val latestQuestionnaireResponse = QuestionnaireResponse().apply {
-      id = "qr1"
-      meta.lastUpdated = Date()
-      subject = patient.asReference()
-      setQuestionnaire(questionnaire.asReference().reference)
-    }
-    val questionnaireResponses = listOf(olderQuestionnaireResponse, latestQuestionnaireResponse).map { SearchResult(it, null, null) }
+    val olderQuestionnaireResponse =
+      QuestionnaireResponse().apply {
+        id = "qr2"
+        meta.lastUpdated = yesterday()
+        subject = patient.asReference()
+        setQuestionnaire(questionnaire.asReference().reference)
+      }
+    val latestQuestionnaireResponse =
+      QuestionnaireResponse().apply {
+        id = "qr1"
+        meta.lastUpdated = Date()
+        subject = patient.asReference()
+        setQuestionnaire(questionnaire.asReference().reference)
+      }
+    val questionnaireResponses =
+      listOf(olderQuestionnaireResponse, latestQuestionnaireResponse).map {
+        SearchResult(it, null, null)
+      }
 
-    coEvery { fhirEngine.search<QuestionnaireResponse>(any<Search>()) } returns questionnaireResponses
-    val result = viewModel.retrieveQuestionnaireResponse(questionnaire.id, patient.id, ResourceType.Patient)
+    coEvery { fhirEngine.search<QuestionnaireResponse>(any<Search>()) } returns
+      questionnaireResponses
+    val result =
+      viewModel.retrieveQuestionnaireResponse(questionnaire.id, patient.id, ResourceType.Patient)
 
     assertEquals(latestQuestionnaireResponse.id, result!!.id)
   }
