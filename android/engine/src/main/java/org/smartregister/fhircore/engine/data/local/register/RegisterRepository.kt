@@ -19,11 +19,14 @@ package org.smartregister.fhircore.engine.data.local.register
 import android.content.Context
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -39,6 +42,7 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationIds
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
@@ -93,29 +97,85 @@ constructor(
     fhirResourceConfig: FhirResourceConfig?,
     paramsMap: Map<String, String>?,
   ): Long {
-    val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
-    val fhirResource = fhirResourceConfig ?: registerConfiguration.fhirResource
-    val baseResourceConfig = fhirResource.baseResource
-    val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
-    val filterByRelatedEntityLocation = registerConfiguration.filterDataByRelatedEntityLocation
-    val search =
-      Search(baseResourceConfig.resource).apply {
-        applyConfiguredSortAndFilters(
-          resourceConfig = baseResourceConfig,
-          sortData = false,
-          filterActiveResources = registerConfiguration.activeResourceFilters,
-          configComputedRuleValues = configComputedRuleValues,
-        )
-        applyFilterByRelatedEntityLocationMetaTag(
-          baseResourceType = baseResourceConfig.resource,
-          filterByRelatedEntityLocation = filterByRelatedEntityLocation,
+    return withContext(dispatcherProvider.io()) {
+      val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
+      val fhirResource = fhirResourceConfig ?: registerConfiguration.fhirResource
+      val baseResourceConfig = fhirResource.baseResource
+      val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
+      val filterByRelatedEntityLocation = registerConfiguration.filterDataByRelatedEntityLocation
+      val filterActiveResources = registerConfiguration.activeResourceFilters
+      if (filterByRelatedEntityLocation) {
+        val syncLocationIds = context.retrieveRelatedEntitySyncLocationIds()
+        val locationIds =
+          syncLocationIds
+            .map { retrieveFlattenedSubLocations(it).map { subLocation -> subLocation.logicalId } }
+            .asSequence()
+            .flatten()
+            .toHashSet()
+        val countSearch =
+          Search(baseResourceConfig.resource).apply {
+            applyConfiguredSortAndFilters(
+              resourceConfig = baseResourceConfig,
+              sortData = false,
+              filterActiveResources = filterActiveResources,
+              configComputedRuleValues = configComputedRuleValues,
+            )
+          }
+        val totalCount = fhirEngine.count(countSearch)
+        var searchResultsCount = 0L
+        var pageNumber = 0
+        var count = 0
+        while (count < totalCount) {
+          val baseResourceSearch =
+            createSearch(
+              baseResourceConfig = baseResourceConfig,
+              filterActiveResources = filterActiveResources,
+              configComputedRuleValues = configComputedRuleValues,
+              currentPage = pageNumber,
+              count = COUNT,
+            )
+          searchResultsCount +=
+            fhirEngine
+              .search<Resource>(baseResourceSearch)
+              .asSequence()
+              .map { it.resource }
+              .filter { resource ->
+                when (resource.resourceType) {
+                  ResourceType.Location -> locationIds.contains(resource.logicalId)
+                  else ->
+                    resource.meta.tag.any {
+                      it.system ==
+                        context.getString(R.string.sync_strategy_related_entity_location_system) &&
+                        locationIds.contains(it.code)
+                    }
+                }
+              }
+              .count()
+              .toLong()
+          count += COUNT
+          pageNumber++
+        }
+        searchResultsCount
+      } else {
+        val search =
+          Search(baseResourceConfig.resource).apply {
+            applyConfiguredSortAndFilters(
+              resourceConfig = baseResourceConfig,
+              sortData = false,
+              filterActiveResources = registerConfiguration.activeResourceFilters,
+              configComputedRuleValues = configComputedRuleValues,
+            )
+          }
+        search.count(
+          onFailure = {
+            Timber.e(
+              it,
+              "Error counting register data for register id: ${registerConfiguration.id}",
+            )
+          },
         )
       }
-    return search.count(
-      onFailure = {
-        Timber.e(it, "Error counting register data for register id: ${registerConfiguration.id}")
-      },
-    )
+    }
   }
 
   override suspend fun loadProfileData(
@@ -145,9 +205,8 @@ constructor(
 
       val retrievedRelatedResources =
         retrieveRelatedResources(
-          resources = listOf(baseResource),
+          resource = baseResource,
           relatedResourcesConfigs = resourceConfig.relatedResources,
-          relatedResourceWrapper = RelatedResourceWrapper(),
           configComputedRuleValues = configComputedRuleValues,
         )
 

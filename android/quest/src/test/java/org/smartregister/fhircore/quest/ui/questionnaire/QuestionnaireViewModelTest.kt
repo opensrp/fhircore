@@ -1221,10 +1221,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testSearchLatestQuestionnaireResponseShouldReturnLatestQuestionnaireResponse() =
     runTest(timeout = 90.seconds) {
       Assert.assertNull(
-        questionnaireViewModel.searchLatestQuestionnaireResponse(
+        questionnaireViewModel.searchQuestionnaireResponse(
           resourceId = patient.logicalId,
           resourceType = ResourceType.Patient,
           questionnaireId = questionnaireConfig.id,
+          encounterId = null,
         ),
       )
 
@@ -1252,10 +1253,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
 
       val latestQuestionnaireResponse =
-        questionnaireViewModel.searchLatestQuestionnaireResponse(
+        questionnaireViewModel.searchQuestionnaireResponse(
           resourceId = patient.logicalId,
           resourceType = ResourceType.Patient,
           questionnaireId = questionnaireConfig.id,
+          encounterId = null,
         )
       Assert.assertNotNull(latestQuestionnaireResponse)
       Assert.assertEquals("qr1", latestQuestionnaireResponse?.id)
@@ -1417,10 +1419,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
 
     coEvery {
-      questionnaireViewModel.searchLatestQuestionnaireResponse(
-        patient.logicalId,
-        ResourceType.Patient,
-        questionnaireConfig.id,
+      questionnaireViewModel.searchQuestionnaireResponse(
+        resourceId = patient.logicalId,
+        resourceType = ResourceType.Patient,
+        questionnaireId = questionnaireConfig.id,
+        encounterId = null,
       )
     } returns previousQuestionnaireResponse
 
@@ -1449,7 +1452,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       context = context,
     )
 
-    // The Observation ID for the extracted Obs should be the same as previousObs'Id
+    // The Observation ID for the extracted Obs should be the same as previous Obs Id
     Assert.assertTrue(questionnaireResponse.contained.firstOrNull() is ListResource)
     val listResource = questionnaireResponse.contained.firstOrNull() as ListResource
     val observationReference =

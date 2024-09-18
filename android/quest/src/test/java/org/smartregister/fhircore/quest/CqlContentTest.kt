@@ -220,7 +220,9 @@ class CqlContentTest : RobolectricTest() {
         it.name to
           if (it.hasResource()) {
             it.resource.encodeResourceToString()
-          } else it.valueToString()
+          } else {
+            it.valueToString()
+          }
       }
 
     val expectedResource = resource.parseSampleResourceFromFile().convertToString(true)

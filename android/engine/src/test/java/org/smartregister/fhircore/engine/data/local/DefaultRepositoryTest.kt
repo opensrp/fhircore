@@ -56,12 +56,14 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Procedure
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -80,6 +82,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.event.EventTriggerCondition
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.configuration.event.UpdateWorkflowValueConfig
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
@@ -885,6 +888,90 @@ class DefaultRepositoryTest : RobolectricTest() {
     )
 
     coVerify(exactly = 0) { fhirEngine.update(any()) }
+  }
+
+  @Test
+  fun testNonCareplanRelatedResourcesUpdatedCorrectlyAndWithNoSpecifiedBaseResource() = runTest {
+    val encounter =
+      Encounter().apply {
+        id = "test-Encounter"
+        period = Period().apply { start = Date().plusDays(-2) }
+        status = Encounter.EncounterStatus.INPROGRESS
+        type =
+          listOf(
+            CodeableConcept().apply {
+              coding =
+                listOf(
+                  Coding().apply {
+                    system = "http://smartregister.org/"
+                    code = "SVISIT"
+                    display = "Service Point Visit"
+                  },
+                )
+              text = "Service Point Visit"
+            },
+          )
+      }
+    val eventWorkflow =
+      EventWorkflow(
+        triggerConditions =
+          listOf(
+            EventTriggerCondition(
+              eventResourceId = "encounterToBeClosed",
+              matchAll = false,
+              conditionalFhirPathExpressions =
+                listOf(
+                  "true",
+                ),
+            ),
+          ),
+        eventResources =
+          listOf(
+            ResourceConfig(
+              id = "encounterToBeClosed",
+              resource = ResourceType.Encounter,
+              configRules = listOf(),
+              dataQueries =
+                listOf(
+                  DataQuery(
+                    paramName = "reason-code",
+                    filterCriteria =
+                      listOf(
+                        FilterCriterionConfig.TokenFilterCriterionConfig(
+                          dataType = Enumerations.DataType.CODEABLECONCEPT,
+                          value = Code(system = "http://smartregister.org/", code = "SVISIT"),
+                        ),
+                      ),
+                  ),
+                ),
+            ),
+          ),
+        updateValues =
+          listOf(
+            UpdateWorkflowValueConfig(
+              jsonPathExpression = "Encounter.status",
+              value = JsonPrimitive("finished"),
+              resourceType = ResourceType.Encounter,
+            ),
+          ),
+        resourceFilterExpressions =
+          listOf(
+            ResourceFilterExpression(
+              conditionalFhirPathExpressions = listOf("Encounter.period.end < now()"),
+              matchAll = true,
+            ),
+          ),
+      )
+    fhirEngine.create(encounter)
+    defaultRepository.updateResourcesRecursively(
+      resourceConfig = eventWorkflow.eventResources[0],
+      eventWorkflow = eventWorkflow,
+    )
+    val resourceSlot = slot<Encounter>()
+    val captured = resourceSlot.captured
+    coVerify { fhirEngine.update(capture(resourceSlot)) }
+    Assert.assertEquals("test-Encounter", captured.id)
+    Assert.assertEquals(Encounter.EncounterStatus.FINISHED, captured.status)
   }
 
   @Test

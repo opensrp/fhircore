@@ -26,7 +26,6 @@ import com.google.android.fhir.get
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.Date
-import java.util.LinkedList
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.abs
@@ -436,7 +435,7 @@ fun ImplementationGuide.retrieveImplementationGuideDefinitionResources():
  */
 fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent> {
   val sections = mutableListOf<Composition.SectionComponent>()
-  val sectionsQueue = LinkedList<Composition.SectionComponent>()
+  val sectionsQueue = ArrayDeque<Composition.SectionComponent>()
   this.section.forEach {
     if (!it.section.isNullOrEmpty()) {
       it.section.forEach { sectionComponent -> sectionsQueue.addLast(sectionComponent) }

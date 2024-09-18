@@ -60,7 +60,10 @@ class FhirEngineExtensionKtTest {
   fun test_search_time_searches_sequentially_and_short_running_query_waits() {
     val fetchedResources = mutableListOf<Resource>()
     runBlocking {
-      launch { fhirEngine.search<Patient> {}.map { it.resource } }
+      launch {
+        val patients = fhirEngine.search<Patient> {}.map { it.resource }
+        fetchedResources += patients
+      }
 
       launch {
         val questionnaires = fhirEngine.search<Questionnaire> {}.map { it.resource }
