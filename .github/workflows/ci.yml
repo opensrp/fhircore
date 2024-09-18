@@ -106,7 +106,7 @@ jobs:
 
 
       - name: Upload Engine module test coverage report to Codecov
-        if: matrix.api-level == 30 # Only upload coverage on API level 30
+        if: matrix.api-level == 34 # Only upload coverage on API level 34
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
@@ -308,6 +308,6 @@ jobs:
           path: android/quest/build/reports
 
       - name: Upload Quest module test coverage report to Codecov
-        if: matrix.api-level == 30 # Only upload coverage on API level 30
+        if: matrix.api-level == 34 # Only upload coverage on API level 34
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
