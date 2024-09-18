@@ -20,6 +20,8 @@
         android:theme="@style/AppTheme.NoActionBar"
         android:usesCleartextTraffic="false"
         android:windowSoftInputMode="adjustResize"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         tools:ignore="UnusedAttribute,LockedOrientationActivity"
         tools:replace="android:theme">
         <profileable
