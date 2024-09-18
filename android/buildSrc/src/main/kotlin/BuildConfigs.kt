@@ -2,7 +2,7 @@ object BuildConfigs {
     const val minSdk = 26
     const val compileSdk = 34
     const val targetSdk = 34
-    const val versionCode = 11
+    const val versionCode = 12
     const val versionName = "2.0.0"
     const val applicationId = "org.smartregister.opensrp"
     const val jvmToolchain = 17
