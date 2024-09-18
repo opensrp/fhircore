@@ -107,7 +107,6 @@ constructor(
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
   private val fhirContext = FhirContext.forR4Cached()
   private val authConfiguration = configService.provideAuthConfiguration()
-  private val jsonParser = fhirContext.newJsonParser()
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -633,7 +632,7 @@ constructor(
       )
       .apply {
         this.parentFile?.mkdirs()
-        writeText(jsonParser.encodeResourceToString(resource))
+        writeText(fhirContext.newJsonParser().encodeResourceToString(resource))
       }
   }
 

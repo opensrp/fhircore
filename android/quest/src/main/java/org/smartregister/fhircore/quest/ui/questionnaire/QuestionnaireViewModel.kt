@@ -118,7 +118,6 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val knowledgeManager: KnowledgeManager,
 ) : ViewModel() {
-  private val parser = FhirContext.forR4Cached().newJsonParser()
 
   private val authenticatedOrganizationIds by lazy {
     sharedPreferencesHelper.read<List<String>>(ResourceType.Organization.name)
@@ -832,7 +831,9 @@ constructor(
   }
 
   private fun getStringRepresentation(base: Base): String =
-    if (base.isResource) parser.encodeResourceToString(base as Resource) else base.toString()
+    if (base.isResource) {
+      FhirContext.forR4Cached().newJsonParser().encodeResourceToString(base as Resource)
+    } else base.toString()
 
   /**
    * This function generates CarePlans for the [QuestionnaireResponse.subject] using the configured
