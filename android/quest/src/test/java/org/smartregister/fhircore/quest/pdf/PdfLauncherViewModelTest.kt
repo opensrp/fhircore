@@ -1,0 +1,95 @@
+/*
+ * Copyright 2021-2024 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.smartregister.fhircore.quest.pdf
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
+import com.google.android.fhir.search.Search
+import io.mockk.*
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
+import org.junit.Assert.*
+import org.junit.Before
+import org.junit.Test
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.yesterday
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.app.testDispatcher
+import org.smartregister.fhircore.quest.assertResourceEquals
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherViewModel
+import java.util.*
+import javax.inject.Inject
+import javax.inject.Provider
+import kotlin.time.Duration.Companion.seconds
+
+class PdfLauncherViewModelTest : RobolectricTest() {
+
+  private lateinit var fhirEngine: FhirEngine
+  private lateinit var defaultRepository: DefaultRepository
+  private lateinit var viewModel: PdfLauncherViewModel
+
+  @Before
+  fun setUp() {
+    fhirEngine = mockk()
+    defaultRepository =
+        DefaultRepository(
+          fhirEngine = fhirEngine,
+          dispatcherProvider = mockk(),
+          sharedPreferencesHelper = mockk(),
+          configurationRegistry = mockk(),
+          configService = mockk(),
+          configRulesExecutor = mockk(),
+          fhirPathDataExtractor = mockk(),
+          parser = mockk(),
+          context = mockk(),
+        )
+    viewModel = PdfLauncherViewModel(defaultRepository)
+  }
+
+  @Test
+  fun `testRetrieveQuestionnaireResponseReturnsLatestResponse`() = runTest {
+    val patient = Patient().apply { id = "p1" }
+    val questionnaire = Questionnaire().apply { id = "q1" }
+    val olderQuestionnaireResponse = QuestionnaireResponse().apply {
+      id = "qr2"
+      meta.lastUpdated = yesterday()
+      subject = patient.asReference()
+      setQuestionnaire(questionnaire.asReference().reference)
+    }
+    val latestQuestionnaireResponse = QuestionnaireResponse().apply {
+      id = "qr1"
+      meta.lastUpdated = Date()
+      subject = patient.asReference()
+      setQuestionnaire(questionnaire.asReference().reference)
+    }
+    val questionnaireResponses = listOf(olderQuestionnaireResponse, latestQuestionnaireResponse).map { SearchResult(it, null, null) }
+
+    coEvery { fhirEngine.search<QuestionnaireResponse>(any<Search>()) } returns questionnaireResponses
+    val result = viewModel.retrieveQuestionnaireResponse(questionnaire.id, patient.id, ResourceType.Patient)
+
+    assertEquals(latestQuestionnaireResponse.id, result!!.id)
+  }
+}
