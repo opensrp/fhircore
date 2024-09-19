@@ -23,11 +23,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonPrimitive
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.IdType
@@ -52,6 +52,7 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+import javax.inject.Inject
 
 @HiltViewModel
 class GeoWidgetLauncherViewModel
@@ -77,12 +78,13 @@ constructor(
   val geoJsonFeatures: MutableStateFlow<List<GeoJsonFeature>> = MutableStateFlow(emptyList())
 
   fun retrieveLocations(geoWidgetConfig: GeoWidgetConfiguration, searchText: String?) {
-    viewModelScope.launch(dispatcherProvider.io()) {
+    viewModelScope.launch {
       val totalCount =
-        defaultRepository.countResources(
-          filterByRelatedEntityLocation = geoWidgetConfig.filterDataByRelatedEntityLocation == true,
-          baseResourceConfig = geoWidgetConfig.resourceConfig.baseResource,
-          filterActiveResources =
+        withContext(dispatcherProvider.io()) {
+          defaultRepository.countResources(
+            filterByRelatedEntityLocation = geoWidgetConfig.filterDataByRelatedEntityLocation == true,
+            baseResourceConfig = geoWidgetConfig.resourceConfig.baseResource,
+            filterActiveResources =
             listOf(
               ActiveResourceFilterConfig(
                 resourceType = ResourceType.Patient,
@@ -93,8 +95,9 @@ constructor(
                 active = true,
               ),
             ),
-          configComputedRuleValues = emptyMap(),
-        )
+            configComputedRuleValues = emptyMap(),
+          )
+        }
       if (totalCount == 0L) {
         showNoLocationDialog(geoWidgetConfig)
         return@launch
