@@ -31,7 +31,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
-import org.smartregister.fhircore.quest.ui.questionnaire.ContentCache
+import org.smartregister.fhircore.engine.datastore.ContentCache
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ContentCacheTest {
