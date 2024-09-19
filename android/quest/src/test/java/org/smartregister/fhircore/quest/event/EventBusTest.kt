@@ -19,9 +19,6 @@ package org.smartregister.fhircore.quest.event
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import javax.inject.Inject
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.runTest
@@ -32,6 +29,9 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import javax.inject.Inject
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @HiltAndroidTest
 class EventBusTest : RobolectricTest() {
