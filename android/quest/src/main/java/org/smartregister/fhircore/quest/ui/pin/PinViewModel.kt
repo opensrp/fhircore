@@ -16,7 +16,9 @@
 
 package org.smartregister.fhircore.quest.ui.pin
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
@@ -37,8 +39,11 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.clearPasswordInMemory
+import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.toPasswordHash
 
+@Suppress("UNUSED_EXPRESSION")
 @HiltViewModel
 class PinViewModel
 @Inject
@@ -78,10 +83,11 @@ constructor(
       PinUiState(message = "", appName = "", setupPin = false, pinLength = 0, showLogo = false),
     )
 
-  private val applicationConfiguration: ApplicationConfiguration by lazy {
+  val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
+  @SuppressLint("StringFormatInvalid")
   fun setPinUiState(setupPin: Boolean = false, context: Context) {
     val username = secureSharedPreference.retrieveSessionUsername()
     pinUiState.value =
@@ -138,9 +144,14 @@ constructor(
     }
   }
 
-  fun forgotPin() {
-    // TODO use valid supervisor (Practitioner) telephone number
-    _launchDialPad.value = "tel:####"
+  fun forgotPin(context: Context) {
+    val formattedNumber =
+      applicationConfiguration.loginConfig.supervisorContactNumber.formatPhoneNumber(context)
+    if (!formattedNumber.isNullOrBlank()) {
+      _launchDialPad.value = formattedNumber
+    } else {
+      context.showToast(context.getString(R.string.missing_supervisor_contact), Toast.LENGTH_LONG)
+    }
   }
 
   fun pinLogin(enteredPin: CharArray, callback: (Boolean) -> Unit) {

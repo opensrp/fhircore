@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.quest.ui.login
 
+import android.content.Context
+import androidx.lifecycle.Observer
+import androidx.test.core.app.ApplicationProvider
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
@@ -53,6 +56,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
@@ -65,6 +69,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -617,8 +622,50 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Test
   fun testForgotPasswordLoadsContact() {
-    loginViewModel.forgotPassword()
-    Assert.assertEquals("tel:0123456789", loginViewModel.launchDialPad.value)
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val validContactNumber = "1234567890"
+    configurationRegistry.configCacheMap[ConfigType.Application.name] =
+      loginViewModel.applicationConfiguration.copy(
+        loginConfig =
+          loginViewModel.applicationConfiguration.loginConfig.copy(
+            supervisorContactNumber = validContactNumber,
+          ),
+      )
+    val expectedFormattedNumber = validContactNumber.formatPhoneNumber(context)
+    val dialPadUriSlot = slot<String?>()
+    val launchDialPadObserver = Observer<String?> { dialPadUriSlot.captured = it }
+
+    loginViewModel.launchDialPad.observeForever(launchDialPadObserver)
+
+    try {
+      loginViewModel.forgotPassword(context)
+      Assert.assertEquals(expectedFormattedNumber, dialPadUriSlot.captured)
+    } finally {
+      loginViewModel.launchDialPad.removeObserver(launchDialPadObserver)
+    }
+  }
+
+  @Test
+  fun testForgotPasswordWithValidContactNumber() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val validContactNumber = "1234567890"
+    configurationRegistry.configCacheMap[ConfigType.Application.name] =
+      loginViewModel.applicationConfiguration.copy(
+        loginConfig =
+          loginViewModel.applicationConfiguration.loginConfig.copy(
+            supervisorContactNumber = validContactNumber,
+          ),
+      )
+    val expectedFormattedNumber = validContactNumber.formatPhoneNumber(context)
+
+    val launchDialPadObserver = slot<String?>()
+    loginViewModel.launchDialPad.observeForever { launchDialPadObserver.captured = it }
+
+    loginViewModel.forgotPassword(context)
+
+    Assert.assertEquals(expectedFormattedNumber, launchDialPadObserver.captured)
+
+    loginViewModel.launchDialPad.removeObserver { launchDialPadObserver.captured = it }
   }
 
   @Test

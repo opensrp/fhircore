@@ -53,7 +53,13 @@ open class LoginActivity : BaseMultiLanguageActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     this.applyWindowInsetListener()
-
+    loginViewModel.launchDialPad.observe(
+      this,
+    ) { phone ->
+      if (!phone.isNullOrBlank()) {
+        startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:$phone") })
+      }
+    }
     // Cancel sync background job to get new auth token; login required, refresh token expired
     val cancelBackgroundSync =
       intent.extras?.getBoolean(TokenAuthenticator.CANCEL_BACKGROUND_SYNC, false) ?: false
@@ -87,7 +93,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
           } else loginActivity.navigateToHome()
         }
       }
-      launchDialPad.observe(loginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
+      launchDialPad.observe(loginActivity) { if (!it.isNullOrBlank()) launchDialPad(it) }
     }
   }
 
@@ -126,7 +132,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  private fun launchDialPad(phone: String) {
-    startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
+  fun launchDialPad(phone: String) {
+    startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:$phone") })
   }
 }

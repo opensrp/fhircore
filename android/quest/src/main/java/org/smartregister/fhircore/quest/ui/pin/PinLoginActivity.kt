@@ -68,7 +68,11 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
         if (it) pinLoginActivity.navigateToHome()
         finish()
       }
-      launchDialPad.observe(pinLoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
+      launchDialPad.observe(pinLoginActivity) { phone ->
+        if (!phone.isNullOrBlank()) {
+          startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:$phone") })
+        }
+      }
       navigateToLogin.observe(pinLoginActivity) {
         if (it) pinLoginActivity.launchActivityWithNoBackStackHistory<LoginActivity>()
         finish()
@@ -98,10 +102,6 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
         }
       }
     }
-  }
-
-  private fun launchDialPad(phone: String) {
-    startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
   }
 
   companion object {
