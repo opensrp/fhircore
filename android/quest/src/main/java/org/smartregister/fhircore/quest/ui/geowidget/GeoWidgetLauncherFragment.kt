@@ -228,7 +228,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    geoWidgetLauncherViewModel.noLocationFoundDialog.observe(requireActivity()) { show ->
+    geoWidgetLauncherViewModel.noLocationFoundDialog.observe(viewLifecycleOwner) { show ->
       if (show) {
         AlertDialogue.showAlert(
           context = requireContext(),
@@ -246,10 +246,6 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
           neutralButtonListener = {},
         )
       }
-    }
-
-    lifecycleScope.launch(dispatcherProvider.io()) {
-      geoWidgetLauncherViewModel.geoJsonFeatures.collect { geoWidgetViewModel.submitFeatures(it) }
     }
 
     setOnQuestionnaireSubmissionListener { geoWidgetViewModel.submitFeatures(listOf(it)) }
@@ -311,6 +307,10 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         .showCurrentLocationButtonVisibility(geoWidgetConfiguration.showLocation)
         .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.showPlaneSwitcher)
         .build()
+
+    lifecycleScope.launch {
+      geoWidgetLauncherViewModel.geoJsonFeatures.collect { geoWidgetViewModel.submitFeatures(it) }
+    }
   }
 
   private fun setOnQuestionnaireSubmissionListener(emitFeature: (GeoJsonFeature) -> Unit) {
