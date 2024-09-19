@@ -163,7 +163,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
-
     // Write practitioner and organization to shared preferences
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_ID.name,
@@ -1841,6 +1840,92 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
   @Test
+  fun testThatPopulateQuestionnaireSetInitialDefaultValueButExcludesFieldFromResponse() =
+    runTest(timeout = 90.seconds) {
+      val thisQuestionnaireConfig =
+        questionnaireConfig.copy(
+          resourceType = ResourceType.Patient,
+          resourceIdentifier = patient.logicalId,
+          type = QuestionnaireType.EDIT.name,
+          linkIds =
+            listOf(
+              LinkIdConfig("dateToday", LinkIdType.PREPOPULATION_EXCLUSION),
+            ),
+        )
+      val questionnaireViewModelInstance =
+        QuestionnaireViewModel(
+          defaultRepository = defaultRepository,
+          dispatcherProvider = defaultRepository.dispatcherProvider,
+          fhirCarePlanGenerator = fhirCarePlanGenerator,
+          resourceDataRulesExecutor = resourceDataRulesExecutor,
+          transformSupportServices = mockk(),
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          fhirOperator = fhirOperator,
+          fhirValidatorProvider = fhirValidatorProvider,
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          configurationRegistry = configurationRegistry,
+        )
+      val questionnaireWithDefaultDate =
+        Questionnaire().apply {
+          id = thisQuestionnaireConfig.id
+          addItem(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "dateToday"
+              type = Questionnaire.QuestionnaireItemType.DATE
+              addExtension(
+                Extension(
+                  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  Expression().apply {
+                    language = "text/fhirpath"
+                    expression = "today()"
+                  },
+                ),
+              )
+            },
+          )
+        }
+
+      val questionnaireResponse =
+        QuestionnaireResponse().apply {
+          addItem(
+            QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+              linkId = "dateToday"
+              addAnswer(
+                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                  value = DateType(Date())
+                },
+              )
+            },
+          )
+          setQuestionnaire(
+            thisQuestionnaireConfig.id.asReference(ResourceType.Questionnaire).reference,
+          )
+        }
+
+      coEvery {
+        fhirEngine.get(
+          thisQuestionnaireConfig.resourceType!!,
+          thisQuestionnaireConfig.resourceIdentifier!!,
+        )
+      } returns patient
+
+      coEvery { fhirEngine.search<QuestionnaireResponse>(any<Search>()) } returns
+        listOf(
+          SearchResult(questionnaireResponse, included = null, revIncluded = null),
+        )
+
+      val (result, _) =
+        questionnaireViewModelInstance.populateQuestionnaire(
+          questionnaire = questionnaireWithDefaultDate,
+          questionnaireConfig = thisQuestionnaireConfig,
+          actionParameters = emptyList(),
+        )
+
+      Assert.assertNotNull(result?.item)
+      Assert.assertTrue(result!!.item.isEmpty())
+    }
+
+  @Test
   fun testThatPopulateQuestionnaireReturnsQuestionnaireResponseWithUnAnsweredRemoved() = runTest {
     val questionnaireViewModelInstance =
       QuestionnaireViewModel(
@@ -1946,5 +2031,45 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
     Assert.assertNotNull(result.first)
     Assert.assertTrue(result.first!!.find("linkid-1") == null)
+  }
+
+  @Test
+  fun testExcludeNestedItemFromQuestionnairePrepopulation() {
+    val item1 = QuestionnaireResponse.QuestionnaireResponseItemComponent().apply { linkId = "1" }
+    val item2 = QuestionnaireResponse.QuestionnaireResponseItemComponent().apply { linkId = "2" }
+    val item3 =
+      QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+        linkId = "3"
+        item =
+          mutableListOf(
+            QuestionnaireResponse.QuestionnaireResponseItemComponent().apply { linkId = "3.1" },
+            QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+              linkId = "3.2"
+              item =
+                mutableListOf(
+                  QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+                    linkId = "3.2.1"
+                  },
+                  QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+                    linkId = "3.2.2"
+                  },
+                )
+            },
+          )
+      }
+
+    val items = mutableListOf(item1, item2, item3)
+    val exclusionMap = mapOf("2" to true, "3.1" to true, "3.2.2" to true)
+    val filteredItems = questionnaireViewModel.excludePrepopulationFields(items, exclusionMap)
+    Assert.assertEquals(2, filteredItems.size)
+    Assert.assertEquals("1", filteredItems.first().linkId)
+    val itemThree = filteredItems.last()
+    Assert.assertEquals("3", itemThree.linkId)
+    Assert.assertEquals(1, itemThree.item.size)
+    val itemThreePointTwo = itemThree.item.first()
+    Assert.assertEquals("3.2", itemThreePointTwo.linkId)
+    Assert.assertEquals(1, itemThreePointTwo.item.size)
+    val itemThreePointTwoOne = itemThreePointTwo.item.first()
+    Assert.assertEquals("3.2.1", itemThreePointTwoOne.linkId)
   }
 }
