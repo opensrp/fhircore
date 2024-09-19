@@ -600,7 +600,7 @@ constructor(
         relatedResourceWrapper.relatedResourceMap
           .getOrPut(id) { mutableListOf() }
           .apply { addAll(resources.distinctBy { it.logicalId }) }
-      resources.chunked(COUNT) { item ->
+      resources.chunked(DEFAULT_BATCH_SIZE) { item ->
         with(resourceConfigs?.relatedResources) {
           if (!this.isNullOrEmpty()) {
             relatedResourcesQueue.addLast(Pair(item, this))
@@ -898,6 +898,81 @@ constructor(
     }
   }
 
+  suspend fun countResources(
+    filterByRelatedEntityLocation: Boolean,
+    baseResourceConfig: ResourceConfig,
+    filterActiveResources: List<ActiveResourceFilterConfig>,
+    configComputedRuleValues: Map<String, Any>,
+  ) =
+    if (filterByRelatedEntityLocation) {
+      val syncLocationIds = context.retrieveRelatedEntitySyncLocationIds()
+      val locationIds =
+        syncLocationIds
+          .map { retrieveFlattenedSubLocations(it).map { subLocation -> subLocation.logicalId } }
+          .asSequence()
+          .flatten()
+          .toHashSet()
+      val countSearch =
+        Search(baseResourceConfig.resource).apply {
+          applyConfiguredSortAndFilters(
+            resourceConfig = baseResourceConfig,
+            sortData = false,
+            filterActiveResources = filterActiveResources,
+            configComputedRuleValues = configComputedRuleValues,
+          )
+        }
+      val totalCount = fhirEngine.count(countSearch)
+      var searchResultsCount = 0L
+      var pageNumber = 0
+      var count = 0
+      while (count < totalCount) {
+        val baseResourceSearch =
+          createSearch(
+            baseResourceConfig = baseResourceConfig,
+            filterActiveResources = filterActiveResources,
+            configComputedRuleValues = configComputedRuleValues,
+            currentPage = pageNumber,
+            count = DEFAULT_BATCH_SIZE,
+          )
+        searchResultsCount +=
+          fhirEngine
+            .search<Resource>(baseResourceSearch)
+            .asSequence()
+            .map { it.resource }
+            .filter { resource ->
+              when (resource.resourceType) {
+                ResourceType.Location -> locationIds.contains(resource.logicalId)
+                else ->
+                  resource.meta.tag.any {
+                    it.system ==
+                      context.getString(R.string.sync_strategy_related_entity_location_system) &&
+                      locationIds.contains(it.code)
+                  }
+              }
+            }
+            .count()
+            .toLong()
+        count += DEFAULT_BATCH_SIZE
+        pageNumber++
+      }
+      searchResultsCount
+    } else {
+      val search =
+        Search(baseResourceConfig.resource).apply {
+          applyConfiguredSortAndFilters(
+            resourceConfig = baseResourceConfig,
+            sortData = false,
+            filterActiveResources = filterActiveResources,
+            configComputedRuleValues = configComputedRuleValues,
+          )
+        }
+      search.count(
+        onFailure = {
+          Timber.e(it, "Error counting resources ${baseResourceConfig.resource.name}")
+        },
+      )
+    }
+
   suspend fun searchResourcesRecursively(
     filterByRelatedEntityLocationMetaTag: Boolean,
     filterActiveResources: List<ActiveResourceFilterConfig>?,
@@ -939,7 +1014,7 @@ constructor(
               filterActiveResources = filterActiveResources,
               configComputedRuleValues = configComputedRuleValues,
               currentPage = pageNumber,
-              count = COUNT,
+              count = DEFAULT_BATCH_SIZE,
             )
           val result = fhirEngine.search<Resource>(baseResourceSearch)
           searchResults.addAll(
@@ -955,7 +1030,7 @@ constructor(
               }
             },
           )
-          count += COUNT
+          count += DEFAULT_BATCH_SIZE
           pageNumber++
           if (currentPage != null && pageSize != null) {
             val maxPageCount = (currentPage + 1) * pageSize
@@ -1169,7 +1244,7 @@ constructor(
   )
 
   companion object {
-    const val COUNT = 250
+    const val DEFAULT_BATCH_SIZE = 250
     const val SNOMED_SYSTEM = "http://hl7.org/fhir/R4B/valueset-condition-clinical.html"
     const val PATIENT_CONDITION_RESOLVED_CODE = "resolved"
     const val PATIENT_CONDITION_RESOLVED_DISPLAY = "Resolved"
