@@ -19,16 +19,14 @@ package org.smartregister.fhircore.geowidget.screens
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import org.smartregister.fhircore.engine.util.DispatcherProvider
+import com.mapbox.geojson.Feature
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.ServicePointType
+import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment.Companion.MAP_FEATURES_LIMIT
 
-@HiltViewModel
-class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherProvider) :
-  ViewModel() {
+class GeoWidgetViewModel : ViewModel() {
 
+  val mapFeatures = ArrayDeque<Feature>()
   private val _features = MutableLiveData<List<GeoJsonFeature>>(mutableListOf())
   val features: LiveData<List<GeoJsonFeature>>
     get() = _features
@@ -36,6 +34,14 @@ class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherP
   fun submitFeatures(geoJsonFeatures: List<GeoJsonFeature>) {
     _features.postValue(geoJsonFeatures)
   }
+
+  fun updateMapFeatures(geoJsonFeatures: List<GeoJsonFeature>) {
+    if (mapFeatures.size <= MAP_FEATURES_LIMIT) {
+      mapFeatures.addAll(geoJsonFeatures.map { it.toFeature() })
+    }
+  }
+
+  fun clearMapFeatures() = mapFeatures.clear()
 
   fun getServicePointKeyToType(): Map<String, ServicePointType> {
     val map: MutableMap<String, ServicePointType> = HashMap()
@@ -70,5 +76,10 @@ class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherP
     map[ServicePointType.ECOLE_PRIVÉ.name.lowercase()] = ServicePointType.ECOLE_PRIVÉ
     map[ServicePointType.LYCÉE.name.lowercase()] = ServicePointType.LYCÉE
     return map
+  }
+
+  override fun onCleared() {
+    super.onCleared()
+    clearMapFeatures()
   }
 }

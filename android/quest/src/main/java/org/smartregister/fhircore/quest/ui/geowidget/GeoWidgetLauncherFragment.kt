@@ -63,7 +63,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
-import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
@@ -99,7 +98,6 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
   private val geoWidgetLauncherViewModel by viewModels<GeoWidgetLauncherViewModel>()
   private val appMainViewModel by activityViewModels<AppMainViewModel>()
   private val searchViewModel by activityViewModels<SearchViewModel>()
-  private val geoWidgetViewModel by activityViewModels<GeoWidgetViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -216,6 +214,9 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
       }
       is CurrentSyncJobStatus.Succeeded,
       is CurrentSyncJobStatus.Failed, -> {
+        if (syncJobStatus is CurrentSyncJobStatus.Succeeded) {
+          geoWidgetFragment.clearMapFeatures()
+        }
         geoWidgetLauncherViewModel.retrieveLocations(
           geoWidgetConfiguration,
           searchViewModel.searchQuery.value.query,
@@ -248,7 +249,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
       }
     }
 
-    setOnQuestionnaireSubmissionListener { geoWidgetViewModel.submitFeatures(listOf(it)) }
+    setOnQuestionnaireSubmissionListener { geoWidgetFragment.submitFeatures(listOf(it)) }
   }
 
   override fun onPause() {
@@ -309,7 +310,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         .build()
 
     lifecycleScope.launch {
-      geoWidgetLauncherViewModel.geoJsonFeatures.collect { geoWidgetViewModel.submitFeatures(it) }
+      geoWidgetLauncherViewModel.geoJsonFeatures.collect { geoWidgetFragment.submitFeatures(it) }
     }
   }
 

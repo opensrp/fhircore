@@ -26,8 +26,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.activityViewModels
-import com.mapbox.geojson.Feature
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.MultiPoint
 import com.mapbox.geojson.Point
@@ -41,7 +41,6 @@ import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.turf.TurfMeasurement
-import dagger.hilt.android.AndroidEntryPoint
 import io.ona.kujaku.callbacks.AddPointCallback
 import io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPlugin
 import io.ona.kujaku.plugin.switcher.layer.StreetsBaseLayer
@@ -62,10 +61,8 @@ import org.smartregister.fhircore.geowidget.model.TYPE
 import org.smartregister.fhircore.geowidget.util.ResourceUtils
 import timber.log.Timber
 
-@AndroidEntryPoint
 class GeoWidgetFragment : Fragment() {
 
-  private val geoWidgetViewModel by activityViewModels<GeoWidgetViewModel>()
   internal var onAddLocationCallback: (GeoJsonFeature) -> Unit = {}
   internal var onCancelAddingLocationCallback: () -> Unit = {}
   internal var onClickLocationCallback: (GeoJsonFeature, FragmentManager) -> Unit =
@@ -77,7 +74,7 @@ class GeoWidgetFragment : Fragment() {
   internal var showPlaneSwitcherButton: Boolean = true
   internal var showAddLocationButton: Boolean = true
   private var mapView: KujakuMapView? = null
-  private val mapFeatures = ArrayDeque<Feature>()
+  private lateinit var geoWidgetViewModel: GeoWidgetViewModel
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -92,12 +89,10 @@ class GeoWidgetFragment : Fragment() {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    geoWidgetViewModel = ViewModelProvider(this)[GeoWidgetViewModel::class.java]
     geoWidgetViewModel.features.observe(viewLifecycleOwner) { result ->
       if (result.isNotEmpty()) {
-        // Limit features to be displayed to 1000
-        if (mapFeatures.size <= MAP_FEATURES_LIMIT) {
-          mapFeatures.addAll(result.map { it.toFeature() })
-        }
+        geoWidgetViewModel.updateMapFeatures(result)
         zoomMapWithFeatures()
       }
     }
@@ -125,6 +120,7 @@ class GeoWidgetFragment : Fragment() {
 
   override fun onDestroy() {
     super.onDestroy()
+    geoWidgetViewModel.clearMapFeatures()
     mapView?.onDestroy()
   }
 
@@ -139,6 +135,7 @@ class GeoWidgetFragment : Fragment() {
   }
 
   private fun setUpMapView(savedInstanceState: Bundle?) {
+    geoWidgetViewModel = viewModels<GeoWidgetViewModel>().value
     Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
     mapView =
       try {
@@ -316,7 +313,8 @@ class GeoWidgetFragment : Fragment() {
 
   private fun zoomMapWithFeatures() {
     mapView?.getMapAsync { mapboxMap ->
-      val featureCollection = FeatureCollection.fromFeatures(mapFeatures.toList())
+      val featureCollection =
+        FeatureCollection.fromFeatures(geoWidgetViewModel.mapFeatures.toList())
       val locationPoints =
         featureCollection
           .features()
@@ -390,6 +388,14 @@ class GeoWidgetFragment : Fragment() {
       }
     }
   }
+
+  fun submitFeatures(geoJsonFeatures: List<GeoJsonFeature>) {
+    if (this::geoWidgetViewModel.isInitialized) {
+      geoWidgetViewModel.submitFeatures(geoJsonFeatures)
+    }
+  }
+
+  fun clearMapFeatures() = geoWidgetViewModel.clearMapFeatures()
 
   companion object {
     const val MAP_FEATURES_LIMIT = 1000
