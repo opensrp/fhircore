@@ -8,55 +8,218 @@ The EIR package leverages the next-gen FHIR-native OpenSRP 2 platform, which ena
 
 ## Core features and functionality
 
-The EIR app for Community Health Workers (CHWs) in health applications typically serves as a digital platform to streamline vaccination services and improve healthcare delivery. Its core functions can include the following:
+The EIR app for healthcare workers serves as a digital platform to streamline vaccination services and improve healthcare delivery. Its core functions can include the following:
 
-1. Patient Registration and Profile Management
+### Patient Registration and Profile Management
 
-	* Patient Data Collection: Allows CHWs to register newborns, children, and adults, capturing essential details like name, age, date of birth, address, and contact information.
+* Patient Data Collection: Allows healthcare workers to register newborns, children, and adults, capturing essential details like name, age, date of birth, address, and contact information.
 
-	* Profile Updates: Facilitates updating patient information such as contact details, address, or family status.
+* Profile Updates: Facilitates updating patient information such as contact details, address, or family status.
 
-2. Vaccination Tracking and Scheduling
+import syncing_complete from '/img/eir_screenshoots/sync-complete.png';
 
-	* Immunization Records: Tracks each patient’s immunization history, including past vaccinations and due vaccines.
+<img src={syncing_complete} style={{width: 250}} />
 
-	* Vaccine Scheduling: Automatically generates personalized immunization schedules based on patient age and national vaccine guidelines.
+import caregiver_search from '/img/eir_screenshoots/caregiver-search.png';
 
-	* Alerts & Reminders: Sends alerts to CHWs and caregivers about upcoming or missed vaccinations.
+<img src={caregiver_search} style={{width: 250}} />
 
-3. Health Data Collection and Reporting
+### Vaccination Tracking and Scheduling
 
-	* Data Entry for Health Interventions: Allows CHWs to log additional health services provided (e.g., growth monitoring, vitamin A supplementation, deworming).
+* Immunization Records: Tracks each patient’s immunization history, including past vaccinations and due vaccines.
 
-	* Real-time Reporting: Provides local health authorities with access to up-to-date data for monitoring immunization coverage and gaps.
+* Vaccine Scheduling: Automatically generates personalized immunization schedules based on patient age and national vaccine guidelines.
 
-	* Analytics: Includes dashboards for CHWs to monitor performance, coverage rates, and identify high-risk populations.
+* Alerts & Reminders: Sends alerts to healthcare workers and caregivers about upcoming or missed vaccinations.
 
-4. Inventory Management
+import caregiver_profile from '/img/eir_screenshoots/caregiver-profile.png';
 
-	* Vaccine Stock Management: Tracks the availability of vaccines in stock, preventing shortages and overstocking at health facilities.
+<img src={caregiver_profile} style={{width: 250}} />
 
-	* Supply Chain Alerts: Notifies CHWs and supervisors of stock level fluctuations and the need for resupply.
+import overflow_menu from '/img/eir_screenshoots/overflow-menu.png';
 
-5. Geo-Tracking and Outreach Support
+<img src={overflow_menu} style={{width: 250}} />
 
-	* Location Services: Uses GPS to identify patients’ locations for follow-up visits and mapping immunization coverage areas.
+### Health Data Collection and Reporting
 
-	* Outreach Planning: Helps CHWs plan community outreach campaigns based on the geographic distribution of unvaccinated individuals.
+* Data Entry for Health Interventions: Allows healthcare workers to log adverse reactions and additional health services provided (e.g., growth monitoring, vitamin A supplementation, deworming).
 
-6. Data Synchronization and Offline Functionality
+* Real-time Reporting: Provides local health authorities with access to up-to-date data for monitoring immunization coverage and gaps.
 
-	* Offline Access: Allows CHWs to use the app in areas with limited or no connectivity, with data syncing when internet access is available.
+* Analytics: Includes dashboards for healthcare workers to monitor performance, coverage rates, and identify high-risk populations.
 
-	* Data Backup: Ensures that patient and vaccination data is securely stored and backed up for long-term access.
+import adverse_reaction from '/img/eir_screenshoots/adverse-reaction.png';
 
-7. Security and Confidentiality
+<img src={adverse_reaction} style={{width: 250}} />
 
-	* Data Protection: Uses encryption and authentication protocols to protect sensitive patient data.
+import revord_adverse_reaction from '/img/eir_screenshoots/record-adverse-reaction.png';
 
-	* Role-based Access: Ensures that only authorized CHWs and health workers can access specific patient data, based on their roles.
+<img src={revord_adverse_reaction} style={{width: 250}} />
 
-These functions ensure effective immunization service delivery, better health record management, and improved healthcare outcomes for communities.
+### Inventory Management
+
+* Vaccine Stock Management: Tracks the availability of vaccines in stock, preventing shortages and overstocking at health facilities.
+
+* Supply Chain Alerts: Notifies healthcare workers and supervisors of stock level fluctuations and the need for resupply.
+
+import child_profile_view from '/img/eir_screenshoots/child-profile.png';
+
+<img src={child_profile_view} style={{width: 250}} />
+
+
+import immunization_form from '/img/eir_screenshoots/immunization-form.png';
+
+<img src={immunization_form} style={{width: 250}} />
+
+
+### Geo-Tracking and Outreach Support
+
+* Location Services: Uses GPS to identify patients’ locations for follow-up visits and mapping immunization coverage areas.
+
+* Outreach Planning: Helps healthcare workers plan community outreach campaigns based on the geographic distribution of unvaccinated individuals.
+
+import permissions from '/img/eir_screenshoots/permissions.png';
+
+<img src={permissions} style={{width: 250}} />
+
+import maps from '/img/eir_screenshoots/maps.png';
+
+<img src={maps} style={{width: 250}} />
+
+### Data Synchronization and Offline Functionality
+
+* Offline Access: Allows healthcare workers to use the app in areas with limited or no connectivity, with data syncing when internet access is available.
+
+* Data Backup: Ensures that patient and vaccination data is securely stored and backed up for long-term access.
+
+import app_sycning from '/img/eir_screenshoots/syncing.png';
+
+<img src={app_sycning} style={{width: 250}} />
+
+import pending_sync from '/img/eir_screenshoots/pending-sync.png';
+
+<img src={pending_sync} style={{width: 250}} />
+
+### Security and Confidentiality
+
+* Data Protection: Uses encryption and authentication protocols to protect sensitive patient data.
+
+* Role-based Access: Ensures that only authorized healthcare workers and health workers can access specific patient data, based on their roles.
+
+import login from '/img/eir_screenshoots/login.png';
+
+<img src={login} style={{width: 250}} />
+
+import set_pins from '/img/eir_screenshoots/set-pin.png';
+
+<img src={set_pins} style={{width: 250}} />
+
+### Core workflow
+
+The core immunization workflow in a health app, such as an Electronic Immunization Registry (EIR), is designed to ensure that children and other eligible populations receive timely vaccinations, that records are properly maintained, and that healthcare workers can easily track immunization coverage and follow up on missed vaccinations. Below is a step-by-step breakdown of how this workflow typically operates:
+
+1. Patient Registration
+
+The first step in the immunization workflow involves registering the patient into the system. This can occur either at a health facility or during an outreach visit.
+
+	* New Patient Entry: If the patient (child or adult) is not already in the system, the CHW or health worker creates a new patient profile by collecting:
+
+	* Full name, date of birth, and gender.
+
+	* Unique identifier (generated by the system or linked to a national ID).
+
+	* Address and contact information.
+
+	* Caregiver information (for children).
+
+	* Existing Patient Search: If the patient has already been registered, the health worker can use the search function to pull up their existing profile using their unique ID, name, or other identifiers.
+
+2. Verification of Immunization Status
+
+Once the patient is registered or located, the health worker will check their immunization history in the app to determine what vaccines have been administered and which ones are due or overdue.
+
+	* Vaccination History: The app will display a list of all past vaccinations, including dates and doses.
+
+	* Scheduled Vaccinations: Based on the patient’s age and previous vaccinations, the system will generate a schedule of due and upcoming vaccines.
+
+	* Missed Vaccinations: The system flags any missed doses and recommends a catch-up schedule based on national immunization guidelines.
+
+3. Vaccine Administration
+
+When the patient is due for a vaccine, the healthcare worker administers the vaccine and records the details in the app.
+
+	* Vaccine Selection: The health worker selects the appropriate vaccine from a drop-down list based on what is due (e.g., BCG, DPT, OPV, MMR).
+
+	* Dose and Batch Information: The app prompts the worker to enter the dose number (e.g., 1st, 2nd, 3rd), the batch number, and the expiry date of the vaccine being administered.
+
+	* Administration Method: The method of administration (e.g., oral, intramuscular) and site (e.g., arm, thigh) can also be logged.
+
+4. Recording the Vaccination
+
+Once the vaccine is administered, the health worker updates the patient’s immunization record in the app.
+
+	* Date of Vaccination: The date is automatically logged or manually entered.
+
+	* Vaccine Details: The app records the specific vaccine, dose, batch number, and location where it was administered.
+
+	* Healthcare Provider Information: The name of the health worker administering the vaccine is usually automatically logged for accountability and traceability.
+
+5. Generating Next Vaccination Schedule
+
+After recording the current vaccination, the system automatically updates the patient’s profile with the next scheduled vaccination based on their age and national immunization guidelines.
+
+	* Auto-Scheduling: The system calculates the next due date for vaccinations, ensuring that healthcare workers can keep track of upcoming vaccinations.
+
+	* Catch-up Schedule: If the patient has missed vaccines, the system creates a catch-up schedule that ensures all missed doses are given at appropriate intervals.
+
+6. Providing Immunization Card (Optional)
+
+In some settings, the health worker provides an updated immunization card or booklet for the caregiver to keep. This card serves as a physical record for the patient’s caregiver and is often used in tandem with digital records.
+
+	* Printed Records: Some systems allow the printing of vaccination records directly from the app.
+
+7. Sending Reminders and Notifications
+
+The system sends automated reminders and notifications to caregivers and healthcare providers about upcoming vaccinations or missed doses.
+
+	* SMS Reminders: The app can send an SMS reminder to the caregiver before the next vaccination is due using RapidPro
+
+	* CHW Alerts: The CHW or health facility receives alerts if patients are overdue for a vaccination, enabling them to follow up directly.
+
+8. Reporting and Analytics
+
+The app collects and aggregates immunization data to provide real-time reports that can be used for monitoring vaccination coverage, identifying gaps, and planning outreach programs.
+
+	* Coverage Reports: The system generates vaccination coverage reports for different age groups, geographic areas, and specific vaccines (e.g., how many children received all their doses of the DPT vaccine).
+
+	* Missed Opportunities: Identifies areas with high rates of missed vaccinations and suggests targeted outreach activities.
+
+	* Data Export: Reports can be exported to central health systems or ministries for national-level tracking and decision-making.
+
+
+9. Integration with Other Health Services
+
+The system can also be integrated with other health interventions to streamline healthcare delivery. For example:
+
+	* Growth Monitoring: Some systems include growth monitoring features (e.g., tracking height, weight, and MUAC) during vaccination visits.
+
+	* Referrals: If a patient has a health issue identified during a vaccination visit, the app can generate a referral to another healthcare provider for further care.
+
+10. Data Privacy and Security
+
+Throughout the workflow, the system ensures that all patient data is securely stored and accessible only to authorized health personnel.
+
+	* Encryption and Authentication: Data is encrypted, and health workers need proper credentials to access or modify records.
+
+	* Informed Consent: Before entering patient data, the caregiver’s consent is usually obtained.
+
+11. Offline Functionality and Syncing
+
+In areas with limited connectivity, the app often allows for offline data entry. healthcare workers can record immunizations during outreach, and the system syncs the data when connectivity is restored.
+
+	* Offline Mode: healthcare workers can still register new patients, update immunization records, and schedule follow-ups without internet access.
+
+	* Automatic Syncing: When back online, the app automatically uploads all stored data to the central server.
 
 ## Registering households
 
@@ -103,11 +266,11 @@ Key Information Collected During Household Registration
 
 	* GPS Coordinates:
 
-		* Geolocation data (latitude and longitude) may be captured to help CHWs accurately locate households during field visits, particularly in rural or hard-to-reach areas.
+		* Geolocation data (latitude and longitude) may be captured to help healthcare workers accurately locate households during field visits, particularly in rural or hard-to-reach areas.
 
 	* Landmarks:
 
-		* CHWs may note nearby landmarks to help identify the home’s location (e.g., near a school, market, or specific tree).
+		* healthcare workers may note nearby landmarks to help identify the home’s location (e.g., near a school, market, or specific tree).
 
 3. Contact Information
 
@@ -202,7 +365,7 @@ Key Information Collected During Household Registration
 
 	* Informed Consent:
 
-		* CHWs collect consent from the household head or another responsible adult to collect and store household information in the system.
+		* healthcare workers collect consent from the household head or another responsible adult to collect and store household information in the system.
 
 	* Data Security:
 
@@ -212,7 +375,7 @@ Key Information Collected During Household Registration
 
 	* CHW Observations:
 
-		* CHWs can make notes on specific challenges faced by the household, such as social, economic, or health-related issues, to inform future interventions.
+		* healthcare workers can make notes on specific challenges faced by the household, such as social, economic, or health-related issues, to inform future interventions.
 
 	* Follow-up Action Plans:
 
@@ -313,7 +476,7 @@ Here’s a step-by-step breakdown of how patient registration is typically done 
 
 	* Informed Consent:
 
-		* CHWs may need to record the consent of the patient (or caregiver) to collect and store their data in the EIR system.
+		* healthcare workers may need to record the consent of the patient (or caregiver) to collect and store their data in the EIR system.
 
 	* Data Privacy and Security:
 
@@ -402,7 +565,7 @@ Below are the core features and highlights of a patient register:
 
 	* Reminders and Alerts:
 
-		* Generates reminders for CHWs and caregivers for scheduled or overdue vaccinations and growth monitoring checkups. Notifications can be sent via SMS or in-app alerts.
+		* Generates reminders for healthcare workers and caregivers for scheduled or overdue vaccinations and growth monitoring checkups. Notifications can be sent via SMS or in-app alerts.
 
 	* Follow-up Appointments:
 
@@ -412,7 +575,7 @@ Below are the core features and highlights of a patient register:
 
 	* Searchable Database:
 
-		* Provides an easy-to-use search function for CHWs to find patients quickly by name, unique ID, or other identifiers (age, location, caregiver name).
+		* Provides an easy-to-use search function for healthcare workers to find patients quickly by name, unique ID, or other identifiers (age, location, caregiver name).
 
 7. Reporting and Analytics (done on a Web Dashboard post online app sync)
 
@@ -422,7 +585,7 @@ Below are the core features and highlights of a patient register:
 
 	* Coverage Reports:
 
-		* Generates reports showing vaccination coverage rates within a community or health facility, helping CHWs and supervisors identify gaps and plan outreach activities.
+		* Generates reports showing vaccination coverage rates within a community or health facility, helping healthcare workers and supervisors identify gaps and plan outreach activities.
 
 	* Risk and Priority Alerts:
 
@@ -436,7 +599,7 @@ Below are the core features and highlights of a patient register:
 
 	* Referral Outcomes:
 
-		* Allows CHWs to track the outcomes of referrals, ensuring that patients receive necessary care and follow-up appointments.
+		* Allows healthcare workers to track the outcomes of referrals, ensuring that patients receive necessary care and follow-up appointments.
 
 9. Data Privacy and Security
 
@@ -462,7 +625,7 @@ Below are the core features and highlights of a patient register:
 
 	* Household Data:
 
-		* Links patients to a family or household group, enabling CHWs to view the immunization status and health conditions of all members.
+		* Links patients to a family or household group, enabling healthcare workers to view the immunization status and health conditions of all members.
 
 	* Household-Level Interventions:
 
@@ -482,126 +645,15 @@ Below are the core features and highlights of a patient register:
 
 	* Activity Logs:
 
-		* Keeps track of actions taken by CHWs, such as updates to patient records, vaccines administered, and referrals made, which aids in performance tracking and accountability.
+		* Keeps track of actions taken by healthcare workers, such as updates to patient records, vaccines administered, and referrals made, which aids in performance tracking and accountability.
 
 	* Error and Data Correction:
 
-		* Allows CHWs or supervisors to correct any data entry errors and maintain accurate patient records.
+		* Allows healthcare workers or supervisors to correct any data entry errors and maintain accurate patient records.
 
-These key functions in a patient register enable CHWs to manage patient data efficiently, ensuring timely vaccinations, accurate growth monitoring, and improved overall health outcomes for their communities.
+These key functions in a patient register enable healthcare workers to manage patient data efficiently, ensuring timely vaccinations, accurate growth monitoring, and improved overall health outcomes for their communities.
 
-## Household and patient profiles
-
-In an Electronic Immunization Registry (EIR) or health app, the Patient Profile and Household Profile are essential components that allow for detailed tracking of individual health data and the broader health status of families or groups.
-
-### Household and patient profile workflow (move non-profile stuff into core features)
-
-The core immunization workflow in a health app, such as an Electronic Immunization Registry (EIR), is designed to ensure that children and other eligible populations receive timely vaccinations, that records are properly maintained, and that healthcare workers (CHWs) can easily track immunization coverage and follow up on missed vaccinations. Below is a step-by-step breakdown of how this workflow typically operates:
-
-1. Patient Registration
-
-The first step in the immunization workflow involves registering the patient into the system. This can occur either at a health facility or during an outreach visit.
-
-	* New Patient Entry: If the patient (child or adult) is not already in the system, the CHW or health worker creates a new patient profile by collecting:
-
-	* Full name, date of birth, and gender.
-
-	* Unique identifier (generated by the system or linked to a national ID).
-
-	* Address and contact information.
-
-	* Caregiver information (for children).
-
-	* Existing Patient Search: If the patient has already been registered, the health worker can use the search function to pull up their existing profile using their unique ID, name, or other identifiers.
-
-2. Verification of Immunization Status
-
-Once the patient is registered or located, the health worker will check their immunization history in the app to determine what vaccines have been administered and which ones are due or overdue.
-
-	* Vaccination History: The app will display a list of all past vaccinations, including dates and doses.
-
-	* Scheduled Vaccinations: Based on the patient’s age and previous vaccinations, the system will generate a schedule of due and upcoming vaccines.
-
-	* Missed Vaccinations: The system flags any missed doses and recommends a catch-up schedule based on national immunization guidelines.
-
-3. Vaccine Administration
-
-When the patient is due for a vaccine, the healthcare worker administers the vaccine and records the details in the app.
-
-	* Vaccine Selection: The health worker selects the appropriate vaccine from a drop-down list based on what is due (e.g., BCG, DPT, OPV, MMR).
-
-	* Dose and Batch Information: The app prompts the worker to enter the dose number (e.g., 1st, 2nd, 3rd), the batch number, and the expiry date of the vaccine being administered.
-
-	* Administration Method: The method of administration (e.g., oral, intramuscular) and site (e.g., arm, thigh) can also be logged.
-
-4. Recording the Vaccination
-
-Once the vaccine is administered, the health worker updates the patient’s immunization record in the app.
-
-	* Date of Vaccination: The date is automatically logged or manually entered.
-
-	* Vaccine Details: The app records the specific vaccine, dose, batch number, and location where it was administered.
-
-	* Healthcare Provider Information: The name of the health worker administering the vaccine is usually automatically logged for accountability and traceability.
-
-5. Generating Next Vaccination Schedule
-
-After recording the current vaccination, the system automatically updates the patient’s profile with the next scheduled vaccination based on their age and national immunization guidelines.
-
-	* Auto-Scheduling: The system calculates the next due date for vaccinations, ensuring that CHWs can keep track of upcoming vaccinations.
-
-	* Catch-up Schedule: If the patient has missed vaccines, the system creates a catch-up schedule that ensures all missed doses are given at appropriate intervals.
-
-6. Providing Immunization Card (Optional)
-
-In some settings, the health worker provides an updated immunization card or booklet for the caregiver to keep. This card serves as a physical record for the patient’s caregiver and is often used in tandem with digital records.
-
-	* Printed Records: Some systems allow the printing of vaccination records directly from the app.
-
-7. Sending Reminders and Notifications
-
-The system sends automated reminders and notifications to caregivers and healthcare providers about upcoming vaccinations or missed doses.
-
-	* SMS Reminders: The app can send an SMS reminder to the caregiver before the next vaccination is due using RapidPro
-
-	* CHW Alerts: The CHW or health facility receives alerts if patients are overdue for a vaccination, enabling them to follow up directly.
-
-8. Reporting and Analytics
-
-The app collects and aggregates immunization data to provide real-time reports that can be used for monitoring vaccination coverage, identifying gaps, and planning outreach programs.
-
-	* Coverage Reports: The system generates vaccination coverage reports for different age groups, geographic areas, and specific vaccines (e.g., how many children received all their doses of the DPT vaccine).
-
-	* Missed Opportunities: Identifies areas with high rates of missed vaccinations and suggests targeted outreach activities.
-
-	* Data Export: Reports can be exported to central health systems or ministries for national-level tracking and decision-making.
-
-
-9. Integration with Other Health Services
-
-The system can also be integrated with other health interventions to streamline healthcare delivery. For example:
-
-	* Growth Monitoring: Some systems include growth monitoring features (e.g., tracking height, weight, and MUAC) during vaccination visits.
-
-	* Referrals: If a patient has a health issue identified during a vaccination visit, the app can generate a referral to another healthcare provider for further care.
-
-10. Data Privacy and Security
-
-Throughout the workflow, the system ensures that all patient data is securely stored and accessible only to authorized health personnel.
-
-	* Encryption and Authentication: Data is encrypted, and health workers need proper credentials to access or modify records.
-
-	* Informed Consent: Before entering patient data, the caregiver’s consent is usually obtained.
-
-11. Offline Functionality and Syncing
-
-In areas with limited connectivity, the app often allows for offline data entry. CHWs can record immunizations during outreach, and the system syncs the data when connectivity is restored.
-
-	* Offline Mode: CHWs can still register new patients, update immunization records, and schedule follow-ups without internet access.
-
-	* Automatic Syncing: When back online, the app automatically uploads all stored data to the central server.
-
-Immunization Workflow Summary:
+## Immunization workflow summary
 
 	1.	Register the patient or locate their profile in the system.
 
@@ -621,11 +673,11 @@ Immunization Workflow Summary:
 
 This core immunization workflow ensures that patients are vaccinated on time, their records are accurately maintained, and healthcare providers can efficiently monitor coverage and follow up on any missed doses.
 
-### Household and patient profile features
+## Household and patient profiles
 
-Here’s how each is typically structured and their key features:
+In an Electronic Immunization Registry (EIR) or health app, the Patient Profile and Household Profile are essential components that allow for detailed tracking of individual health data and the broader health status of families or groups. Here’s how each is typically structured and their key features.
 
-1. Patient Profile
+### Patient profile
 
 The Patient Profile provides a detailed view of an individual’s health data, focusing on personal information, medical history, vaccination status, and more.
 
@@ -679,7 +731,7 @@ e. Appointment Scheduling and Reminders
 
 	* Scheduled Appointments: Lists future vaccination or health checkup appointments.
 
-	* Missed Appointments: Tracks any missed appointments with automatic reminders to CHWs and caregivers for rescheduling.
+	* Missed Appointments: Tracks any missed appointments with automatic reminders to healthcare workers and caregivers for rescheduling.
 
 	* Reminder System: Sends SMS or in-app notifications for upcoming vaccinations, follow-up visits, or growth monitoring sessions.
 
@@ -689,9 +741,9 @@ f. Health Interventions
 
 	* Referrals: Tracks any referrals to other healthcare facilities for specialized care (e.g., malnutrition treatment, medical emergencies).
 
-2. Household Profile
+### Household profile
 
-A Household Profile provides a comprehensive view of the health status of all members of a family or group living in the same residence. This allows for a more holistic approach to healthcare, where CHWs can address issues at the household level, such as vaccination gaps, malnutrition, or disease outbreaks.
+A Household Profile provides a comprehensive view of the health status of all members of a family or group living in the same residence. This allows for a more holistic approach to healthcare, where healthcare workers can address issues at the household level, such as vaccination gaps, malnutrition, or disease outbreaks.
 
 Key Features of a Household Profile:
 
@@ -743,11 +795,11 @@ d. Community and Outreach Support
 
 	* Educational Materials:
 
-		* Provides health education resources on vaccination, nutrition, and hygiene that CHWs can share with the family.
+		* Provides health education resources on vaccination, nutrition, and hygiene that healthcare workers can share with the family.
 
 	* Outreach Planning:
 
-		* Helps CHWs identify which households need targeted interventions based on health trends, vaccination status, or geographic location.
+		* Helps healthcare workers identify which households need targeted interventions based on health trends, vaccination status, or geographic location.
 
 e. Referral Tracking
 
@@ -767,31 +819,31 @@ f. Household Visit Scheduling and Follow-Up
 
 	* Missed Visits:
 
-		* Flags households that missed previous health checkups or immunization visits, prompting CHWs to reschedule.
+		* Flags households that missed previous health checkups or immunization visits, prompting healthcare workers to reschedule.
 
-Integration of Patient and Household Profiles
+### Integration of Patient and Household Profiles
 
-	* Linked Data: The Household Profile integrates data from each individual’s Patient Profile, ensuring that CHWs can view both individual and household health data in one system.
+	* Linked Data: The Household profile integrates data from each individual’s patient profile, ensuring that healthcare workers can view both individual and household health data in one system.
 
-	* Holistic Care: By viewing a family’s overall health status, CHWs can address broader health challenges that may affect more than one individual, improving care efficiency.
+	* Holistic Care: By viewing a family’s overall health status, healthcare workers can address broader health challenges that may affect more than one individual, improving care efficiency.
 
 These profiles help streamline healthcare services, improve data tracking, and support more coordinated health interventions, especially in underserved or remote communities.
 
-## Advanced functions of the EIR for CHWs
+## Advanced functions of the EIR
 
-Incorporating growth monitoring and Mid-Upper Arm Circumference (MUAC) assessments into the EIR app for CHWs would expand its functionality to support broader child health and nutrition monitoring. By adding growth monitoring and MUAC tracking, the EIR app could help CHWs detect malnutrition and growth delays early, support targeted interventions, and improve child health outcomes. Here’s how these functions could be integrated:
+Incorporating growth monitoring and Mid-Upper Arm Circumference (MUAC) assessments into the EIR app for healthcare workers would expand its functionality to support broader child health and nutrition monitoring. By adding growth monitoring and MUAC tracking, the EIR app could help healthcare workers detect malnutrition and growth delays early, support targeted interventions, and improve child health outcomes. Here’s how these functions could be integrated:
 
 1. Growth Monitoring
 
 	* Anthropometric Data Recording:
 
-		* Allows CHWs to input key growth indicators such as height, weight, and head circumference for children at regular intervals.
+		* Allows healthcare workers to input key growth indicators such as height, weight, and head circumference for children at regular intervals.
 
 2. MUAC (Mid-Upper Arm Circumference) Monitoring
 
 	* MUAC Measurement Recording:
 
-		* Allows CHWs to log MUAC measurements as a quick and effective way to assess acute malnutrition in children.
+		* Allows healthcare workers to log MUAC measurements as a quick and effective way to assess acute malnutrition in children.
 
 3. Integrated Reporting and Alerts
 
@@ -805,13 +857,13 @@ Incorporating growth monitoring and Mid-Upper Arm Circumference (MUAC) assessmen
 
 		* Supervisors
 
-		* CHWs in the same location hierachy levels
+		* healthcare workers in the same location hierachy levels
 
 5. Offline Functionality
 
 	* Offline Data Entry:
 
-		* Enables CHWs to data even in areas without internet connectivity, with synchronization occurring when the device is back online.
+		* Enables healthcare workers to data even in areas without internet connectivity, with synchronization occurring when the device is back online.
 
 6. Covid 19 for Adult Vaccination
 
@@ -821,48 +873,9 @@ Incorporating growth monitoring and Mid-Upper Arm Circumference (MUAC) assessmen
 
 	* Record and track vaccinations (including reminders for doses).
 
-## Reference app user guide
+### Screenshots
 
-[TBC]
-
-### Are we doing a new user guide in the docs here?
-
-import login from '/img/eir_screenshoots/login.png';
-
-<img src={login} style={{width: 250}} />
-
-import auth_user from '/img/eir_screenshoots/authentication.png';
-
-<img src={auth_user} style={{width: 250}} />
-
-
-import set_pins from '/img/eir_screenshoots/set-pin.png';
-
-<img src={set_pins} style={{width: 250}} />
-
-import app_sycning from '/img/eir_screenshoots/syncing.png';
-
-<img src={app_sycning} style={{width: 250}} />
-
-import syncing_complete from '/img/eir_screenshoots/sync-complete.png';
-
-<img src={syncing_complete} style={{width: 250}} />
-
-
-import caregiver_search from '/img/eir_screenshoots/caregiver-search.png';
-
-<img src={caregiver_search} style={{width: 250}} />
-
-
-import permissions from '/img/eir_screenshoots/permissions.png';
-
-<img src={permissions} style={{width: 250}} />
-
-
-import maps from '/img/eir_screenshoots/maps.png';
-
-<img src={maps} style={{width: 250}} />
-
+#### Caregiver registry
 
 import caregiver_register from '/img/eir_screenshoots/caregiver-register.png';
 
@@ -873,6 +886,7 @@ import nav_drawer from '/img/eir_screenshoots/navigation-drawer.png';
 
 <img src={nav_drawer} style={{width: 250}} />
 
+#### Settings and insights
 
 import user_settings from '/img/eir_screenshoots/user-settings.png';
 
@@ -883,6 +897,7 @@ import insights_page from '/img/eir_screenshoots/insights-page.png';
 
 <img src={insights_page} style={{width: 250}} />
 
+#### Changing the language
 
 import mls_support from '/img/eir_screenshoots/mls-support.png';
 
@@ -893,41 +908,11 @@ import nav_drawer_es from '/img/eir_screenshoots/navigation-drawer-es.png';
 
 <img src={nav_drawer_es} style={{width: 250}} />
 
-
 import registration from '/img/eir_screenshoots/registration-es.png';
 
 <img src={registration} style={{width: 250}} />
 
-
-import caregiver_profile from '/img/eir_screenshoots/caregiver-profile.png';
-
-<img src={caregiver_profile} style={{width: 250}} />
-
-
-import overflow_menu from '/img/eir_screenshoots/overflow-menu.png';
-
-<img src={overflow_menu} style={{width: 250}} />
-
-
-import child_profile_view from '/img/eir_screenshoots/child-profile.png';
-
-<img src={child_profile_view} style={{width: 250}} />
-
-
-import immunization_form from '/img/eir_screenshoots/immunization-form.png';
-
-<img src={immunization_form} style={{width: 250}} />
-
-
-import adverse_reaction from '/img/eir_screenshoots/adverse-reaction.png';
-
-<img src={adverse_reaction} style={{width: 250}} />
-
-
-import revord_adverse_reaction from '/img/eir_screenshoots/record-adverse-reaction.png';
-
-<img src={revord_adverse_reaction} style={{width: 250}} />
-
+#### Viewing past and upcoming encounters
 
 import past_encounter from '/img/eir_screenshoots/past-encounters.png';
 
@@ -937,12 +922,6 @@ import past_encounter from '/img/eir_screenshoots/past-encounters.png';
 import upcoming_encounter from '/img/eir_screenshoots/upcoming-encounters.png';
 
 <img src={upcoming_encounter} style={{width: 250}} />
-
-
-import pending_sync from '/img/eir_screenshoots/pending-sync.png';
-
-<img src={pending_sync} style={{width: 250}} />
-
 
 ## Interoperability interfaces
 
