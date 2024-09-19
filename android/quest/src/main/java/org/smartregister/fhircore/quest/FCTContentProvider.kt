@@ -8,6 +8,10 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.net.Uri
 import android.os.Bundle
+import androidx.core.database.getBlobOrNull
+import androidx.core.database.getFloatOrNull
+import androidx.core.database.getIntOrNull
+import androidx.core.database.getStringOrNull
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -145,20 +149,18 @@ class FCTContentProvider : ContentProvider() {
                 QueryType.SELECT, QueryType.UNKNOWN -> {
 
                     var cursor: Cursor? = null
-                    var result = ""
+                    val jsonObject = JSONObject()
                     try {
                         cursor = db.rawQuery(query, null)
-                        result = extractAllRecords(cursor, queryRequest)
+                        extractAllRecords(cursor, queryRequest, jsonObject)
                     } catch (ex: Exception) {
-                        val jsonObject = JSONObject().apply {
-                            put("success", false)
-                            put("error", ex.localizedMessage ?: ex.message ?: ex.toString())
-                        }
-                        result = jsonObject.toString()
+                        jsonObject.put("success", false)
+                        jsonObject.put("error", ex.localizedMessage ?: ex.message ?: ex.toString())
                     } finally {
                         cursor?.close()
                     }
-                    result
+                    jsonObject.put("method", "rawQuery")
+                    jsonObject.toString()
                 }
                 else -> {
                     val jsonObject = JSONObject()
@@ -169,6 +171,7 @@ class FCTContentProvider : ContentProvider() {
                         jsonObject.put("success", false)
                         jsonObject.put("error", ex.localizedMessage ?: ex.message ?: ex.toString())
                     }
+                    jsonObject.put("method", "execSQL")
                     jsonObject.toString()
                 }
             }
@@ -257,11 +260,11 @@ class FCTContentProvider : ContentProvider() {
         return pattern.toRegex(RegexOption.IGNORE_CASE).find(query.trim()) != null
     }
 
-    private fun extractAllRecords(cursor: Cursor, queryRequest: QueryRequest): String {
-        val jsonObject = JSONObject()
+    private fun extractAllRecords(cursor: Cursor, queryRequest: QueryRequest, jsonObject: JSONObject) {
         val jsonArray = JSONArray()
 
         jsonObject.put("count", cursor.count)
+        val columns = mutableSetOf<Pair<String, Int>>()
 
         if (cursor.moveToPosition(queryRequest.offset)) {
             do {
@@ -269,16 +272,20 @@ class FCTContentProvider : ContentProvider() {
                 cursor.columnNames.forEachIndexed { columnIndex, columName ->
                     when (cursor.getType(columnIndex)) {
                         Cursor.FIELD_TYPE_BLOB -> {
-                            obj.put(columName, cursor.getBlob(columnIndex).toByteString().hex())
+                            obj.put(columName, cursor.getBlobOrNull(columnIndex)?.toByteString()?.hex())
+                            columns.add(Pair(columName, Cursor.FIELD_TYPE_BLOB))
                         }
                         Cursor.FIELD_TYPE_INTEGER -> {
-                            obj.put(columName, cursor.getInt(columnIndex))
+                            obj.put(columName, cursor.getIntOrNull(columnIndex))
+                            columns.add(Pair(columName, Cursor.FIELD_TYPE_INTEGER))
                         }
                         Cursor.FIELD_TYPE_FLOAT -> {
-                            obj.put(columName, cursor.getFloat(columnIndex))
+                            obj.put(columName, cursor.getFloatOrNull(columnIndex))
+                            columns.add(Pair(columName, Cursor.FIELD_TYPE_FLOAT))
                         }
                         else -> {
-                            obj.put(columName, cursor.getString(columnIndex))
+                            obj.put(columName, cursor.getStringOrNull(columnIndex))
+                            columns.add(Pair(columName, Cursor.FIELD_TYPE_STRING))
                         }
                     }
                 }
@@ -287,14 +294,19 @@ class FCTContentProvider : ContentProvider() {
         }
 
         val columnNameJsonArray = JSONArray()
-        cursor.columnNames.forEach {
-            columnNameJsonArray.put(it)
+
+        columns.forEach {
+            columnNameJsonArray.put(
+                JSONObject().apply {
+                    put("name", it.first)
+                    put("type", it.second)
+                }
+            )
         }
 
         jsonObject.put("success", true)
         jsonObject.put("data", jsonArray)
         jsonObject.put("columnNames", columnNameJsonArray)
-        return jsonObject.toString()
     }
 
     private fun getDatabaseVersion(): Int {
