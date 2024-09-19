@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
+import CoroutineTestRule
 import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
@@ -27,8 +28,6 @@ import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
-import java.util.UUID
-import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -48,7 +47,8 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.geowidget.model.ServicePointType
-import org.smartregister.fhircore.geowidget.rule.CoroutineTestRule
+import java.util.UUID
+import javax.inject.Inject
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
@@ -63,6 +63,10 @@ class GeoWidgetViewModelTest {
 
   @Inject lateinit var configService: ConfigService
 
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  @Inject lateinit var parser: IParser
+
   private lateinit var configurationRegistry: ConfigurationRegistry
 
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
@@ -75,9 +79,6 @@ class GeoWidgetViewModelTest {
 
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
 
-  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
-
-  @Inject lateinit var parser: IParser
   private lateinit var viewModel: GeoWidgetViewModel
 
   @Mock private lateinit var dispatcherProvider: DispatcherProvider
@@ -93,7 +94,7 @@ class GeoWidgetViewModelTest {
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = coroutinesTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           configService = configService,
@@ -103,7 +104,7 @@ class GeoWidgetViewModelTest {
           context = ApplicationProvider.getApplicationContext(),
         ),
       )
-    geoWidgetViewModel = spyk(GeoWidgetViewModel(coroutinesTestRule.testDispatcherProvider))
+    geoWidgetViewModel = spyk(GeoWidgetViewModel(dispatcherProvider))
 
     coEvery { defaultRepository.create(any()) } returns emptyList()
   }
