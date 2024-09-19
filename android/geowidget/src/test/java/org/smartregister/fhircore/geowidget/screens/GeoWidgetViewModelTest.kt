@@ -28,6 +28,8 @@ import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
+import java.util.UUID
+import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -47,8 +49,6 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.geowidget.model.ServicePointType
-import java.util.UUID
-import javax.inject.Inject
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
