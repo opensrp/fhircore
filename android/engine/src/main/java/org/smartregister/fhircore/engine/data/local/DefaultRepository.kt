@@ -43,6 +43,7 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
 import com.jayway.jsonpath.PathNotFoundException
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.math.min
@@ -518,15 +519,7 @@ constructor(
             onSuccess = {
               relatedResourceWrapper.relatedResourceCountMap
                 .getOrPut(key) { mutableListOf() }
-                .apply {
-                  add(
-                    RelatedResourceCount(
-                      count = it,
-                      relatedResourceType = resourceConfig.resource,
-                      parentResourceId = resource.logicalId,
-                    ),
-                  )
-                }
+                .apply { add(RelatedResourceCount(count = it)) }
             },
             onFailure = {
               Timber.e(
@@ -534,6 +527,13 @@ constructor(
                 "Error retrieving total count for all related resources identified by $key",
               )
             },
+          )
+        } else {
+          computeCountForEachRelatedResource(
+            resources = currentResources,
+            resourceConfig = resourceConfig,
+            relatedResourceWrapper = relatedResourceWrapper,
+            configComputedRuleValues = configComputedRuleValues,
           )
         }
       }
@@ -583,6 +583,54 @@ constructor(
       }
     }
     return relatedResourceWrapper
+  }
+
+  private suspend fun computeCountForEachRelatedResource(
+    resources: List<Resource>,
+    resourceConfig: ResourceConfig,
+    relatedResourceWrapper: RelatedResourceWrapper,
+    configComputedRuleValues: Map<String, Any>,
+  ) {
+    val relatedResourceCountLinkedList = LinkedList<RelatedResourceCount>()
+    val key = resourceConfig.id ?: resourceConfig.resource.name
+    resources.forEach { baseResource ->
+      val search =
+        Search(type = resourceConfig.resource).apply {
+          filter(
+            ReferenceClientParam(resourceConfig.searchParameter),
+            { value = baseResource.logicalId.asReference(baseResource.resourceType).reference },
+          )
+          applyConfiguredSortAndFilters(
+            resourceConfig = resourceConfig,
+            sortData = false,
+            configComputedRuleValues = configComputedRuleValues,
+          )
+        }
+      search.count(
+        onSuccess = {
+          relatedResourceCountLinkedList.add(
+            RelatedResourceCount(
+              relatedResourceType = resourceConfig.resource,
+              parentResourceId = baseResource.logicalId,
+              count = it,
+            ),
+          )
+        },
+        onFailure = {
+          Timber.e(
+            it,
+            "Error retrieving count for ${
+                            baseResource.logicalId.asReference(
+                                baseResource.resourceType,
+                            )
+                        } for related resource identified ID $key",
+          )
+        },
+      )
+    }
+
+    // Add each related resource count query result to map
+    relatedResourceWrapper.relatedResourceCountMap[key] = relatedResourceCountLinkedList
   }
 
   private fun updateResourceWrapperAndQueue(

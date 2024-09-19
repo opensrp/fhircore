@@ -271,7 +271,7 @@ suspend fun Sequence<String>.resourceReferenceToBitMap(
   forEach {
     val resourceId = it.extractLogicalIdUuid()
     fhirEngine.loadResource<Binary>(resourceId)?.let { binary ->
-      decodedImageMap[resourceId] = binary.data.decodeToBitmap()
+      binary.data.decodeToBitmap()?.let { bitmap -> decodedImageMap[resourceId] = bitmap }
     }
   }
 }
@@ -294,7 +294,7 @@ suspend fun List<ViewProperties>.decodeImageResourcesToBitmap(
           ) {
             val resourceId = imageConfig!!.reference!!
             fhirEngine.loadResource<Binary>(resourceId)?.let { binary: Binary ->
-              decodedImageMap[resourceId] = binary.data.decodeToBitmap()
+              binary.data.decodeToBitmap()?.let { bitmap -> decodedImageMap[resourceId] = bitmap }
             }
           }
         }

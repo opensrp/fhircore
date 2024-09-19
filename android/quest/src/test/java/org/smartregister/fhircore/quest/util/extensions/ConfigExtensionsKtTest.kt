@@ -32,6 +32,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -41,12 +42,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatchers.anyString
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
@@ -792,5 +795,38 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     }
     Assert.assertTrue(decodedImageMap.isEmpty())
     Assert.assertTrue(!decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
+  }
+
+  fun testExceptionCaughtOnDecodingBitmap() = runTest {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    val listViewProperties = cardViewProperties.content[0] as ListProperties
+    val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
+    val rowProperties =
+      (columnProperties.children[0] as RowProperties).copy(
+        children =
+          listOf(
+            ImageProperties(
+              imageConfig =
+                ImageConfig(
+                  type = ICON_TYPE_REMOTE,
+                  reference = "null Reference",
+                ),
+            ),
+          ),
+      )
+    val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+
+    coEvery { defaultRepository.loadResource<Binary>(anyString()) } returns
+      Binary().apply {
+        this.id = "null Reference"
+        this.contentType = "image/jpeg"
+        this.data = "gibberish value".toByteArray()
+      }
+
+    withContext(Dispatchers.IO) {
+      listOf(rowProperties).decodeImageResourcesToBitmap(fhirEngine, decodedImageMap)
+    }
+    Assert.assertTrue(decodedImageMap.isEmpty())
+    Assert.assertFalse(decodedImageMap.containsKey("null Reference"))
   }
 }
