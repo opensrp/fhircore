@@ -166,5 +166,5 @@ suspend inline fun FhirEngine.retrievePreviouslyGeneratedMeasureReports(
   search.filter(MeasureReport.MEASURE, { value = measureUrl })
   subjects.forEach { search.filter(MeasureReport.SUBJECT, { value = it }) }
 
-  return this.search<MeasureReport>(search).map { it.resource }
+  return this.batchedSearch<MeasureReport>(search).map { it.resource }
 }
