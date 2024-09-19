@@ -105,7 +105,10 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
     savedInstanceState: Bundle?,
   ): View {
     buildGeoWidgetFragment()
-    geoWidgetLauncherViewModel.retrieveLocations(geoWidgetConfiguration, null)
+    geoWidgetLauncherViewModel.retrieveLocations(
+      geoWidgetConfig = geoWidgetConfiguration,
+      searchText = searchViewModel.searchQuery.value.query,
+    )
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
@@ -164,17 +167,18 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
             },
           ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
-              val fragment = remember { geoWidgetFragment }
+              val geoWidgetFragment = remember { geoWidgetFragment }
               GeoWidgetLauncherScreen(
                 modifier = Modifier.fillMaxSize(),
                 openDrawer = openDrawer,
                 navController = findNavController(),
                 toolBarHomeNavigation = navArgs.toolBarHomeNavigation,
                 fragmentManager = childFragmentManager,
-                geoWidgetFragment = fragment,
+                geoWidgetFragment = geoWidgetFragment,
                 geoWidgetConfiguration = geoWidgetConfiguration,
                 searchQuery = searchViewModel.searchQuery,
                 search = { searchText ->
+                  geoWidgetFragment.clearMapFeatures()
                   geoWidgetLauncherViewModel.onEvent(
                     GeoWidgetEvent.SearchFeatures(
                       searchQuery = SearchQuery(searchText, SearchMode.KeyboardInput),
@@ -218,8 +222,8 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
           geoWidgetFragment.clearMapFeatures()
         }
         geoWidgetLauncherViewModel.retrieveLocations(
-          geoWidgetConfiguration,
-          searchViewModel.searchQuery.value.query,
+          geoWidgetConfig = geoWidgetConfiguration,
+          searchText = searchViewModel.searchQuery.value.query,
         )
         appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
       }

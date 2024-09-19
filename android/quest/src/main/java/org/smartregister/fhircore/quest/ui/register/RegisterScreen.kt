@@ -117,9 +117,11 @@ fun RegisterScreen(
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           showSearchByQrCode = registerUiState.registerConfiguration?.showSearchByQrCode ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
-          onSearchTextChanged = { uiSearchQuery ->
+          onSearchTextChanged = { uiSearchQuery, performSearchOnValueChanged ->
             searchQuery.value = uiSearchQuery
-            onEvent(RegisterEvent.SearchRegister(searchQuery = uiSearchQuery))
+            if (performSearchOnValueChanged) {
+              onEvent(RegisterEvent.SearchRegister(searchQuery = uiSearchQuery))
+            }
           },
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
           topScreenSection = registerUiState.registerConfiguration?.topScreenSection,
