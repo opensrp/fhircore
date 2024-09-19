@@ -23,7 +23,12 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
-import com.google.android.fhir.search.search
+import java.time.Duration
+import java.time.temporal.ChronoUnit
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
+import kotlin.math.abs
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
@@ -67,12 +72,6 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
-import java.time.Duration
-import java.time.temporal.ChronoUnit
-import java.util.Date
-import java.util.Locale
-import java.util.UUID
-import kotlin.math.abs
 
 const val REFERENCE = "reference"
 const val PARTOF = "part-of"
@@ -484,7 +483,7 @@ suspend fun Task.updateDependentTaskDueDate(
   return apply {
     val dependentTasks =
       defaultRepository.fhirEngine
-        .search<Task> {
+        .batchedSearch<Task> {
           filter(
             referenceParameter = ReferenceClientParam(PARTOF),
             { value = id },

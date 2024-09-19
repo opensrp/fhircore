@@ -28,6 +28,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
+import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateType
@@ -59,7 +60,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
-import javax.inject.Inject
 
 @HiltAndroidTest
 class RegisterViewModelTest : RobolectricTest() {

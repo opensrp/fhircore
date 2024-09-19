@@ -56,8 +56,7 @@ fun List<ViewProperties>.retrieveListProperties(): List<ListProperties> {
       ViewType.COLUMN -> viewPropertiesQueue.addAll((properties as ColumnProperties).children)
       ViewType.ROW -> viewPropertiesQueue.addAll((properties as RowProperties).children)
       ViewType.CARD -> viewPropertiesQueue.addAll((properties as CardViewProperties).content)
-      ViewType.LIST ->
-        viewPropertiesQueue.addAll((properties as ListProperties).registerCard.views)
+      ViewType.LIST -> viewPropertiesQueue.addAll((properties as ListProperties).registerCard.views)
       else -> {}
     }
   }

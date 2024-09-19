@@ -29,6 +29,15 @@ import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.sync.download.ResourceSearchParams
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.InputStreamReader
+import java.net.UnknownHostException
+import java.util.Locale
+import java.util.PropertyResourceBundle
+import java.util.ResourceBundle
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -71,15 +80,6 @@ import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import retrofit2.HttpException
 import timber.log.Timber
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.InputStreamReader
-import java.net.UnknownHostException
-import java.util.Locale
-import java.util.PropertyResourceBundle
-import java.util.ResourceBundle
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class ConfigurationRegistry
@@ -378,14 +378,18 @@ constructor(
     context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
       if (!supportedFileExtensions.contains(it.fileExtension)) {
         filesQueue.addLast(String.format(BASE_CONFIG_PATH, appId) + "/$it")
-      } else configFiles.add(String.format(BASE_CONFIG_PATH, appId) + "/$it")
+      } else {
+        configFiles.add(String.format(BASE_CONFIG_PATH, appId) + "/$it")
+      }
     }
     while (filesQueue.isNotEmpty()) {
       val currentPath = filesQueue.removeFirst()
       context.assets.list(currentPath)?.onEach {
         if (!supportedFileExtensions.contains(it.fileExtension)) {
           filesQueue.addLast("$currentPath/$it")
-        } else configFiles.add("$currentPath/$it")
+        } else {
+          configFiles.add("$currentPath/$it")
+        }
       }
     }
     return configFiles
@@ -507,13 +511,14 @@ constructor(
     val resultBundle =
       if (isNonProxy()) {
         fhirResourceDataSourceGetBundle(resourceType, resourceIdList)
-      } else
+      } else {
         fhirResourceDataSource.post(
           requestBody =
             generateRequestBundle(resourceType, resourceIdList)
               .encodeResourceToString()
               .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
         )
+      }
 
     processResultBundleEntries(resultBundle.entry)
 

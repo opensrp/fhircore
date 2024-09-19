@@ -52,7 +52,9 @@ class ConfigRulesExecutor @Inject constructor(val fhirPathDataExtractor: FhirPat
     if (BuildConfig.DEBUG) {
       val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
       Timber.d("Rule executed in $timeToFireRules millisecond(s)")
-    } else rulesEngine.fire(rules, facts)
+    } else {
+      rulesEngine.fire(rules, facts)
+    }
     return facts.get(DATA) as Map<String, Any>
   }
 

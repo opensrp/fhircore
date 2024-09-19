@@ -33,9 +33,12 @@ import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
-import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Date
+import java.util.UUID
+import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -60,6 +63,7 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
+import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.CodingSystemUsage
@@ -77,6 +81,7 @@ import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.checkResourceValid
 import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
@@ -95,10 +100,6 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
-import java.util.Date
-import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Provider
 
 @HiltViewModel
 class QuestionnaireViewModel
@@ -786,7 +787,7 @@ constructor(
 
     if (libraryFilters.isNotEmpty()) {
       defaultRepository.fhirEngine
-        .search<Library> {
+        .batchedSearch<Library> {
           filter(
             Resource.RES_ID,
             *libraryFilters.toTypedArray(),
@@ -1117,14 +1118,49 @@ constructor(
         null
       }
 
+    // Exclude the configured fields from QR
+    if (questionnaireResponse != null) {
+      val exclusionLinkIdsMap: Map<String, Boolean> =
+        questionnaireConfig.linkIds
+          ?.asSequence()
+          ?.filter { it.type == LinkIdType.PREPOPULATION_EXCLUSION }
+          ?.associateBy { it.linkId }
+          ?.mapValues { it.value.type == LinkIdType.PREPOPULATION_EXCLUSION } ?: emptyMap()
+
+      questionnaireResponse.item =
+        excludePrepopulationFields(questionnaireResponse.item.toMutableList(), exclusionLinkIdsMap)
+    }
     return Pair(questionnaireResponse, launchContextResources)
+  }
+
+  fun excludePrepopulationFields(
+    items: MutableList<QuestionnaireResponseItemComponent>,
+    exclusionMap: Map<String, Boolean>,
+  ): MutableList<QuestionnaireResponseItemComponent> {
+    val stack = LinkedList<MutableList<QuestionnaireResponseItemComponent>>()
+    stack.push(items)
+    while (stack.isNotEmpty()) {
+      val currentItems = stack.pop()
+      val iterator = currentItems.iterator()
+      while (iterator.hasNext()) {
+        val item = iterator.next()
+        if (exclusionMap.containsKey(item.linkId)) {
+          iterator.remove()
+        } else if (item.item.isNotEmpty()) {
+          stack.push(item.item)
+        }
+      }
+    }
+    return items
   }
 
   private fun List<QuestionnaireResponseItemComponent>.removeUnAnsweredItems():
     List<QuestionnaireResponseItemComponent> {
-    return this.filter { it.hasAnswer() || it.item.isNotEmpty() }
+    return this.asSequence()
+      .filter { it.hasAnswer() || it.item.isNotEmpty() }
       .onEach { it.item = it.item.removeUnAnsweredItems() }
       .filter { it.hasAnswer() || it.item.isNotEmpty() }
+      .toList()
   }
 
   /**

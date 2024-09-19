@@ -30,6 +30,7 @@ import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import com.google.android.fhir.FhirEngine
+import kotlin.collections.set
 import org.hl7.fhir.r4.model.Binary
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
@@ -62,7 +63,6 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherFragment
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
-import kotlin.collections.set
 
 const val PRACTITIONER_ID = "practitionerId"
 
@@ -184,16 +184,23 @@ fun ActionConfig.handleClickEvent(
       navController.navigate(MainNavigationScreen.Insight.route)
     ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
     ApplicationWorkflow.LAUNCH_MAP -> {
-      val mapFragmentDestination = MainNavigationScreen.GeoWidgetLauncher.route
-
-      val isMapFragmentExists = navController.currentDestination?.id == mapFragmentDestination
-      if (isMapFragmentExists) {
-        navController.popBackStack(mapFragmentDestination, false)
+      val args = bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id)
+      // If value != null, we are navigating FROM a map; disallow same map navigation
+      val currentGeoWidgetId =
+        navController.currentBackStackEntry?.arguments?.getString(NavigationArg.GEO_WIDGET_ID)
+      val sameGeoWidgetNavigation =
+        args.getString(NavigationArg.GEO_WIDGET_ID) ==
+          navController.previousBackStackEntry?.arguments?.getString(NavigationArg.GEO_WIDGET_ID)
+      if (!currentGeoWidgetId.isNullOrEmpty() && sameGeoWidgetNavigation) {
+        return
       } else {
         navController.navigate(
-          resId = mapFragmentDestination,
-          args = bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id),
-          navOptions = navOptions(mapFragmentDestination, inclusive = true, singleOnTop = true),
+          resId = MainNavigationScreen.GeoWidgetLauncher.route,
+          args = args,
+          navOptions =
+            navController.currentDestination?.id?.let {
+              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
+            },
         )
       }
     }
@@ -261,12 +268,12 @@ suspend fun Sequence<String>.resourceReferenceToBitMap(
   fhirEngine: FhirEngine,
   decodedImageMap: SnapshotStateMap<String, Bitmap>,
 ) {
-    forEach {
-      val resourceId = it.extractLogicalIdUuid()
-      fhirEngine.loadResource<Binary>(resourceId)?.let { binary ->
-        decodedImageMap[resourceId] = binary.data.decodeToBitmap()
-      }
+  forEach {
+    val resourceId = it.extractLogicalIdUuid()
+    fhirEngine.loadResource<Binary>(resourceId)?.let { binary ->
+      binary.data.decodeToBitmap()?.let { bitmap -> decodedImageMap[resourceId] = bitmap }
     }
+  }
 }
 
 suspend fun List<ViewProperties>.decodeImageResourcesToBitmap(
@@ -276,28 +283,31 @@ suspend fun List<ViewProperties>.decodeImageResourcesToBitmap(
   val queue = ArrayDeque(this)
   while (queue.isNotEmpty()) {
     val viewProperty = queue.removeFirst()
-    when(viewProperty.viewType) {
+    when (viewProperty.viewType) {
       ViewType.IMAGE -> {
         val imageProperties = (viewProperty as ImageProperties)
         if (imageProperties.imageConfig != null) {
           val imageConfig = imageProperties.imageConfig
-          if (ICON_TYPE_REMOTE.equals(imageConfig?.type, ignoreCase = true) &&
-            !imageConfig?.reference.isNullOrBlank()) {
+          if (
+            ICON_TYPE_REMOTE.equals(imageConfig?.type, ignoreCase = true) &&
+              !imageConfig?.reference.isNullOrBlank()
+          ) {
             val resourceId = imageConfig!!.reference!!
             fhirEngine.loadResource<Binary>(resourceId)?.let { binary: Binary ->
-              decodedImageMap[resourceId] = binary.data.decodeToBitmap()
+              binary.data.decodeToBitmap()?.let { bitmap -> decodedImageMap[resourceId] = bitmap }
             }
           }
         }
       }
       ViewType.COLUMN -> (viewProperty as ColumnProperties).children.forEach(queue::addLast)
-      ViewType.ROW ->  (viewProperty as RowProperties).children.forEach(queue::addLast)
-      ViewType.SERVICE_CARD -> (viewProperty as ServiceCardProperties).details.forEach(queue::addLast)
+      ViewType.ROW -> (viewProperty as RowProperties).children.forEach(queue::addLast)
+      ViewType.SERVICE_CARD ->
+        (viewProperty as ServiceCardProperties).details.forEach(queue::addLast)
       ViewType.CARD -> (viewProperty as CardViewProperties).content.forEach(queue::addLast)
       ViewType.LIST -> (viewProperty as ListProperties).registerCard.views.forEach(queue::addLast)
       ViewType.STACK -> (viewProperty as StackViewProperties).children.forEach(queue::addLast)
       else -> {
-        /**Ignore other views that cannot display images**/
+        /** Ignore other views that cannot display images* */
       }
     }
   }
