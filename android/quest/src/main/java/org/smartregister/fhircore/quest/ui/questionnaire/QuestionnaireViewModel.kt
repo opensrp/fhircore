@@ -37,6 +37,7 @@ import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
+import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Provider

@@ -114,6 +114,7 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = ApplicationProvider.getApplicationContext(),
+          dispatcherProvider = dispatcherProvider,
         ),
       )
 

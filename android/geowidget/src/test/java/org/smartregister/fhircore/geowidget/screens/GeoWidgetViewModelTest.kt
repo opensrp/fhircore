@@ -97,6 +97,7 @@ class GeoWidgetViewModelTest {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = ApplicationProvider.getApplicationContext(),
+          dispatcherProvider = dispatcherProvider,
         ),
       )
     geoWidgetViewModel = spyk(GeoWidgetViewModel(dispatcherProvider))

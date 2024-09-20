@@ -98,6 +98,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.formatDate
@@ -122,6 +123,8 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var parser: IParser
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @BindValue
   val configService: ConfigService =
     spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
@@ -145,6 +148,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         fhirPathDataExtractor = fhirPathDataExtractor,
         parser = parser,
         context = context,
+        dispatcherProvider = dispatcherProvider,
       )
   }
 
@@ -557,6 +561,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = context,
+          dispatcherProvider = dispatcherProvider,
         ),
       )
     coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
@@ -634,6 +639,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = context,
+          dispatcherProvider = dispatcherProvider,
         ),
       )
 
