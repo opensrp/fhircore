@@ -457,7 +457,6 @@ constructor(
                 )
                 .isNullOrEmpty() &&
                 _totalRecordsCount.longValue == 0L &&
-                // Do not show progress dialog if initial sync is disabled
                 applicationConfiguration.usePractitionerAssignedLocationOnSync,
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,

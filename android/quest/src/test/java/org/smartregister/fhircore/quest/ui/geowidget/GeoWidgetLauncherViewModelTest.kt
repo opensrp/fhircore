@@ -52,8 +52,8 @@ import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.launcher.GeoWidgetLauncherViewModel
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -68,6 +68,8 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+
+  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var viewModel: GeoWidgetLauncherViewModel
   private val geoWidgetConfiguration =
     GeoWidgetConfiguration(
@@ -103,6 +105,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
         dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         resourceDataRulesExecutor = resourceDataRulesExecutor,
+        configurationRegistry = configurationRegistry,
       )
 
     runBlocking { defaultRepository.addOrUpdate(resource = location) }

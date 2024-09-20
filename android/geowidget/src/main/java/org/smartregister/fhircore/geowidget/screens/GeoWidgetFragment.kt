@@ -27,7 +27,6 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.MultiPoint
@@ -48,7 +47,6 @@ import io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPlugin
 import io.ona.kujaku.plugin.switcher.layer.StreetsBaseLayer
 import io.ona.kujaku.utils.CoordinateUtils
 import io.ona.kujaku.views.KujakuMapView
-import kotlinx.coroutines.launch
 import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.configuration.geowidget.MapLayer
@@ -94,7 +92,9 @@ class GeoWidgetFragment : Fragment() {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    setupMapFeatures()
+    geoWidgetViewModel.features.observe(viewLifecycleOwner) { result ->
+      zoomToLocationsOnMap(result.map { it.toFeature() })
+    }
   }
 
   override fun onStart() {
@@ -130,14 +130,6 @@ class GeoWidgetFragment : Fragment() {
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
     mapView.onSaveInstanceState(outState)
-  }
-
-  private fun setupMapFeatures() {
-    viewLifecycleOwner.lifecycleScope.launch {
-      geoWidgetViewModel.features.observe(viewLifecycleOwner) { result ->
-        zoomToLocationsOnMap(result.map { it.toFeature() })
-      }
-    }
   }
 
   private fun setupViews(): LinearLayout {

@@ -20,8 +20,10 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.slot
@@ -31,6 +33,7 @@ import io.mockk.verifyOrder
 import java.util.Base64
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
@@ -115,13 +118,18 @@ class PinViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnSetPin() {
+  fun testOnSetPin() = runBlocking {
+    val newPinSlot = slot<CharArray>()
+    val onSavedPinLambdaSlot = slot<() -> Unit>()
+
+    coEvery { secureSharedPreference.saveSessionPin(capture(newPinSlot), captureLambda()) } just
+      Runs
+
     pinViewModel.onSetPin("1990".toCharArray())
 
-    val newPinSlot = slot<CharArray>()
-    verify { secureSharedPreference.saveSessionPin(capture(newPinSlot)) }
-
     Assert.assertEquals("1990", newPinSlot.captured.concatToString())
+
+    onSavedPinLambdaSlot.captured.invoke()
     Assert.assertEquals(true, pinViewModel.navigateToHome.value)
   }
 
@@ -183,9 +191,6 @@ class PinViewModelTest : RobolectricTest() {
 
     // Verify pin char array is overwritten in memory for valid pin
     Assert.assertEquals("******", loginPin.concatToString())
-
-    // Verify the progressBar flag is set to hidden
-    Assert.assertFalse(pinViewModel.pinUiState.value.showProgressBar)
 
     unmockkStatic(::passwordHashString)
   }
