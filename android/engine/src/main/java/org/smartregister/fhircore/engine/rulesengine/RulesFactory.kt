@@ -149,8 +149,6 @@ constructor(
   /** Provide access to utility functions accessible to the users defining rules in JSON format. */
   inner class RulesEngineService {
 
-    val parser = fhirContext.newJsonParser()
-
     private var conf: Configuration =
       Configuration.defaultConfiguration().apply { addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL) }
 
@@ -682,7 +680,9 @@ constructor(
         }
 
       val updatedResource =
-        parser.parseResource(resource::class.java, updatedResourceDocument.jsonString())
+        fhirContext
+          .newJsonParser()
+          .parseResource(resource::class.java, updatedResourceDocument.jsonString())
       CoroutineScope(dispatcherProvider.io()).launch {
         if (purgeAffectedResources) {
           defaultRepository.purge(updatedResource as Resource, forcePurge = true)

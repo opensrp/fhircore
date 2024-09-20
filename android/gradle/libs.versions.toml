@@ -4,11 +4,11 @@ activity-compose = "1.8.2"
 androidJunit5 = "1.8.2.1"
 androidx-camera = "1.4.0-rc01"
 androidx-paging = "3.3.2"
-androidx-test= "1.6.1"
+androidx-test= "1.6.2"
 appcompat = "1.7.0"
 benchmark-junit = "1.3.0"
 cardview = "1.0.0"
-compose-material-icons = "1.6.8"
+compose-ui = "1.6.8"
 compressor = "3.0.1"
 constraintlayout = "2.1.4"
 constraintlayout-compose = "1.0.1"
@@ -23,14 +23,13 @@ desugar-jdk-libs = "2.1.2"
 dokkaBase = "1.9.20"
 easyRulesCore = "4.1.1-SNAPSHOT"
 espresso-core = "3.6.1"
-fhir-common-utils = "1.0.0-SNAPSHOT"
+common-utils = "1.0.0-SNAPSHOT"
 fhir-sdk-contrib-barcode = "0.1.0-beta3-preview7-rc1-SNAPSHOT"
 fhir-sdk-contrib-locationwidget = "0.1.0-alpha01-preview2-rc1-SNAPSHOT"
 fhir-sdk-data-capture = "1.1.0-preview14-rc1-SNAPSHOT"
 fhir-sdk-engine = "1.0.0-preview14-rc3-SNAPSHOT"
-fhir-sdk-knowledge = "0.1.0-beta01-preview-SNAPSHOT"
-fhir-sdk-workflow = "0.1.0-alpha04-preview13-SNAPSHOT"
-foundation = "1.6.8"
+fhir-sdk-knowledge = "0.1.0-beta01-preview-rc1-SNAPSHOT"
+fhir-sdk-workflow = "0.1.0-alpha04-preview13-rc1-SNAPSHOT"
 fragment-ktx = "1.8.2"
 glide = "4.16.0"
 gradle = "8.3.2"
@@ -50,11 +49,11 @@ kotlinx-coroutines = "1.8.1"
 kotlinx-serialization-json = "1.6.0"
 kt3k-coveralls-ver="2.12.0"
 ktlint = "0.50.0"
-kujaku-library = "0.10.5-SNAPSHOT"
+kujaku-library = "0.10.6-2-SNAPSHOT"
+kujaku-mapbox-sdk-turf = "7.2.0"
 leakcanary-android = "2.10"
-lifecycle= "2.8.4"
+lifecycle= "2.8.5"
 logback-android = "3.0.0"
-mapbox-sdk-turf = "4.8.0"
 material = "1.12.0"
 mlkit-barcode-scanning = "17.3.0"
 mockk = "1.13.8"
@@ -65,7 +64,7 @@ okhttp = "4.12.0"
 okhttp-logging-interceptor = "4.12.0"
 orchestrator = "1.5.0"
 owasp = "8.2.1"
-p2p-lib = "0.6.10-SNAPSHOT"
+p2p-lib = "0.6.11-SNAPSHOT"
 playServicesLocation = "21.3.0"
 playServicesTasks = "18.2.0"
 preference-ktx = "1.2.1"
@@ -80,7 +79,6 @@ slf4j-nop = "2.0.7"
 spotlessPluginGradle = "6.25.0"
 stax-api = "1.0-2"
 timber = "5.0.1"
-ui = "1.6.3"
 uiautomator = "2.3.0"
 work = "2.9.1"
 xercesImpl = "2.12.2"
@@ -98,8 +96,8 @@ activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 benchmark-junit = { group = "androidx.benchmark", name = "benchmark-junit4", version.ref = "benchmark-junit" }
 cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core", version.ref = "compose-material-icons" }
-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "compose-material-icons" }
+compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core", version.ref = "compose-ui" }
+compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "compose-ui" }
 compressor = { group = "id.zelory", name = "compressor", version.ref = "compressor" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayout-compose" }
@@ -121,13 +119,12 @@ datastore-preferences = { group = "androidx.datastore", name = "datastore-prefer
 dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokkaBase" }
 easy-rules-jexl = { group = "org.smartregister", name = "easy-rules-jexl",  version.ref = "easyRulesCore"  }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
-fhir-common-utils = { group = "org.smartregister", name = "fhir-common-utils", version.ref = "fhir-common-utils" }
+fhir-common-utils = { group = "org.smartregister", name = "fhir-common-utils", version.ref = "common-utils" }
 fhir-engine = { group = "org.smartregister", name = "engine", version.ref = "fhir-sdk-engine" }
-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
+foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "compose-ui" }
 fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragment-ktx" }
 fragment-testing = { group = "androidx.fragment", name = "fragment-testing", version.ref = "fragment-ktx" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
-gms-play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hilt" }
@@ -158,7 +155,7 @@ lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-lived
 lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 logback-android = { module = "com.github.tony19:logback-android", version.ref = "logback-android" }
-mapbox-sdk-turf = { group = "com.mapbox.mapboxsdk", name = "mapbox-sdk-turf", version.ref = "mapbox-sdk-turf" }
+mapbox-sdk-turf = { group = "com.mapbox.mapboxsdk", name = "mapbox-sdk-turf", version.ref = "kujaku-mapbox-sdk-turf" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 mlkit-barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "mlkit-barcode-scanning"}
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
@@ -174,6 +171,7 @@ orchestrator = { group = "androidx.test", name = "orchestrator", version.ref = "
 p2p-lib = { group = "org.smartregister", name = "p2p-lib", version.ref = "p2p-lib" }
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "androidx-paging" }
 paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "androidx-paging" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 play-services-tasks = { group = "com.google.android.gms", name = "play-services-tasks", version.ref = "playServicesTasks" }
 preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preference-ktx" }
 prettytime = { group = "org.ocpsoft.prettytime", name = "prettytime", version.ref = "prettytime" }
@@ -183,16 +181,16 @@ retrofit2-kotlinx-serialization-converter = { group = "com.jakewharton.retrofit"
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 rules = { group = "androidx.test", name = "rules", version.ref = "rules" }
 runner = { module = "androidx.test:runner", version.ref = "androidx-test" }
-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "ui" }
+runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "compose-ui" }
 security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security-crypto" }
 slf4j-nop = { group = "org.slf4j", name = "slf4j-nop", version.ref = "slf4j-nop" }
 stax-api = { group = "javax.xml.stream", name = "stax-api", version.ref = "stax-api" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "ui" }
-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "ui" }
-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "ui" }
-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "ui" }
+ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose-ui" }
+ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "compose-ui" }
+ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose-ui" }
+ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose-ui" }
+ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose-ui" }
 uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
 work-testing = { group = "androidx.work", name = "work-testing", version.ref = "work" }
