@@ -21,8 +21,11 @@
         android:theme="@style/AppTheme.NoActionBar"
         android:usesCleartextTraffic="true"
         android:windowSoftInputMode="adjustResize"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         tools:ignore="UnusedAttribute,LockedOrientationActivity"
-        tools:replace="android:theme">
+        tools:replace="android:allowBackup,android:theme">
         <profileable
             android:shell="true"
             tools:targetApi="29" />
