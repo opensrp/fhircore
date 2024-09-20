@@ -26,7 +26,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -38,7 +37,6 @@ import org.smartregister.fhircore.engine.ui.multiselect.TreeBuilder
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import timber.log.Timber
 
 @HiltViewModel
 class MultiSelectViewModel
@@ -63,7 +61,6 @@ constructor(
         previouslySelectedNodes.values.forEach { selectedNodes[it.locationId] = it }
       }
 
-      val currentTime = System.currentTimeMillis()
       val repositoryResourceData =
         defaultRepository.searchResourcesRecursively(
           filterByRelatedEntityLocationMetaTag = false,
@@ -133,9 +130,6 @@ constructor(
       isLoading.postValue(false)
       _rootTreeNodes = TreeBuilder.buildTrees(lookupItems, rootNodeIds)
       rootTreeNodes.addAll(_rootTreeNodes)
-      Timber.w(
-        "Building tree of resource type ${multiSelectViewConfig.resourceConfig.baseResource.resource} took ${(System.currentTimeMillis() - currentTime) / 1000} second(s)",
-      )
     }
   }
 
@@ -166,9 +160,9 @@ constructor(
           rootTreeNodeMap[rootTreeNode.id] = rootTreeNode
           return@forEach
         }
-        val childrenList = LinkedList(rootTreeNode.children)
-        while (childrenList.isNotEmpty()) {
-          val currentNode = childrenList.removeFirst()
+        val treeNodeArrayDeque = ArrayDeque(rootTreeNode.children)
+        while (treeNodeArrayDeque.isNotEmpty()) {
+          val currentNode = treeNodeArrayDeque.removeFirst()
           if (currentNode.data.contains(other = searchTerm, ignoreCase = true)) {
             when {
               rootTreeNodeMap.containsKey(rootTreeNode.id) -> return@forEach
@@ -178,7 +172,7 @@ constructor(
               }
             }
           }
-          currentNode.children.forEach { childrenList.add(it) }
+          currentNode.children.forEach { treeNodeArrayDeque.addLast(it) }
         }
       }
       rootTreeNodes.addAll(rootTreeNodeMap.values)

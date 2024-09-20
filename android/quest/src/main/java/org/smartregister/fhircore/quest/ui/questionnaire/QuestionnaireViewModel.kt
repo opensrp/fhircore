@@ -33,7 +33,6 @@ import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
-import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
@@ -83,6 +82,7 @@ import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.checkResourceValid
 import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
@@ -788,7 +788,7 @@ constructor(
 
     if (libraryFilters.isNotEmpty()) {
       defaultRepository.fhirEngine
-        .search<Library> {
+        .batchedSearch<Library> {
           filter(
             Resource.RES_ID,
             *libraryFilters.toTypedArray(),
@@ -1043,7 +1043,7 @@ constructor(
   ): List<Resource> {
     return when {
       subjectResourceType != null && subjectResourceIdentifier != null ->
-        LinkedList<Resource>().apply {
+        mutableListOf<Resource>().apply {
           loadResource(subjectResourceType, subjectResourceIdentifier)?.let { add(it) }
           val actionParametersExcludingSubject =
             actionParameters.filterNot {
@@ -1053,7 +1053,7 @@ constructor(
             }
           addAll(retrievePopulationResources(actionParametersExcludingSubject))
         }
-      else -> LinkedList(retrievePopulationResources(actionParameters))
+      else -> retrievePopulationResources(actionParameters)
     }
   }
 
