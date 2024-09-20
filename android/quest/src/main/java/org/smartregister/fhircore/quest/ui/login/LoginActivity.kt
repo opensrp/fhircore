@@ -90,7 +90,9 @@ open class LoginActivity : BaseMultiLanguageActivity() {
           downloadNowWorkflowConfigs()
           if (isPinEnabled && !hasActivePin) {
             navigateToPinLogin(launchSetup = true)
-          } else loginActivity.navigateToHome()
+          } else {
+            loginActivity.navigateToHome()
+          }
         }
       }
       launchDialPad.observe(loginActivity) { if (!it.isNullOrBlank()) launchDialPad(it) }

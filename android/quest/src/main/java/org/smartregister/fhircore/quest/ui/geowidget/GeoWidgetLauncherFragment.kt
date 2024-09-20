@@ -54,16 +54,15 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
-import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
@@ -74,6 +73,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
+import org.smartregister.fhircore.quest.ui.shared.models.SearchMode
 import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.ui.shared.viewmodels.SearchViewModel
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -90,13 +90,14 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   private lateinit var geoWidgetFragment: GeoWidgetFragment
   private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
   private val navArgs by navArgs<GeoWidgetLauncherFragmentArgs>()
   private val geoWidgetLauncherViewModel by viewModels<GeoWidgetLauncherViewModel>()
   private val appMainViewModel by activityViewModels<AppMainViewModel>()
   private val searchViewModel by activityViewModels<SearchViewModel>()
-  private val geoWidgetViewModel by activityViewModels<GeoWidgetViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -104,7 +105,10 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
     savedInstanceState: Bundle?,
   ): View {
     buildGeoWidgetFragment()
-
+    geoWidgetLauncherViewModel.retrieveLocations(
+      geoWidgetConfig = geoWidgetConfiguration,
+      searchText = searchViewModel.searchQuery.value.query,
+    )
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
@@ -163,14 +167,14 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
             },
           ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
-              val fragment = remember { geoWidgetFragment }
+              val geoWidgetFragment = remember { geoWidgetFragment }
               GeoWidgetLauncherScreen(
                 modifier = Modifier.fillMaxSize(),
                 openDrawer = openDrawer,
                 navController = findNavController(),
                 toolBarHomeNavigation = navArgs.toolBarHomeNavigation,
                 fragmentManager = childFragmentManager,
-                geoWidgetFragment = fragment,
+                geoWidgetFragment = geoWidgetFragment,
                 geoWidgetConfiguration = geoWidgetConfiguration,
                 searchQuery = searchViewModel.searchQuery,
                 search = { searchText ->
@@ -223,14 +227,13 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
       }
       is CurrentSyncJobStatus.Succeeded,
       is CurrentSyncJobStatus.Failed, -> {
-        lifecycleScope.launch {
-          val geoJsonFeatures =
-            geoWidgetLauncherViewModel.retrieveLocations(
-              geoWidgetConfig = geoWidgetConfiguration,
-              searchText = searchViewModel.searchQuery.value.query,
-            )
-          geoWidgetViewModel.features.postValue(geoJsonFeatures)
+        if (syncJobStatus is CurrentSyncJobStatus.Succeeded) {
+          geoWidgetFragment.clearMapFeatures()
         }
+        geoWidgetLauncherViewModel.retrieveLocations(
+          geoWidgetConfig = geoWidgetConfiguration,
+          searchText = searchViewModel.searchQuery.value.query,
+        )
         appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
       }
       else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
@@ -239,28 +242,27 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    showSetLocationDialog()
-    lifecycleScope.launch {
-      // Retrieve if searchText is null; filter will be triggered automatically if text is not empty
-      if (searchViewModel.searchQuery.value.isBlank()) {
-        val geoJsonFeatures =
-          geoWidgetLauncherViewModel.retrieveLocations(
-            geoWidgetConfig = geoWidgetConfiguration,
-            searchText = searchViewModel.searchQuery.value.query,
-          )
-        if (geoJsonFeatures.isNotEmpty()) {
-          geoWidgetViewModel.features.postValue(geoJsonFeatures)
-        } else {
-          geoWidgetLauncherViewModel.showNoLocationDialog(geoWidgetConfiguration)
-        }
+    geoWidgetLauncherViewModel.noLocationFoundDialog.observe(viewLifecycleOwner) { show ->
+      if (show) {
+        AlertDialogue.showAlert(
+          context = requireContext(),
+          alertIntent = AlertIntent.INFO,
+          message = geoWidgetConfiguration.noResults?.message!!,
+          title = geoWidgetConfiguration.noResults?.title!!,
+          confirmButtonListener = {
+            geoWidgetConfiguration.noResults
+              ?.actionButton
+              ?.actions
+              ?.handleClickEvent(findNavController())
+          },
+          confirmButtonText = R.string.positive_button_location_set,
+          cancellable = true,
+          neutralButtonListener = {},
+        )
       }
     }
 
-    setOnQuestionnaireSubmissionListener {
-      lifecycleScope.launch {
-        geoWidgetViewModel.features.postValue(geoWidgetViewModel.features.value?.plus(it))
-      }
-    }
+    setOnQuestionnaireSubmissionListener { geoWidgetFragment.submitFeatures(listOf(it)) }
   }
 
   override fun onPause() {
@@ -319,6 +321,10 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         .showCurrentLocationButtonVisibility(geoWidgetConfiguration.showLocation)
         .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.showPlaneSwitcher)
         .build()
+
+    lifecycleScope.launch {
+      geoWidgetLauncherViewModel.geoJsonFeatures.collect { geoWidgetFragment.submitFeatures(it) }
+    }
   }
 
   private fun setOnQuestionnaireSubmissionListener(emitFeature: (GeoJsonFeature) -> Unit) {
@@ -336,30 +342,6 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
             }
           }
           .launchIn(lifecycleScope)
-      }
-    }
-  }
-
-  private fun showSetLocationDialog() {
-    viewLifecycleOwner.lifecycleScope.launch {
-      geoWidgetLauncherViewModel.noLocationFoundDialog.observe(requireActivity()) { show ->
-        if (show) {
-          AlertDialogue.showAlert(
-            context = requireContext(),
-            alertIntent = AlertIntent.INFO,
-            message = geoWidgetConfiguration.noResults?.message!!,
-            title = geoWidgetConfiguration.noResults?.title!!,
-            confirmButtonListener = {
-              geoWidgetConfiguration.noResults
-                ?.actionButton
-                ?.actions
-                ?.handleClickEvent(findNavController())
-            },
-            confirmButtonText = R.string.positive_button_location_set,
-            cancellable = true,
-            neutralButtonListener = {},
-          )
-        }
       }
     }
   }

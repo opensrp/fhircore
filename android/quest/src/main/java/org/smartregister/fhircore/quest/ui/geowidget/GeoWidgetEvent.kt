@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util.extension
+package org.smartregister.fhircore.quest.ui.geowidget
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import java.io.ByteArrayOutputStream
+import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 
-fun Bitmap.encodeToByteArray(): ByteArray {
-  ByteArrayOutputStream().use { outputStream ->
-    this.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-    return outputStream.toByteArray()
-  }
-}
-
-fun ByteArray.decodeToBitmap(offset: Int = 0): Bitmap? {
-  return kotlin.runCatching { BitmapFactory.decodeByteArray(this, offset, this.size) }.getOrNull()
+sealed class GeoWidgetEvent {
+  data class SearchFeatures(
+    val searchQuery: SearchQuery = SearchQuery.emptyText,
+    val geoWidgetConfig: GeoWidgetConfiguration,
+  ) : GeoWidgetEvent()
 }

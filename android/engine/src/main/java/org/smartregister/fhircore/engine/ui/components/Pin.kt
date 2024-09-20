@@ -114,7 +114,9 @@ fun PinInput(
           enteredPin =
             if (it.length < enteredPin.size) {
               enteredPin.safeRemoveLast()
-            } else enteredPin.safePlus(it.last())
+            } else {
+              enteredPin.safePlus(it.last())
+            }
           nextCellIndex = enteredPin.size
           onPinSet(enteredPin)
           onShowPinError(false)
