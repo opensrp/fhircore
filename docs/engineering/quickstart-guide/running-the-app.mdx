@@ -82,7 +82,7 @@ Before you can start working on the app, you will need to sync the project with 
 
 Once synced, click on Build > Make Project to compile the code.
 
-For more infomration read more [here](https://docs.opensrp.io/engineering/app/developer-setup)
+For more information read more [here](https://docs.opensrp.io/engineering/app/developer-setup)
 
 
 ### Deploying the reference content
@@ -97,7 +97,7 @@ ln -s `pwd`/giz-eir-fhir-resources/app/* fhircore/android/quest/src/gizEir/asset
 ```
 
 The app is able to use content for configuration resources from the `configs/app/resources` directory in the assets directory. Ideally, any FHIR resource can be loaded into
- the application through the assets.The current impleme. ntation loads the configuration resources declared in the Composition (including Questionnaires, StructureMaps, PlanDefs, Lists, etc) by retrieving them
+ the application through the assets.The current implementation loads the configuration resources declared in the Composition (including Questionnaires, StructureMaps, PlanDefs, Lists, etc) by retrieving them
 from the server, which requires the device to be online. This enhancement should allow the user to create config directories for the resources inside `/configs/app/resources`.
  The resources directory name should be in lowercase format e.g. `configs/app/resources/binary`, `configs/app/resources/questionnaire`, `configs/app/resources/structuremap`,
  `configs/app/resources/plandefinition`, etc.
@@ -108,8 +108,9 @@ from the server, which requires the device to be online. This enhancement should
 
 ## App configs
 
-### Implemntation Guide Config
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/implementation_guide_config.json
+### Implementation Guide Config
+
+<!--[Example implementation guide config](https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/implementation_guide_config.json)-->
 
 ![ig config](/img/eir_configs/ig-config.png)
 
@@ -189,10 +190,9 @@ Package and Resource Definitions:
 
 		- This points to a Composition resource (Composition/12965652), which likely contains additional narrative content, instructions, or descriptions related to the IG. The Composition resource is commonly used for documents or structured narratives.
 
-
-
 ### Composition Config
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/composition_config.json
+
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/composition_config.json-->
 
 ![composition config](/img/eir_configs/composition-config.png)
 
@@ -307,7 +307,8 @@ Each section contains a specific configuration for different parts of the applic
 
 
 ### Application Config
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/application_config.json
+
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/application_config.json-->
 
 ![application config](/img/eir_configs/application-config.png)
 
@@ -380,7 +381,8 @@ https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/application_c
 		- "INSIGHTS": This might be an option to view data insights or reports.
 
 ### Sync Config
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/sync_config.json
+
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/sync_config.json-->
 
 ![sync config](/img/eir_configs/sync-config.png)
 
@@ -464,7 +466,8 @@ Search Parameters:
 
 
 ### Navigation Config
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/navigation_config.json
+
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/navigation_config.json-->
 
 ![navigation config](/img/eir_configs/navigation-config.png)
 
@@ -671,7 +674,8 @@ This section defines static menu items that are always visible in the app.
 			-	ON_CLICK: Triggers the settings workflow when clicked, navigating to the settings screen.
 
 ### List Config
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/list/locations.json
+
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/list/locations.json-->
 
 ![location list config](/img/eir_configs/list.png)
 
@@ -747,10 +751,9 @@ This section contains the individual entries or items in the list, each referenc
 
 ### Geowidget Config
 
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/maps/location_map_config.json
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/maps/location_map_config.json-->
 
 ![location config](/img/eir_configs/location-config.png)
-
 
 Core Information
 
@@ -856,8 +859,6 @@ Top Screen Section
 
 	-	menuIcons: Contains an icon for service points, and clicking it launches the caregiver register.
 
-
-
 ### Profiles Config
 
 More [here](http://localhost:3000/engineering/app/configuring/config-types/profile) on how to configure profiles
@@ -894,11 +895,11 @@ https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/chil
 
 [TBC]
 
-
 ### Register Configs
 
 #### Caregiver Register Congig
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/caregiver_register_config.json
+
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/caregiver_register_config.json-->
 
 ![caregiver register config](/img/eir_configs/caregiver-register.png)
 
@@ -960,10 +961,9 @@ This section defines the UI at the top of the screen.
 	-	viewType: "IMAGE" — Specifies an icon image.
 	-	actions: Clicking this icon triggers the LAUNCH_MAP action, opening the map view (locationMap).
 
-
-
 #### Child Register Congig
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/child_register_config.json
+
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/child_register_config.json-->
 
 ![child register config](/img/eir_configs/child-register.png)
 
@@ -1054,6 +1054,7 @@ In FHIR (Fast Healthcare Interoperability Resources), PlanDefinition is a core r
 	-	ServiceRequest: Represents a request for a service to be performed (e.g., a lab test, a procedure) as part of a task.
 
 ### Child Immunization
+
 The PlanDefinition resource in FHIR defines several immunization-related activities for child immunization. Each ActivityDefinition outlines specific tasks, including the administration of vaccines, detailing the type of vaccine, schedule, and responsible parties.
 
 Example of scheduling with PlanDefinition:
