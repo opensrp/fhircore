@@ -39,14 +39,16 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     initEncryptedSharedPreferences()
   }
 
-  private fun initEncryptedSharedPreferences() =
+  @VisibleForTesting
+  fun initEncryptedSharedPreferences() =
     runCatching { createEncryptedSharedPreferences() }
       .getOrElse {
         resetSharedPrefs()
         createEncryptedSharedPreferences()
       }
 
-  private fun createEncryptedSharedPreferences() =
+  @VisibleForTesting
+  fun createEncryptedSharedPreferences() =
     EncryptedSharedPreferences.create(
       context,
       SECURE_STORAGE_FILE_NAME,
