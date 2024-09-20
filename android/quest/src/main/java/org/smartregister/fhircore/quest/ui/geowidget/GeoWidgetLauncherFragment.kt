@@ -178,22 +178,13 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                 geoWidgetConfiguration = geoWidgetConfiguration,
                 searchQuery = searchViewModel.searchQuery,
                 search = { searchText ->
-                  coroutineScope.launch {
-                    val geoJsonFeatures =
-                      geoWidgetLauncherViewModel.retrieveLocations(
-                        geoWidgetConfig = geoWidgetConfiguration,
-                        searchText = searchText,
-                      )
-                    geoWidgetViewModel.features.postValue(geoJsonFeatures)
-                    if (geoJsonFeatures.isEmpty()) {
-                      geoWidgetLauncherViewModel.emitSnackBarState(
-                        SnackBarMessageConfig(
-                          message =
-                          getString(R.string.no_found_locations_matching_text, searchText),
-                        ),
-                      )
-                    }
-                  }
+                  geoWidgetFragment.clearMapFeatures()
+                  geoWidgetLauncherViewModel.onEvent(
+                    GeoWidgetEvent.SearchFeatures(
+                      searchQuery = SearchQuery(searchText, SearchMode.KeyboardInput),
+                      geoWidgetConfig = geoWidgetConfiguration,
+                    ),
+                  )
                 },
                 isFirstTimeSync = geoWidgetLauncherViewModel.isFirstTime(),
                 appDrawerUIState = appDrawerUIState,
