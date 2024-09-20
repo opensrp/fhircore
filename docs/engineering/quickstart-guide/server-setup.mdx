@@ -1,0 +1,308 @@
+# Running the Backend
+
+This guides you through the process of setting up the backend server infrastructure needed to use the OpenSRP 2 app. We then discuss how to deploy optional extensions for administration, data warehousing, integrations, etc.
+
+## Compatability matrix
+
+These are the recommend versions for a typical health information system setup that will support the OpenSRP2 mobile app.
+
+Application|Recommended Version|Reference Link|Notes
+---|---|---|---
+PostgreSQL|&ge; v14|[Official docker images](https://hub.docker.com/_/postgres/)
+Keycloak|v22.0.5|[Docker image](https://quay.io/repository/keycloak/keycloak/manifest/sha256:bfa8852e52c279f0857fe8da239c0ad6bbd2cc07793a28a6770f7e24c1e25444)
+FHIR Gateway|v1.0.3|[Docker image](https://hub.docker.com/layers/onaio/fhir-gateway-plugin/v1.0.3/images/sha256-bb03a9aa4f501072fd913f5d81c9d66b8a1298b4060da4573baf63656266b8f1?context=explore)<br/>[Github release]( https://github.com/onaio/fhir-gateway-plugin/releases/tag/v1.0.3)|Includes plugins used by OpenSRP
+HAPI FHIR|v6.1.9|[Docker image](https://hub.docker.com/layers/onaio/fhir-gateway-plugin/v1.0.3/images/sha256-bb03a9aa4f501072fd913f5d81c9d66b8a1298b4060da4573baf63656266b8f1?context=explore)<br/>[Github release](https://github.com/onaio/fhir-gateway-plugin/releases/tag/v1.0.3)|JPA Server Starter
+FHIR Web|v3.1.3|[Docker image](https://hub.docker.com/layers/opensrp/web/v3.1.3/images/sha256-48d0ec2aafb0ec2dc7c79dc0f3fbcb55b4802e04c4d836449c8fb46217287afe?context=explore)<br/>[Github release](https://github.com/onaio/fhir-web/releases/tag/v3.1.3)
+Sentry|&ge; v21|[Documentation](https://github.com/getsentry/self-hosted/tree/master?tab=readme-ov-file)|Optional and recommended application monitoring
+
+## FHIR API and data store
+
+This service is responsible for storing FHIR data and exposing an API that conforms to the FHIR specification. Some options includes
+
+- HAPI FHIR and a PostgreSQL database
+- Google Cloud Healthcare API
+
+See the [compatability matrix](#compatability-matrix) for notes for the versions of HAPI FHIR and PostgreSQL that are know to work with OpenSRP2.
+
+If you are using Kubernetes, use this [helm chart](https://github.com/opensrp/helm-charts/tree/main/charts/hapi-fhir) to deploy into your cluster.
+
+### HAPI FHIR configuration
+
+Set the `Health Probe Endpoint` to `/`.
+
+Use the `JAVA_OPTS` environment variable to tune the Java heap size if the application requires more memory.
+
+#### With an identity and access managment service
+
+If you are using Keycloak as an identity and access management service set the `SPRING_APPLICATION_JSON` environment variables to
+
+```json
+{
+  "hapi": {
+    "fhir": {
+      "allow_cascading_deletes": true,
+      "allow_multiple_delete": true,
+      "cors": {
+        "allow_Credentials": true,
+        "allowed_origin": ["*"]
+      },
+      "delete_expunge_enabled": true,
+      "expunge_enabled": true,
+      "fhir_version": "R4",
+      "search-coord-core-pool-size": 20,
+      "search-coord-max-pool-size": 100,
+      "search-coord-queue-capacity": 200,
+      "subscription": {
+        "resthook_enabled": true
+      },
+      "tester": {
+        "global": {
+          "fhir_version": "R4",
+          "name": "Global Tester",
+          "refuse_to_fetch_third_party_urls": false,
+          "server_address": "https://<fhir-domain>/fhir"
+        },
+        "home": {
+          "fhir_version": "R4",
+          "name": "Local Tester",
+          "refuse_to_fetch_third_party_urls": false,
+          "server_address": "https://<fhir-domain>/fhir",
+          "validation": {
+            "requests_enabled": true,
+            "responses_enabled": true
+          }
+        }
+      },
+      "use_apache_address_strategy": true,
+      "use_apache_address_strategy_https": true,
+      "validation": {
+        "requests_enabled": false,
+        "responses_enabled": false
+      }
+    }
+  },
+  "keycloak": {
+    "auth-server-url": "https://<keycloak-domain>/auth/",
+    "credentials": {
+      "secret": "<keycloak-sercret>"
+    },
+    "enabled": true,
+    "realm": "<keycloak-realm>",
+    "resource": "fhir-core-client",
+    "ssl-required": "none"
+  },
+  "sentry": {
+    "enabled": true,
+    "options": {
+      "dsn": "https://<sentry-dns>",
+      "environment": "production",
+      "release": "v6.1.9-SNAPSHOT",
+      "tags": "{\"release-name\":\"fhir-server-auth\",\"release-namespace\":\"opensrp\"}"
+    }
+  },
+  "spring": {
+    "batch": {
+      "job": {
+        "enabled": false
+      }
+    },
+    "datasource": {
+      "driverClassName": "org.postgresql.Driver",
+      "max-active": 15,
+      "password": "<password>",
+      "url": "jdbc:postgresql://<postgres-domain>:5432/<postgres-database>",
+      "username": "<postgres-username>"
+    },
+    "flyway": {
+      "baselineOnMigrate": true,
+      "check-location": false,
+      "enabled": false
+    },
+    "jpa": {
+      "properties": {
+        "hibernate.dialect": "org.hibernate.dialect.PostgreSQLDialect",
+        "hibernate.format_sql": false,
+        "hibernate.hbm2ddl.auto": "update",
+        "hibernate.show_sql": false
+      }
+    },
+    "main": {
+      "allow-bean-definition-overriding":true
+    }
+  }
+}
+```
+
+
+#### With no authentication
+
+:::warning
+TO maintain proper privacy and security always use authentication by default. In testing or staging environments where you can guarantee there will be no information on real people it may be acceptible to disable authentication.
+:::
+
+If you are not using authentication set the `SPRING_APPLICATION_JSON` environment variables to:
+
+```json
+{
+  "hapi": {
+    "fhir": {
+      "allow_cascading_deletes": true,
+      "allow_multiple_delete": true,
+      "cors": {
+        "allow_Credentials": true,
+        "allowed_origin": ["*"]
+      },
+      "delete_expunge_enabled": true,
+      "expunge_enabled": true,
+      "fhir_version": "R4",
+      "search-coord-core-pool-size": 20,
+      "search-coord-max-pool-size": 100,
+      "search-coord-queue-capacity": 200,
+      "server_address":"http://<no-auth-domain or ip>:8080/fhir",
+      "subscription": {
+        "resthook_enabled": true
+      },
+      "tester": {
+        "home": {
+          "fhir_version": "R4",
+          "name": "Local Tester",
+          "refuse_to_fetch_third_party_urls": false,
+          "server_address": "http://localhost:8080/fhir",
+          "validation": {
+            "requests_enabled": true,
+            "responses_enabled": true
+          }
+        }
+      },
+      "use_apache_address_strategy": false,
+      "use_apache_address_strategy_https": false,
+      "validation": {
+        "requests_enabled": false,
+        "responses_enabled": false
+      }
+    }
+  },
+  "keycloak": {
+    "enabled":false
+  },
+  "sentry": {
+    "enabled": true,
+    "options": {
+      "dsn": "https://<sentry-dns>",
+      "environment": "testing",
+      "release": "v6.1.9-SNAPSHOT",
+      "tags": "{\"release-name\":\"fhir-server-auth\",\"release-namespace\":\"opensrp\"}"
+    }
+  },
+  "spring": {
+    "batch": {
+      "job": {
+        "enabled": false
+      }
+    },
+    "datasource": {
+      "driverClassName": "org.postgresql.Driver",
+      "max-active": 15,
+      "password": "<password>",
+      "url": "jdbc:postgresql://<postgres-domain>:5432/<postgres-database>",
+      "username": "<postgres-username>"
+    },
+    "flyway": {
+      "baselineOnMigrate": true,
+      "check-location": false,
+      "enabled": false
+    },
+    "jpa": {
+      "properties": {
+        "hibernate.dialect": "org.hibernate.dialect.PostgreSQLDialect",
+        "hibernate.format_sql": false,
+        "hibernate.hbm2ddl.auto": "update",
+        "hibernate.show_sql": false
+      }
+    },
+    "main": {
+      "allow-bean-definition-overriding":true
+    }
+  }
+}
+```
+
+## Identity and Access Management (IAM)
+
+If deploying Keycloak as your IAM service on Kubernetes you can use the following `values.yml` file:
+
+```yaml
+---
+replicas: 2
+
+image:
+  repository: quay.io/keycloak/keycloak
+  tag: "22.0.5"
+  digest: ""
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  annotations:
+    ...
+
+serviceMonitor:
+  enabled: true
+
+metrics:
+  enabled: true
+
+health:
+  enabled: true
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1024Mi"
+  limits:
+    memory: "2048Mi"
+
+database:
+  vendor: postgres
+  hostname: "<postgres-db-host>"
+  port: 5432
+  database: "<keycloak-db>"
+  username: <username>
+  password: <password>
+
+command:
+  - "/opt/keycloak/bin/kc.sh"
+  - "--verbose"
+  - "start"
+  - "--http-enabled=true"
+  - "--http-port=8080"
+  - "--hostname-strict=false"
+  - "--hostname-strict-https=false"
+  - "--spi-events-listener-jboss-logging-success-level=info"
+  - "--spi-events-listener-jboss-logging-error-level=warn"
+
+extraEnv: |
+  - name: KEYCLOAK_ADMIN
+    value: <admin-user>
+  - name: KEYCLOAK_ADMIN_PASSWORD
+    value: <password>
+  - name: JAVA_OPTS_APPEND
+    value: >-
+      -XX:+UseContainerSupport
+      -XX:MaxRAMPercentage=50.0
+      -Djava.awt.headless=true
+      -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
+```
+
+## Recommended extensions
+
+### Monitoring
+
+Once the services have been deployed it will be necessary to monitor the deployed applications. Sentry is integrated into the OpenSRP2 FHIR Android app, FHIR web, and HAPI server to aid in application monitoring and logging.
+
+Apart from application monitoring one has to monitor the server resources and proxy logs. [Graylog](https://graylog.org/), [fluentbit](https://fluentbit.io/), and [Prometheus](https://prometheus.io/) are some of the tools that can help with this. It is recommended to configure alerting on these tools to help notify when a threshold is reached and a service is potentially inoperable.
+
+
+### Admin dashboard
+
+If deploying FHIR web as your admin dashboard on Kubernetes you can use this [helm chart](https://github.com/opensrp/helm-charts/tree/main/charts/opensrp-web).
