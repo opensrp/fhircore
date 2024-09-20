@@ -1889,7 +1889,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       val questionnaireViewModelInstance =
         QuestionnaireViewModel(
           defaultRepository = defaultRepository,
-          dispatcherProvider = defaultRepository.dispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
           transformSupportServices = mockk(),
@@ -1898,6 +1898,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           fhirValidatorProvider = fhirValidatorProvider,
           fhirPathDataExtractor = fhirPathDataExtractor,
           configurationRegistry = configurationRegistry,
+          knowledgeManager = knowledgeManager,
         )
       val questionnaireWithDefaultDate =
         Questionnaire().apply {
