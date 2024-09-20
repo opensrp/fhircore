@@ -1604,15 +1604,15 @@ class DefaultRepositoryTest : RobolectricTest() {
 
       val location1SubLocations =
         defaultRepository.retrieveFlattenedSubLocations(location1.logicalId)
-      Assert.assertEquals(4, location1SubLocations.size)
-      Assert.assertEquals(location2.logicalId, location1SubLocations[0].logicalId)
-      Assert.assertEquals(location3.logicalId, location1SubLocations[1].logicalId)
-      Assert.assertEquals(location4.logicalId, location1SubLocations[2].logicalId)
-      Assert.assertEquals(location5.logicalId, location1SubLocations[3].logicalId)
+      Assert.assertEquals(5, location1SubLocations.size)
+      Assert.assertEquals(location2.logicalId, location1SubLocations[1].logicalId)
+      Assert.assertEquals(location3.logicalId, location1SubLocations[2].logicalId)
+      Assert.assertEquals(location4.logicalId, location1SubLocations[3].logicalId)
+      Assert.assertEquals(location5.logicalId, location1SubLocations[4].logicalId)
 
       val location4SubLocations =
         defaultRepository.retrieveFlattenedSubLocations(location4.logicalId)
-      Assert.assertEquals(1, location4SubLocations.size)
-      Assert.assertEquals(location5.logicalId, location4SubLocations.first().logicalId)
+      Assert.assertEquals(2, location4SubLocations.size)
+      Assert.assertEquals(location5.logicalId, location4SubLocations.last().logicalId)
     }
 }
