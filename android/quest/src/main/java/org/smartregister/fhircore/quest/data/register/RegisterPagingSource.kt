@@ -64,15 +64,12 @@ class RegisterPagingSource(
         )
 
       val prevKey =
-        when {
-          _registerPagingSourceState.loadAll -> if (currentPage == 0) null else currentPage - 1
-          else -> null
-        }
+        if (_registerPagingSourceState.loadAll && currentPage > 0) currentPage - 1 else null
       val nextKey =
-        when {
-          _registerPagingSourceState.loadAll ->
-            if (registerData.isNotEmpty()) currentPage + 1 else null
-          else -> null
+        if (_registerPagingSourceState.loadAll && registerData.isNotEmpty()) {
+          currentPage + 1
+        } else {
+          null
         }
 
       val data =
@@ -87,9 +84,13 @@ class RegisterPagingSource(
     } catch (exception: SQLException) {
       Timber.e(exception)
       LoadResult.Error(exception)
+    } catch (exception: Exception) {
+      Timber.e(exception)
+      LoadResult.Error(exception)
     }
   }
 
+  @Synchronized
   fun setPatientPagingSourceState(registerPagingSourceState: RegisterPagingSourceState) {
     this._registerPagingSourceState = registerPagingSourceState
   }
