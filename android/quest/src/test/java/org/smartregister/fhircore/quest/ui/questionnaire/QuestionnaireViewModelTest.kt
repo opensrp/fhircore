@@ -641,23 +641,41 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testRetrieveQuestionnaireShouldReturnValidQuestionnaireFromCache() = runBlocking {
+  fun testRetrieveQuestionnaireShouldReturnValidQuestionnaireFromCache() = runTest {
     coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
       samplePatientRegisterQuestionnaire
 
-    ContentCache.saveResource(questionnaireConfig.id, samplePatientRegisterQuestionnaire)
-
+    runBlocking {
+      ContentCache.saveResource(questionnaireConfig.id, samplePatientRegisterQuestionnaire)
+    }
     val questionnaire =
       questionnaireViewModel.retrieveQuestionnaire(
         questionnaireConfig = questionnaireConfig,
       )
-
     Assert.assertEquals(
       samplePatientRegisterQuestionnaire,
       ContentCache.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id),
     )
     Assert.assertNotNull(questionnaire)
     Assert.assertEquals(questionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
+  }
+
+  @Test
+  fun testRetrieveQuestionnaireShouldReturnValidQuestionnaireFromDatabase() = runTest {
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
+      samplePatientRegisterQuestionnaire
+
+    runBlocking {
+      val questionnaire =
+        questionnaireViewModel.retrieveQuestionnaire(
+          questionnaireConfig = questionnaireConfig,
+        )
+
+      Assert.assertNotNull(questionnaire)
+      Assert.assertEquals(questionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
+    }
+
+    coVerify(exactly = 1) { defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id) }
   }
 
   @Test
