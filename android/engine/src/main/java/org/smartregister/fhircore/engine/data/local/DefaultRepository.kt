@@ -1090,7 +1090,7 @@ constructor(
           val fromIndex = currentPage * pageSize
           val toIndex = (currentPage + 1) * pageSize
           val maxSublistIndex = min(toIndex, searchResults.size)
-          
+
           if (fromIndex < maxSublistIndex) {
             with(searchResults.subList(fromIndex, maxSublistIndex)) {
               mapResourceToRepositoryResourceData(

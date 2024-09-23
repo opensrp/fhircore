@@ -237,9 +237,7 @@ fun TopScreenSection(
             when {
               !searchQuery.isBlank() -> {
                 IconButton(
-                  onClick = {
-                    onSearchTextChanged(SearchQuery.emptyText, true)
-                  },
+                  onClick = { onSearchTextChanged(SearchQuery.emptyText, true) },
                   modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
                 ) {
                   Icon(
