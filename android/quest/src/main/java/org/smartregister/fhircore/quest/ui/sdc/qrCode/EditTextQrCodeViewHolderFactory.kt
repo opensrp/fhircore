@@ -60,7 +60,9 @@ object EditTextQrCodeViewHolderFactory :
             prevAnswerEmpty && !newAnswerEmpty -> {
               if (canHaveMultipleAnswers) {
                 questionnaireViewItem.addAnswer(newAnswer!!)
-              } else questionnaireViewItem.setAnswer(newAnswer!!)
+              } else {
+                questionnaireViewItem.setAnswer(newAnswer!!)
+              }
             }
             !prevAnswerEmpty && newAnswerEmpty -> {
               questionnaireViewItem.removeAnswer(previousAnswer!!)

@@ -109,7 +109,7 @@ class RegisterViewModelTest : RobolectricTest() {
         pageSize = 10,
       )
     registerViewModel.paginateRegisterData(registerId, false)
-    val paginatedRegisterData = registerViewModel.paginatedRegisterData.value
+    val paginatedRegisterData = registerViewModel.registerData.value
     Assert.assertNotNull(paginatedRegisterData)
     Assert.assertTrue(registerViewModel.pagesDataCache.isNotEmpty())
   }

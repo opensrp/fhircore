@@ -33,7 +33,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.net.UnknownHostException
-import java.util.LinkedList
 import java.util.Locale
 import java.util.PropertyResourceBundle
 import java.util.ResourceBundle
@@ -62,8 +61,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
-import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.camelCase
@@ -377,19 +374,23 @@ constructor(
    * @return A list of strings of config files.
    */
   private fun retrieveAssetConfigs(context: Context, appId: String): MutableList<String> {
-    val filesQueue = LinkedList<String>()
+    val filesQueue = ArrayDeque<String>()
     val configFiles = mutableListOf<String>()
     context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
       if (!supportedFileExtensions.contains(it.fileExtension)) {
         filesQueue.addLast(String.format(BASE_CONFIG_PATH, appId) + "/$it")
-      } else configFiles.add(String.format(BASE_CONFIG_PATH, appId) + "/$it")
+      } else {
+        configFiles.add(String.format(BASE_CONFIG_PATH, appId) + "/$it")
+      }
     }
     while (filesQueue.isNotEmpty()) {
       val currentPath = filesQueue.removeFirst()
       context.assets.list(currentPath)?.onEach {
         if (!supportedFileExtensions.contains(it.fileExtension)) {
           filesQueue.addLast("$currentPath/$it")
-        } else configFiles.add("$currentPath/$it")
+        } else {
+          configFiles.add("$currentPath/$it")
+        }
       }
     }
     return configFiles
@@ -511,13 +512,14 @@ constructor(
     val resultBundle =
       if (isNonProxy()) {
         fhirResourceDataSourceGetBundle(resourceType, resourceIdList)
-      } else
+      } else {
         fhirResourceDataSource.post(
           requestBody =
             generateRequestBundle(resourceType, resourceIdList)
               .encodeResourceToString()
               .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
         )
+      }
 
     processResultBundleEntries(resultBundle.entry)
 
@@ -729,16 +731,6 @@ constructor(
         )
       }
     }
-  }
-
-  private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
-    this.baseResource.dependentResourceTypes(target)
-    this.relatedResources.forEach { it.dependentResourceTypes(target) }
-  }
-
-  private fun ResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
-    target.add(resource)
-    relatedResources.forEach { it.dependentResourceTypes(target) }
   }
 
   suspend fun loadResourceSearchParams():
