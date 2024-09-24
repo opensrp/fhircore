@@ -35,6 +35,7 @@ import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
@@ -51,7 +52,7 @@ fun GeoWidgetLauncherScreen(
   navController: NavController,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   fragmentManager: FragmentManager,
-  geoWidgetFragment: Fragment,
+  geoWidgetFragment: GeoWidgetFragment,
   geoWidgetConfiguration: GeoWidgetConfiguration,
   searchQuery: MutableState<SearchQuery>,
   search: (String) -> Unit,
@@ -71,13 +72,16 @@ fun GeoWidgetLauncherScreen(
           showSearchByQrCode =
             geoWidgetConfiguration.topScreenSection?.searchBar?.searchByQrCode ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
-          onSearchTextChanged = { searchedQuery: SearchQuery ->
+          performSearchOnValueChanged = false,
+          onSearchTextChanged = { searchedQuery: SearchQuery, performSearchOnValueChanged ->
             searchQuery.value = searchedQuery
-            val computedRules = geoWidgetConfiguration.topScreenSection?.searchBar?.computedRules
-            if (!computedRules.isNullOrEmpty()) {
-              search(searchQuery.value.query)
-            } else {
-              context.showToast(context.getString(R.string.no_search_coonfigs_provided))
+            if (performSearchOnValueChanged) {
+              val computedRules = geoWidgetConfiguration.topScreenSection?.searchBar?.computedRules
+              if (!computedRules.isNullOrEmpty()) {
+                search(searchQuery.value.query)
+              } else {
+                context.showToast(context.getString(R.string.no_search_coonfigs_provided))
+              }
             }
           },
           isFilterIconEnabled = false,

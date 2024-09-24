@@ -106,7 +106,9 @@ fun SyncBottomBar(
   val bottomRadius =
     if (!hideSyncCompleteStatus.value || currentSyncJobStatus is CurrentSyncJobStatus.Running) {
       32.dp
-    } else 0.dp
+    } else {
+      0.dp
+    }
   val height =
     when {
       syncNotificationBarExpanded ->
@@ -147,7 +149,9 @@ fun SyncBottomBar(
             imageVector =
               if (syncNotificationBarExpanded) {
                 Icons.Default.KeyboardArrowDown
-              } else Icons.Default.KeyboardArrowUp,
+              } else {
+                Icons.Default.KeyboardArrowUp
+              },
             contentDescription = null,
             tint =
               when (currentSyncJobStatus) {
@@ -237,7 +241,9 @@ fun SyncStatusView(
             imageVector =
               if (currentSyncJobStatus is CurrentSyncJobStatus.Succeeded) {
                 Icons.Default.CheckCircle
-              } else Icons.Default.Error,
+              } else {
+                Icons.Default.Error
+              },
             contentDescription = null,
             tint =
               when (currentSyncJobStatus) {
@@ -308,7 +314,9 @@ fun SyncStatusView(
           stringResource(
             if (currentSyncJobStatus is CurrentSyncJobStatus.Failed) {
               org.smartregister.fhircore.engine.R.string.retry
-            } else org.smartregister.fhircore.engine.R.string.cancel,
+            } else {
+              org.smartregister.fhircore.engine.R.string.cancel
+            },
           ),
         modifier =
           Modifier.padding(start = 16.dp).clickable {

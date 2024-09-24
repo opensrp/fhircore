@@ -186,7 +186,9 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
           resources = newListRelatedResources,
           conditionalFhirPathExpression = listResource.conditionalFhirPathExpression,
         )
-      } else newListRelatedResources ?: listOf()
+      } else {
+        newListRelatedResources ?: listOf()
+      }
 
     val sortConfig = listResource.sortConfig
 

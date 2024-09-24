@@ -20,10 +20,15 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonPrimitive
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.IdType
@@ -34,10 +39,10 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -59,7 +64,6 @@ constructor(
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   val configurationRegistry: ConfigurationRegistry,
 ) : ViewModel() {
-
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
 
@@ -70,87 +74,109 @@ constructor(
   private val applicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
   }
-  private lateinit var repositoryResourceDataList: List<RepositoryResourceData>
 
-  suspend fun retrieveLocations(
-    geoWidgetConfig: GeoWidgetConfiguration,
-    searchText: String? = null,
-  ): List<GeoJsonFeature> {
-    val geoJsonFeatures = mutableListOf<GeoJsonFeature>()
-    val repositoryResourceDataList = retrieveResources(geoWidgetConfig)
+  val geoJsonFeatures: MutableStateFlow<List<GeoJsonFeature>> = MutableStateFlow(emptyList())
 
-    repositoryResourceDataList.forEach { repositoryResourceData ->
-      val location = repositoryResourceData.resource as Location
-      val resourceData =
-        resourceDataRulesExecutor.processResourceData(
-          repositoryResourceData = repositoryResourceData,
-          ruleConfigs = geoWidgetConfig.servicePointConfig?.rules ?: emptyList(),
-          params = emptyMap(),
-        )
-      val servicePointProperties = mutableMapOf<String, JsonPrimitive>()
-      geoWidgetConfig.servicePointConfig?.servicePointProperties?.forEach { (key, value) ->
-        servicePointProperties[key] =
-          JsonPrimitive(value.interpolate(resourceData.computedValuesMap))
-      }
-
-      if (
-        location.hasPosition() &&
-          location.position.hasLatitude() &&
-          location.position.hasLongitude()
-      ) {
-        val feature =
-          GeoJsonFeature(
-            id = location.idElement.idPart,
-            geometry =
-              Geometry(
-                coordinates = // MapBox coordinates are represented as Long,Lat (NOT Lat,Long)
-                listOf(
-                    location.position.longitude.toDouble(),
-                    location.position.latitude.toDouble(),
-                  ),
+  fun retrieveLocations(geoWidgetConfig: GeoWidgetConfiguration, searchText: String?) {
+    viewModelScope.launch {
+      val totalCount =
+        withContext(dispatcherProvider.io()) {
+          defaultRepository.countResources(
+            filterByRelatedEntityLocation =
+              geoWidgetConfig.filterDataByRelatedEntityLocation == true,
+            baseResourceConfig = geoWidgetConfig.resourceConfig.baseResource,
+            filterActiveResources =
+              listOf(
+                ActiveResourceFilterConfig(
+                  resourceType = ResourceType.Patient,
+                  active = true,
+                ),
+                ActiveResourceFilterConfig(
+                  resourceType = ResourceType.Group,
+                  active = true,
+                ),
               ),
-            properties = servicePointProperties,
+            configComputedRuleValues = emptyMap(),
           )
-
-        val keys = geoWidgetConfig.topScreenSection?.searchBar?.computedRules
-
-        if (!keys.isNullOrEmpty() && !searchText.isNullOrEmpty()) {
-          val addFeature =
-            keys.any { key ->
-              servicePointProperties[key].toString().contains(other = searchText, ignoreCase = true)
+        }
+      if (totalCount == 0L) {
+        showNoLocationDialog(geoWidgetConfig)
+        return@launch
+      }
+      var count = 0
+      var pageNumber = 0
+      while (count < totalCount) {
+        val registerData =
+          defaultRepository
+            .searchResourcesRecursively(
+              filterActiveResources = null,
+              fhirResourceConfig = geoWidgetConfig.resourceConfig,
+              configRules = null,
+              secondaryResourceConfigs = null,
+              filterByRelatedEntityLocationMetaTag =
+                geoWidgetConfig.filterDataByRelatedEntityLocation == true,
+              currentPage = pageNumber,
+              pageSize = DefaultRepository.DEFAULT_BATCH_SIZE,
+            )
+            .asSequence()
+            .filter { it.resource is Location }
+            .filter { (it.resource as Location).hasPosition() }
+            .filter { with((it.resource as Location).position) { hasLongitude() && hasLatitude() } }
+            .map {
+              Pair(
+                it.resource as Location,
+                resourceDataRulesExecutor.processResourceData(
+                  repositoryResourceData = it,
+                  ruleConfigs = geoWidgetConfig.servicePointConfig?.rules ?: emptyList(),
+                  params = emptyMap(),
+                ),
+              )
             }
-          if (addFeature) {
-            geoJsonFeatures.add(feature)
+            .map { (location, resourceData) ->
+              GeoJsonFeature(
+                id = location.logicalId,
+                geometry =
+                  Geometry(
+                    coordinates = // MapBox coordinates are represented as Long,Lat (NOT Lat,Long)
+                    listOf(
+                        location.position.longitude.toDouble(),
+                        location.position.latitude.toDouble(),
+                      ),
+                  ),
+                properties =
+                  geoWidgetConfig.servicePointConfig?.servicePointProperties?.mapValues {
+                    JsonPrimitive(it.value.interpolate(resourceData.computedValuesMap))
+                  } ?: emptyMap(),
+              )
+            }
+            .toList()
+        geoJsonFeatures.value =
+          if (searchText.isNullOrBlank()) {
+            registerData
+          } else {
+            registerData.filter { geoJsonFeature: GeoJsonFeature ->
+              geoWidgetConfig.topScreenSection?.searchBar?.computedRules?.any { ruleName ->
+                // if ruleName not found in map return {-1}; check always return false hence no data
+                val value = geoJsonFeature.properties[ruleName]?.toString() ?: "{-1}"
+                value.contains(other = searchText, ignoreCase = true)
+              } == true
+            }
           }
-        }
-
-        if (searchText.isNullOrEmpty()) {
-          geoJsonFeatures.add(feature)
-        }
+        pageNumber++
+        count += DefaultRepository.DEFAULT_BATCH_SIZE
       }
     }
-    return geoJsonFeatures
+  }
+
+  fun onEvent(geoWidgetEvent: GeoWidgetEvent) {
+    when (geoWidgetEvent) {
+      is GeoWidgetEvent.SearchFeatures ->
+        retrieveLocations(geoWidgetEvent.geoWidgetConfig, geoWidgetEvent.searchQuery.query)
+    }
   }
 
   fun showNoLocationDialog(geoWidgetConfiguration: GeoWidgetConfiguration) {
     geoWidgetConfiguration.noResults?.let { _noLocationFoundDialog.postValue(true) }
-  }
-
-  suspend fun retrieveResources(
-    geoWidgetConfig: GeoWidgetConfiguration,
-  ): List<RepositoryResourceData> {
-    if (!this::repositoryResourceDataList.isInitialized) {
-      repositoryResourceDataList =
-        defaultRepository.searchResourcesRecursively(
-          filterActiveResources = null,
-          fhirResourceConfig = geoWidgetConfig.resourceConfig,
-          configRules = null,
-          secondaryResourceConfigs = null,
-          filterByRelatedEntityLocationMetaTag =
-            geoWidgetConfig.filterDataByRelatedEntityLocation == true,
-        )
-    }
-    return repositoryResourceDataList
   }
 
   suspend fun onQuestionnaireSubmission(

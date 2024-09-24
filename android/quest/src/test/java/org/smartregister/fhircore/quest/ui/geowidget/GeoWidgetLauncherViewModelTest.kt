@@ -34,7 +34,6 @@ import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -143,18 +142,9 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   @Test
   fun testRetrieveLocationsShouldReturnGeoJsonFeatureList() {
     runTest {
-      val geoJsonFeatures = viewModel.retrieveLocations(geoWidgetConfiguration)
-      assertTrue(geoJsonFeatures.isNotEmpty())
-      assertEquals("loc1", geoJsonFeatures.first().id)
-    }
-  }
-
-  @Test
-  fun testRetrieveResourcesShouldReturnListOfRepositoryResourceData() {
-    runTest {
-      val retrieveResources = viewModel.retrieveResources(geoWidgetConfiguration)
-      assertFalse(retrieveResources.isEmpty())
-      assertEquals("loc1", retrieveResources.first().resource.logicalId)
+      viewModel.retrieveLocations(geoWidgetConfiguration, null)
+      assertTrue(viewModel.geoJsonFeatures.value.isNotEmpty())
+      assertEquals("loc1", viewModel.geoJsonFeatures.value.first().id)
     }
   }
 

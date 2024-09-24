@@ -49,6 +49,34 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
   }
 
   @Test
+  fun testInitEncryptedSharedPreferences() {
+    val result = secureSharedPreference.initEncryptedSharedPreferences()
+    Assert.assertNotNull(result)
+  }
+
+  @Test
+  fun testInitEncryptedSharedPreferencesHandlesException() {
+    every { secureSharedPreference.createEncryptedSharedPreferences() } throws
+      RuntimeException("Exception") andThenAnswer
+      {
+        callOriginal()
+      }
+
+    val result = secureSharedPreference.initEncryptedSharedPreferences()
+
+    Assert.assertNotNull(result)
+
+    verify(exactly = 2) { secureSharedPreference.createEncryptedSharedPreferences() }
+    verify(exactly = 1) { secureSharedPreference.resetSharedPrefs() }
+  }
+
+  @Test
+  fun testCreateEncryptedSharedPreferences() {
+    val result = secureSharedPreference.createEncryptedSharedPreferences()
+    Assert.assertNotNull(result)
+  }
+
+  @Test
   fun testSaveCredentialsAndRetrieveSessionToken() {
     secureSharedPreference.saveCredentials(username = "userName", password = "!@#$".toCharArray())
     Assert.assertEquals("userName", secureSharedPreference.retrieveSessionUsername()!!)

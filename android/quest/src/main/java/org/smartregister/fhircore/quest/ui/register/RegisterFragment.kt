@@ -128,11 +128,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
         AppTheme {
           val pagingItems =
-            registerViewModel.paginatedRegisterData
+            registerViewModel.registerData
               .collectAsState(emptyFlow())
               .value
               .collectAsLazyPagingItems()
-          // Register screen provides access to the side navigation
+
           Scaffold(
             drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
             scaffoldState = scaffoldState,
@@ -228,13 +228,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
           updateRegisterFilterState(registerId, questionnaireResponse)
         }
 
-        pagesDataCache.clear()
-
         retrieveRegisterUiState(
           registerId = registerId,
           screenTitle = screenTitle,
           params = params,
-          clearCache = false,
+          clearCache = true,
         )
       }
     }

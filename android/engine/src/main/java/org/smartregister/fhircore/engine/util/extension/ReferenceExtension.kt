@@ -25,10 +25,11 @@ fun Reference.extractId(): String =
 fun Reference.extractType(): ResourceType? =
   if (this.reference.isNullOrEmpty()) {
     null
-  } else
+  } else {
     this.reference.substringBefore("/" + this.extractId()).substringAfterLast("/").let {
       ResourceType.fromCode(it)
     }
+  }
 
 fun String.asReference(resourceType: ResourceType): Reference {
   val resourceId = this

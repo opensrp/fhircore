@@ -192,7 +192,9 @@ fun ActionableButton(
           } else {
             if (colorOpacity == 0.0f) {
               DefaultColor.copy(alpha = 0.9f)
-            } else statusColor.copy(alpha = colorOpacity)
+            } else {
+              statusColor.copy(alpha = colorOpacity)
+            }
           },
         textAlign = TextAlign.Start,
         overflow = TextOverflow.Ellipsis,

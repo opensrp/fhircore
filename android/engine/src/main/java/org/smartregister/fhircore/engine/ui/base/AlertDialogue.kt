@@ -81,7 +81,9 @@ object AlertDialogue {
     dialog.findViewById<View>(R.id.pr_circular)?.apply {
       if (alertIntent == AlertIntent.PROGRESS) {
         this.show()
-      } else this.hide()
+      } else {
+        this.hide()
+      }
     }
 
     dialog.findViewById<TextView>(R.id.tv_alert_message)?.apply { this.text = message }

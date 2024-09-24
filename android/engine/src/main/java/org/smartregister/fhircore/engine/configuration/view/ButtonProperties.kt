@@ -91,7 +91,9 @@ data class ButtonProperties(
     val interpolated = this.status.interpolate(computedValuesMap)
     return if (ServiceStatus.values().map { it.name }.contains(interpolated)) {
       ServiceStatus.valueOf(interpolated)
-    } else ServiceStatus.UPCOMING
+    } else {
+      ServiceStatus.UPCOMING
+    }
   }
 }
 

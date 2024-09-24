@@ -189,7 +189,9 @@ constructor(
             accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE),
           )
           Result.success(true)
-        } else Result.success(false)
+        } else {
+          Result.success(false)
+        }
       } catch (httpException: HttpException) {
         Result.failure(httpException)
       } catch (unknownHostException: UnknownHostException) {

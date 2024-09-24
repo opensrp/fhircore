@@ -14,42 +14,24 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.geowidget.rule
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
-import org.junit.rules.TestRule
+import org.junit.rules.TestWatcher
 import org.junit.runner.Description
-import org.junit.runners.model.Statement
-import org.smartregister.fhircore.engine.util.DispatcherProvider
+
+@OptIn(ExperimentalCoroutinesApi::class) val testDispatcher = UnconfinedTestDispatcher()
 
 @ExperimentalCoroutinesApi
-class CoroutineTestRule(val testDispatcher: TestCoroutineDispatcher = TestCoroutineDispatcher()) :
-  TestRule, TestCoroutineScope by TestCoroutineScope(testDispatcher) {
+class CoroutineTestRule : TestWatcher() {
 
-  val testDispatcherProvider =
-    object : DispatcherProvider {
-      override fun default() = testDispatcher
+  override fun starting(description: Description) {
+    Dispatchers.setMain(testDispatcher)
+  }
 
-      override fun io() = testDispatcher
-
-      override fun main() = testDispatcher
-
-      override fun unconfined() = testDispatcher
-    }
-
-  override fun apply(base: Statement?, description: Description?) =
-    object : Statement() {
-      @Throws(Throwable::class)
-      override fun evaluate() {
-        Dispatchers.setMain(testDispatcher)
-        base?.evaluate()
-        Dispatchers.resetMain()
-        testDispatcher.cleanupTestCoroutines()
-      }
-    }
+  override fun finished(description: Description) {
+    Dispatchers.resetMain()
+  }
 }

@@ -27,6 +27,6 @@ fun Bitmap.encodeToByteArray(): ByteArray {
   }
 }
 
-fun ByteArray.decodeToBitmap(offset: Int = 0): Bitmap {
-  return BitmapFactory.decodeByteArray(this, offset, this.size)
+fun ByteArray.decodeToBitmap(offset: Int = 0): Bitmap? {
+  return kotlin.runCatching { BitmapFactory.decodeByteArray(this, offset, this.size) }.getOrNull()
 }

@@ -8,7 +8,6 @@ androidx-test = "1.6.1"
 appcompat = "1.7.0"
 benchmark-junit = "1.2.4"
 cardview = "1.0.0"
-commonsJexl3 = "3.2.1"
 compose-material-icons = "1.6.8"
 compressor = "3.0.1"
 constraintlayout = "2.1.4"
@@ -22,7 +21,7 @@ dagger-hilt = "2.51"
 datastore = "1.1.1"
 desugar-jdk-libs = "2.0.4"
 dokkaBase = "1.8.20"
-easy-rules-jexl = "4.1.1-SNAPSHOT"
+easyRulesCore = "4.1.1-SNAPSHOT"
 espresso-core = "3.6.1"
 fhir-common-utils = "1.0.0-SNAPSHOT"
 fhir-sdk-contrib-barcode = "0.1.0-beta3-preview7-SNAPSHOT"
@@ -48,14 +47,14 @@ junit-jupiter = "5.10.3"
 junit-ktx = "1.2.1"
 kotlin = "1.9.22"
 kotlin-serialization = "1.8.10"
-kotlinx-coroutines = "1.8.1"
+kotlinx-coroutines = "1.9.0"
 kotlinx-serialization-json = "1.6.0"
 kt3k-coveralls-ver="2.12.0"
 ktlint = "0.50.0"
-kujaku-library = "0.10.5-SNAPSHOT"
+kujaku-library = "0.10.6-ALPHA-SNAPSHOT"
 leakcanary-android = "2.10"
 lifecycle= "2.8.3"
-mapbox-sdk-turf = "4.8.0"
+mapbox-sdk-turf = "7.2.0"
 material = "1.12.0"
 mlkit-barcode-scanning = "17.3.0"
 mockk = "1.13.8"
@@ -66,7 +65,7 @@ okhttp = "4.12.0"
 okhttp-logging-interceptor = "4.12.0"
 orchestrator = "1.5.0"
 owasp = "8.2.1"
-p2p-lib = "0.6.10-SNAPSHOT"
+p2p-lib = "0.6.11-SNAPSHOT"
 playServicesLocation = "21.3.0"
 playServicesTasks = "18.2.0"
 preference-ktx = "1.2.1"
@@ -99,7 +98,6 @@ activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 benchmark-junit = { group = "androidx.benchmark", name = "benchmark-junit4", version.ref = "benchmark-junit" }
 cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
-commons-jexl3 = { module = "org.apache.commons:commons-jexl3", version.ref = "commonsJexl3" }
 compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core", version.ref = "compose-material-icons" }
 compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "compose-material-icons" }
 compressor = { group = "id.zelory", name = "compressor", version.ref = "compressor" }
@@ -121,7 +119,7 @@ data-capture = { group = "org.smartregister", name = "data-capture", version.ref
 datastore = { group = "androidx.datastore", name = "datastore", version.ref = "datastore" }
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore"}
 dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokkaBase" }
-easy-rules-jexl = { group = "org.smartregister", name = "easy-rules-jexl", version.ref = "easy-rules-jexl" }
+easy-rules-jexl = { group = "org.smartregister", name = "easy-rules-jexl",  version.ref = "easyRulesCore"  }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
 fhir-common-utils = { group = "org.smartregister", name = "fhir-common-utils", version.ref = "fhir-common-utils" }
 fhir-engine = { group = "org.smartregister", name = "engine", version.ref = "fhir-sdk-engine" }
@@ -175,7 +173,6 @@ orchestrator = { group = "androidx.test", name = "orchestrator", version.ref = "
 p2p-lib = { group = "org.smartregister", name = "p2p-lib", version.ref = "p2p-lib" }
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "androidx-paging" }
 paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "androidx-paging" }
-play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 play-services-tasks = { group = "com.google.android.gms", name = "play-services-tasks", version.ref = "playServicesTasks" }
 preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preference-ktx" }
 prettytime = { group = "org.ocpsoft.prettytime", name = "prettytime", version.ref = "prettytime" }

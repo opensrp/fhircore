@@ -21,7 +21,6 @@ import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
-import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
 import javax.inject.Inject
@@ -39,6 +38,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.event.EventType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.executionStartIsBeforeOrToday
 import org.smartregister.fhircore.engine.util.extension.expiredConcept
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -66,7 +66,7 @@ constructor(
     Timber.i("Fetch and expire overdue tasks")
     val tasksResult =
       fhirEngine
-        .search<Task> {
+        .batchedSearch<Task> {
           filter(
             Task.STATUS,
             { value = of(TaskStatus.REQUESTED.toCoding()) },
@@ -148,7 +148,7 @@ constructor(
 
     val tasks =
       defaultRepository.fhirEngine
-        .search<Task> {
+        .batchedSearch<Task> {
           filter(
             Task.STATUS,
             { value = of(TaskStatus.REQUESTED.toCoding()) },
@@ -235,7 +235,7 @@ constructor(
   suspend fun closeResourcesRelatedToCompletedServiceRequests() {
     Timber.i("Fetch completed service requests and close related resources")
     defaultRepository.fhirEngine
-      .search<ServiceRequest> {
+      .batchedSearch<ServiceRequest> {
         filter(
           ServiceRequest.STATUS,
           { value = of(ServiceRequest.ServiceRequestStatus.COMPLETED.toCode()) },

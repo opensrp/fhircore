@@ -199,7 +199,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             ),
           ),
         )
-      } else Timber.e("QuestionnaireConfig & QuestionnaireResponse are both null")
+      } else {
+        Timber.e("QuestionnaireConfig & QuestionnaireResponse are both null")
+      }
     }
   }
 

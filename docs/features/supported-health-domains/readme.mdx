@@ -5,30 +5,48 @@ sidebar_label: Supported Domains
 
 # Supported Domains
 
-### Household Registration
+## Household Registration
 
 Understanding the importance of accurate household enumeration in low resource settings, OpenSRP has built a household registration module that can be integrated with any of the other health modules or registers. Within the household registration module, the head of the household and the primary caregiver status can be assigned to an adult. Pregnant women and children under the age of 5 in that household can then be registered as well, under a system-generated unique household identifier.
 
-### Childhood Immunizations
+## Childhood Immunizations
 
 OpenSRP provides a robust solution for the management of childhood immunizations. The Immunization module is built in accordance with WHO immunization guidelines and can be adapted to local country contexts. The app has the ability to show a list of children, per village / location that are due specific types of vaccines on a specific day. It therefore helps with outreach planning around community vaccination days. It also helps with reporting and follow-up for children that did not attend a scheduled vaccination event. Features like colour-coding – making it easier to see which children are due or overdue – and the ability to quickly register multiple vaccines that are administered on the same day, contributes to good user experience and easy navigation. The first local adaptation of the immunization module was conducted in Zambia. Mauritania, Malawi, Togo, Guinea, Liberia. Countries like Tunisia are now starting to use the tool as well.
 
-### Antenatal Care
+### Features and functionality
+
+- *Patient registration and management* - register patients, capture demographic data and assign unique user ids while checking to prevent duplicate registrations.
+- *WHO Immunization Care Guidelines* - automatically creates immunization schedules based on WHO guidelines.  The EIR package currently supports all WHO child immunization, Covid-19 and HPV vaccine recommendations.  It can be expanded to support new vaccines (eg. Malaria) and localized to align with MoH country guidelines.
+- *Record Services* - record patient immunizations including the antigen/vaccine, dose, lot and date given.  Track when vaccines are refused and capture the reason why.
+- *Optimizes for on and off-line settings* - Works offline and is designed to work equally well in a facility or outreach setting.
+- *Facility and community Companion apps* - ensure no child is missed with an included CHW application that enables team based care between facility staff and CHWs at the community level.  Eg. All children registered by CHWs will automatically enroll for care at the facility.
+- *Safety monitoring* - record when a patient experiences adverse events and link this to the specific vaccine and lot number to help ensure patient follow-up.
+- *Growth Monitoring* - the application supports growth and nutrition monitoring including automatic Z-score calculation and MUAC measurements.
+- *Stock Management* - a built in stock module supports stock-taking, resupply, consumption tracking, and wastage that is automatically calculated based on usage in the app.  The stock module can be integrated with LMIS helping to provide important visibility on vaccine demand to prevent stockouts.
+- *Vital Statistics* - optional CRVS module to capture birth and death notifications and/or registrations and the issuance of birth certificates.
+- *In-app Reporting* - automatically calculate immunization service data statistics eliminating the need for time consuming paper-based tally sheets.
+- *Real-time Analytics* - visualize program data on interactive dashboards with rich geospatial support to show coverage and risk areas.
+- *Client Messaging* - leverage built integrations with platforms like RapidPro and Turn to send immunization reminders and educational messaging that can increase vaccine demand and uptake.
+- *Precision health* - leverage the built in geo-widget to target at risk communities and households for service delivery.
+- *Integrations* - built in integration ensures all data flows seamlessly into DHIS2. Integrations with common LMIS, CRVS are also possible.
+- *Interoperability* - OpenSRP is HL7 FHIR native ensuring best-in class interoperability to enable seamless two-way data flows with other systems.
+
+## Antenatal Care
 
 OpenSRP digitizes paper registers used for case management of antenatal care (ANC) services for pregnant women. It can track the attendance of ANC clinic visits, as well as household visits by a CHW at community level. This module was developed as a reference platform for the World Health Organization’s new ANC guidelines, and is currently being rolled out in partnership with the WHO and UNICEF in West Africa, with countries in Eastern and Southern Africa also about to start using the tool, from 2020 onwards.
 
-### Postnatal Care
+## Postnatal Care
 
 OpenSRP provides decision support and reminders for health care workers to support women who have recently had their baby. The app collects information about infant feeding practices, malaria prevention, early childhood developmental milestones, possible birth defects, and immunizations that are due. It also supports the health worker to monitor possible danger signs to look out for, in terms of the mother’s health.
 
-### Family Planning
+## Family Planning
 
 The OpenSRP Family Planning module assists in the management of family planning services in communities and health facilities. It helps the health worker keep record of family planning counselling sessions performed, as well as the preferred methods chosen by their clients. It can also track adverse effects and through built-in decision-support logic, can help to advise what alternative methods can be used, based on the country context. The app can lastly also calculate when family planning methods must be renewed and can remind the health worker and the client of these, during upcoming home visits.
 
-### Malaria
+## Malaria
 
 Our malaria module offers next generation geospatial health service planning and delivery tracking tool. It focuses on delivering precision service delivery that supports data collection workflows related to malaria response. Interventions include the planning, tasking and map-based tracking of malaria control tasks, that case workers perform in the field. Examples of these interventions include, indoor residual spraying, the distribution of long lasting insecticide treated nets, mass drug administration, proactive case detection, reactive case detection, and community engagement and awareness events.
 
-### Stock Management
+## Stock Management
 
 The OpenSRP stock management module can be integrated into any register (for example ANC, PNC, Family Planning or Immunization Registers), to help the facility- or field based health workers with management of stock and commodities, and does quick summary reports that eliminates the need for manual counting or paper-based reporting. The stock module can also integrate with more sophisticated open source stock management systems, such as OpenLMIS.

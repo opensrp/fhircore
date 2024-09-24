@@ -50,6 +50,7 @@ data class RegisterConfiguration(
   val filterDataByRelatedEntityLocation: Boolean = false,
   val topScreenSection: TopScreenSectionConfig? = null,
   val onSearchByQrSingleResultActions: List<ActionConfig>? = null,
+  val infiniteScroll: Boolean = false,
 ) : Configuration() {
   val onSearchByQrSingleResultValidActions =
     onSearchByQrSingleResultActions?.filter { it.trigger == ActionTrigger.ON_SEARCH_SINGLE_RESULT }

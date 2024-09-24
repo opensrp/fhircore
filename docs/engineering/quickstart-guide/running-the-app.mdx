@@ -1,0 +1,1165 @@
+---
+title: Running the App
+---
+
+These guides assume you have an existing FHIR Store set up with a typical FHIR Information Gateway connected to a backend Identity and Access Management (IAM) system and transactional FHIR data store with a standard FHIR API.
+
+We will go through the example of setting up an electronic immunization registry (EIR) for a community health worker (CHW) expected to use the app. As we go we will note reusable pieces of functionality and at the end we will reference a number of use cases that can be addressed with a similar pattern.
+
+## Deploying the infrastructure
+
+Building a FHIR Core app using OpenSRP FHIRCore requires familiarity with both the OpenSRP platform and the HL7 FHIR (Fast Healthcare Interoperability Resources) standard.
+The FHIRCore project, built on OpenSRP, is designed to facilitate the development of healthcare applications that interact with FHIR-compliant data stores. Here’s a step-by-step guide
+to help you build a FHIR Core app using this repository:
+
+### Prerequisites
+
+1.	Technical Knowledge:
+
+	-	Basic understanding of the FHIR standard.
+	-	Familiarity with Android development (Java/Kotlin).
+	-	Familiarity with Gradle, Docker, and possibly Kubernetes (if you are running OpenSRP in a containerized environment).
+
+2.	Required Tools:
+
+	-	Java Development Kit (JDK 11 or above).
+	-	Android Studio.
+	-	Git (for cloning the repository).
+	-	Docker (optional for local server setup).
+
+3.	Backend servers:
+
+	-	See [Running the backend](/docs/engineering/quickstart-guide/server-setup.mdx).
+
+### Creating a custom app release
+
+Creating a custom app release is necessary if you want to change the server that your OpenSRP2 app connects with. However, if you have or were already provided an app pointing to the server that you plan to use you can skip this step.
+
+1. Clone the FHIRCore Repository
+
+Start by cloning the repository to your local machine.
+
+````
+git clone https://github.com/opensrp/fhircore.git
+cd fhircore
+````
+2. Set Up Development Environment
+
+	-	Install the latest version of Android Studio and configure the SDK.
+
+	-	Open the cloned fhircore project in Android Studio.
+
+Ensure that you have the appropriate Android SDKs installed. The project usually targets SDK 30 (Android 11) or above, so make sure you have this version or later installed in your environment.
+
+3. Build the Project
+
+Before you can start working on the app, you will need to sync the project with Gradle to install dependencies and build the project.
+
+	-	Open Android Studio.
+
+	-	Navigate to the project folder and open the build.gradle file.
+
+	-	Click the Sync Project with Gradle Files button in Android Studio to install dependencies.
+
+	-	Update local.properties file by providing the required Keycloak credentials to enable syncing of data to and from the HAPI FHIR server:
+
+		````
+		#oauth configurations
+		OAUTH_BASE_URL=https://keycloak-stage.smartregister.org/auth/realms/FHIR_Android/
+		OAUTH_CLIENT_ID="provide client id"
+		OAUTH_SCOPE=openid
+
+		#fhir store base url
+		FHIR_BASE_URL=https://fhir.labs.smartregister.org/fhir/
+
+		#sentry dsn
+		SENTRY_DSN=<https://your/sentry/project/dsn>
+
+		#Optional: Application id for a specific build variant
+		#OPENSRP_APP_ID="app/debug"
+
+		````
+
+Once synced, click on Build > Make Project to compile the code.
+
+For more information read more [here](https://docs.opensrp.io/engineering/app/developer-setup)
+
+
+### Deploying the reference content
+
+To load into the OpenSRP FHIR Core app on demand, for debug and development, you can create a symbolic link using:
+
+```sh
+git clone git@github.com:ona-health/giz-eir-fhir-resources.git
+# assuming you have checked out fhircore in the same directory
+mkdir -p fhircore/android/quest/src/gizeir/assets/configs
+ln -s `pwd`/giz-eir-fhir-resources/app/* fhircore/android/quest/src/gizEir/assets/configs/gizeir
+```
+
+The app is able to use content for configuration resources from the `configs/app/resources` directory in the assets directory. Ideally, any FHIR resource can be loaded into
+ the application through the assets.The current implementation loads the configuration resources declared in the Composition (including Questionnaires, StructureMaps, PlanDefs, Lists, etc) by retrieving them
+from the server, which requires the device to be online. This enhancement should allow the user to create config directories for the resources inside `/configs/app/resources`.
+ The resources directory name should be in lowercase format e.g. `configs/app/resources/binary`, `configs/app/resources/questionnaire`, `configs/app/resources/structuremap`,
+ `configs/app/resources/plandefinition`, etc.
+
+
+
+
+
+## App configs
+
+### Implementation Guide Config
+
+<!--[Example implementation guide config](https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/implementation_guide_config.json)-->
+
+![ig config](/img/eir_configs/ig-config.png)
+
+An Implementation Guide (IG) is a document that defines how a specific organization or system uses FHIR resources to solve a particular use case.
+
+Main Structure:
+
+- resourceType: "ImplementationGuide"
+
+		- This indicates that the resource type is an Implementation Guide (IG), which provides detailed guidance for how FHIR resources are used in a specific context or implementation.
+
+- id: "13057302"
+
+		- A unique identifier for this specific Implementation Guide.
+
+- meta:
+
+		- This contains metadata about the Implementation Guide.
+
+- versionId: "1" – The version of this IG document.
+
+		- lastUpdated: "2024-05-27T14:42:53.345+00:00" – The date and time when this Implementation Guide was last updated (in ISO 8601 format).
+
+- url: "https://fhir.eir.smartregister.org/fhir/ImplementationGuide/giz-eir"
+
+		- The URL where this Implementation Guide can be accessed. It seems to be hosted at fhir.eir.smartregister.org under the path /fhir/ImplementationGuide/giz-eir.
+
+- version: "1.0.0"
+
+		- The version of the Implementation Guide, indicating it’s the first official release (1.0.0).
+
+- name: "giz-eir"
+
+		- The name of the IG
+
+- title: "GIZ/PATH EIR Implementation Guide"
+
+		- A more descriptive title for the Implementation Guide
+
+- status: "draft"
+
+		- The status of the IG, which is still in a draft state (not finalized or published as an official version).
+
+- date: "2024-05-27"
+
+	-	The date when the guide was created or last updated.
+
+- publisher: "Ona Systems, Inc."
+
+	-	This field indicates that the guide was published by Ona Systems, Inc., which is a tech company involved in health system development.
+
+Context:
+
+- useContext:
+
+		- This section provides contextual information about how or where the Implementation Guide should be used.
+
+- valueRange:
+
+		- This particular useContext seems to suggest a value range with a high value of 11. This could relate to patient age, system thresholds, or another contextual element specific to the EIR.
+
+Package and Resource Definitions:
+
+- packageId: "org.smartregister.fhircore"
+
+		- This defines the package ID for the IG, which seems to be part of the Smart Register FHIR Core system, likely the underlying framework powering the EIR system.
+
+- definition:
+
+		- This contains definitions for resources included in the Implementation Guide.
+
+- resource:
+
+		- A list of resources referenced by this Implementation Guide.
+
+- reference:
+
+		- This points to a Composition resource (Composition/12965652), which likely contains additional narrative content, instructions, or descriptions related to the IG. The Composition resource is commonly used for documents or structured narratives.
+
+### Composition Config
+
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/composition_config.json-->
+
+![composition config](/img/eir_configs/composition-config.png)
+
+Core Composition Information
+
+- resourceType: "Composition"
+
+		- This indicates that the resource is a FHIR Composition resource, which typically represents a collection of content or sections.
+
+- id: "12965652"
+
+		- A unique identifier for this Composition resource.
+
+- meta:
+
+		- Contains metadata.
+
+- versionId: "22"
+		- The current version of this Composition document.
+
+- lastUpdated: "2024-09-10T12:33:34.976+00:00"
+		- The timestamp when the Composition was last updated.
+
+- identifier:
+
+	-	use: "official"
+		- Indicates that this identifier is an official one.
+
+	-	value: "giz-eir"
+		- The identifier for the GIZ EIR configuration.
+
+- status: "final"
+
+	-	The Composition is marked as final, meaning it’s in a complete and stable state.
+
+	-	type:
+
+	-	system: "http://smartregister.org"
+		- The system for coding the type of composition.
+
+- code: "1156600005"
+
+		- Code for “Device setting parameter.”
+
+- display: "Device setting parameter"
+
+		- Describes the document as relating to device configuration settings.
+
+- date: "2022-09-16"
+
+		- The date when this Composition was created or finalized.
+
+- title: "Device configurations"
+
+		- The title of the Composition document, which indicates that it holds device configuration settings.
+
+- confidentiality: "L"
+
+		- A confidentiality level of “L,” which usually means low confidentiality (public information).
+
+Sections Breakdown
+
+Each section contains a specific configuration for different parts of the application.
+
+	1.	Profile Configurations:
+
+		- Contains various configuration profiles for the Child (e.g., child profile, past and upcoming encounters, adverse reactions) and Caregiver.
+
+		- The focus field references Binary resources that hold the actual configuration data, identified by their IDs and values.
+
+	2.	Register Configurations:
+
+		- Specifies register settings for Children and Caregivers.
+
+		- Similar to profiles, the focus references Binary resources that contain register configurations.
+
+	3.	Translation Configurations:
+
+		- Contains translation settings for English, Spanish, and French. Each of these sections refers to a Binary resource that holds translation strings.
+
+	4.	Application Configuration:
+
+		- Refers to the application configuration, stored in a Binary resource, which likely holds the general app settings.
+
+	5.	Navigation Configuration:
+
+		- Specifies the navigation configuration for the application, also stored in a Binary resource.
+
+	6.	Sync Configuration:
+
+		- Defines the synchronization settings for the application, stored in a Binary resource.
+
+	7.	Health Facility Locations:
+
+		- Refers to a List resource containing health facility locations.
+
+	8.	PlanDefinitions:
+
+		- Provides definitions for care plans, particularly focusing on Child Immunization and Child Recurring Services.
+
+	9.	Questionnaires:
+
+		- Lists several questionnaire configurations related to patient management, such as adding a patient, recording doses, registering filters, and muting/unmuting patients.
+
+	10.	StructureMaps:
+
+		- Specifies mappings for various operations like patient and child registration, dose recording, and adverse event reporting, using StructureMap resources.
+
+	11.	Geo Widget Configurations:
+
+		- Defines the Geo Widget configuration, stored in a Binary resource. This likely deals with mapping or geolocation services within the application.
+
+
+### Application Config
+
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/application_config.json-->
+
+![application config](/img/eir_configs/application-config.png)
+
+
+ Here’s a detailed breakdown of the various fields in the config:
+
+	1.	appId: "giz-eir"
+
+		- This is the unique identifier for the application.
+
+	2.	configType: "application"
+
+		- Specifies the type of configuration; here, it indicates the configuration is for an application.
+
+	3.	theme: "DEFAULT"
+
+		- Defines the UI theme to be used in the application. Here, it’s set to DEFAULT, which probably corresponds to the app’s standard design.
+
+	4.	appTitle: "EIR"
+
+		- The title of the application, which in this case is “EIR” (Electronic Immunization Registry).
+
+	5.	remoteSyncPageSize: 250
+
+		- Specifies the number of records to be fetched or synced from the server at a time during synchronization. Here, it is set to 250 records per sync operation.
+
+	6.	languages: ["en", "es", "fr"]
+
+		- The application supports multiple languages, specifically English (en), Spanish (es), and French (fr).
+
+	7.	useDarkTheme: false
+
+		- Indicates whether the app uses a dark theme. This is set to false, so a light theme is used by default.
+
+	8.	syncInterval: 30
+
+		- This specifies how frequently (in minutes) the app will automatically synchronize with the server. In this case, it syncs every 30 minutes.
+
+	9.	syncStrategy: ["CareTeam"]
+
+		- This suggests that the synchronization strategy involves syncing data related to care teams. It might mean that data for care teams, such as patient rosters, are synchronized.
+
+	10.	loginConfig:
+
+			````json
+			{
+			"showLogo": true,
+			"enablePin": true,
+			"pinLength": 4
+			}
+			````
+	This section defines the configuration for the login screen.
+
+		- "showLogo": true ensures that a logo is displayed on the login screen.
+
+		- "enablePin": true allows users to log in using a PIN.
+
+		- "pinLength": 4 specifies that the PIN should be 4 digits long.
+
+	11.	settingsScreenMenuOptions: ["MANUAL_SYNC", "SWITCH_LANGUAGES", "RESET_DATA", "INSIGHTS"]
+
+		- Defines the menu options available on the settings screen:
+
+		- "MANUAL_SYNC": Allows users to trigger a manual synchronization.
+
+		- "SWITCH_LANGUAGES": Provides an option to switch between the supported languages.
+
+		- "RESET_DATA": Lets users reset the app’s data.
+
+		- "INSIGHTS": This might be an option to view data insights or reports.
+
+### Sync Config
+
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/sync_config.json-->
+
+![sync config](/img/eir_configs/sync-config.png)
+
+This configuration is related to synchronization settings, specifically defining search parameters for resource filtering during FHIR-based data sync operations. Here’s a breakdown of the fields and what they represent:
+
+Main Structure:
+
+	-	resourceType: "Parameters"
+
+		- This indicates that the root resource type is Parameters, which is a FHIR resource type used to pass configuration and operational data in the form of parameters.
+
+	-	configType: "sync"
+
+		- This specifies that the configuration type is related to data synchronization.
+
+	-	parameter:
+
+		- This is an array containing search parameters for synchronization. Each element in the array defines a SearchParameter resource that is used to filter data during sync operations. These parameters define which fields or data types are used in the syncing queries.
+
+Search Parameters:
+
+	1.	First Search Parameter: _id
+
+	-	resourceType: "SearchParameter"
+
+		-	Defines that this is a SearchParameter resource.
+
+	-	name: "_id"
+
+		-	The name of the search parameter is _id. This is likely the unique identifier of each resource (i.e., the resource’s ID).
+
+	-	code: "_id"
+
+		-	The search code is _id, corresponding to the resource’s ID.
+
+	-		base:
+
+			- The base field lists the FHIR resource types to which this search parameter applies. In this case, the search parameter can filter by _id on the following resource types:
+
+					- CarePlan
+
+					- Condition
+
+					- Consent
+
+					- Encounter
+
+					- Group
+
+					- Immunization
+
+					- etc.
+
+	2.	Second Search Parameter: count
+
+	-	resourceType: "SearchParameter"
+
+		-	Defines another search parameter resource.
+
+	-	name: "count"
+
+		-	The name of this search parameter is count. It likely refers to the number of results or records to be returned.
+
+	-	code: "_count"
+
+		-	The code for the search parameter is _count, which limits the number of records returned in a query.
+
+	-	base:
+
+		-	his search parameter can also apply to the same resource types as _id:
+
+		-	CarePlan, Condition, Consent, Encounter, etc.
+
+		-	type: "token"
+
+		-	The parameter type is token, indicating that the value is expected to be a discrete value like a code, identifier, or string literal.
+
+	-	expression: "#count"
+
+		-	The expression indicates that the parameter refers to the number of results or “count” of items to be returned during a query. It’s probably used for pagination or limiting the size of the results.
+
+
+### Navigation Config
+
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/navigation_config.json-->
+
+![navigation config](/img/eir_configs/navigation-config.png)
+
+Core Information
+
+	-	appId: "giz-eir"
+
+	-	Identifies the application as the GIZ EIR.
+
+	-	configType: "navigation"
+
+	-	Specifies that this configuration deals with the navigation elements of the app.
+
+Main Action Button Configuration
+
+	-	menuActionButton:
+
+	-	id: "mainActionButton"
+
+		-	The unique identifier for the main action button in the app.
+
+	-	visible: true
+
+		-	Indicates that this button is visible to users.
+
+	-	display: `"{{ dece90802392bb0289660c633eddd5e4 }}"`
+
+		-	A placeholder or string ID for the text displayed on the button, likely referring to a localized string.
+
+	-	actions: Defines what happens when the button is clicked:
+
+	-	trigger: "ON_CLICK"
+
+		-	The action is triggered when the button is clicked.
+
+	-	workflow: "LAUNCH_QUESTIONNAIRE"
+
+		-	Launches a questionnaire when clicked.
+
+	-	questionnaire: Describes the specific questionnaire that will be launched:
+
+	-	id: "13030180"
+
+		-	The questionnaire ID.
+
+	-	title: `"{{ dece90802392bb0289660c633eddd5e4 }}"`
+
+		-	The title of the questionnaire, using a localized string placeholder.
+
+	-	saveButtonText: `"{{ c9cc8cce247e49bae79f15173ce97354 }}"`
+
+		-	Text for the save button, also using a localized string.
+
+	-	groupResource: Defines how to handle group-related data in the questionnaire.
+
+	-	groupIdentifier: `"@{familyLogicalId}"`
+
+		-	Uses a dynamic value for the group.
+
+	-	memberResourceType: "Patient" – Specifies that group members are patients.
+
+	-	snackBarMessage: A message displayed to users after an action:
+
+	-	message: `"{{ 8b41faf441db854f6c4066bbbb6837f2 }}"`
+
+		-	The snackbar message, using a localized string.
+
+	-	actionLabel: "UNDO"
+
+		-	Text for the undo button.
+
+	-	duration: "Short"
+
+		-	The duration for which the message is displayed.
+
+	-	configRules: Defines rules for dynamically configuring the questionnaire.
+
+	-	The rule here generates a six-digit human-readable ID.
+
+	-	extraParams: Additional parameters to prepopulate the form:
+
+	-	paramType: "PREPOPULATE"
+
+		-	The type of parameter.
+
+	-	linkId: `"0d77d40f-098b-4329-9199-33b6e77aa864"`
+
+		-	ID of the element in the form to populate.
+
+	-	dataType: "INTEGER"
+
+		-	The type of data.
+
+	-	key: "opensrpId"
+
+		-	The key for the value.
+
+	-	value: `"@{humanReadableId}"`
+
+		-	The dynamically generated value.
+
+	-	setPractitionerDetails: true
+
+		-	Ensures practitioner details are included.
+
+	-	: true
+
+		-	Ensures organization details are included.
+
+Client Registers Configuration
+
+This section defines the client registers in the app. Each register has a unique ID, display text, and actions associated with it.
+
+	1.	Caregiver Register:
+
+		-	id: `"caregiverRegister"`
+
+	– ID for the caregiver register.
+
+		-	display: `"{{ 34fc9c26c4ad487a175c2e7b85eb9b6d }}"`
+
+	– Localized string for the display text.
+
+		-	showCount: true
+
+	– Indicates that the count of entries will be shown.
+
+		-	menuIconConfig: Specifies the icon for this register:
+
+		-	type: "local"
+
+				– Refers to a locally stored icon.
+
+		-	reference: `"ic_baby_mother"`
+
+			– The icon file.
+
+				-	actions: Defines actions related to the register:
+
+				-	ON_CLICK: Triggers when the register is clicked, launching the caregiver register.
+
+				-	ON_COUNT: Triggers when the count of entries is required.
+
+	2.	Child Register:
+
+		-	id: `"childRegister"`
+
+			– ID for the child register.
+
+		-	display: `"{{ 64e4aca4297806247f62a7b5f8cbd3df }}"`
+
+			– Localized string for the display text.
+
+		-	showCount: true
+
+			– Indicates that the count of entries will be shown.
+
+		-	menuIconConfig: Specifies the icon for the child register:
+
+		-	type: `"local"`
+
+			-	Refers to a locally stored icon.
+
+		-	reference: `"ic_children"`
+
+			– The icon file.
+
+		-	actions:
+
+			-	ON_CLICK: Triggers when the register is clicked, launching the child register.
+
+			-	ON_COUNT: Triggers when the count of entries is required.
+
+Static Menu Configuration
+
+This section defines static menu items that are always visible in the app.
+
+	1.	Settings Menu:
+
+		-	id: "settings"
+
+			– The ID for the settings menu.
+
+		-	visible: true
+
+			– The menu item is visible to users.
+
+		-	display: `"{{ f4f70727dc34561dfde1a3c529b6205c }}"`
+
+			– Localized string for the settings label.
+
+		-	menuIconConfig: Specifies the icon for the settings menu:
+
+		-	type: "local"
+
+			– Refers to a locally stored icon.
+
+		-	reference: "ic_settings"
+
+			– The icon file.
+
+		-	actions:
+
+			-	ON_CLICK: Triggers the settings workflow when clicked, navigating to the settings screen.
+
+### List Config
+
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/list/locations.json-->
+
+![location list config](/img/eir_configs/list.png)
+
+Core Information
+
+	-	resourceType: "List"
+
+		-	Specifies that this is a FHIR List resource.
+
+	-	id: "0571e685-362e-4d8b-b227-a3678ad5420c-420"
+
+		-	The unique identifier for this list.
+
+	-	meta: Contains metadata about the resource.
+
+	-	versionId: "1"
+
+		-	The version of this resource.
+
+	-	lastUpdated: "2024-07-07T19:28:30.567+00:00"
+
+		-	Timestamp of the last update to this resource.
+
+	-	identifier: An official identifier for the list.
+
+	-	use: "official"
+
+		-	Indicates that this is the official identifier.
+
+	-	value: "0571e685-362e-4d8b-b227-a3678ad5420c-420"
+
+		-	The value of the identifier.
+
+	-	status: "current"
+
+		-	Indicates that the list is active and currently used.
+
+	-	mode: "working"
+
+		-	The mode of the list, indicating that it is actively being worked on or used.
+
+	-	title: "Health Facility Locations"
+
+		-	The title of the list.
+
+	-	code: Specifies the coding details for the list.
+
+	-	coding: A list of coding elements describing the resource:
+
+	-	system: "http://ona.io"
+
+		-	The system that defines the code (in this case, Ona).
+
+	-	code: "health-facility-locations"
+
+		-	The specific code for health facility locations.
+
+	-	display: "Health Facility Locations"
+
+		-	The display text for the code.
+
+	-	text: "Health Facility Locations"
+
+		-	A human-readable description of the list.
+
+
+Entries
+
+This section contains the individual entries or items in the list, each referencing a health facility location. Each entry is represented by an item with a reference to a location resource.
+
+	-	item: Each item contains a reference to a specific health facility location in the FHIR Location resource.
+	-	Example: "reference": `"Location/1f4c76e1-9734-42d9-b5b8-4b213ee48d45"` refers to a health facility with a specific Location resource ID.
+
+### Geowidget Config
+
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/maps/location_map_config.json-->
+
+![location config](/img/eir_configs/location-config.png)
+
+Core Information
+
+	-	appId: "giz-eir"
+
+		-	The application ID, likely for a specific healthcare or resource tracking system.
+
+	-	id: "locationMap"
+
+		-	Identifier for this specific widget (in this case, a map).
+
+	-	configType: "geoWidget"
+
+		-	The configuration type is a geo widget, indicating that this component will display geographic or location-based information.
+
+	-	profileId: "caregiverProfile"
+
+		-	Indicates the profile type, likely related to caregivers in this application.
+
+Map Layers
+
+	-	mapLayers: A list of available map layers with their activation states:
+
+	-	STREET: Active.
+
+	-	SATELLITE: Inactive.
+
+	-	STREET_SATELLITE: Inactive.
+
+Registration Questionnaire
+
+	-	registrationQuestionnaire: Defines a questionnaire associated with location registration.
+
+	-	id: "13030180"
+
+		-	title and saveButtonText: Referencing strings using placeholders (e.g., `{{ a3401a36929da1f4e0ee28f9d5d52ba7 }}`), likely translated or dynamically inserted text.
+
+		-	setPractitionerDetails and setOrganizationDetails: Both set to true, indicating that practitioner and organization details are to be set during registration.
+
+Resource Configuration
+
+	-	resourceConfig: Configuration related to the Location resource.
+
+	-	baseResource: Refers to Location, and includes a query to filter locations by type (238497).
+
+	-	relatedResources: Describes relationships to other resources:
+
+	-	servicePointInventoryItems: A List resource related to the location.
+
+	-	availableRelatedPersons: A RelatedPerson resource, tied to the service point.
+
+	-	availablePatients: A Patient resource, linked through related persons.
+
+	-	availableTasks: A Task resource, linked through patients, used for task tracking (e.g., due or overdue tasks).
+
+Service Point Configuration
+
+	-	servicePointConfig: Defines rules for managing service points, such as:
+
+	-	childCount: Calculates the number of children associated with the service point.
+
+	-	dueTaskList and overdueTaskList: Filters available tasks by their status (e.g., “ready” or “in-progress”).
+
+	-	taskStatus: Determines the status of tasks (e.g., overdue or due).
+
+	-	servicePointId, name, locationId, status, type, servicePointType: Various metadata associated with the service point, including the location type, its status, and a service point image.
+
+	-	servicePointProperties: Dynamic properties used in the UI for a service point, such as the task status, name, type, and counts of children and tasks.
+
+Summary Bottom Sheet
+
+	-	summaryBottomSheetConfig: Defines a summary view or pop-up that shows detailed information in a card-like layout.
+
+	-	Contains compound text (e.g., primary text, font size, color), buttons (e.g., “View Profile”), and actions triggered when the button is clicked (launches a profile view using the caregiverProfile ID).
+
+Display Options
+
+	-	showAddLocation: false
+
+		-	Indicates whether the “add location” option is visible.
+
+	-	showPlaneSwitcher: true
+
+		-	Enables switching between map layers (e.g., street, satellite).
+
+	-	showLocation: true
+
+		-	Indicates that locations are visible on the map.
+
+Actions
+
+	-	actions: Defines triggers for when a user interacts with the map or specific elements. For example:
+
+	-	summaryBottomSheet: When clicked, launches a summary view using parameters like servicePointId.
+
+Top Screen Section
+
+	-	topScreenSection: Contains configuration for the top section of the map screen.
+
+	-	title: Placeholder for the screen’s title.
+
+	-	searchBar: Visible search bar that allows users to search by name.
+
+	-	menuIcons: Contains an icon for service points, and clicking it launches the caregiver register.
+
+### Profiles Config
+
+More [here](http://localhost:3000/engineering/app/configuring/config-types/profile) on how to configure profiles
+
+#### Caregiver Profile Config
+
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/caregiver_profile_config.json
+![caregiver profile](/img/eir_configs/caregiver-profile.png)
+
+[TBC]
+
+#### Child Profile Config
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/child_profile_config.json
+![child profile](/img/eir_configs/child-profile.png)
+
+[TBC]
+
+#### Child Upcoming Immunizatiion Profile Config
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childupcomingencounters_profile_config.json
+
+[TBC]
+
+#### Child Past Immunizatiion Profile Config
+
+[TBC]
+
+#### Child Past Profile Config
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childpastencounters_profile_config.json
+
+[TBC]
+
+#### Child Adverse Reaction Profile Config
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childadversereactions_profile_config.json
+
+[TBC]
+
+### Register Configs
+
+#### Caregiver Register Congig
+
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/caregiver_register_config.json-->
+
+![caregiver register config](/img/eir_configs/caregiver-register.png)
+
+Breakdown of the Configuration:
+
+1. General Information
+
+	-	appId: "giz-eir" — The application ID (likely related to a healthcare or resource management app).
+	-	configType: "register" — Specifies that this is a registration configuration.
+	-	id: "caregiverRegister" — The unique ID for this caregiver registration page.
+
+2. FHIR Resource Configuration
+
+	-	fhirResource: This section defines the FHIR (Fast Healthcare Interoperability Resources) resource model used in the app.
+	-	baseResource: The primary resource is "RelatedPerson", which seems to represent a caregiver or person linked to a patient.
+	-	sortConfigs: The caregiver entries are sorted by their last update date (`_lastUpdated`) in descending order (newest first).
+	-	relatedResources:
+	-	availablePatients: A list of Patient resources associated with the RelatedPerson.
+	-	availableTasks: A list of Task resources linked to patients (using the subject search parameter). This can represent tasks like appointments, follow-ups, or other responsibilities.
+
+3. Register Card
+
+The registerCard contains rules for displaying and managing caregiver information.
+
+	-	Rules: The rules extract specific fields from the RelatedPerson and related resources, allowing them to be used in the UI. Examples include:
+	-	relatedPersonId, relatedPersonFirstName, relatedPersonMiddleName, relatedPersonLastName: These rules extract personal information like the caregiver’s ID, first name, middle name, and last name.
+	-	relatedPersonGender: Determines the gender of the caregiver.
+	-	relatedPersonAge: Extracts the caregiver’s age.
+	-	formattedRelatedPersonInfo: Combines the first name, last name, gender, and age into a formatted string.
+	-	relatedPersonIdentifier: Retrieves the identifier (e.g., ID number) for the caregiver.
+	-	numberOfChildren: Calculates the number of children (patients) associated with the caregiver.
+	-	visitStatus: Determines the caregiver’s visit status based on the availability of tasks (e.g., “OVERDUE”, “DUE”, “UPCOMING”).
+	-	Views: Specifies the UI layout for the caregiver card:
+	-	viewType: "COLUMN" — Indicates a columnar layout.
+	-	SERVICE_CARD: Displays details of the caregiver such as:
+	-	COMPOUND_TEXT: Displays text fields with caregiver information.
+	-	serviceButton: A button that shows the number of children associated with the caregiver and their visit status (e.g., OVERDUE, DUE, UPCOMING).
+	 Clicking the button or the card triggers the LAUNCH_PROFILE action to display more details.
+
+4. Search Bar
+
+The searchBar allows users to search for caregivers using specific fields.
+
+	-	visible: true — The search bar is visible.
+	-	display: `"{{ search.name.or.id }}"` — Allows searching by name or ID.
+	-	computedRules: Specifies which fields to search:
+	-	relatedPersonIdentifier
+	-	relatedPersonFirstName
+	-	relatedPersonMiddleName
+	-	relatedPersonLastName
+
+5. Top Screen Section
+
+This section defines the UI at the top of the screen.
+
+	-	title: Dynamic title using the placeholder `"{{ 6a31766a4a17ff69f259bc76f812ecfa }}"`.
+	-	searchBar: Another search bar specific to locations, with the ability to search by servicePointName.
+	-	menuIcons: A list of icons for additional actions:
+	-	viewType: "IMAGE" — Specifies an icon image.
+	-	actions: Clicking this icon triggers the LAUNCH_MAP action, opening the map view (locationMap).
+
+#### Child Register Congig
+
+<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/child_register_config.json-->
+
+![child register config](/img/eir_configs/child-register.png)
+
+## Scheduling & tasking
+
+In an offline-first community health application, scheduling and tasking refer to systems and processes used to manage appointments, follow-ups, and task assignments for healthcare workers and community health programs. These features are designed to work seamlessly in environments with intermittent or no internet access, ensuring that healthcare activities continue without disruption. Here’s a breakdown of each concept:
+
+1. Scheduling in an Offline-First Community Health Application
+
+Scheduling involves planning and organizing patient visits, consultations, or any healthcare-related appointments. In an offline-first application, it requires the following components:
+
+Features:
+
+- **Appointment Booking**: Health workers can schedule appointments with patients for home visits, checkups, immunizations, or follow-up care. These appointments are saved locally and synchronized with the central server once connectivity is restored.
+- **Calendar and Reminders**: The app provides a calendar view of upcoming appointments and sends reminders (either through notifications or on-screen prompts) to healthcare workers about scheduled visits.
+- **Recurrence & Follow-Up Visits**: Many community health activities require regular follow-ups (e.g., maternal health visits, chronic disease management). The app allows scheduling of recurring appointments with automatic reminders.
+- **Task and Visit Status Tracking**: Scheduled tasks (such as immunizations or wellness checks) are tracked by status: completed, overdue, upcoming, or in-progress. Health workers can update task status offline, and this data syncs when the app reconnects.
+
+Offline-first Considerations:
+
+- **Local Data Storage**: Scheduling and appointment data are stored locally on the health worker’s device so they can access patient schedules and update visit details even without internet.
+- **Automatic Sync**: When internet connectivity is restored, the app automatically syncs appointments and scheduling data with a central database.
+
+2. Tasking in an Offline-First Community Health Application
+
+Tasking refers to assigning and tracking healthcare-related tasks that health workers must perform in the community, such as patient checkups, vaccination campaigns, or health education.
+
+Features:
+
+- **Task Assignment**: Health workers are assigned tasks by supervisors or the health management system. These tasks can include patient visits, data collection, or specific treatments. Tasks are stored locally and synced with the central system later.
+- **Task Types**: Tasks can be varied, including:
+  - **Clinical tasks**: Conducting patient assessments, administering medication, vaccinations.
+  - **Non-clinical tasks**: Collecting health data, providing health education, monitoring chronic illnesses.
+- **Task Prioritization and Status**: Tasks can be prioritized as high, medium, or low, and can be marked as completed, in-progress, or overdue by the health worker. This allows for better time management and resource allocation in low-connectivity areas.
+- **Dynamic Task Updates**: In some cases, tasks may change based on patient outcomes or additional needs identified during visits. Health workers can update task details offline, and the system will push these updates once connectivity is restored.
+- **Team Collaboration**: In larger teams, task assignments can be distributed among multiple health workers. Task progress is tracked so that health supervisors can monitor the completion of assignments once sync is completed.
+
+Offline-first Considerations:
+
+- **Task Creation & Assignment Offline**: Health workers can receive new tasks even while offline, either through pre-downloaded updates or user-defined task generation (e.g., scheduling a follow-up visit).
+- **Local Task Management**: Tasks are stored on the health worker’s device, and they can update task progress (such as marking it complete) without needing real-time connectivity.
+- **Synchronization**: When connectivity is re-established, the app syncs task completion, updates, and any newly assigned tasks with the main server. This ensures that tasks completed in offline mode are recognized centrally.
+
+Supporting Tasking using a PlanDefinition resource in FHIR
+
+In FHIR (Fast Healthcare Interoperability Resources), PlanDefinition is a core resource used to describe workflows, protocols, or plans for healthcare activities, including scheduling and task management. A PlanDefinition supports the definition of various tasks and schedules that healthcare workers follow in community health applications. Here’s how PlanDefinition supports offline-first scheduling and tasking in such applications:
+
+1. Defining Workflows and Care Plans with PlanDefinition
+
+	•	PlanDefinition in FHIR is used to define a blueprint for care delivery workflows and task management.
+
+	•	It can outline tasks, actions, and schedules that healthcare workers need to follow. This can be particularly useful in creating reusable care plans, such as maternal care, child immunization campaigns, or chronic disease monitoring.
+
+2. Using PlanDefinition for Scheduling
+
+	•	PlanDefinition can define schedules for specific healthcare activities. The action element within a PlanDefinition specifies a sequence of activities, including scheduling appointments and follow-ups.
+
+	•	Each action can include timing rules (using timing[x]), recurrence patterns (for follow-up visits), and conditions for triggering the task.
+
+	•	In offline-first systems, these schedules are defined and stored on the local device, allowing healthcare workers to access them even without connectivity.
+
+3. Tasking with PlanDefinition
+
+	•	PlanDefinition supports task management by detailing specific tasks that healthcare workers must perform during a workflow.
+
+	•	A PlanDefinition can include multiple action elements, where each action represents a task (e.g., administer a vaccine, collect data, monitor vitals).
+
+	•	Tasks can also have dependencies, where certain tasks are triggered based on the completion or outcome of previous tasks.
+
+	•	The tasks can be configured to change dynamically based on patient outcomes or new needs that arise during care delivery.
+
+4. Handling Offline Synchronization
+
+	•	When the healthcare worker is offline, all scheduling and task-related data (defined by the PlanDefinition) are stored locally.
+
+	•	Once the healthcare worker regains connectivity, the app synchronizes the task progress, updates, and scheduling changes to the server.
+
+	•	This synchronization ensures that both the local app and central server have consistent data, allowing healthcare supervisors to monitor care delivery even in remote or low-connectivity regions.
+
+5. Using PlanDefinition with Other FHIR Resources
+
+	•	PlanDefinition often works in combination with other FHIR resources to support scheduling and tasking:
+
+	-	Task: Used to track the execution of actions defined in a PlanDefinition.
+
+	-	CarePlan: Represents an individualized plan of care for a patient, using PlanDefinition as a template.
+
+	-	ServiceRequest: Represents a request for a service to be performed (e.g., a lab test, a procedure) as part of a task.
+
+### Child Immunization
+
+The PlanDefinition resource in FHIR defines several immunization-related activities for child immunization. Each ActivityDefinition outlines specific tasks, including the administration of vaccines, detailing the type of vaccine, schedule, and responsible parties.
+
+Example of scheduling with PlanDefinition:
+
+![immunization config](/img/eir_configs/immunization-pd.png)
+
+Reference PlanDefinition can  be found [here](https://github.com/ona-health/giz-eir-fhir-resources/blob/main/plan_definition/child_immunizations.fhir.json)
+
+General Setup (First Activity) - "Child Register Handler Activity":
+
+This activity handles the initial setup of a care plan when a child is registered.
+It dynamically sets attributes like title, description, status, and care plan start and end dates based on the child's birthdate.
+The activity also assigns a general practitioner as the performer and sets up an ongoing task to manage the care plan.
+Specific Immunization Tasks: Each subsequent `ActivityDefinition` outlines a different immunization task:
+
+1. BCG Immunization: Administered shortly after birth, with a booster scheduled later.
+2. OPV (Oral Poliovirus Vaccine): Multiple doses scheduled at various weeks (6, 10, and 14 weeks).
+3. PENTA Immunization: Similar to OPV with a series of three doses, followed by a booster.
+4. ROTA Immunization: Administered in a two-dose series for protection against rotavirus.
+5. PCV (Pneumococcal Vaccine): Three doses to protect against pneumococcal infections, with a booster.
+6. IPV (Inactivated Poliovirus Vaccine): Single dose of inactivated polio vaccine.
+7. Measles Immunization: Scheduled at 9 months and then a booster at 18 months.
+
+For each immunization, the `ActivityDefinition` includes:
+
+- Status: `"active"` indicating the task is currently in progress.
+- Description: Provides a short description of the immunization.
+- Kind: Indicates the task type (in this case, all are "Task").
+- Coding: Maps the immunization to a specific procedure code.
+- Dosage Information: Specifies the sequence of doses, timing, and intervals for each vaccine.
+
+These definitions help automate the creation and management of a child's immunization schedule within a care plan in FHIR-based healthcare systems.
+
+
+### Child Recurring Services
+
+Key Components:
+
+Contained Activity Definitions: These are activities defined within the care plan for various recurring services for children.
+
+1. `careplan-init-activity`: Initializes the care plan when the child is registered, pulling dynamic values (such as the child’s ID and birthdate) to populate the CarePlan resource.
+2. `careplan-vita-ifc-task-activity`: Specifies the administration of Vitamin A IFC service, scheduled every 6 months.
+3. `careplan-vita-task-activity`: Another Vitamin A service scheduled more frequently, with 10 occurrences over a period of 6 months each.
+4. `careplan-deworming-task-activity`: Defines the deworming service, administered every 6 months, recurring 9 times.
+5. `careplan-itn-task-activity`: Specifies the ITN (Insecticide-treated net) service, provided every 6 months, up to 5 times.
+
+Dynamic Values: In the careplan-init-activity, FHIRPath expressions are used to dynamically set values in the care plan based on the child’s details. For instance:
+
+- The title and description of the care plan are set to the values from the root resource.
+- The care plan’s start period is set to the child’s birthdate, and the end period is calculated to be approximately 11 years later (4017 days).
+- The author and performer of the activities are based on the first general practitioner assigned to the child.
+
+Scheduled Services:
+
+- Timing and Dosage: Each ActivityDefinition for services like Vitamin A, Deworming, and ITN provides the timing details of when the service is administered. This includes how many times the service is repeated (e.g., every 6 months).
+- Status and Kind: All activities are marked as active, with the kind set to Task, indicating that these are recurring, scheduled services.
+
+This structure automates the generation of a child’s recurring care plan, ensuring that essential health services are administered at appropriate intervals.
+
+### Recording vaccinations
+
+Recording vaccinations, and in some usecases routine/recurring child services, is a key components of an immunization app.
+
+[TBC]
+
+import child_profile from '/img/eir_screenshoots/child-profile.png';
+
+<img src={child_profile} style={{width: 250}} />
+
+import immunization from '/img/eir_screenshoots/immunization-form.png';
+
+<img src={immunization} style={{width: 250}} />
+
+
+
+## Multi-Language Support
+
+[TBC]
+
+### Multi Language strings files
+![english trnslations config](/img/eir_configs/strings-en.png)
+![spanish trnslations config](/img/eir_configs/strings-es.png)
+
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_config.properties
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_es_config.properties
+https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_fr_config.properties
+
+## Configuration and adapting the content
+
+[TBC]
+
+**Example on how to Load a questionnaire from assets folder**
+
+1. Create a new file e.g. `config/app/resources/questionnaire/register_caregiver.json`
+
+2. Update the questionnaire content
+
+3. Make sure the Questionnaire ID (`13030180`)is similar to the on referenced in the Naviagtion config or the Primary register (in this case Caregiver Register)
+
+![questionnaire config](/img/eir_configs/questionnaire_config.png)
+
+4. Login to the app using `app/debug`
+
+5. Click on Household register
+
+6. Click on add household from the side navigation or configured fab
+
+7. Observe the questionnaire updated

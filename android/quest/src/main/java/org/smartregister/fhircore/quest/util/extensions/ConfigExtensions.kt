@@ -29,8 +29,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import com.google.android.fhir.FhirEngine
+import kotlin.collections.set
 import org.hl7.fhir.r4.model.Binary
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
@@ -39,15 +39,14 @@ import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
+import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
 import org.smartregister.fhircore.engine.configuration.view.StackViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
-import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.decodeJson
@@ -56,6 +55,7 @@ import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -63,7 +63,6 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherFragment
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
-import timber.log.Timber
 
 const val PRACTITIONER_ID = "practitionerId"
 
@@ -185,16 +184,23 @@ fun ActionConfig.handleClickEvent(
       navController.navigate(MainNavigationScreen.Insight.route)
     ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
     ApplicationWorkflow.LAUNCH_MAP -> {
-      val mapFragmentDestination = MainNavigationScreen.GeoWidgetLauncher.route
-
-      val isMapFragmentExists = navController.currentDestination?.id == mapFragmentDestination
-      if (isMapFragmentExists) {
-        navController.popBackStack(mapFragmentDestination, false)
+      val args = bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id)
+      // If value != null, we are navigating FROM a map; disallow same map navigation
+      val currentGeoWidgetId =
+        navController.currentBackStackEntry?.arguments?.getString(NavigationArg.GEO_WIDGET_ID)
+      val sameGeoWidgetNavigation =
+        args.getString(NavigationArg.GEO_WIDGET_ID) ==
+          navController.previousBackStackEntry?.arguments?.getString(NavigationArg.GEO_WIDGET_ID)
+      if (!currentGeoWidgetId.isNullOrEmpty() && sameGeoWidgetNavigation) {
+        return
       } else {
         navController.navigate(
-          resId = mapFragmentDestination,
-          args = bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id),
-          navOptions = navOptions(mapFragmentDestination, inclusive = true, singleOnTop = true),
+          resId = MainNavigationScreen.GeoWidgetLauncher.route,
+          args = args,
+          navOptions =
+            navController.currentDestination?.id?.let {
+              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
+            },
         )
       }
     }
@@ -258,92 +264,51 @@ fun Array<ActionParameter>?.toParamDataMap(): Map<String, String> =
     ?.filter { it.paramType == ActionParameterType.PARAMDATA }
     ?.associate { it.key to it.value } ?: emptyMap()
 
-fun List<OverflowMenuItemConfig>.decodeBinaryResourcesToBitmap(
-  coroutineScope: CoroutineScope,
-  registerRepository: RegisterRepository,
+suspend fun Sequence<String>.resourceReferenceToBitMap(
+  fhirEngine: FhirEngine,
   decodedImageMap: SnapshotStateMap<String, Bitmap>,
 ) {
-  this.forEach {
-    val resourceId = it.icon!!.reference!!.extractLogicalIdUuid()
-    coroutineScope.launch() {
-      registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-        decodedImageMap[resourceId] = binary.data.decodeToBitmap()
-      }
+  forEach {
+    val resourceId = it.extractLogicalIdUuid()
+    fhirEngine.loadResource<Binary>(resourceId)?.let { binary ->
+      binary.data.decodeToBitmap()?.let { bitmap -> decodedImageMap[resourceId] = bitmap }
     }
   }
 }
 
-fun Sequence<NavigationMenuConfig>.decodeBinaryResourcesToBitmap(
-  coroutineScope: CoroutineScope,
-  registerRepository: RegisterRepository,
-  decodedImageMap: SnapshotStateMap<String, Bitmap>,
-) {
-  this.forEach {
-    val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
-    coroutineScope.launch() {
-      registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-        decodedImageMap[resourceId] = binary.data.decodeToBitmap()
-      }
-    }
-  }
-}
-
-suspend fun loadRemoteImagesBitmaps(
-  views: List<ViewProperties>,
-  registerRepository: RegisterRepository,
-  computedValuesMap: Map<String, Any>,
+suspend fun List<ViewProperties>.decodeImageResourcesToBitmap(
+  fhirEngine: FhirEngine,
   decodedImageMap: MutableMap<String, Bitmap>,
 ) {
-  suspend fun ViewProperties.loadIcons() {
-    when (this.viewType) {
+  val queue = ArrayDeque(this)
+  while (queue.isNotEmpty()) {
+    val viewProperty = queue.removeFirst()
+    when (viewProperty.viewType) {
       ViewType.IMAGE -> {
-        val imageProps = this as ImageProperties
-        if (
-          !imageProps.imageConfig?.reference.isNullOrEmpty() &&
-            imageProps.imageConfig?.type == ICON_TYPE_REMOTE
-        ) {
-          try {
-            val resourceId =
-              imageProps.imageConfig
-                ?.reference
-                ?.interpolate(computedValuesMap)
-                ?.extractLogicalIdUuid()
-
-            if (resourceId != null) {
-              registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-                decodedImageMap[resourceId] = binary.data.decodeToBitmap()
-              }
+        val imageProperties = (viewProperty as ImageProperties)
+        if (imageProperties.imageConfig != null) {
+          val imageConfig = imageProperties.imageConfig
+          if (
+            ICON_TYPE_REMOTE.equals(imageConfig?.type, ignoreCase = true) &&
+              !imageConfig?.reference.isNullOrBlank()
+          ) {
+            val resourceId = imageConfig!!.reference!!
+            fhirEngine.loadResource<Binary>(resourceId)?.let { binary: Binary ->
+              binary.data.decodeToBitmap()?.let { bitmap -> decodedImageMap[resourceId] = bitmap }
             }
-          } catch (exception: Exception) {
-            Timber.e("Failed to decode image with error: ${exception.message}")
-            throw exception
           }
         }
       }
-      ViewType.ROW -> {
-        val container = this as RowProperties
-        container.children.forEach { it.loadIcons() }
-      }
-      ViewType.COLUMN -> {
-        val container = this as ColumnProperties
-        container.children.forEach { it.loadIcons() }
-      }
-      ViewType.CARD -> {
-        val card = this as CardViewProperties
-        card.content.forEach { it.loadIcons() }
-      }
-      ViewType.LIST -> {
-        val list = this as ListProperties
-        list.registerCard.views.forEach { it.loadIcons() }
-      }
-      ViewType.STACK -> {
-        val stack = this as StackViewProperties
-        stack.children.forEach { it.loadIcons() }
-      }
+      ViewType.COLUMN -> (viewProperty as ColumnProperties).children.forEach(queue::addLast)
+      ViewType.ROW -> (viewProperty as RowProperties).children.forEach(queue::addLast)
+      ViewType.SERVICE_CARD ->
+        (viewProperty as ServiceCardProperties).details.forEach(queue::addLast)
+      ViewType.CARD -> (viewProperty as CardViewProperties).content.forEach(queue::addLast)
+      ViewType.LIST -> (viewProperty as ListProperties).registerCard.views.forEach(queue::addLast)
+      ViewType.STACK -> (viewProperty as StackViewProperties).children.forEach(queue::addLast)
       else -> {
-        // Handle any other view types if needed
+        /** Ignore other views that cannot display images* */
       }
     }
   }
-  views.forEach { it.loadIcons() }
 }

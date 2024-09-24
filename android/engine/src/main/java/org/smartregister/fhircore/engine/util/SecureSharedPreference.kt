@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.util
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
@@ -34,8 +35,20 @@ import org.smartregister.fhircore.engine.util.extension.encodeJson
 
 @Singleton
 class SecureSharedPreference @Inject constructor(@ApplicationContext val context: Context) {
+  private val secureSharedPreferences: SharedPreferences by lazy {
+    initEncryptedSharedPreferences()
+  }
 
-  private val secureSharedPreferences =
+  @VisibleForTesting
+  fun initEncryptedSharedPreferences() =
+    runCatching { createEncryptedSharedPreferences() }
+      .getOrElse {
+        resetSharedPrefs()
+        createEncryptedSharedPreferences()
+      }
+
+  @VisibleForTesting
+  fun createEncryptedSharedPreferences() =
     EncryptedSharedPreferences.create(
       context,
       SECURE_STORAGE_FILE_NAME,

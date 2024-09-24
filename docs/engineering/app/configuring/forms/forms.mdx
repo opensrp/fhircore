@@ -441,3 +441,19 @@ The QR code widget supports adding an arbitrary number of QR codes, implemented 
     }
 ```
 The extension's implementation can be found [here](https://github.com/opensrp/fhircore/blob/main/android/quest/src/main/java/org/smartregister/fhircore/quest/ui/sdc/qrCode/EditTextQrCodeViewHolderFactory.kt)
+
+## Excluding questionnaire fields from prepopulation
+
+Use the `linkIds` property to provide linkIds for the Questionnaire fields that should not be pre-field with data during editing or when opening the questionnaire in a read only format. 
+The `LinkIdType` required for the exclusion to work is `PREPOPULATION_EXCLUSION`. Nested fields can also be excluded from pre-population of forms.
+
+Example:
+
+```json
+"linkIds": [
+  {
+    "linkId": "ad29c7bd-8041-427f-8e63-b066afe5b438-009",
+    "type": "PREPOPULATION_EXCLUSION"
+  }
+]
+```
