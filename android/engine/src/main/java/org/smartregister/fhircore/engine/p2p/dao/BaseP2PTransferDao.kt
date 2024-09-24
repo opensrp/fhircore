@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.isValidResourceType
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.p2p.model.RecordCount
@@ -104,7 +105,7 @@ constructor(
           count = batchSize
           from = offset
         }
-      fhirEngine.search(search)
+      fhirEngine.batchedSearch(search)
     }
   }
 
