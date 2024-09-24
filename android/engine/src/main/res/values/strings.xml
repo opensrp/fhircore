@@ -56,6 +56,7 @@
     <string name="syncing_retry">Retry sync</string>
     <string name="syncing_in_progress">Sync in progress</string>
     <string name="loading">Loading</string>
+    <string name="loading_ellipsis">Loading…</string>
     <string name="error_logging_out">Logout error message: %1$s</string>
     <string name="cannot_logout_user">Unable to logout: Already logged out or device is offline.</string>
     <string name="error_loading_config_http_error">Could not load configuration. Please try again later</string>

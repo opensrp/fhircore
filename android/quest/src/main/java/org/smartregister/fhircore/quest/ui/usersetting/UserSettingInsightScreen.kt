@@ -21,7 +21,6 @@ import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -128,7 +127,32 @@ fun UserSettingInsightScreen(
       horizontalAlignment = Alignment.Start,
       contentPadding = PaddingValues(vertical = 24.dp, horizontal = 16.dp),
     ) {
-      if (unsyncedResources.isNotEmpty()) {
+      if (showProgressIndicator) {
+        item {
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth(),
+          ) {
+            Text(
+              text = stringResource(id = R.string.loading_ellipsis),
+              style = TextStyle(color = Color.Black, fontSize = 20.sp),
+              fontWeight = FontWeight.Bold,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            CircularProgressIndicator(
+              modifier =
+                Modifier.size(24.dp).testTag(CIRCULAR_PROGRESS_INDICATOR).wrapContentWidth(),
+              strokeWidth = 1.6.dp,
+            )
+          }
+        }
+        item {
+          Spacer(modifier = Modifier.height(16.dp))
+          Divider(color = dividerColor)
+          Spacer(modifier = Modifier.height(24.dp))
+        }
+      } else if (unsyncedResources.isNotEmpty()) {
         item {
           Text(
             text = stringResource(id = R.string.unsynced_resources),
@@ -278,17 +302,6 @@ fun UserSettingInsightScreen(
         }
       }
     }
-    if (showProgressIndicator) {
-      Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-      ) {
-        CircularProgressIndicator(
-          modifier = Modifier.size(24.dp).testTag(CIRCULAR_PROGRESS_INDICATOR).wrapContentWidth(),
-          strokeWidth = 1.6.dp,
-        )
-      }
-    }
   }
 }
 
@@ -384,6 +397,7 @@ fun UserSettingInsightScreenPreview() {
       buildDate = "29 Jan 2023",
       unsyncedResourcesFlow = MutableSharedFlow(),
       navController = rememberNavController(),
+      showProgressIndicator = true,
       onRefreshRequest = {},
       dateFormat = DEFAULT_FORMAT_SDF_DD_MM_YYYY,
     )
