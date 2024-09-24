@@ -172,13 +172,14 @@ constructor(
                     entry.key,
                     parentIt.map { it.focus.extractId() },
                   )
-                } else
+                } else {
                   fhirResourceDataSource.post(
                     requestBody =
                       generateRequestBundle(entry.key, parentIt.map { it.focus.extractId() })
                         .encodeResourceToString()
                         .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
                   )
+                }
 
               resultBundle.entry.forEach { bundleEntryComponent ->
                 if (bundleEntryComponent.resource != null) {
