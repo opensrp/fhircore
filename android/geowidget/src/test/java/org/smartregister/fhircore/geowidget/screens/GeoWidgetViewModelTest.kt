@@ -86,7 +86,7 @@ class GeoWidgetViewModelTest {
   @Before
   fun setUp() {
     MockitoAnnotations.initMocks(this)
-    viewModel = GeoWidgetViewModel(dispatcherProvider)
+    viewModel = GeoWidgetViewModel()
     hiltRule.inject()
     sharedPreferencesHelper = mockk()
     configurationRegistry = mockk()
@@ -104,7 +104,7 @@ class GeoWidgetViewModelTest {
           context = ApplicationProvider.getApplicationContext(),
         ),
       )
-    geoWidgetViewModel = spyk(GeoWidgetViewModel(dispatcherProvider))
+    geoWidgetViewModel = spyk(GeoWidgetViewModel())
 
     coEvery { defaultRepository.create(any()) } returns emptyList()
   }
