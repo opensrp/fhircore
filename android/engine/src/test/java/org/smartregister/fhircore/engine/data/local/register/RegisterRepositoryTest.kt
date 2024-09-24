@@ -67,6 +67,7 @@ import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -98,6 +99,8 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var parser: IParser
@@ -112,6 +115,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       spyk(
         RegisterRepository(
           fhirEngine = fhirEngine,
+          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),

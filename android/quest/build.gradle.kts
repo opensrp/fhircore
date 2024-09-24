@@ -425,6 +425,7 @@ tasks.withType<Test> {
 configurations { all { exclude(group = "xpp3") } }
 
 dependencies {
+  implementation(libs.gms.play.services.location)
   coreLibraryDesugaring(libs.core.desugar)
 
   // Application dependencies

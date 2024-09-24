@@ -125,6 +125,7 @@ foundation = { group = "androidx.compose.foundation", name = "foundation", versi
 fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragment-ktx" }
 fragment-testing = { group = "androidx.fragment", name = "fragment-testing", version.ref = "fragment-ktx" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+gms-play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hilt" }

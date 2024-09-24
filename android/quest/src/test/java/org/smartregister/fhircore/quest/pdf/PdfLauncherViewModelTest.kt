@@ -48,6 +48,7 @@ class PdfLauncherViewModelTest : RobolectricTest() {
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
+        dispatcherProvider = mockk(),
         sharedPreferencesHelper = mockk(),
         configurationRegistry = mockk(),
         configService = mockk(),
