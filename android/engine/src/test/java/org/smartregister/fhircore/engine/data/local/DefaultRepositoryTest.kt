@@ -136,8 +136,8 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    dispatcherProvider = DefaultDispatcherProvider()
     sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
+    dispatcherProvider = DefaultDispatcherProvider()
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
