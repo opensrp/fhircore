@@ -351,7 +351,7 @@ constructor(
      * PractitionerCareTeam, PractitionerOrganization and PractitionerLocation, using rules on the
      * configs.
      */
-    fun extractPractitionerInfoFromSharedPrefs(practitionerKey: String): String? {
+    fun extractPractitionerInfoFromPreferenceDataStore(practitionerKey: String): String? {
       try {
         return when (practitionerKey) {
           PreferenceDataStore.PRACTITIONER_ID.name ->
@@ -371,7 +371,7 @@ constructor(
             )
           PreferenceDataStore.PRACTITIONER_LOCATION.name ->
             configurationRegistry.preferenceDataStore.readOnce(
-              PreferenceDataStore.PRACTITIONER_LOCATION_NAME,
+              PreferenceDataStore.PRACTITIONER_LOCATION,
               "",
             )
           PreferenceDataStore.PRACTITIONER_LOCATION_ID.toString() ->

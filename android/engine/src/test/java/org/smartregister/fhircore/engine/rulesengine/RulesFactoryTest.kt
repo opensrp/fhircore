@@ -64,6 +64,7 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -85,6 +86,8 @@ class RulesFactoryTest : RobolectricTest() {
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   @Inject lateinit var locationService: LocationService
   private val rulesEngine = mockk<DefaultRulesEngine>()
@@ -941,93 +944,95 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
-  fun testExtractSharedPrefValuesReturnsPractitionerId() {
-    val sharedPreferenceKey = "PRACTITIONER_ID"
+  fun testExtractPreferenceValuesReturnsPractitionerId() {
+    val preferenceKey = PreferenceDataStore.PRACTITIONER_ID
     val expectedValue = "1234"
+    //every { configurationRegistry.preferenceDataStore } returns preferenceDataStore
     every {
-      configurationRegistry.sharedPreferencesHelper.read(
-        sharedPreferenceKey,
-        "",
-      )
+      configurationRegistry.preferenceDataStore.readOnce(
+        preferenceKey, "")
     } returns expectedValue
-    val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
 
-    verify { configurationRegistry.sharedPreferencesHelper.read(sharedPreferenceKey, "") }
+    val result = rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(preferenceKey.name)
+
+    verify { configurationRegistry.preferenceDataStore.readOnce(preferenceKey, "")}
+    //.sharedPreferencesHelper.read(sharedPreferenceKey, "") }
     Assert.assertEquals(expectedValue, result)
   }
 
   @Test
-  fun testExtractSharedPrefValuesReturnsCareTeam() {
-    val sharedPreferenceKey = "CARE_TEAM"
-    val expectedValue = "1234"
+  fun testExtractPreferencePrefValuesReturnsCareTeam() {
+    val preferenceKey = PreferenceDataStore.CARE_TEAM_NAME
+    val expectedValue = "careteam"
     every {
-      configurationRegistry.sharedPreferencesHelper.read(
-        sharedPreferenceKey,
+      configurationRegistry.preferenceDataStore.readOnce(
+        preferenceKey,
         "",
       )
     } returns expectedValue
-    val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
+    val result = rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(preferenceKey.name)
 
-    verify { configurationRegistry.sharedPreferencesHelper.read(sharedPreferenceKey, "") }
+    verify { configurationRegistry.preferenceDataStore.readOnce(preferenceKey, "") }
     Assert.assertEquals(expectedValue, result)
   }
 
   @Test
   fun testExtractSharedPrefValuesReturnsOrganization() {
-    val sharedPreferenceKey = "ORGANIZATION"
-    val expectedValue = "1234"
+    val preferenceKey = PreferenceDataStore.ORGANIZATION_NAME
+    println(preferenceKey)
+    val expectedValue = "organization"
     every {
-      configurationRegistry.sharedPreferencesHelper.read(
-        sharedPreferenceKey,
+      configurationRegistry.preferenceDataStore.readOnce(
+        preferenceKey,
         "",
       )
     } returns expectedValue
-    val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
+    val result = rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(preferenceKey.name)
 
-    verify { configurationRegistry.sharedPreferencesHelper.read(sharedPreferenceKey, "") }
+    verify { configurationRegistry.preferenceDataStore.readOnce(preferenceKey, "") }
     Assert.assertEquals(expectedValue, result)
   }
 
   @Test
   fun testExtractSharedPrefValuesReturnsPractitionerLocation() {
-    val sharedPreferenceKey = "PRACTITIONER_LOCATION"
-    val expectedValue = "Demo Facility"
+    val preferenceKey = PreferenceDataStore.PRACTITIONER_LOCATION
+    val expectedValue = "practitionerLocation"
     every {
-      configurationRegistry.sharedPreferencesHelper.read(
-        sharedPreferenceKey,
+      configurationRegistry.preferenceDataStore.readOnce(
+        preferenceKey,
         "",
       )
     } returns expectedValue
-    val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
+    val result = rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(preferenceKey.name)
 
-    verify { configurationRegistry.sharedPreferencesHelper.read(sharedPreferenceKey, "") }
+    verify { configurationRegistry.preferenceDataStore.readOnce(preferenceKey, "") }
     Assert.assertEquals(expectedValue, result)
   }
 
   @Test
   fun testExtractSharedPrefValuesReturnsPractitionerLocationId() {
-    val sharedPreferenceKey = "PRACTITIONER_LOCATION_ID"
+    val preferenceKey = PreferenceDataStore.PRACTITIONER_LOCATION_ID
     val expectedValue = "ABCD1234"
     every {
-      configurationRegistry.sharedPreferencesHelper.read(
-        sharedPreferenceKey,
+      configurationRegistry.preferenceDataStore.readOnce(
+        preferenceKey,
         "",
       )
     } returns expectedValue
-    val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
+    val result = rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(preferenceKey.name)
 
-    verify { configurationRegistry.sharedPreferencesHelper.read(sharedPreferenceKey, "") }
+    verify { configurationRegistry.preferenceDataStore.readOnce(preferenceKey, "") }
     Assert.assertEquals(expectedValue, result)
   }
 
+  //TODO: Review failing test here
   @Test
-  fun testExtractSharedPrefValuesThrowsAnExceptionWhenKeyIsInvalid() {
-    val sharedPreferenceKey = "INVALID_KEY"
+  fun testExtractPrefValuesThrowsAnExceptionWhenKeyIsInvalid() {
+    val practitionerKey = "INVALIDKEY"
     Assert.assertThrows(
-      "key is not a member of practitioner keys: ",
       IllegalArgumentException::class.java,
     ) {
-      rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
+      rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(practitionerKey)
     }
   }
 
