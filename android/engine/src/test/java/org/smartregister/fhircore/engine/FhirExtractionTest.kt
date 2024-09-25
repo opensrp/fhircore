@@ -34,7 +34,6 @@ import javax.inject.Inject
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertNotNull
 import junit.framework.Assert.assertTrue
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Encounter
@@ -75,7 +74,6 @@ class FhirExtractionTest : RobolectricTest() {
     hiltRule.inject()
     structureMapUtilities = StructureMapUtilities(transformSupportServices.simpleWorkerContext)
     val workManager = mockk<WorkManager>()
-    every { defaultRepository.dispatcherProvider.io() } returns Dispatchers.IO
     every { defaultRepository.fhirEngine } returns fhirEngine
     every { workManager.enqueue(any<WorkRequest>()) } returns mockk()
   }

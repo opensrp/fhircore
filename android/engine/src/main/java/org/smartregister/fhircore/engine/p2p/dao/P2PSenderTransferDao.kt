@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.p2p.dao
 
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.extensions.logicalId
 import java.util.TreeSet
@@ -76,7 +77,7 @@ constructor(
 
     val jsonArray = JSONArray()
     records.forEach {
-      jsonArray.put(jsonParser.encodeResourceToString(it.resource))
+      jsonArray.put(FhirContext.forR4Cached().newJsonParser().encodeResourceToString(it.resource))
       highestRecordId =
         if (it.resource.meta?.lastUpdated?.time!! > highestRecordId) {
           it.resource.meta?.lastUpdated?.time!!

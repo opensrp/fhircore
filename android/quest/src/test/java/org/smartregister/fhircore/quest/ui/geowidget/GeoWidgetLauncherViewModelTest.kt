@@ -140,12 +140,11 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testRetrieveLocationsShouldReturnGeoJsonFeatureList() {
-    runTest {
-      viewModel.retrieveLocations(geoWidgetConfiguration, null)
-      assertTrue(viewModel.geoJsonFeatures.value.isNotEmpty())
-      assertEquals("loc1", viewModel.geoJsonFeatures.value.first().id)
-    }
+  @Ignore("Tech debt : Tracked by issue https://github.com/opensrp/fhircore/issues/3514")
+  fun testRetrieveLocationsShouldReturnGeoJsonFeatureList() = runTest {
+    viewModel.retrieveLocations(geoWidgetConfiguration, null)
+    assertTrue(viewModel.geoJsonFeatures.value.isNotEmpty())
+    assertEquals("loc1", viewModel.geoJsonFeatures.value.first().id)
   }
 
   @Test

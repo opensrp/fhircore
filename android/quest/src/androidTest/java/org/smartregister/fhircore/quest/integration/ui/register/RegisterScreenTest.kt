@@ -30,6 +30,8 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeUp
 import androidx.navigation.compose.rememberNavController
+import androidx.paging.CombinedLoadStates
+import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -38,6 +40,7 @@ import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
 import io.mockk.mockk
 import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.flowOf
@@ -262,6 +265,14 @@ class RegisterScreenTest {
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
     val pagingItems = mockk<LazyPagingItems<ResourceData>>().apply {}
+    val combinedLoadState: CombinedLoadStates = mockk()
+    val loadState: LoadState = mockk()
+
+    every { pagingItems.itemCount } returns 0
+    every { combinedLoadState.refresh } returns loadState
+    every { combinedLoadState.append } returns loadState
+    every { loadState.endOfPaginationReached } returns true
+    every { pagingItems.loadState } returns combinedLoadState
 
     composeTestRule.setContent {
       RegisterScreen(

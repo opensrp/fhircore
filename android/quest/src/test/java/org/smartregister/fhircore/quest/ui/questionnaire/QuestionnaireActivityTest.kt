@@ -45,7 +45,7 @@ import junit.framework.TestCase.assertTrue
 import kotlin.test.assertNotNull
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Enumerations
@@ -68,8 +68,8 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -88,8 +88,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
   private lateinit var questionnaireActivityController: ActivityController<QuestionnaireActivity>
   private lateinit var questionnaireActivity: QuestionnaireActivity
 
-  @Inject lateinit var testDispatcherProvider: DispatcherProvider
-
   @BindValue lateinit var defaultRepository: DefaultRepository
 
   @BindValue
@@ -103,7 +101,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
     }
     defaultRepository =
       mockk(relaxUnitFun = true) {
-        every { dispatcherProvider } returns testDispatcherProvider
         every { fhirEngine } returns spyk(this@QuestionnaireActivityTest.fhirEngine)
       }
     questionnaireConfig =
@@ -184,18 +181,20 @@ class QuestionnaireActivityTest : RobolectricTest() {
 
       setupActivity()
       Assert.assertTrue(questionnaireActivity.supportFragmentManager.fragments.isNotEmpty())
-      val firstFragment = questionnaireActivity.supportFragmentManager.fragments.firstOrNull()
+      val firstFragment =
+        questionnaireActivity.supportFragmentManager.fragments[
+            questionnaireActivity.supportFragmentManager.fragments.size - 1,
+          ]
       Assert.assertTrue(firstFragment is QuestionnaireFragment)
 
       // Questionnaire should be the same
       val fragmentQuestionnaire =
-        questionnaireActivity.supportFragmentManager.fragments
-          .firstOrNull()
+        firstFragment
           ?.arguments
           ?.getString("questionnaire")
           ?.decodeResourceFromString<Questionnaire>()
 
-      Assert.assertEquals(questionnaire.id, fragmentQuestionnaire?.id)
+      Assert.assertEquals(questionnaire.id, fragmentQuestionnaire?.id!!.extractLogicalIdUuid())
       val sortedQuestionnaireItemLinkIds =
         questionnaire.item.map { it.linkId }.sorted().joinToString(",")
       val sortedFragmentQuestionnaireItemLinkIds =
@@ -205,13 +204,12 @@ class QuestionnaireActivityTest : RobolectricTest() {
     }
 
   @Test
-  fun testThatOnBackPressShowsConfirmationAlertDialog() =
-    runTest(UnconfinedTestDispatcher()) {
-      setupActivity()
-      questionnaireActivity.onBackPressedDispatcher.onBackPressed()
-      val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
-      Assert.assertNotNull(dialog)
-    }
+  fun testThatOnBackPressShowsConfirmationAlertDialog() = runBlocking {
+    setupActivity()
+    questionnaireActivity.onBackPressedDispatcher.onBackPressed()
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+    Assert.assertNotNull(dialog)
+  }
 
   @Test
   fun `setupLocationServices should open location settings if location is disabled`() {

@@ -10,6 +10,10 @@ on:
   merge_group:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
  FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
  FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
@@ -21,13 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        api-level: [30]
+        api-level: [34]
+        
     steps:
-      - name: Cancel Previous workflow runs
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
-
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
@@ -106,7 +106,7 @@ jobs:
 
 
       - name: Upload Engine module test coverage report to Codecov
-        if: matrix.api-level == 30 # Only upload coverage on API level 30
+        if: matrix.api-level == 34 # Only upload coverage on API level 34
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
@@ -114,13 +114,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        api-level: [30]
+        api-level: [34]
+        
     steps:
-      - name: Cancel Previous workflow runs
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
-
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
@@ -198,7 +194,7 @@ jobs:
           path: android/geowidget/build/reports
 
       - name: Upload Geowidget module test coverage report to Codecov
-        if: matrix.api-level == 30 # Only upload coverage on API level 30
+        if: matrix.api-level == 34 # Only upload coverage on API level 34
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F geowidget -f "geowidget/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
@@ -206,12 +202,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        api-level: [30]
-    steps:
-      - name: Cancel Previous workflow runs
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
+        api-level: [34]
+        
+    steps: 
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
@@ -315,6 +308,6 @@ jobs:
           path: android/quest/build/reports
 
       - name: Upload Quest module test coverage report to Codecov
-        if: matrix.api-level == 30 # Only upload coverage on API level 30
+        if: matrix.api-level == 34 # Only upload coverage on API level 34
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"

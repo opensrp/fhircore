@@ -99,6 +99,7 @@
     <string name="questionnaire_not_found">Questionnaire introuvable, synchroniser tous les questionnaires pour régler ce problème</string>
     <string name="no_visits">Pas de visites</string>
     <string name="questionnaire_response_invalid">Réponse du questionnaire invalide</string>
+    <string name="application_version">Version</string>
     <string name="missing_subject_type">Type de sujet manquant dans le questionnaire. Fournir Questionnaire.subjectType pour résoudre le problème.</string>
     <string name="missing_questionnaire_config">QuestionnaireConfig est requis mais manquant</string>
     <string name="error_populating_questionnaire">Erreur dans le remplissage de certains champs du questionnaire. Réponse au questionnaire non valide.</string>
@@ -126,7 +127,7 @@
     <string name="edit_button_text">Modifier</string>
     <string name="review_answers_text">Revoir les réponses</string>
     <string name="button_review">Revoir</string>
-    <string name="cancel_questionnaire">\\@android:string/cancel</string>
+    <string name="cancel_questionnaire">Annuler</string>
 
     <!-- 1.2 Submit Pop-up -->
     <string name="questionnaire_validation_error_headline">Erreurs trouvées</string>
@@ -252,7 +253,6 @@
     <string name="optional_helper_text">Optionnel</string>
     <string name="required">Requis</string>
     <string name="required_text_and_new_line">Requis\n</string>
-    <string name="space_asterisk">\u0020\u002a</string>
 
     <!-- End SDK SDC Strings -->
 

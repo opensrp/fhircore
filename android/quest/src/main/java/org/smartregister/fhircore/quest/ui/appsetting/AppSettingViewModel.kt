@@ -24,6 +24,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.net.UnknownHostException
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -101,8 +102,10 @@ constructor(
     }
   }
 
+  private val exceptionHandler = CoroutineExceptionHandler { _, exception -> Timber.e(exception) }
+
   private fun fetchRemoteConfigurations(appId: String?, context: Context) {
-    viewModelScope.launch {
+    viewModelScope.launch(exceptionHandler) {
       try {
         showProgressBar.postValue(true)
 

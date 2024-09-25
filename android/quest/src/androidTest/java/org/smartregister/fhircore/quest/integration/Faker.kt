@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.integration
 
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import com.google.android.fhir.CrudFhirEngine
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.LocalChange
 import com.google.android.fhir.SearchResult
@@ -109,6 +110,10 @@ object Faker {
         }
 
         override suspend fun update(vararg resource: Resource) {}
+
+        override suspend fun withTransaction(block: suspend CrudFhirEngine.() -> Unit) {
+          TODO("Not yet implemented")
+        }
       }
 
     val fhirResourceService =

@@ -797,6 +797,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     Assert.assertTrue(!decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
   }
 
+  @Test
   fun testExceptionCaughtOnDecodingBitmap() = runTest {
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     val listViewProperties = cardViewProperties.content[0] as ListProperties

@@ -104,7 +104,6 @@ constructor(
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
   private val fhirContext = FhirContext.forR4Cached()
   private val authConfiguration = configService.provideAuthConfiguration()
-  private val jsonParser = fhirContext.newJsonParser()
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -629,9 +628,14 @@ constructor(
         resource.idElement.idPart
       }
 
-    return File(context.filesDir, "$fileName.json").apply {
-      writeText(jsonParser.encodeResourceToString(resource))
-    }
+    return File(
+        context.filesDir,
+        "$KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER/${resource.resourceType}/$fileName.json",
+      )
+      .apply {
+        this.parentFile?.mkdirs()
+        writeText(fhirContext.newJsonParser().encodeResourceToString(resource))
+      }
   }
 
   /**
@@ -813,6 +817,7 @@ constructor(
     const val PAGINATION_NEXT = "next"
     const val RESOURCES_PATH = "resources/"
     const val SYNC_LOCATION_IDS = "_syncLocations"
+    const val KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER = "km"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.

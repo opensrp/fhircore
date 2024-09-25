@@ -100,13 +100,13 @@ abstract class RobolectricTest {
 
   fun File.parseSampleResource(): IBaseResource = sanitizeSampleResourceContent(this.readText())
 
-  fun sanitizeSampleResourceContent(content: String): IBaseResource =
+  private fun sanitizeSampleResourceContent(content: String): IBaseResource =
     content
       .replace("#TODAY", Date().formatDate(SDF_YYYY_MM_DD))
       .replace("#NOW", DateTimeType.now().valueAsString)
       .let { FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().parseResource(it) }
 
-  fun IBaseResource.convertToString(trimTime: Boolean) =
+  fun IBaseResource.convertToString(trimTime: Boolean): String =
     FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(this).let {
       // replace time part 11:11:11+05:00 with xx:xx:xx+xx:xx
       if (trimTime) {
@@ -119,8 +119,9 @@ abstract class RobolectricTest {
   fun String.replaceTimePart() =
     // replace time part 11:11:11+05:00 with xx:xx:xx+xx:xx
     // replace time part 11:11:11.111+05:00 with xx:xx:xx+xx:xx
-    this.replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}"), "xx:xx:xx+xx:xx")
-      .replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{3}.\\d{2}:\\d{2}"), "xx:xx:xx+xx:xx")
+    // replace time part 18:33:04.520481+03:00
+    this.replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d[0-9,+]+:\\d{2}"), "xx:xx:xx+xx:xx")
+      .replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{3}.\\d[0-9,+]+:\\d{2}"), "xx:xx:xx+xx:xx")
 
   fun buildStructureMapUtils(): StructureMapUtilities {
     val pcm = FilesystemPackageCacheManager(true)
@@ -136,7 +137,8 @@ abstract class RobolectricTest {
     return StructureMapUtilities(contextR4, transformSupportServices)
   }
 
-  fun StructureMapUtilities.worker(): IWorkerContext = ReflectionHelpers.getField(this, "worker")
+  private fun StructureMapUtilities.worker(): IWorkerContext =
+    ReflectionHelpers.getField(this, "worker")
 
   fun transform(
     scu: StructureMapUtilities,

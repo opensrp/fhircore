@@ -13,8 +13,6 @@
     <string name="no_test_results_found">Tidak ada hasil tes ditemukan</string>
     <string name="patient_test_results">HASIL TES</string>
     <string name="last_test"> Tes terakhir - %1$s</string>
-    <string name="sample_distance" translatable="false">2.4 km</string>
-    <string name="hash_sign" translatable="false">#</string>
     <string name="menu_tasks">Tugas</string>
     <string name="household">Keluarga</string>
     <string name="routine_visit">Kunjungan rutin</string>
@@ -88,10 +86,7 @@
     <string name="pregnancy_outcome">Luaran Kehamilan</string>
     <string name="registers">Register</string>
 
-    <string name="questionnaire_response_name" translatable="false">%1$s (%2$s)</string>
     <string name="due_on">Dijadwalkan pada %1$s</string>
-
-    <string name="geo_widget_fragment_destination" translatable="false">GeoWidget Fragment Destination</string>
 
     <string name="structuremap_failed">Gagal mengekstraksi resources untuk %1$s</string>
     <string name="structure_map_missing_message">StructureMap untuk Questionnaire tidak ada, QuestionnaireResponse disimpan</string>
@@ -101,7 +96,6 @@
     <string name="questionnaire_not_found">Questionnaire tidak ditemukan.  Sinkronkan semua kuesioner untuk memperbaiki</string>
     <string name="no_visits">Tidak ada kunjungan</string>
     <string name="questionnaire_response_invalid">Respons kuesioner tidak valid</string>
-    <string name="app_version_tag_url" translatable="false">https://smartregister.org/app-version</string>
     <string name="application_version" translatable="false">Versi aplikasi</string>
     <string name="missing_subject_type">Jenis subjek pada kuesioner tidak ada. Berikan Questionnaire.subjectType untuk diselesaikan.</string>
     <string name="missing_questionnaire_config">QuestionnaireConfig diperlukan tetapi tidak ada.</string>

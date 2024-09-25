@@ -73,4 +73,5 @@
     <string name="structure_map_missing_message">Ramani ya Muundo Haipo kwa Hojaji , HojajiJibu limehifadhiwa</string>
     <string name="structure_success">Imetoa rasilimali za %1$s</string>
     <string name="structuremap_failed">Imeshindwa kutoa nyenzo za dodoso %1$s</string>
+    <string name="clear_all">Futa yote</string>
 </resources>

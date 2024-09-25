@@ -33,12 +33,12 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.*
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
@@ -170,7 +170,9 @@ constructor(
             )
         }
         refreshData()
-        event.practitionerId?.let { evaluateMeasure(event.navController, practitionerId = it) }
+        event.practitionerId?.let {
+          viewModelScope.launch { evaluateMeasure(event.navController, practitionerId = it) }
+        }
       }
       is MeasureReportEvent.OnDateSelected -> {
         if (selectedDate != null) {
@@ -262,8 +264,10 @@ constructor(
     return subjectData.value
   }
 
+  private val exceptionHandler = CoroutineExceptionHandler { _, throwable -> println(throwable) }
+
   // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
-  fun evaluateMeasure(navController: NavController, practitionerId: String? = null) {
+  suspend fun evaluateMeasure(navController: NavController, practitionerId: String? = null) {
     // Run evaluate measure only for existing report
     if (reportConfigurations.isNotEmpty()) {
       // Retrieve and parse dates to  (2020-11-16)
@@ -277,89 +281,87 @@ constructor(
           .parseDate(SDF_D_MMM_YYYY_WITH_COMA)
           ?.formatDate(SDF_YYYY_MM_DD)!!
 
-      viewModelScope.launch {
-        kotlin
-          .runCatching {
-            // Show Progress indicator while evaluating measure
-            toggleProgressIndicatorVisibility(true)
-            val result =
-              reportConfigurations.flatMap { config ->
-                val subjects = mutableListOf<String>()
-                subjects.addAll(measureReportRepository.fetchSubjects(config))
+      try {
+        // Show Progress indicator while evaluating measure
+        toggleProgressIndicatorVisibility(true)
+        val result =
+          reportConfigurations.flatMap { config ->
+            val subjects = mutableListOf<String>()
+            subjects.addAll(measureReportRepository.fetchSubjects(config))
 
-                // If a practitioner Id is available, add it to the list of subjects
-                if (practitionerId?.isNotBlank() == true && subjects.isEmpty()) {
-                  subjects.add("${Practitioner().resourceType.name}/$practitionerId")
-                }
+            // If a practitioner Id is available and if the subjects list is empty, add it to the
+            // list of subjects
+            if (practitionerId?.isNotBlank() == true && subjects.isEmpty()) {
+              subjects.add("${Practitioner().resourceType.name}/$practitionerId")
+            }
 
-                val existingReports =
-                  fhirEngine.retrievePreviouslyGeneratedMeasureReports(
-                    startDateFormatted = startDateFormatted,
-                    endDateFormatted = endDateFormatted,
-                    measureUrl = config.url,
-                    subjects = listOf(),
-                  )
+            val existingReports =
+              fhirEngine.retrievePreviouslyGeneratedMeasureReports(
+                startDateFormatted = startDateFormatted,
+                endDateFormatted = endDateFormatted,
+                measureUrl = config.url,
+                subjects = listOf(),
+              )
 
-                val existingValidReports = mutableListOf<MeasureReport>()
+            val existingValidReports = mutableListOf<MeasureReport>()
 
-                existingReports
-                  .groupBy { it.subject.reference }
-                  .forEach { entry ->
-                    if (
-                      entry.value.size > 1 &&
-                        entry.value.distinctBy { it.measure }.size > 1 &&
-                        entry.value.distinctBy { it.type }.size > 1
-                    ) {
-                      return@forEach
-                    } else {
-                      existingValidReports.addAll(entry.value)
-                    }
-                  }
-
-                // if report is of current month or does not exist generate a new one and replace
-                // existing
+            existingReports
+              .groupBy { it.subject.reference }
+              .forEach { entry ->
                 if (
-                  endDateFormatted
-                    .parseDate(SDF_YYYY_MM_DD)!!
-                    .formatDate(SDF_YYYY_MMM)
-                    .contentEquals(Date().formatDate(SDF_YYYY_MMM)) ||
-                    existingValidReports.isEmpty() ||
-                    existingValidReports.size != subjects.size
+                  entry.value.size > 1 &&
+                    entry.value.distinctBy { it.measure }.size > 1 &&
+                    entry.value.distinctBy { it.type }.size > 1
                 ) {
-                  withContext(dispatcherProvider.io()) {
-                    fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
-                  }
-
-                  measureReportRepository.evaluatePopulationMeasure(
-                    measureUrl = config.url,
-                    startDateFormatted = startDateFormatted,
-                    endDateFormatted = endDateFormatted,
-                    subjects = subjects,
-                    existing = existingValidReports,
-                    practitionerId = practitionerId,
-                  )
+                  return@forEach
                 } else {
-                  existingValidReports
+                  existingValidReports.addAll(entry.value)
                 }
               }
 
-            _measureReportPopulationResultList.addAll(
-              formatPopulationMeasureReports(result, reportConfigurations),
-            )
-          }
-          .onSuccess {
-            measureReportPopulationResults.value = _measureReportPopulationResultList
-            Timber.w("measureReportPopulationResults${measureReportPopulationResults.value}")
-            toggleProgressIndicatorVisibility(false)
-            // Show results of measure report for individual/population
-            navController.navigate(MeasureReportNavigationScreen.MeasureReportResult.route) {
-              launchSingleTop = true
+            // if report is of current month or does not exist generate a new one and replace
+            // existing
+            if (
+              endDateFormatted
+                .parseDate(SDF_YYYY_MM_DD)!!
+                .formatDate(SDF_YYYY_MMM)
+                .contentEquals(Date().formatDate(SDF_YYYY_MMM)) ||
+                existingValidReports.isEmpty() ||
+                existingValidReports.size != subjects.size
+            ) {
+              fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
+
+              measureReportRepository.evaluatePopulationMeasure(
+                measureUrl = config.url,
+                startDateFormatted = startDateFormatted,
+                endDateFormatted = endDateFormatted,
+                subjects = subjects,
+                existing = existingValidReports,
+                practitionerId = practitionerId,
+              )
+            } else {
+              existingValidReports
             }
           }
-          .onFailure {
-            Timber.w(it)
-            toggleProgressIndicatorVisibility(false)
-          }
+
+        val measureReportPopulationResultList =
+          formatPopulationMeasureReports(result, reportConfigurations)
+        _measureReportPopulationResultList.addAll(
+          measureReportPopulationResultList,
+        )
+
+        // On success
+        measureReportPopulationResults.value = _measureReportPopulationResultList
+        // Timber.w("measureReportPopulationResults${measureReportPopulationResults.value}")
+
+        // Show results of measure report for individual/population
+        navController.navigate(MeasureReportNavigationScreen.MeasureReportResult.route) {
+          launchSingleTop = true
+        }
+      } catch (e: Exception) {
+        Timber.e(e)
+      } finally {
+        toggleProgressIndicatorVisibility(false)
       }
     }
   }

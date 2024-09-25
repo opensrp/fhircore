@@ -20,7 +20,6 @@ import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
-import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
 import java.time.Duration
@@ -182,22 +181,6 @@ fun JSONObject.updateFrom(updated: JSONObject) {
     }
 
   keys.forEach { key -> updated.opt(key)?.run { put(key, this) } }
-}
-
-fun QuestionnaireResponse.generateMissingItems(questionnaire: Questionnaire) =
-  questionnaire.item.generateMissingItems(this.item)
-
-fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
-  qrItems: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
-) {
-  this.forEachIndexed { index, qItem ->
-    // generate complete hierarchy if response item missing otherwise check for nested items
-    if (qrItems.isEmpty() || (index < qrItems.size && qItem.linkId != qrItems[index].linkId)) {
-      qrItems.add(index, qItem.createQuestionnaireResponseItem())
-    } else if (index < qrItems.size) {
-      qItem.item.generateMissingItems(qrItems[index].item)
-    }
-  }
 }
 
 /**

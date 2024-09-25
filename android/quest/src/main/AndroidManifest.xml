@@ -9,18 +9,17 @@
 
     <application
         android:name=".QuestApplication"
+        android:allowBackup="false"
         android:enableOnBackInvokedCallback="true"
         android:hardwareAccelerated="true"
         android:icon="@drawable/ic_launcher"
         android:installLocation="internalOnly"
         android:label="@string/app_name"
         android:largeHeap="true"
-        android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar"
         android:usesCleartextTraffic="false"
         android:windowSoftInputMode="adjustResize"
-        android:allowBackup="false"
         android:fullBackupContent="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         tools:ignore="UnusedAttribute,LockedOrientationActivity"
@@ -36,8 +35,7 @@
         <activity
             android:name=".ui.appsetting.AppSettingActivity"
             android:clearTaskOnLaunch="true"
-            android:exported="true"
-            android:screenOrientation="portrait">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -47,31 +45,26 @@
         <activity
             android:name=".ui.login.LoginActivity"
             android:exported="false"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait" />
+            android:launchMode="singleTop" />
 
         <activity
             android:name=".ui.pin.PinLoginActivity"
             android:exported="false"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait" />
+            android:launchMode="singleTop" />
 
         <activity
             android:name=".ui.main.AppMainActivity"
             android:clearTaskOnLaunch="true"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait" />
+            android:launchMode="singleTop" />
 
         <activity
             android:name=".ui.questionnaire.QuestionnaireActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
 
         <activity
             android:name="androidx.compose.ui.tooling.PreviewActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
             android:theme="@style/AppTheme"
             tools:replace="exported" />
 

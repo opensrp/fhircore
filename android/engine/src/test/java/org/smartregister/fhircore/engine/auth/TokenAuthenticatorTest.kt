@@ -24,10 +24,10 @@ import android.accounts.OperationCanceledException
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
+import com.auth0.jwt.exceptions.JWTDecodeException
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
-import io.jsonwebtoken.JwtException
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
@@ -108,7 +108,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
-  @Throws(JwtException::class)
+  @Throws(JWTDecodeException::class)
   fun testIsTokenActiveWithExpiredJwtToken() {
     Assert.assertFalse(tokenAuthenticator.isTokenActive("expired-token"))
   }
