@@ -341,6 +341,13 @@ android {
       versionNameSuffix = "-contigo"
       manifestPlaceholders["appLabel"] = "Contigo"
     }
+
+    create("minsaEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".minsaEir"
+      versionNameSuffix = "-minsaEir"
+      manifestPlaceholders["appLabel"] = "Minsa EIR"
+    }
   }
 
   applicationVariants.all {
@@ -428,7 +435,7 @@ dependencies {
   implementation(libs.material)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
-  implementation(libs.gms.play.services.location)
+  implementation(libs.play.services.location)
   implementation(libs.mlkit.barcode.scanning)
 
   implementation(libs.bundles.cameraX)

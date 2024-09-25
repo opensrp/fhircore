@@ -18,63 +18,48 @@ package org.smartregister.fhircore.engine.util.location
 
 import android.Manifest
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 
 object PermissionUtils {
 
-  fun checkPermissions(context: Context, permissions: List<String>): Boolean {
-    for (permission in permissions) {
-      if (
-        ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED
-      ) {
-        return false
-      }
+  fun checkPermissions(context: Context, permissions: List<String>): Boolean =
+    permissions.none {
+      ContextCompat.checkSelfPermission(
+        context,
+        it,
+      ) != PackageManager.PERMISSION_GRANTED
     }
-    return true
-  }
 
   fun getLocationPermissionLauncher(
-    activity: AppCompatActivity,
+    permissions: Map<String, Boolean>,
     onFineLocationPermissionGranted: () -> Unit,
     onCoarseLocationPermissionGranted: () -> Unit,
     onLocationPermissionDenied: () -> Unit,
-  ): ActivityResultLauncher<Array<String>> {
-    return activity.registerForActivityResult(
-      ActivityResultContracts.RequestMultiplePermissions(),
-    ) { permissions ->
-      if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
+  ) {
+    when {
+      permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ->
         onFineLocationPermissionGranted()
-      } else if (permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
+      permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true ->
         onCoarseLocationPermissionGranted()
-      } else {
-        onLocationPermissionDenied()
-      }
+      else -> onLocationPermissionDenied()
     }
   }
 
-  fun getStartActivityForResultLauncher(
-    activity: AppCompatActivity,
-    onResult: (resultCode: Int, data: Intent?) -> Unit,
-  ): ActivityResultLauncher<Intent> {
-    return activity.registerForActivityResult(
-      ActivityResultContracts.StartActivityForResult(),
-    ) { result ->
-      onResult(result.resultCode, result.data)
-    }
-  }
-
-  fun hasFineLocationPermissions(context: Context): Boolean {
-    return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
+  fun hasFineLocationPermissions(context: Context): Boolean =
+    ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
       PackageManager.PERMISSION_GRANTED
-  }
 
-  fun hasCoarseLocationPermissions(context: Context): Boolean {
-    return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+  fun hasCoarseLocationPermissions(context: Context): Boolean =
+    ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) ==
       PackageManager.PERMISSION_GRANTED
-  }
+
+  fun hasLocationPermissions(context: Context) =
+    checkPermissions(
+      context,
+      listOf(
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+      ),
+    )
 }

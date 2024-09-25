@@ -24,11 +24,11 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.net.UnknownHostException
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.apache.commons.lang3.StringUtils
-import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
@@ -101,8 +101,10 @@ constructor(
     }
   }
 
+  private val exceptionHandler = CoroutineExceptionHandler { _, exception -> Timber.e(exception) }
+
   private fun fetchRemoteConfigurations(appId: String?, context: Context) {
-    viewModelScope.launch {
+    viewModelScope.launch(exceptionHandler) {
       try {
         showProgressBar.postValue(true)
 
@@ -172,13 +174,14 @@ constructor(
                     entry.key,
                     parentIt.map { it.focus.extractId() },
                   )
-                } else
+                } else {
                   fhirResourceDataSource.post(
                     requestBody =
                       generateRequestBundle(entry.key, parentIt.map { it.focus.extractId() })
                         .encodeResourceToString()
                         .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
                   )
+                }
 
               resultBundle.entry.forEach { bundleEntryComponent ->
                 if (bundleEntryComponent.resource != null) {
