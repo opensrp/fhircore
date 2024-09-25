@@ -33,6 +33,7 @@ import okio.ByteString.Companion.toByteString
 import org.json.JSONArray
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -46,6 +47,8 @@ class FCTContentProvider : ContentProvider() {
     private lateinit var registerViewModel: RegisterViewModel
     private val parser = FhirContext.forR4Cached().newJsonParser()
     private lateinit var fhirEngine: FhirEngine
+    private lateinit var rulesFactory: RulesFactory
+
    /* @Inject
     lateinit var registerRepository: RegisterRepository
     @Inject
@@ -59,6 +62,7 @@ class FCTContentProvider : ContentProvider() {
     @EntryPoint
     interface FCTProviderEntryPoint {
         fun getFhirEngine(): FhirEngine
+        fun getRulesFactory(): RulesFactory
         fun registerRepository(): RegisterRepository
         fun configurationRegistry(): ConfigurationRegistry
         fun sharedPreferenceHelper(): SharedPreferencesHelper
@@ -72,6 +76,14 @@ class FCTContentProvider : ContentProvider() {
             FCTProviderEntryPoint::class.java
         )
         return hiltEntryPoint.getFhirEngine()
+    }
+
+    private fun getRulesFactory(appContext: Context): RulesFactory {
+        val hiltEntryPoint = EntryPointAccessors.fromApplication(
+            appContext,
+            FCTProviderEntryPoint::class.java
+        )
+        return hiltEntryPoint.getRulesFactory()
     }
 
     private fun getRegisterRepository(appContext: Context): RegisterRepository {
@@ -124,6 +136,7 @@ class FCTContentProvider : ContentProvider() {
             resourceDataRulesExecutor = getResourceDataRulesExecutor(context!!)
         )
         fhirEngine = getFhirEngine(context!!)
+        rulesFactory = getRulesFactory(context!!)
         return true
     }
 
@@ -137,16 +150,27 @@ class FCTContentProvider : ContentProvider() {
         Timber.d("--method: $method --arg: $arg --extras: $extras")
         val decompressArg = arg!!.decompress()
 
-        return if (method == DB_OPERATION) {
+        return when (method) {
 
-            val dbBridge = DatabaseBridge(context!!, fhirEngine)
-            val result = dbBridge.execute(decompressArg)
-            Bundle().apply {
-                putString(DATA, result.compress())
+            DB_OPERATION -> {
+                val dbBridge = DatabaseBridge(context!!, fhirEngine)
+                val result = dbBridge.execute(decompressArg)
+                Bundle().apply {
+                    putString(DATA, result.compress())
+                }
             }
 
-        } else {
-            Bundle()
+            EXECUTE_RULES -> {
+                val dbBridge = DatabaseBridge(context!!, fhirEngine)
+                val ruleExecutor = RuleExecutor(rulesFactory, dbBridge)
+                val result = ruleExecutor.execute(decompressArg)
+                Bundle().apply {
+                    putString(DATA, result.compress())
+                }
+            }
+
+            else -> Bundle()
+
         }
     }
 
@@ -165,5 +189,6 @@ class FCTContentProvider : ContentProvider() {
     companion object {
         const val DATA = "data"
         const val DB_OPERATION = "db_operation"
+        const val EXECUTE_RULES = "execute_rules"
     }
 }

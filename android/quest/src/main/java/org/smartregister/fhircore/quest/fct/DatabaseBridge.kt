@@ -62,6 +62,12 @@ class DatabaseBridge(
         return result
     }
 
+    fun runQuery(query: String) : Cursor {
+        val dbHelper = DBHelper(context, "resources.db", getDatabaseVersion())
+        val db = dbHelper.writableDatabase
+        return db.rawQuery(query, null)
+    }
+
     private fun getQueryType(query: String): QueryType {
         return when {
             isFound(query, "^SELECT\\s+") -> QueryType.SELECT
