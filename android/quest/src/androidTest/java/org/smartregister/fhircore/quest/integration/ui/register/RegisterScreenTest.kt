@@ -261,9 +261,11 @@ class RegisterScreenTest {
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
-    val pagingItems = mockk<LazyPagingItems<ResourceData>>().apply {}
 
     composeTestRule.setContent {
+      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
+      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
+      
       RegisterScreen(
         modifier = Modifier,
         openDrawer = {},
@@ -274,7 +276,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-      )
+      )      
     }
     composeTestRule.onNodeWithTag(FIRST_TIME_SYNC_DIALOG, useUnmergedTree = true)
   }
