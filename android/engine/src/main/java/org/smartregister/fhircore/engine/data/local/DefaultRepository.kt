@@ -114,18 +114,15 @@ constructor(
   @ApplicationContext open val context: Context,
 ) {
 
-  suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
-    return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
-  }
+  suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? =
+    fhirEngine.loadResource(resourceId)
 
   suspend fun loadResource(resourceId: String, resourceType: ResourceType): Resource =
-    withContext(dispatcherProvider.io()) { fhirEngine.get(resourceType, resourceId) }
+    fhirEngine.get(resourceType, resourceId)
 
   suspend fun loadResource(reference: Reference) =
-    withContext(dispatcherProvider.io()) {
-      IdType(reference.reference).let {
-        fhirEngine.get(ResourceType.fromCode(it.resourceType), it.idPart)
-      }
+    IdType(reference.reference).let {
+      fhirEngine.get(ResourceType.fromCode(it.resourceType), it.idPart)
     }
 
   suspend inline fun <reified T : Resource> searchResourceFor(
@@ -135,19 +132,17 @@ constructor(
     dataQueries: List<DataQuery> = listOf(),
     configComputedRuleValues: Map<String, Any>,
   ): List<T> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine
-        .batchedSearch<T> {
-          filterByResourceTypeId(token, subjectType, subjectId)
-          dataQueries.forEach {
-            filterBy(
-              dataQuery = it,
-              configComputedRuleValues = configComputedRuleValues,
-            )
-          }
+    fhirEngine
+      .batchedSearch<T> {
+        filterByResourceTypeId(token, subjectType, subjectId)
+        dataQueries.forEach {
+          filterBy(
+            dataQuery = it,
+            configComputedRuleValues = configComputedRuleValues,
+          )
         }
-        .map { it.resource }
-    }
+      }
+      .map { it.resource }
 
   suspend inline fun <reified R : Resource> search(search: Search) =
     fhirEngine.batchedSearch<R>(search).map { it.resource }
@@ -162,17 +157,13 @@ constructor(
    * param [addResourceTags]
    */
   suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
-    return withContext(dispatcherProvider.io()) {
-      preProcessResources(addResourceTags, *resource)
-      fhirEngine.create(*resource)
-    }
+    preProcessResources(addResourceTags, *resource)
+    return fhirEngine.create(*resource)
   }
 
   suspend fun createRemote(addResourceTags: Boolean = true, vararg resource: Resource) {
-    return withContext(dispatcherProvider.io()) {
-      preProcessResources(addResourceTags, *resource)
-      fhirEngine.create(*resource, isLocalOnly = true)
-    }
+    preProcessResources(addResourceTags, *resource)
+    fhirEngine.create(*resource, isLocalOnly = true)
   }
 
   private fun preProcessResources(addResourceTags: Boolean, vararg resource: Resource) {
@@ -198,23 +189,19 @@ constructor(
     resourceId: String,
     softDelete: Boolean = false,
   ) {
-    withContext(dispatcherProvider.io()) {
-      if (softDelete) {
-        val resource = fhirEngine.get(resourceType, resourceId)
-        softDelete(resource)
-      } else {
-        fhirEngine.delete(resourceType, resourceId)
-      }
+    if (softDelete) {
+      val resource = fhirEngine.get(resourceType, resourceId)
+      softDelete(resource)
+    } else {
+      fhirEngine.delete(resourceType, resourceId)
     }
   }
 
   suspend fun delete(resource: Resource, softDelete: Boolean = false) {
-    withContext(dispatcherProvider.io()) {
-      if (softDelete) {
-        softDelete(resource)
-      } else {
-        fhirEngine.delete(resource.resourceType, resource.logicalId)
-      }
+    if (softDelete) {
+      softDelete(resource)
+    } else {
+      fhirEngine.delete(resource.resourceType, resource.logicalId)
     }
   }
 
@@ -243,24 +230,20 @@ constructor(
    * param [addMandatoryTags]
    */
   suspend fun <R : Resource> addOrUpdate(addMandatoryTags: Boolean = true, resource: R) {
-    return withContext(dispatcherProvider.io()) {
-      resource.updateLastUpdated()
-      try {
-        fhirEngine.get(resource.resourceType, resource.logicalId).run {
-          val updateFrom = updateFrom(resource)
-          fhirEngine.update(updateFrom)
-        }
-      } catch (resourceNotFoundException: ResourceNotFoundException) {
-        create(addMandatoryTags, resource)
+    resource.updateLastUpdated()
+    try {
+      fhirEngine.get(resource.resourceType, resource.logicalId).run {
+        val updateFrom = updateFrom(resource)
+        fhirEngine.update(updateFrom)
       }
+    } catch (resourceNotFoundException: ResourceNotFoundException) {
+      create(addMandatoryTags, resource)
     }
   }
 
   suspend fun <R : Resource> update(resource: R) {
-    return withContext(dispatcherProvider.io()) {
-      resource.updateLastUpdated()
-      fhirEngine.update(resource)
-    }
+    resource.updateLastUpdated()
+    fhirEngine.update(resource)
   }
 
   suspend fun loadManagingEntity(group: Group) =
@@ -904,7 +887,7 @@ constructor(
     val updatedResource =
       parser.parseResource(resourceDefinition, updatedResourceDocument.jsonString())
     updatedResource.setId(updatedResource.idElement.idPart)
-    withContext(dispatcherProvider.io()) { fhirEngine.update(updatedResource as Resource) }
+    fhirEngine.update(updatedResource as Resource)
   }
 
   private fun getJsonContent(jsonElement: JsonElement): Any? {
@@ -935,9 +918,7 @@ constructor(
 
   suspend fun purge(resource: Resource, forcePurge: Boolean) {
     try {
-      withContext(dispatcherProvider.io()) {
-        fhirEngine.purge(resource.resourceType, resource.logicalId, forcePurge)
-      }
+      fhirEngine.purge(resource.resourceType, resource.logicalId, forcePurge)
     } catch (resourceNotFoundException: ResourceNotFoundException) {
       Timber.e(
         "Purge failed -> Resource with ID ${resource.logicalId} does not exist",

@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
-import CoroutineTestRule
 import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
@@ -58,8 +57,6 @@ class GeoWidgetViewModelTest {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
-
-  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
 
   @Inject lateinit var configService: ConfigService
 
