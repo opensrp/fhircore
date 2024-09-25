@@ -23,6 +23,9 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.io.File
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Parameters
@@ -37,9 +40,9 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.sdk.CqlBuilder
-import org.smartregister.fhircore.quest.sdk.runBlockingOnWorkerThread
 
 @HiltAndroidTest
+@OptIn(ExperimentalCoroutinesApi::class)
 class CqlContentTest : RobolectricTest() {
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
@@ -58,112 +61,115 @@ class CqlContentTest : RobolectricTest() {
   }
 
   @Test
-  fun runCqlLibraryTestForPqMedication() = runBlockingOnWorkerThread {
-    val resourceDir = "cql/pq-medication"
-    val cql = "$resourceDir/cql.txt".readFile()
+  fun runCqlLibraryTestForPqMedication() =
+    runTest(context = UnconfinedTestDispatcher()) {
+      val resourceDir = "cql/pq-medication"
+      val cql = "$resourceDir/cql.txt".readFile()
 
-    val cqlLibrary = buildCqlLibrary(cql)
+      val cqlLibrary = buildCqlLibrary(cql)
 
-    val dataBundle =
-      loadTestResultsSampleData().apply {
-        // output of test results cql is also added to input of this cql
-        "cql/test-results/sample"
-          .readDir()
-          .map { it.parseSampleResource() as Resource }
-          .forEach { addEntry().apply { resource = it } }
-      }
-
-    createTestData(dataBundle, cqlLibrary)
-
-    val result =
-      fhirOperator.evaluateLibrary(
-        cqlLibrary.url,
-        dataBundle.entry.find { it.resource.resourceType == ResourceType.Patient }!!.resource.id,
-        null,
-      ) as Parameters
-
-    printResult(result)
-
-    assertOutput(
-      "$resourceDir/output_medication_request.json",
-      result,
-      ResourceType.MedicationRequest,
-    )
-  }
-
-  @Test
-  fun runCqlLibraryTestForTestResults() = runBlockingOnWorkerThread {
-    val resourceDir = "cql/test-results"
-    val cql = "$resourceDir/cql.txt".readFile()
-
-    val cqlLibrary = buildCqlLibrary(cql)
-
-    val dataBundle = loadTestResultsSampleData()
-
-    createTestData(dataBundle, cqlLibrary)
-
-    val result =
-      fhirOperator.evaluateLibrary(
-        cqlLibrary.url,
-        dataBundle.entry.find { it.resource.resourceType == ResourceType.Patient }!!.resource.id,
-        null,
-        null,
-        null,
-      ) as Parameters
-
-    printResult(result)
-
-    assertOutput("$resourceDir/sample/output_condition.json", result, ResourceType.Condition)
-    assertOutput(
-      "$resourceDir/sample/output_service_request.json",
-      result,
-      ResourceType.ServiceRequest,
-    )
-    assertOutput(
-      "$resourceDir/sample/output_diagnostic_report.json",
-      result,
-      ResourceType.DiagnosticReport,
-    )
-  }
-
-  @Test
-  fun runCqlLibraryTestForControlTest() = runBlockingOnWorkerThread {
-    val resourceDir = "cql/control-test"
-    val cql = "$resourceDir/cql.txt".readFile()
-
-    val cqlLibrary = buildCqlLibrary(cql)
-
-    val dataBundle =
-      loadTestResultsSampleData().apply {
-        addEntry().apply {
-          // questionnaire-response of test results is input of this cql
-          resource =
-            "test-results-questionnaire/questionnaire-response.json".parseSampleResourceFromFile()
-              as Resource
+      val dataBundle =
+        loadTestResultsSampleData().apply {
+          // output of test results cql is also added to input of this cql
+          "cql/test-results/sample"
+            .readDir()
+            .map { it.parseSampleResource() as Resource }
+            .forEach { addEntry().apply { resource = it } }
         }
-      }
 
-    createTestData(dataBundle, cqlLibrary)
+      createTestData(dataBundle, cqlLibrary)
 
-    val result =
-      fhirOperator.evaluateLibrary(
-        cqlLibrary.url,
-        dataBundle.entry.find { it.resource.resourceType == ResourceType.Patient }!!.resource.id,
-        null,
-      ) as Parameters
+      val result =
+        fhirOperator.evaluateLibrary(
+          cqlLibrary.url,
+          dataBundle.entry.find { it.resource.resourceType == ResourceType.Patient }!!.resource.id,
+          null,
+        ) as Parameters
 
-    printResult(result)
+      printResult(result)
 
-    Assert.assertTrue(
-      result.getParameterValues("OUTPUT").first().valueToString() == "Correct Result",
-    )
-    Assert.assertEquals(
-      result.getParameterValues("OUTPUT").elementAt(1).valueToString(),
-      "\nDetails:\n" +
-        "Value (3.0) is in Normal G6PD Range 0-3\n" +
-        "Value (11.0) is in Normal Haemoglobin Range 8-12",
-    )
-  }
+      assertOutput(
+        "$resourceDir/output_medication_request.json",
+        result,
+        ResourceType.MedicationRequest,
+      )
+    }
+
+  @Test
+  fun runCqlLibraryTestForTestResults() =
+    runTest(context = UnconfinedTestDispatcher()) {
+      val resourceDir = "cql/test-results"
+      val cql = "$resourceDir/cql.txt".readFile()
+
+      val cqlLibrary = buildCqlLibrary(cql)
+
+      val dataBundle = loadTestResultsSampleData()
+
+      createTestData(dataBundle, cqlLibrary)
+
+      val result =
+        fhirOperator.evaluateLibrary(
+          cqlLibrary.url,
+          dataBundle.entry.find { it.resource.resourceType == ResourceType.Patient }!!.resource.id,
+          null,
+          null,
+          null,
+        ) as Parameters
+
+      printResult(result)
+
+      assertOutput("$resourceDir/sample/output_condition.json", result, ResourceType.Condition)
+      assertOutput(
+        "$resourceDir/sample/output_service_request.json",
+        result,
+        ResourceType.ServiceRequest,
+      )
+      assertOutput(
+        "$resourceDir/sample/output_diagnostic_report.json",
+        result,
+        ResourceType.DiagnosticReport,
+      )
+    }
+
+  @Test
+  fun runCqlLibraryTestForControlTest() =
+    runTest(context = UnconfinedTestDispatcher()) {
+      val resourceDir = "cql/control-test"
+      val cql = "$resourceDir/cql.txt".readFile()
+
+      val cqlLibrary = buildCqlLibrary(cql)
+
+      val dataBundle =
+        loadTestResultsSampleData().apply {
+          addEntry().apply {
+            // questionnaire-response of test results is input of this cql
+            resource =
+              "test-results-questionnaire/questionnaire-response.json".parseSampleResourceFromFile()
+                as Resource
+          }
+        }
+
+      createTestData(dataBundle, cqlLibrary)
+
+      val result =
+        fhirOperator.evaluateLibrary(
+          cqlLibrary.url,
+          dataBundle.entry.find { it.resource.resourceType == ResourceType.Patient }!!.resource.id,
+          null,
+        ) as Parameters
+
+      printResult(result)
+
+      Assert.assertTrue(
+        result.getParameterValues("OUTPUT").first().valueToString() == "Correct Result",
+      )
+      Assert.assertEquals(
+        result.getParameterValues("OUTPUT").elementAt(1).valueToString(),
+        "\nDetails:\n" +
+          "Value (3.0) is in Normal G6PD Range 0-3\n" +
+          "Value (11.0) is in Normal Haemoglobin Range 8-12",
+      )
+    }
 
   private fun buildCqlLibrary(cql: String): Library {
     val cqlCompiler = CqlBuilder.compile(cql)
@@ -235,7 +241,7 @@ class CqlContentTest : RobolectricTest() {
         .replaceTimePart()
 
     println(cqlResultStr)
-    println(expectedResource as String)
+    println(expectedResource)
 
     Assert.assertEquals(expectedResource, cqlResultStr)
   }

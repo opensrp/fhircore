@@ -82,6 +82,24 @@ class DataMigrationTest : RobolectricTest() {
                 FhirResourceConfig(
                   baseResource = ResourceConfig(resource = ResourceType.Patient),
                 ),
+              version = 7,
+              rules =
+                listOf(
+                  RuleConfig(name = "value", actions = listOf("data.put('value', 'female')")),
+                ),
+              updateValues =
+                listOf(
+                  UpdateValueConfig(
+                    jsonPathExpression = "\$.gender",
+                    computedValueKey = "value",
+                  ),
+                ),
+            ),
+            MigrationConfig(
+              resourceConfig =
+                FhirResourceConfig(
+                  baseResource = ResourceConfig(resource = ResourceType.Patient),
+                ),
               version = 1,
               rules =
                 listOf(
@@ -103,9 +121,9 @@ class DataMigrationTest : RobolectricTest() {
       Assert.assertTrue(updatedPatient?.gender != patient.gender)
       Assert.assertEquals(Enumerations.AdministrativeGender.FEMALE, updatedPatient?.gender)
 
-      // Version updated to 2
+      // Version updated to 7 (the maximum migration version)
       Assert.assertEquals(
-        2,
+        7,
         preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).first(),
       )
     }
@@ -179,9 +197,9 @@ class DataMigrationTest : RobolectricTest() {
       Assert.assertNotNull(updatedTask?.basedOn)
       Assert.assertEquals("CarePlan/${carePlan.logicalId}", updatedTask?.basedOnFirstRep?.reference)
 
-      // Version updated to 2
+      // Version updated to 1
       Assert.assertEquals(
-        2,
+        1,
         preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).first(),
       )
     }

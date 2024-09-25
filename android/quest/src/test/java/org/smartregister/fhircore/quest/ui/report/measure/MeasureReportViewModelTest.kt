@@ -47,10 +47,12 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -107,6 +109,9 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
 
+  @OptIn(ExperimentalCoroutinesApi::class)
+  private val unconfinedTestDispatcher = UnconfinedTestDispatcher()
+
   @Inject lateinit var fhirEngine: FhirEngine
   private val measureReportRepository: MeasureReportRepository = mockk()
   private val fhirOperator: FhirOperator = mockk()
@@ -146,6 +151,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
           measureReportRepository = measureReportRepository,
         ),
       )
+
+    every { measureReportViewModel.dispatcherProvider.io() } returns Dispatchers.IO
   }
 
   @Test
@@ -180,7 +187,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
         url = "http://nourl.com",
         module = "Module1",
       )
-    every { measureReportViewModel.evaluateMeasure(any(), any()) } just runs
+    coEvery { measureReportViewModel.evaluateMeasure(any(), any()) } just runs
     measureReportViewModel.reportTypeSelectorUiState.value =
       ReportTypeSelectorUiState(startDate = "21 Jan, 2022", endDate = "27 Jan, 2022")
     measureReportViewModel.onEvent(
@@ -196,7 +203,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
     Assert.assertEquals(viewModelConfig.first().id, reportConfiguration.id)
     Assert.assertEquals(viewModelConfig.first().module, reportConfiguration.module)
 
-    verify {
+    coVerify {
       measureReportViewModel.evaluateMeasure(
         navController = navController,
         practitionerId = "practitioner-id",
@@ -298,13 +305,17 @@ class MeasureReportViewModelTest : RobolectricTest() {
     Assert.assertNotNull(sampleSubjectViewData.family, subjectViewData?.family)
   }
 
-  @Test()
+  @Test
   fun testEvaluateMeasureUtilizesPreviouslyGeneratedMeasureReportIfAvailable() =
-    runTest(timeout = 90.seconds) {
-      val subject = Group().apply { id = "groupId" }
+    runTest(timeout = 90.seconds, context = unconfinedTestDispatcher) {
+      val subject =
+        Group().apply {
+          id = "groupId"
+          name = "Test Group"
+        }
       val testMeasureReport =
         MeasureReport().apply {
-          id = "measureId"
+          id = "MeasureReport/measureId"
           measure = "http://nourl.com"
           type = MeasureReportType.INDIVIDUAL
           this.subject = subject.asReference()
@@ -318,7 +329,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
       val reportConfiguration =
         ReportConfiguration(
-          id = "measureId",
+          id = "ReportConfiguration/measureId",
           title = "Measure 1",
           description = "Measure report for testing",
           url = "http://nourl.com",
@@ -337,15 +348,36 @@ class MeasureReportViewModelTest : RobolectricTest() {
         )
       } returns listOf(testMeasureReport)
 
+      coEvery { measureReportRepository.fetchSubjects(any(ReportConfiguration::class)) } returns
+        listOf(subject.asReference().toString())
+
       measureReportViewModel.reportTypeSelectorUiState.value =
         ReportTypeSelectorUiState(startDate = "21 Jan, 2022", endDate = "27 Jan, 2022")
       measureReportViewModel.reportConfigurations.add(reportConfiguration)
 
       measureReportViewModel.evaluateMeasure(navController, null)
 
+      val measureReportListSlot = slot<List<MeasureReport>>()
+
       coVerify {
-        measureReportViewModel.formatPopulationMeasureReports(listOf(testMeasureReport), any())
+        measureReportViewModel.formatPopulationMeasureReports(capture(measureReportListSlot), any())
       }
+
+      assertEquals(testMeasureReport.id, measureReportListSlot.captured.first().id)
+      assertEquals(testMeasureReport.measure, measureReportListSlot.captured.first().measure)
+      assertEquals(testMeasureReport.type, measureReportListSlot.captured.first().type)
+      assertEquals(
+        testMeasureReport.subject.reference,
+        measureReportListSlot.captured.first().subject.reference,
+      )
+      assertEquals(
+        testMeasureReport.period.start.toString(),
+        measureReportListSlot.captured.first().period.start.toString(),
+      )
+      assertEquals(
+        testMeasureReport.period.end.toString(),
+        measureReportListSlot.captured.first().period.end.toString(),
+      )
 
       coVerify(exactly = 0) {
         measureReportRepository.evaluatePopulationMeasure(any(), any(), any(), any(), any(), any())
