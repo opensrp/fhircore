@@ -31,14 +31,12 @@ import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeUp
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.PagingData
-import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.mockk
 import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.flowOf
 import org.hl7.fhir.r4.model.ResourceType
@@ -265,7 +263,7 @@ class RegisterScreenTest {
     composeTestRule.setContent {
       val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
       val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
-      
+
       RegisterScreen(
         modifier = Modifier,
         openDrawer = {},
@@ -276,7 +274,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
-      )      
+      )
     }
     composeTestRule.onNodeWithTag(FIRST_TIME_SYNC_DIALOG, useUnmergedTree = true)
   }
