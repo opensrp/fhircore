@@ -84,6 +84,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
           ruleConfigs = listProperties.registerCard.rules,
           computedValuesMap = computedValuesMap,
           resourceDataSnapshotStateList = resourceDataSnapshotStateList,
+          listResourceDataStateMap = listResourceDataStateMap,
         )
     }
   }
@@ -112,6 +113,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
     ruleConfigs: List<RuleConfig>,
     computedValuesMap: Map<String, Any>,
     resourceDataSnapshotStateList: SnapshotStateList<ResourceData>,
+    listResourceDataStateMap: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
   ) {
     this.forEach { resource ->
       val listItemRelatedResources = mutableMapOf<String, List<Resource>>()
@@ -158,7 +160,8 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
           baseResourceId = resource.logicalId.extractLogicalIdUuid(),
           baseResourceType = resource.resourceType,
           computedValuesMap =
-            computedValuesMap.plus(listComputedValuesMap), // Reuse computed values
+            computedValuesMap.plus(listComputedValuesMap), // Reuse computed values,
+          listResourceDataMap = listResourceDataStateMap,
         ),
       )
     }
