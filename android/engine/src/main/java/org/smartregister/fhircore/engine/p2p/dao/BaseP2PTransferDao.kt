@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.engine.p2p.dao
 
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
@@ -36,6 +34,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.isValidResourceType
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.p2p.model.RecordCount
@@ -47,8 +46,6 @@ constructor(
   open val dispatcherProvider: DispatcherProvider,
   open val configurationRegistry: ConfigurationRegistry,
 ) {
-
-  protected val jsonParser: IParser = FhirContext.forR4Cached().newJsonParser()
 
   open fun getDataTypes(): TreeSet<DataType> {
     val appRegistry =
@@ -108,7 +105,7 @@ constructor(
           count = batchSize
           from = offset
         }
-      fhirEngine.search(search)
+      fhirEngine.batchedSearch(search)
     }
   }
 

@@ -166,7 +166,9 @@ class HtmlPopulator(
       answerMap.getOrDefault(linkId, listOf()).joinToString { answer ->
         if (dateFormat == null) {
           answer.value.valueToString()
-        } else answer.value.valueToString(dateFormat)
+        } else {
+          answer.value.valueToString(dateFormat)
+        }
       }
     html.replace(i, matcher.end() + i, answer)
   }

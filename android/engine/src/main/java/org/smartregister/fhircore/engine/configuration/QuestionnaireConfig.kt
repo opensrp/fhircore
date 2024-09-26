@@ -165,5 +165,5 @@ enum class LinkIdType : Parcelable {
   READ_ONLY,
   BARCODE,
   LOCATION,
-  IDENTIFIER,
+  PREPOPULATION_EXCLUSION,
 }
