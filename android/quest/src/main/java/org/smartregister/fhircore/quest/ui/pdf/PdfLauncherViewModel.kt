@@ -44,7 +44,7 @@ constructor(
    * Retrieve the [QuestionnaireResponse] for the given questionnaire and subject.
    *
    * @param questionnaireId The ID of the questionnaire.
-   * @param subjectReference The ID of the subject.
+   * @param subjectReference The reference of the subject e.g. Patient/123.
    * @return The [QuestionnaireResponse] if found, otherwise null.
    */
   suspend fun retrieveQuestionnaireResponse(
@@ -52,7 +52,7 @@ constructor(
     subjectReference: String,
   ): QuestionnaireResponse? {
     val searchQuery =
-      createQuestionnaireResponseSearchQuery(questionnaireId, subjectId, subjectType)
+      createQuestionnaireResponseSearchQuery(questionnaireId, subjectReference)
     return defaultRepository.search<QuestionnaireResponse>(searchQuery).maxByOrNull {
       it.meta.lastUpdated
     }
@@ -62,7 +62,7 @@ constructor(
    * Create a search query for [QuestionnaireResponse].
    *
    * @param questionnaireId The ID of the questionnaire.
-   * @param subjectReference The ID of the subject.
+   * @param subjectReference The reference of the subject e.g. Patient/123.
    * @return The search query for [QuestionnaireResponse].
    */
   private fun createQuestionnaireResponseSearchQuery(
