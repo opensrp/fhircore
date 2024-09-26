@@ -50,6 +50,7 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
+import org.smartregister.fhircore.engine.rulesengine.services.DateService
 import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -102,6 +103,7 @@ constructor(
         put(DATA, mutableMapOf<String, Any>().apply { putAll(params) })
         put(LOCATION_SERVICE, locationService)
         put(SERVICE, rulesEngineService)
+        put(DATE_SERVICE, DateService)
       }
     if (repositoryResourceData != null) {
       with(repositoryResourceData) {
@@ -710,6 +712,7 @@ constructor(
   companion object {
     private const val SERVICE = "service"
     private const val LOCATION_SERVICE = "locationService"
+    private const val DATE_SERVICE = "dateService"
     private const val INCLUSIVE_SIX_DIGIT_MINIMUM = 100000
     private const val INCLUSIVE_SIX_DIGIT_MAXIMUM = 999999
     private const val DEFAULT_REGEX = "(?<=^|,)[\\s,]*(\\w[\\w\\s]*)(?=[\\s,]*$|,)"
