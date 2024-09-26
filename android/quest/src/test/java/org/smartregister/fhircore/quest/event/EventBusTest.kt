@@ -16,15 +16,15 @@
 
 package org.smartregister.fhircore.quest.event
 
+import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
 import kotlin.test.assertEquals
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Before
 import org.junit.Rule
@@ -38,39 +38,42 @@ class EventBusTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var eventQueue: EventQueue<AppEvent>
-  private lateinit var eventBus: EventBus
-  lateinit var emittedEvents: MutableList<AppEvent>
+  @Inject lateinit var eventBus: EventBus
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    emittedEvents = mutableListOf()
-    eventBus = EventBus(eventQueue)
   }
 
   @Test
-  @OptIn(ExperimentalCoroutinesApi::class)
   fun testTriggerEventEmitsLogoutEvent1() {
-    val onSubmitQuestionnaireEvent =
-      AppEvent.OnSubmitQuestionnaire(
-        QuestionnaireSubmission(
-          questionnaireConfig = QuestionnaireConfig(id = "submit-questionnaire"),
-          QuestionnaireResponse(),
-        ),
-      )
+    runTest {
+      val onSubmitQuestionnaireEvent =
+        AppEvent.OnSubmitQuestionnaire(
+          QuestionnaireSubmission(
+            questionnaireConfig = QuestionnaireConfig(id = "questionnaire1"),
+            questionnaireResponse = QuestionnaireResponse().apply { id = "questionnaireResponse1" },
+          ),
+        )
 
-    runBlockingTest {
-      val collectJob = launch {
+      val job =
         eventBus.events
-          .getFor("TestTag")
-          .onEach { appEvent -> emittedEvents.add(appEvent) }
+          .getFor("thisConsumer")
+          .onEach {
+            assertTrue(it is AppEvent.OnSubmitQuestionnaire)
+            assertEquals(
+              onSubmitQuestionnaireEvent.questionnaireSubmission.questionnaireConfig.id,
+              it.questionnaireSubmission.questionnaireConfig.id,
+            )
+            assertEquals(
+              onSubmitQuestionnaireEvent.questionnaireSubmission.questionnaireResponse.logicalId,
+              it.questionnaireSubmission.questionnaireResponse.logicalId,
+            )
+          }
           .launchIn(this)
-      }
-      eventBus.triggerEvent(onSubmitQuestionnaireEvent)
-      collectJob.cancel()
-    }
 
-    assertEquals(onSubmitQuestionnaireEvent, emittedEvents[0])
+      eventBus.triggerEvent(onSubmitQuestionnaireEvent)
+      job.cancel()
+    }
   }
 }

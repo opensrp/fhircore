@@ -211,7 +211,9 @@ constructor(
             }
             if (migrationConfig.createLocalChangeEntitiesAfterPurge) {
               defaultRepository.addOrUpdate(resource = updatedResource as Resource)
-            } else defaultRepository.createRemote(resource = *arrayOf(updatedResource as Resource))
+            } else {
+              defaultRepository.createRemote(resource = *arrayOf(updatedResource as Resource))
+            }
           }
         }
         Timber.i("Data migration completed successfully for version: ${migrationConfig.version}")

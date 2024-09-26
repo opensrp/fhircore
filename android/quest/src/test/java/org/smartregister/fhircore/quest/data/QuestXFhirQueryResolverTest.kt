@@ -47,7 +47,7 @@ class QuestXFhirQueryResolverTest : RobolectricTest() {
   @Test
   fun testQuestXFhirQueryResolver() =
     runTest(timeout = 120.seconds) {
-      val patient = Patient()
+      val patient = Patient().apply { setActive(true) }
       val task = Task()
       fhirEngine.create(patient, task)
       val xFhirResolver = QuestXFhirQueryResolver(fhirEngine)
