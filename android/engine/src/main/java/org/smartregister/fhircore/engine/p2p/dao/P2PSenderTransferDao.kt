@@ -18,14 +18,17 @@ package org.smartregister.fhircore.engine.p2p.dao
 
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.datacapture.extensions.logicalId
 import java.util.TreeSet
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Resource
 import org.json.JSONArray
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
+import org.smartregister.fhircore.engine.util.forEachAsync
 import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.search.data.JsonData
@@ -55,41 +58,43 @@ constructor(
     // TODO: complete  retrieval of data implementation
     Timber.e("Last updated at value is $lastUpdated")
     var highestRecordId = lastUpdated
+    var records: List<SearchResult<Resource>>
+    var jsonArrayResult: JSONArray
+    runBlocking {
+      records =
+        dataType.name.resourceClassType().let { classType ->
+          loadResources(
+            lastRecordUpdatedAt = highestRecordId,
+            batchSize = batchSize,
+            offset = offset,
+            classType,
+          )
+        }
 
-    val records = runBlocking {
-      dataType.name.resourceClassType().let { classType ->
-        loadResources(
-          lastRecordUpdatedAt = highestRecordId,
-          batchSize = batchSize,
-          offset = offset,
-          classType,
+      Timber.i("Fetching resources from base dao of type  $dataType.name")
+      highestRecordId =
+        (if (records.isNotEmpty()) {
+          records.last().resource.meta?.lastUpdated?.time ?: highestRecordId
+        } else {
+          lastUpdated
+        })
+
+      val jsonArray = JSONArray()
+      records.forEachAsync {
+        jsonArray.put(FhirContext.forR4Cached().newJsonParser().encodeResourceToString(it.resource))
+        highestRecordId =
+          if (it.resource.meta?.lastUpdated?.time!! > highestRecordId) {
+            it.resource.meta?.lastUpdated?.time!!
+          } else {
+            highestRecordId
+          }
+        Timber.i(
+          "Sending ${it.resource.resourceType} with id ====== ${it.resource.logicalId} and lastUpdated = ${it.resource.meta?.lastUpdated?.time!!}",
         )
       }
+      jsonArrayResult = jsonArray
     }
-
-    Timber.i("Fetching resources from base dao of type  $dataType.name")
-    highestRecordId =
-      (if (records.isNotEmpty()) {
-        records.last().resource.meta?.lastUpdated?.time ?: highestRecordId
-      } else {
-        lastUpdated
-      })
-
-    val jsonArray = JSONArray()
-    records.forEach {
-      jsonArray.put(FhirContext.forR4Cached().newJsonParser().encodeResourceToString(it.resource))
-      highestRecordId =
-        if (it.resource.meta?.lastUpdated?.time!! > highestRecordId) {
-          it.resource.meta?.lastUpdated?.time!!
-        } else {
-          highestRecordId
-        }
-      Timber.i(
-        "Sending ${it.resource.resourceType} with id ====== ${it.resource.logicalId} and lastUpdated = ${it.resource.meta?.lastUpdated?.time!!}",
-      )
-    }
-
     Timber.e("New highest Last updated at value is $highestRecordId")
-    return JsonData(jsonArray, highestRecordId)
+    return JsonData(jsonArrayResult, highestRecordId)
   }
 }
