@@ -20,14 +20,11 @@ import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
-import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
-import com.google.android.fhir.search.search
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.Date
-import java.util.LinkedList
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.abs
@@ -64,7 +61,6 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.model.Type
-import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.joda.time.Instant
 import org.json.JSONException
 import org.json.JSONObject
@@ -185,22 +181,6 @@ fun JSONObject.updateFrom(updated: JSONObject) {
     }
 
   keys.forEach { key -> updated.opt(key)?.run { put(key, this) } }
-}
-
-fun QuestionnaireResponse.generateMissingItems(questionnaire: Questionnaire) =
-  questionnaire.item.generateMissingItems(this.item)
-
-fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
-  qrItems: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
-) {
-  this.forEachIndexed { index, qItem ->
-    // generate complete hierarchy if response item missing otherwise check for nested items
-    if (qrItems.isEmpty() || (index < qrItems.size && qItem.linkId != qrItems[index].linkId)) {
-      qrItems.add(index, qItem.createQuestionnaireResponseItem())
-    } else if (index < qrItems.size) {
-      qItem.item.generateMissingItems(qrItems[index].item)
-    }
-  }
 }
 
 /**
@@ -438,7 +418,7 @@ fun ImplementationGuide.retrieveImplementationGuideDefinitionResources():
  */
 fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent> {
   val sections = mutableListOf<Composition.SectionComponent>()
-  val sectionsQueue = LinkedList<Composition.SectionComponent>()
+  val sectionsQueue = ArrayDeque<Composition.SectionComponent>()
   this.section.forEach {
     if (!it.section.isNullOrEmpty()) {
       it.section.forEach { sectionComponent -> sectionsQueue.addLast(sectionComponent) }
@@ -486,7 +466,7 @@ suspend fun Task.updateDependentTaskDueDate(
   return apply {
     val dependentTasks =
       defaultRepository.fhirEngine
-        .search<Task> {
+        .batchedSearch<Task> {
           filter(
             referenceParameter = ReferenceClientParam(PARTOF),
             { value = id },

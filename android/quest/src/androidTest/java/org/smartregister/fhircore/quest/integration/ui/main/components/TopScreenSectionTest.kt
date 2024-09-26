@@ -38,7 +38,7 @@ import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 
 class TopScreenSectionTest {
-  private val listener: (SearchQuery) -> Unit = {}
+  private val listener: (SearchQuery, Boolean) -> Unit = { _, _ -> }
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -112,7 +112,7 @@ class TopScreenSectionTest {
       TopScreenSection(
         title = "All Clients",
         searchQuery = SearchQuery("search text"),
-        onSearchTextChanged = { clicked = true },
+        onSearchTextChanged = { _, _ -> clicked = true },
         navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
         onClick = {},

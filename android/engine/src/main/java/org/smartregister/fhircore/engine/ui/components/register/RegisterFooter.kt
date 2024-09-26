@@ -34,7 +34,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
@@ -43,8 +42,6 @@ const val SEARCH_FOOTER_TAG = "searchFooterTag"
 const val SEARCH_FOOTER_PREVIOUS_BUTTON_TAG = "searchFooterPreviousButtonTag"
 const val SEARCH_FOOTER_NEXT_BUTTON_TAG = "searchFooterNextButtonTag"
 const val SEARCH_FOOTER_PAGINATION_TAG = "searchFooterPaginationTag"
-const val PADDING_BOTTOM_WITH_FAB = 80
-const val PADDING_BOTTOM_WITHOUT_FAB = 32
 
 @Composable
 fun RegisterFooter(
@@ -54,21 +51,9 @@ fun RegisterFooter(
   previousButtonClickListener: () -> Unit,
   nextButtonClickListener: () -> Unit,
   modifier: Modifier = Modifier,
-  fabActions: List<NavigationMenuConfig>? = null,
 ) {
   if (resultCount > 0) {
-    Row(
-      modifier =
-        modifier
-          .fillMaxWidth()
-          .testTag(SEARCH_FOOTER_TAG)
-          .padding(
-            bottom =
-              if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
-                PADDING_BOTTOM_WITH_FAB.dp
-              } else PADDING_BOTTOM_WITHOUT_FAB.dp,
-          ),
-    ) {
+    Row(modifier = modifier.fillMaxWidth().testTag(SEARCH_FOOTER_TAG)) {
       Box(
         modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.Start),
       ) {

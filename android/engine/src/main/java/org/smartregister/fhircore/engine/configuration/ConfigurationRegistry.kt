@@ -33,7 +33,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.net.UnknownHostException
-import java.util.LinkedList
 import java.util.Locale
 import java.util.PropertyResourceBundle
 import java.util.ResourceBundle
@@ -61,8 +60,6 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.di.NetworkModule
-import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -107,7 +104,6 @@ constructor(
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
   private val fhirContext = FhirContext.forR4Cached()
   private val authConfiguration = configService.provideAuthConfiguration()
-  private val jsonParser = fhirContext.newJsonParser()
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -376,19 +372,23 @@ constructor(
    * @return A list of strings of config files.
    */
   private fun retrieveAssetConfigs(context: Context, appId: String): MutableList<String> {
-    val filesQueue = LinkedList<String>()
+    val filesQueue = ArrayDeque<String>()
     val configFiles = mutableListOf<String>()
     context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
       if (!supportedFileExtensions.contains(it.fileExtension)) {
         filesQueue.addLast(String.format(BASE_CONFIG_PATH, appId) + "/$it")
-      } else configFiles.add(String.format(BASE_CONFIG_PATH, appId) + "/$it")
+      } else {
+        configFiles.add(String.format(BASE_CONFIG_PATH, appId) + "/$it")
+      }
     }
     while (filesQueue.isNotEmpty()) {
       val currentPath = filesQueue.removeFirst()
       context.assets.list(currentPath)?.onEach {
         if (!supportedFileExtensions.contains(it.fileExtension)) {
           filesQueue.addLast("$currentPath/$it")
-        } else configFiles.add("$currentPath/$it")
+        } else {
+          configFiles.add("$currentPath/$it")
+        }
       }
     }
     return configFiles
@@ -510,13 +510,14 @@ constructor(
     val resultBundle =
       if (isNonProxy()) {
         fhirResourceDataSourceGetBundle(resourceType, resourceIdList)
-      } else
+      } else {
         fhirResourceDataSource.post(
           requestBody =
             generateRequestBundle(resourceType, resourceIdList)
               .encodeResourceToString()
               .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
         )
+      }
 
     processResultBundleEntries(resultBundle.entry)
 
@@ -627,9 +628,14 @@ constructor(
         resource.idElement.idPart
       }
 
-    return File(context.filesDir, "$fileName.json").apply {
-      writeText(jsonParser.encodeResourceToString(resource))
-    }
+    return File(
+        context.filesDir,
+        "$KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER/${resource.resourceType}/$fileName.json",
+      )
+      .apply {
+        this.parentFile?.mkdirs()
+        writeText(fhirContext.newJsonParser().encodeResourceToString(resource))
+      }
   }
 
   /**
@@ -730,16 +736,6 @@ constructor(
     }
   }
 
-  private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
-    this.baseResource.dependentResourceTypes(target)
-    this.relatedResources.forEach { it.dependentResourceTypes(target) }
-  }
-
-  private fun ResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
-    target.add(resource)
-    relatedResources.forEach { it.dependentResourceTypes(target) }
-  }
-
   suspend fun loadResourceSearchParams():
     Pair<Map<String, Map<String, String>>, ResourceSearchParams> {
     val syncConfig = retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
@@ -833,6 +829,7 @@ constructor(
     const val PAGINATION_NEXT = "next"
     const val RESOURCES_PATH = "resources/"
     const val SYNC_LOCATION_IDS = "_syncLocations"
+    const val KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER = "km"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.
