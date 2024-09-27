@@ -26,7 +26,6 @@ import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -85,8 +84,7 @@ class PdfLauncherViewModelTest : RobolectricTest() {
 
     coEvery { fhirEngine.search<QuestionnaireResponse>(any<Search>()) } returns
       questionnaireResponses
-    val result =
-      viewModel.retrieveQuestionnaireResponse(questionnaire.id, patient.id, ResourceType.Patient)
+    val result = viewModel.retrieveQuestionnaireResponse(questionnaire.id, "Patient/${patient.id}")
 
     assertEquals(latestQuestionnaireResponse.id, result!!.id)
   }
