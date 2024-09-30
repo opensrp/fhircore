@@ -11,7 +11,7 @@ import org.json.JSONObject
 plugins {
   `jacoco-report`
   `project-properties`
-  `ktlint`
+  ktlint
   id("com.android.application")
   id("kotlin-android")
   id("kotlin-kapt")
@@ -27,7 +27,7 @@ plugins {
 sonar {
   properties {
     property("sonar.projectKey", "fhircore")
-    property("sonar.kotlin.source.version", libs.kotlin)
+    property("sonar.kotlin.source.version", libs.versions.kotlin)
     property(
       "sonar.androidLint.reportPaths",
       "${project.layout.buildDirectory.get()}/reports/lint-results-opensrpDebug.xml",
@@ -341,6 +341,13 @@ android {
       versionNameSuffix = "-contigo"
       manifestPlaceholders["appLabel"] = "Contigo"
     }
+
+    create("minsaEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".minsaEir"
+      versionNameSuffix = "-minsaEir"
+      manifestPlaceholders["appLabel"] = "Minsa EIR"
+    }
   }
 
   applicationVariants.all {
@@ -418,6 +425,7 @@ tasks.withType<Test> {
 configurations { all { exclude(group = "xpp3") } }
 
 dependencies {
+  implementation(libs.gms.play.services.location)
   coreLibraryDesugaring(libs.core.desugar)
 
   // Application dependencies
@@ -428,7 +436,9 @@ dependencies {
   implementation(libs.material)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
-  implementation(libs.play.services.location)
+  implementation(libs.mlkit.barcode.scanning)
+
+  implementation(libs.bundles.cameraX)
 
   // Annotation processors
   kapt(libs.hilt.compiler)

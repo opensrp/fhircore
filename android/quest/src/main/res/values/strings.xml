@@ -104,8 +104,10 @@
     <string name="questionnaire_not_found">Questionnaire not found.  Sync all questionnaires to fix</string>
     <string name="no_visits">No visits</string>
     <string name="questionnaire_response_invalid">Questionnaire response invalid</string>
+    <string name="extracted_resources_validation_fail">Validation on extracted resources failed. Please check the logs</string>
+    <string name="error_occurred_generating_careplan">An error occurred generating CarePlan. Please check the logs</string>
     <string name="app_version_tag_url" translatable="false">https://smartregister.org/app-version</string>
-    <string name="application_version" translatable="false">Application Version</string>
+    <string name="application_version">Application Version</string>
     <string name="missing_subject_type">Missing subject type on questionnaire. Provide Questionnaire.subjectType to resolve.</string>
     <string name="missing_questionnaire_config">QuestionnaireConfig is required but missing.</string>
     <string name="error_populating_questionnaire">Error populating some questionnaire fields. Invalid QuestionnaireResponse.</string>
@@ -123,4 +125,12 @@
     <string name="no_search_coonfigs_provided">No configs provided for search bar</string>
     <string name="no_found_locations_matching_text">No location found matching text \"%1$s\"</string>
     <string name="open_choice_other_hint">Other</string>
+    <string name="qr_code">qr_code</string>
+    <string name="barcode_camera_permission_denied">Camera permission request denied. Barcode may not work as expected</string>
+    <string name="prompt_point_at_a_barcode">Place your camera over the QR Code to start scanning</string>
+    <string name="add_qr_code">Add QR code</string>
+    <string name="scan_qr_code">Scan QR Code</string>
+    <string name="scan_qr_camera_instruction">Place your camera over the entire QR Code to start scanning</string>
+    <string name="failed_to_get_gps_location">Failed to get GPS location</string>
+    <string name="space_asterisk" translatable="false">\u0020\u002a</string>
 </resources>

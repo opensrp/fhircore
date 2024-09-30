@@ -46,16 +46,7 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
   navHostController: TestNavHostController? = null,
   crossinline action: Fragment.() -> Unit = {},
 ) {
-  val startActivityIntent =
-    Intent.makeMainActivity(
-        ComponentName(ApplicationProvider.getApplicationContext(), HiltActivityForTest::class.java),
-      )
-      .putExtra(
-        "androidx.fragment.app.testing.FragmentScenario.EmptyFragmentActivity.THEME_EXTRAS_BUNDLE_KEY",
-        themeResId,
-      )
-
-  ActivityScenario.launch<HiltActivityForTest>(startActivityIntent).use { scenario ->
+  hiltActivityForTestScenario(themeResId).use { scenario ->
     scenario.onActivity { activity ->
       val fragment: Fragment =
         activity.supportFragmentManager.fragmentFactory.instantiate(
@@ -81,4 +72,19 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
       fragment.action()
     }
   }
+}
+
+fun hiltActivityForTestScenario(
+  @StyleRes themeResId: Int = R.style.AppTheme,
+): ActivityScenario<HiltActivityForTest> {
+  val startActivityIntent =
+    Intent.makeMainActivity(
+        ComponentName(ApplicationProvider.getApplicationContext(), HiltActivityForTest::class.java),
+      )
+      .putExtra(
+        HiltActivityForTest.THEME_EXTRAS_BUNDLE_KEY,
+        themeResId,
+      )
+
+  return ActivityScenario.launch<HiltActivityForTest>(startActivityIntent)
 }

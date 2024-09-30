@@ -37,7 +37,6 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.extension.plusDays
 
 @HiltAndroidTest
 class RulesEngineServiceTest : RobolectricTest() {
@@ -294,6 +293,104 @@ class RulesEngineServiceTest : RobolectricTest() {
     Assert.assertEquals(
       ServiceStatus.UPCOMING.name,
       rulesEngineService.generateTaskServiceStatus(task),
+    )
+  }
+
+  @Test
+  fun `generateListTaskServiceStatus() should return OVERDUE when list have Task#status is READY but date passed`() {
+    val taskList = ArrayList<Task>()
+    val task = Task().apply { status = Task.TaskStatus.REQUESTED }
+    taskList.add(task)
+
+    val sdf = SimpleDateFormat("dd/MM/yyyy")
+    val startDate: Date? = sdf.parse("01/01/2023")
+    val endDate: Date? = sdf.parse("01/02/2023")
+
+    val taskOver =
+      Task().apply {
+        status = Task.TaskStatus.READY
+        executionPeriod =
+          Period().apply {
+            start = startDate
+            end = endDate
+          }
+      }
+
+    taskList.add(taskOver)
+    Assert.assertTrue(
+      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.OVERDUE.name),
+    )
+  }
+
+  @Test
+  fun `generateListTaskServiceStatus() should return DUE when list have Task#status is READY`() {
+    val taskList = ArrayList<Task>()
+    val task0 = Task().apply { status = Task.TaskStatus.READY }
+    val task1 = Task().apply { status = Task.TaskStatus.INPROGRESS }
+    val task2 = Task().apply { status = Task.TaskStatus.RECEIVED }
+    val task3 = Task().apply { status = Task.TaskStatus.CANCELLED }
+    val task4 = Task().apply { status = Task.TaskStatus.REJECTED }
+    taskList.add(task0)
+    taskList.add(task1)
+    taskList.add(task2)
+    taskList.add(task3)
+    taskList.add(task4)
+
+    Assert.assertTrue(rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.DUE.name))
+  }
+
+  @Test
+  fun testGenerateListTaskServiceStatusShouldReturnUPCOMINGWhenListHaveTaskStatusIsREQUESTED() {
+    val taskList = ArrayList<Task>()
+    val task0 = Task().apply { status = Task.TaskStatus.REQUESTED }
+    val task2 = Task().apply { status = Task.TaskStatus.COMPLETED }
+    val task3 = Task().apply { status = Task.TaskStatus.RECEIVED }
+
+    taskList.add(task0)
+    taskList.add(task2)
+    taskList.add(task3)
+
+    Assert.assertTrue(
+      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.UPCOMING.name),
+    )
+  }
+
+  @Test
+  fun testGenerateListTaskServiceStatusShouldReturnINPROGRESSWhenListHaveTaskStatusIsINPROGRESS() {
+    val taskList = ArrayList<Task>()
+    val task1 = Task().apply { status = Task.TaskStatus.INPROGRESS }
+    val task2 = Task().apply { status = Task.TaskStatus.COMPLETED }
+    val task3 = Task().apply { status = Task.TaskStatus.CANCELLED }
+    taskList.add(task1)
+    taskList.add(task2)
+    taskList.add(task3)
+
+    Assert.assertTrue(
+      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.IN_PROGRESS.name),
+    )
+  }
+
+  @Test
+  fun testGenerateListTaskServiceStatusShouldReturnEXPIREDWhenListHaveTaskStatusIsEXPIRED() {
+    val taskList = ArrayList<Task>()
+    val task2 = Task().apply { status = Task.TaskStatus.COMPLETED }
+    val task3 = Task().apply { status = Task.TaskStatus.CANCELLED }
+    taskList.add(task2)
+    taskList.add(task3)
+
+    Assert.assertTrue(
+      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.EXPIRED.name),
+    )
+  }
+
+  @Test
+  fun testGenerateListTaskServiceStatusShouldReturnCOMPLETEDWhenListHaveTaskStatusIsCOMPLETED() {
+    val taskList = ArrayList<Task>()
+    val task2 = Task().apply { status = Task.TaskStatus.COMPLETED }
+    taskList.add(task2)
+
+    Assert.assertTrue(
+      rulesEngineService.taskServiceStatusExist(taskList, ServiceStatus.COMPLETED.name),
     )
   }
 

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.register.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -46,6 +47,8 @@ import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 import timber.log.Timber
 
 const val REGISTER_CARD_LIST_TEST_TAG = "RegisterCardListTestTag"
+const val PADDING_BOTTOM_WITH_FAB = 80
+const val PADDING_BOTTOM_WITHOUT_FAB = 32
 
 /**
  * This is the list used to render register data. The register data is wrapped in [ResourceData]
@@ -62,6 +65,7 @@ fun RegisterCardList(
   registerUiState: RegisterUiState,
   currentPage: MutableState<Int>,
   showPagination: Boolean = false,
+  onSearchByQrSingleResultAction: (ResourceData) -> Unit,
 ) {
   LazyColumn(modifier = Modifier.testTag(REGISTER_CARD_LIST_TEST_TAG), state = lazyListState) {
     items(
@@ -82,6 +86,7 @@ fun RegisterCardList(
       }
       Divider(color = DividerColor, thickness = 1.dp)
     }
+
     pagingItems.apply {
       when {
         loadState.refresh is LoadState.Loading -> item { CircularProgressBar() }
@@ -101,20 +106,37 @@ fun RegisterCardList(
             ErrorMessage(message = error.error.localizedMessage!!, onClickRetry = { retry() })
           }
         }
+        loadState.append.endOfPaginationReached || loadState.refresh.endOfPaginationReached -> {
+          if (pagingItems.itemCount == 1) {
+            onSearchByQrSingleResultAction.invoke(pagingItems[0]!!)
+          }
+        }
       }
     }
 
     // Register pagination
     item {
-      if (pagingItems.itemCount > 0 && showPagination) {
-        RegisterFooter(
-          resultCount = pagingItems.itemCount,
-          currentPage = currentPage.value.plus(1),
-          pagesCount = registerUiState.pagesCount,
-          fabActions = registerUiState.registerConfiguration?.fabActions,
-          previousButtonClickListener = { onEvent(RegisterEvent.MoveToPreviousPage) },
-          nextButtonClickListener = { onEvent(RegisterEvent.MoveToNextPage) },
-        )
+      val fabActions = registerUiState.registerConfiguration?.fabActions
+      Box(
+        modifier =
+          Modifier.padding(
+            bottom =
+              if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
+                PADDING_BOTTOM_WITH_FAB.dp
+              } else {
+                PADDING_BOTTOM_WITHOUT_FAB.dp
+              },
+          ),
+      ) {
+        if (pagingItems.itemCount > 0 && showPagination) {
+          RegisterFooter(
+            resultCount = pagingItems.itemCount,
+            currentPage = currentPage.value.plus(1),
+            pagesCount = registerUiState.pagesCount,
+            previousButtonClickListener = { onEvent(RegisterEvent.MoveToPreviousPage) },
+            nextButtonClickListener = { onEvent(RegisterEvent.MoveToNextPage) },
+          )
+        }
       }
     }
   }

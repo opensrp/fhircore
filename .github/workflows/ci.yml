@@ -10,6 +10,10 @@ on:
   merge_group:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
  FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
  FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
@@ -21,13 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        api-level: [30]
+        api-level: [34]
+        
     steps:
-      - name: Cancel Previous workflow runs
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
-
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
@@ -54,7 +54,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: android
-      
+
       - name: Copy CI gradle.properties
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
 
@@ -63,8 +63,8 @@ jobs:
 
       - name: Spotless check engine module
         run: ./gradlew -PlocalPropertiesFile=local.properties :engine:spotlessCheck :engine:ktlintCheck --stacktrace
-        working-directory: android 
-      
+        working-directory: android
+
       - name: Load AVD cache
         uses: actions/cache@v4
         id: avd-cache
@@ -85,10 +85,10 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
-      
+
       - name: Run Engine module unit and instrumentation tests and generate coverage report
         uses: reactivecircus/android-emulator-runner@v2
-        with: 
+        with:
           working-directory: android
           api-level: ${{ matrix.api-level }}
           arch: x86_64
@@ -97,8 +97,16 @@ jobs:
           disable-animations: true
           script: ./gradlew -PlocalPropertiesFile=local.properties :engine:clean :engine:fhircoreJacocoReport --stacktrace
 
+      - name: Upload Test reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-test-reports
+          path: android/engine/build/reports
+
+
       - name: Upload Engine module test coverage report to Codecov
-        if: matrix.api-level == 30 # Only upload coverage on API level 30
+        if: matrix.api-level == 34 # Only upload coverage on API level 34
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
@@ -106,13 +114,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        api-level: [30]
+        api-level: [34]
+        
     steps:
-      - name: Cancel Previous workflow runs
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
-
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
@@ -139,7 +143,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: android
-      
+
       - name: Copy CI gradle.properties
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
 
@@ -148,8 +152,8 @@ jobs:
 
       - name: Spotless check geowidget module
         run: ./gradlew -PlocalPropertiesFile=local.properties :geowidget:spotlessCheck --stacktrace
-        working-directory: android 
-      
+        working-directory: android
+
       - name: Load AVD cache
         uses: actions/cache@v4
         id: avd-cache
@@ -170,10 +174,10 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
-      
+
       - name: Run Geowidget module unit and instrumentation tests and generate coverage report
         uses: reactivecircus/android-emulator-runner@v2
-        with: 
+        with:
           working-directory: android
           api-level: ${{ matrix.api-level }}
           arch: x86_64
@@ -182,8 +186,15 @@ jobs:
           disable-animations: true
           script: ./gradlew -PlocalPropertiesFile=local.properties :geowidget:clean :geowidget:fhircoreJacocoReport --stacktrace
 
+      - name: Upload Test reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: geowidget-test-reports
+          path: android/geowidget/build/reports
+
       - name: Upload Geowidget module test coverage report to Codecov
-        if: matrix.api-level == 30 # Only upload coverage on API level 30
+        if: matrix.api-level == 34 # Only upload coverage on API level 34
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F geowidget -f "geowidget/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
@@ -191,12 +202,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        api-level: [30]
-    steps:
-      - name: Cancel Previous workflow runs
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
+        api-level: [34]
+        
+    steps: 
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
@@ -265,11 +273,11 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: ./gradlew clean  -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
-  
+
       - name: Run Quest module unit and instrumentation tests and generate aggregated coverage report (Disabled)
         if: false
         uses: reactivecircus/android-emulator-runner@v2
-        with: 
+        with:
           working-directory: android
           api-level: ${{ matrix.api-level }}
           arch: x86_64
@@ -291,8 +299,15 @@ jobs:
             /Users/martin/Library/Android/sdk/platform-tools/adb shell run-as org.smartregister.opensrp \
               cat "/data/user/0/org.smartregister.opensrp/files/coverage.ec" > quest/coverage.ec 
             ./gradlew -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace
-            
+
+      - name: Upload Test reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: quest-test-reports
+          path: android/quest/build/reports
+
       - name: Upload Quest module test coverage report to Codecov
-        if: matrix.api-level == 30 # Only upload coverage on API level 30
+        if: matrix.api-level == 34 # Only upload coverage on API level 34
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"

@@ -49,8 +49,6 @@ import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
-class SearchView
-
 const val SEARCH_BAR_TRAILING_ICON_TEST_TAG = "searchBarTrailingIconTestTag"
 const val SEARCH_BAR_TRAILING_ICON_BUTTON_TEST_TAG = "searchBarTrailingIconButtonTestTag"
 const val SEARCH_BAR_TRAILING_TEXT_FIELD_TEST_TAG = "searchBarTrailingTextFieldTestTag"

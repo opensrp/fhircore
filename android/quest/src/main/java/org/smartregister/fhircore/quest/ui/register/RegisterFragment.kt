@@ -64,6 +64,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.ui.shared.viewmodels.SearchViewModel
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
@@ -127,11 +128,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
         AppTheme {
           val pagingItems =
-            registerViewModel.paginatedRegisterData
+            registerViewModel.registerData
               .collectAsState(emptyFlow())
               .value
               .collectAsLazyPagingItems()
-          // Register screen provides access to the side navigation
+
           Scaffold(
             drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
             scaffoldState = scaffoldState,
@@ -142,7 +143,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 openDrawer = openDrawer,
                 onSideMenuClick = {
                   if (it is AppMainEvent.TriggerWorkflow) {
-                    searchViewModel.searchText.value = ""
+                    searchViewModel.searchQuery.value = SearchQuery.emptyText
                   }
                   appMainViewModel.onEvent(it)
                 },
@@ -174,7 +175,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 registerUiState = registerViewModel.registerUiState.value,
                 appDrawerUIState = appMainViewModel.appDrawerUiState.value,
                 onAppMainEvent = { appMainViewModel.onEvent(it) },
-                searchText = searchViewModel.searchText,
+                searchQuery = searchViewModel.searchQuery,
                 currentPage = registerViewModel.currentPage,
                 pagingItems = pagingItems,
                 navController = findNavController(),
@@ -201,9 +202,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
           val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
           lifecycleScope.launch {
             appMainViewModel.updateAppDrawerUIState(
-              isSyncUpload,
-              syncJobStatus,
-              progressPercentage,
+              isSyncUpload = isSyncUpload,
+              currentSyncJobStatus = syncJobStatus,
+              percentageProgress = progressPercentage,
             )
           }
         }
@@ -214,9 +215,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
-        appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
+        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
       }
-      else -> appMainViewModel.updateAppDrawerUIState(false, syncJobStatus, 0)
+      else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
     }
   }
 
@@ -227,13 +228,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
           updateRegisterFilterState(registerId, questionnaireResponse)
         }
 
-        pagesDataCache.clear()
-
         retrieveRegisterUiState(
           registerId = registerId,
           screenTitle = screenTitle,
           params = params,
-          clearCache = false,
+          clearCache = true,
         )
       }
     }
@@ -258,6 +257,14 @@ class RegisterFragment : Fragment(), OnSyncListener {
             }
           }
           .launchIn(lifecycleScope)
+      }
+    }
+
+    appMainViewModel.resetRegisterFilters.observe(viewLifecycleOwner) { resetFilters ->
+      if (resetFilters) {
+        registerViewModel.registerFilterState.value = RegisterFilterState()
+        refreshRegisterData()
+        appMainViewModel.resetRegisterFilters.value = false
       }
     }
   }

@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -59,7 +60,8 @@ class MultiSelectBottomSheetFragment() : BottomSheetDialogFragment() {
       multiSelectViewModel.saveSelectedLocations(requireContext())
       appMainViewModel.run {
         if (requireContext().isDeviceOnline()) {
-          triggerSync()
+          viewModelScope.launch { syncBroadcaster.runOneTimeSync() }
+          schedulePeriodicSync()
         } else {
           requireContext()
             .showToast(

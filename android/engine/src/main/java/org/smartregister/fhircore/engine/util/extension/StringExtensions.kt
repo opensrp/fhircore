@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import android.content.Context
+import android.telephony.PhoneNumberUtils
 import java.text.MessageFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -123,3 +125,14 @@ fun String.lastOffset() = this.uppercase() + "_" + SharedPreferenceKey.LAST_OFFS
 
 fun String.spaceByUppercase() =
   this.split(Regex("(?=\\p{Upper})")).joinToString(separator = " ").trim()
+
+fun String?.formatPhoneNumber(context: Context): String? {
+  if (this == null) return null
+  return try {
+    PhoneNumberUtils.formatNumber(this, context.resources.configuration.locales.get(0).country)
+      ?: this
+  } catch (formatException: NumberFormatException) {
+    Timber.e(formatException, "Error formatting phone number: $this")
+    this
+  }
+}

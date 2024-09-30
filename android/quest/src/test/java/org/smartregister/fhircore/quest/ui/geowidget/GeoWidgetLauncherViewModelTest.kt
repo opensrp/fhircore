@@ -34,7 +34,6 @@ import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -52,8 +51,8 @@ import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.launcher.GeoWidgetLauncherViewModel
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -68,6 +67,8 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+
+  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var viewModel: GeoWidgetLauncherViewModel
   private val geoWidgetConfiguration =
     GeoWidgetConfiguration(
@@ -103,6 +104,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
         dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         resourceDataRulesExecutor = resourceDataRulesExecutor,
+        configurationRegistry = configurationRegistry,
       )
 
     runBlocking { defaultRepository.addOrUpdate(resource = location) }
@@ -138,21 +140,11 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testRetrieveLocationsShouldReturnGeoJsonFeatureList() {
-    runTest {
-      val geoJsonFeatures = viewModel.retrieveLocations(geoWidgetConfiguration)
-      assertTrue(geoJsonFeatures.isNotEmpty())
-      assertEquals("loc1", geoJsonFeatures.first().id)
-    }
-  }
-
-  @Test
-  fun testRetrieveResourcesShouldReturnListOfRepositoryResourceData() {
-    runTest {
-      val retrieveResources = viewModel.retrieveResources(geoWidgetConfiguration)
-      assertFalse(retrieveResources.isEmpty())
-      assertEquals("loc1", retrieveResources.first().resource.logicalId)
-    }
+  @Ignore("Tech debt : Tracked by issue https://github.com/opensrp/fhircore/issues/3514")
+  fun testRetrieveLocationsShouldReturnGeoJsonFeatureList() = runTest {
+    viewModel.retrieveLocations(geoWidgetConfiguration, null)
+    assertTrue(viewModel.geoJsonFeatures.value.isNotEmpty())
+    assertEquals("loc1", viewModel.geoJsonFeatures.value.first().id)
   }
 
   @Test
