@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.p2p.dao
 
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.extensions.logicalId
 import java.util.TreeSet
@@ -47,7 +48,9 @@ constructor(
     (0 until jsonArray.length()).forEach {
       runBlocking {
         val resource =
-          jsonParser.parseResource(type.name.resourceClassType(), jsonArray.get(it).toString())
+          FhirContext.forR4Cached()
+            .newJsonParser()
+            .parseResource(type.name.resourceClassType(), jsonArray.get(it).toString())
         val recordLastUpdated = resource.meta.lastUpdated.time
         defaultRepository.addOrUpdate(resource = resource)
         maxLastUpdated =

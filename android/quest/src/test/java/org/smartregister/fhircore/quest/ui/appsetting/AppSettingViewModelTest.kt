@@ -34,9 +34,9 @@ import io.mockk.verify
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
-import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
@@ -131,23 +131,35 @@ class AppSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testFetchConfigurations() =
-    runTest(timeout = 90.seconds) {
-      fhirEngine.create(Composition().apply { id = "sampleComposition" })
+    runTest(timeout = 90.seconds, context = UnconfinedTestDispatcher()) {
       val appId = "test_app_id"
       appSettingViewModel.onApplicationIdChanged(appId)
 
-      coEvery { fhirResourceDataSource.getResource(any()) } returns
-        Bundle().apply {
-          addEntry().resource =
-            Composition().apply {
-              addSection().apply { this.focus = Reference().apply { reference = "Binary/123" } }
-            }
+      coEvery {
+        appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any())
+      } returns
+        Composition().apply {
+          addSection().apply { this.focus = Reference().apply { reference = "Binary/123" } }
         }
+
+      coEvery {
+        appSettingViewModel.configurationRegistry.loadConfigurations(any(), any(), any())
+      } just runs
+
+      coEvery { appSettingViewModel.fhirResourceDataSource.post(any(), any()) } returns Bundle()
+
       coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
+
+      coEvery {
+        appSettingViewModel.configurationRegistry.fetchRemoteImplementationGuideByAppId(
+          appId,
+          QuestBuildConfig.VERSION_CODE,
+        )
+      } returns null
 
       appSettingViewModel.fetchConfigurations(context)
 
-      coVerify { fhirResourceDataSource.getResource(any()) }
+      coVerify { appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any()) }
       coVerify { appSettingViewModel.defaultRepository.createRemote(any(), any()) }
     }
 
