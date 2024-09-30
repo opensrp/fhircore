@@ -4,37 +4,23 @@ import android.content.ContentProvider
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
-import android.database.sqlite.SQLiteOpenHelper
 import android.net.Uri
 import android.os.Bundle
-import androidx.core.database.getBlobOrNull
-import androidx.core.database.getFloatOrNull
-import androidx.core.database.getIntOrNull
-import androidx.core.database.getStringOrNull
-import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
-import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.quest.ui.register.RegisterViewModel
-import timber.log.Timber
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.Serializable
-import okio.ByteString.Companion.toByteString
-import org.json.JSONArray
-import org.json.JSONObject
-import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
-import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.task.WorkflowCarePlanGenerator
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.Base64
@@ -42,22 +28,13 @@ import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
 class FCTContentProvider : ContentProvider() {
-    //private val registerViewModel by viewModels<RegisterViewModel>()
 
-    private lateinit var registerViewModel: RegisterViewModel
-    private val parser = FhirContext.forR4Cached().newJsonParser()
     private lateinit var fhirEngine: FhirEngine
     private lateinit var rulesFactory: RulesFactory
+    private lateinit var workflowCarePlanGenerator: WorkflowCarePlanGenerator
+    private lateinit var fhirPathEngine: FHIRPathEngine
+    private lateinit var transformSupportService: TransformSupportServices
 
-   /* @Inject
-    lateinit var registerRepository: RegisterRepository
-    @Inject
-    lateinit var configurationRegistry: ConfigurationRegistry
-    @Inject
-    lateinit var sharedPreferenceHelper: SharedPreferencesHelper
-    @Inject lateinit var dispatcherProvider: DispatcherProvider
-    @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
-*/
     @InstallIn(SingletonComponent::class)
     @EntryPoint
     interface FCTProviderEntryPoint {
@@ -68,6 +45,9 @@ class FCTContentProvider : ContentProvider() {
         fun sharedPreferenceHelper(): SharedPreferencesHelper
         fun dispatcherProvider(): DispatcherProvider
         fun resourceDataRulesExecutor(): ResourceDataRulesExecutor
+        fun workflowCareplanGenerator(): WorkflowCarePlanGenerator
+        fun fhirPathEngine(): FHIRPathEngine
+        fun transformSupportService(): TransformSupportServices
     }
 
     private fun getFhirEngine(appContext: Context): FhirEngine {
@@ -86,65 +66,57 @@ class FCTContentProvider : ContentProvider() {
         return hiltEntryPoint.getRulesFactory()
     }
 
-    private fun getRegisterRepository(appContext: Context): RegisterRepository {
+    private fun getWorkflowCareplanGenerator(appContext: Context): WorkflowCarePlanGenerator {
         val hiltEntryPoint = EntryPointAccessors.fromApplication(
             appContext,
             FCTProviderEntryPoint::class.java
         )
-        return hiltEntryPoint.registerRepository()
+        return hiltEntryPoint.workflowCareplanGenerator()
     }
 
-    private fun getConfigurationRegistry(appContext: Context): ConfigurationRegistry {
+    private fun getFhirPathEngine(appContext: Context): FHIRPathEngine {
         val hiltEntryPoint = EntryPointAccessors.fromApplication(
             appContext,
             FCTProviderEntryPoint::class.java
         )
-        return hiltEntryPoint.configurationRegistry()
+        return hiltEntryPoint.fhirPathEngine()
     }
 
-    private fun getSharedPreferencesHelper(appContext: Context): SharedPreferencesHelper {
+    private fun getTransformSupportService(appContext: Context): TransformSupportServices {
         val hiltEntryPoint = EntryPointAccessors.fromApplication(
             appContext,
             FCTProviderEntryPoint::class.java
         )
-        return hiltEntryPoint.sharedPreferenceHelper()
-    }
-
-    private fun getDispatcherProvider(appContext: Context): DispatcherProvider {
-        val hiltEntryPoint = EntryPointAccessors.fromApplication(
-            appContext,
-            FCTProviderEntryPoint::class.java
-        )
-        return hiltEntryPoint.dispatcherProvider()
-    }
-
-    private fun getResourceDataRulesExecutor(appContext: Context): ResourceDataRulesExecutor {
-        val hiltEntryPoint = EntryPointAccessors.fromApplication(
-            appContext,
-            FCTProviderEntryPoint::class.java
-        )
-        return hiltEntryPoint.resourceDataRulesExecutor()
+        return hiltEntryPoint.transformSupportService()
     }
 
     override fun onCreate(): Boolean {
 
-        registerViewModel = RegisterViewModel(
-            registerRepository = getRegisterRepository(context!!),
-            configurationRegistry = getConfigurationRegistry(context!!),
-            sharedPreferencesHelper = getSharedPreferencesHelper(context!!),
-            //dispatcherProvider = getDispatcherProvider(context!!),
-            resourceDataRulesExecutor = getResourceDataRulesExecutor(context!!)
-        )
         fhirEngine = getFhirEngine(context!!)
         rulesFactory = getRulesFactory(context!!)
+        workflowCarePlanGenerator = getWorkflowCareplanGenerator(context!!)
+        fhirPathEngine = getFhirPathEngine(context!!)
+        transformSupportService = getTransformSupportService(context!!)
         return true
     }
 
-    override fun query(uri: Uri,projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor? = null
+    override fun query(
+        uri: Uri,
+        projection: Array<out String>?,
+        selection: String?,
+        selectionArgs: Array<out String>?,
+        sortOrder: String?
+    ): Cursor? = null
+
     override fun getType(uri: Uri): String? = null
     override fun insert(uri: Uri, values: ContentValues?): Uri? = null
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int = 0
-    override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<out String>?): Int = 0
+    override fun update(
+        uri: Uri,
+        values: ContentValues?,
+        selection: String?,
+        selectionArgs: Array<out String>?
+    ): Int = 0
 
     override fun call(method: String, arg: String?, extras: Bundle?): Bundle {
         Timber.d("--method: $method --arg: $arg --extras: $extras")
@@ -164,6 +136,22 @@ class FCTContentProvider : ContentProvider() {
                 val dbBridge = DatabaseBridge(context!!, fhirEngine)
                 val ruleExecutor = RuleExecutor(rulesFactory, dbBridge)
                 val result = ruleExecutor.execute(decompressArg)
+                Bundle().apply {
+                    putString(DATA, result.compress())
+                }
+            }
+
+            EXECUTE_WORKFLOW -> {
+                val dbBridge = DatabaseBridge(context!!, fhirEngine)
+                val workflowExecutor = WorkflowExecutor(
+                    context!!,
+                    fhirEngine,
+                    fhirPathEngine,
+                    transformSupportService,
+                    workflowCarePlanGenerator,
+                    dbBridge
+                )
+                val result = workflowExecutor.execute(decompressArg)
                 Bundle().apply {
                     putString(DATA, result.compress())
                 }
@@ -190,5 +178,6 @@ class FCTContentProvider : ContentProvider() {
         const val DATA = "data"
         const val DB_OPERATION = "db_operation"
         const val EXECUTE_RULES = "execute_rules"
+        const val EXECUTE_WORKFLOW = "execute_workflow"
     }
 }

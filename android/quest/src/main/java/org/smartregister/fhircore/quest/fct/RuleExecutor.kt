@@ -65,6 +65,7 @@ class RuleExecutor(private val rulesFactory: RulesFactory, private val dbBridge:
             val rulesEngineField = rulesFactory.javaClass.superclass.getDeclaredField("rulesEngine")
             rulesEngineField.isAccessible = true
             val rulesEngine = rulesEngineField.get(rulesFactory) as DefaultRulesEngine
+
             rulesEngine.registerRuleListener(object : RuleListener {
                 override fun onFailure(
                     rule: Rule?,
@@ -127,7 +128,7 @@ class RuleExecutor(private val rulesFactory: RulesFactory, private val dbBridge:
         return resourceList
     }
 
-    fun generateRules(ruleConfigs: List<RuleConfig>, exceptions: MutableList<Pair<String, String>>): Rules =
+    private fun generateRules(ruleConfigs: List<RuleConfig>, exceptions: MutableList<Pair<String, String>>): Rules =
         Rules(
             ruleConfigs
                 .map { ruleConfig ->
@@ -141,7 +142,7 @@ class RuleExecutor(private val rulesFactory: RulesFactory, private val dbBridge:
                     for (action in ruleConfig.actions) {
                         try {
                             customRule.then(action)
-                        } catch (jexlException: JexlException) {
+                        } catch (jexlException: Exception) {
                             Timber.e(jexlException)
                             exceptions.add(Pair(ruleConfig.name, jexlException.message ?: "jexlException"))
                             continue // Skip action when an error occurs to avoid app force close
