@@ -19,8 +19,9 @@ package org.smartregister.fhircore.quest.ui.cleardata
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.material.MaterialTheme
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 
 @AndroidEntryPoint
@@ -31,12 +32,15 @@ class ClearDataActivity : BaseMultiLanguageActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    setContent {
-      MaterialTheme {
+    lifecycleScope.launch {
+      val unsyncedResources = viewModel.getUnsyncedResourceCount()
+      val appName = viewModel.getAppName()
+
+      setContent {
         ClearDataScreen(
           viewModel = viewModel,
-          unsyncedResourceCount = viewModel.getUnsyncedResourceCount(),
-          appName = viewModel.getAppName(),
+          unsyncedResourceCount = unsyncedResources,
+          appName = appName.toString(),
           onDeleteData = {
             viewModel.clearAppData()
             finish()

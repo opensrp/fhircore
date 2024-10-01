@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.cleardata
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
 import javax.inject.Inject
@@ -26,14 +27,31 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.totalUnsyncedResources
 import timber.log.Timber
 
 @HiltViewModel
-class ClearDataViewModel @Inject constructor(private val appContext: Application) : ViewModel() {
+class ClearDataViewModel
+@Inject
+constructor(
+  private val appContext: Application,
+  val configurationRegistry: ConfigurationRegistry,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val fhirEngine: FhirEngine,
+) : ViewModel() {
 
   private val _dataCleared = MutableStateFlow(false)
   val dataCleared: StateFlow<Boolean>
     get() = _dataCleared
+
+  val applicationConfiguration: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
+  }
 
   fun clearAppData() {
     viewModelScope.launch(Dispatchers.IO) {
@@ -114,11 +132,11 @@ class ClearDataViewModel @Inject constructor(private val appContext: Application
     }
   }
 
-  fun getUnsyncedResourceCount(): Int {
-    return 29
+  suspend fun getUnsyncedResourceCount(): Int {
+    return withContext(Dispatchers.IO) { fhirEngine.totalUnsyncedResources() }
   }
 
   fun getAppName(): String {
-    return "OpenSRP 2"
+    return applicationConfiguration.appTitle
   }
 }
