@@ -18,18 +18,14 @@
         android:label="@string/app_name"
         android:largeHeap="true"
         android:manageSpaceActivity="org.smartregister.fhircore.quest.ui.cleardata.ClearDataActivity"
-        android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar"
         android:usesCleartextTraffic="false"
         android:windowSoftInputMode="adjustResize"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         tools:ignore="UnusedAttribute,LockedOrientationActivity"
-        tools:replace="android:theme,android:allowBackup">
-
-        <activity
-            android:name="org.smartregister.fhircore.quest.ui.cleardata.ClearDataActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
+        tools:replace="android:allowBackup,android:theme">
 
         <profileable
             android:shell="true"
@@ -42,8 +38,7 @@
         <activity
             android:name=".ui.appsetting.AppSettingActivity"
             android:clearTaskOnLaunch="true"
-            android:exported="true"
-            android:screenOrientation="portrait">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -53,29 +48,32 @@
         <activity
             android:name=".ui.login.LoginActivity"
             android:exported="false"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait" />
+            android:launchMode="singleTop" />
+
         <activity
             android:name=".ui.pin.PinLoginActivity"
             android:exported="false"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait" />
+            android:launchMode="singleTop" />
+
         <activity
             android:name=".ui.main.AppMainActivity"
             android:clearTaskOnLaunch="true"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait" />
+            android:launchMode="singleTop" />
+
         <activity
             android:name=".ui.questionnaire.QuestionnaireActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
+
         <activity
             android:name="androidx.compose.ui.tooling.PreviewActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
             android:theme="@style/AppTheme"
             tools:replace="exported" />
+
+        <activity
+            android:name="org.smartregister.fhircore.quest.ui.cleardata.ClearDataActivity"
+            android:exported="false" />
 
         <service
             android:name=".ui.login.AuthAndroidService"
@@ -98,6 +96,14 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
+        </provider>
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data android:name="androidx.emoji2.text.EmojiCompatInitializer"
+                tools:node="remove" />
         </provider>
     </application>
 </manifest>

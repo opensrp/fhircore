@@ -49,7 +49,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.rulesengine.services.LocationService
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -108,7 +107,7 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
       spyk(
         RegisterRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = DefaultDispatcherProvider(),
+          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),

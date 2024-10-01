@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.login
 
 import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -34,6 +35,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -49,9 +51,11 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.clearPasswordInMemory
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.model.location.LocationHierarchy
@@ -123,7 +127,7 @@ constructor(
       val passwordAsCharArray = password.value!!.trim().toCharArray()
 
       viewModelScope.launch(dispatcherProvider.io()) {
-        if (context.getActivity()!!.isDeviceOnline()) {
+        if (context.getActivity()?.isDeviceOnline() == true) {
           fetchToken(
             username = trimmedUsername,
             password = passwordAsCharArray,
@@ -178,9 +182,14 @@ constructor(
     }
   }
 
-  fun forgotPassword() {
-    // TODO load supervisor contact e.g.
-    _launchDialPad.value = "tel:0123456789"
+  fun forgotPassword(context: Context) {
+    val formattedNumber =
+      applicationConfiguration.loginConfig.supervisorContactNumber.formatPhoneNumber(context)
+    if (!formattedNumber.isNullOrBlank()) {
+      _launchDialPad.value = formattedNumber
+    } else {
+      context.showToast(context.getString(R.string.missing_supervisor_contact), Toast.LENGTH_LONG)
+    }
   }
 
   fun updateNavigateHome(navigateHome: Boolean = true) {

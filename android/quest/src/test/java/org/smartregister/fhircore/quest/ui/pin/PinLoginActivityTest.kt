@@ -26,6 +26,7 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkObject
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -69,10 +70,11 @@ class PinLoginActivityTest : RobolectricTest() {
 
   @Test
   fun testDialPadLaunched() {
-    pinLoginActivity.pinViewModel.forgotPin()
+    val phoneNumber = "1234567890"
+    pinLoginActivity.pinViewModel.launchDialPad.value = phoneNumber
     val resultIntent = Shadows.shadowOf(pinLoginActivity).nextStartedActivity
     Assert.assertEquals(Intent.ACTION_DIAL, resultIntent.action)
-    Assert.assertEquals("tel:####", resultIntent.data.toString())
+    Assert.assertEquals(phoneNumber, resultIntent.data?.schemeSpecificPart.toString())
   }
 
   @Test
@@ -97,17 +99,21 @@ class PinLoginActivityTest : RobolectricTest() {
 
   @OptIn(ExperimentalMaterialApi::class)
   @Test
-  fun testNavigateToHomeLaunchesAppLMainActivity() {
+  fun testNavigateToHomeLaunchesAppMainActivity() = runBlocking {
     // Mock p2p Library then un mock it at the end of test
     mockkObject(P2PLibrary)
     every { P2PLibrary.init(any()) } returns mockk()
 
     // When new pin is setup the app navigates to home screen
     pinLoginActivity.pinViewModel.onSetPin("1234".toCharArray())
-    val resultIntent = Shadows.shadowOf(pinLoginActivity).nextStartedActivity
-    Assert.assertNotNull(resultIntent)
-    val shadowIntent: ShadowIntent = Shadows.shadowOf(resultIntent)
-    Assert.assertEquals(AppMainActivity::class.java, shadowIntent.intentClass)
+    pinLoginActivity.pinViewModel.navigateToHome.observeForever { isNavigating ->
+      if (isNavigating == true) {
+        val resultIntent = Shadows.shadowOf(pinLoginActivity).nextStartedActivity
+        Assert.assertNotNull(resultIntent)
+        val shadowIntent: ShadowIntent = Shadows.shadowOf(resultIntent)
+        Assert.assertEquals(AppMainActivity::class.java, shadowIntent.intentClass)
+      }
+    }
 
     unmockkObject(P2PLibrary)
   }

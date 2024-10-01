@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.pin
 
+import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -56,6 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -64,6 +66,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.PinInput
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
@@ -71,13 +74,18 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 
 const val CIRCULAR_PROGRESS_INDICATOR = "progress_indicator"
 const val PIN_LOGO_IMAGE = "pin_logo_image"
+const val FORGOT_PIN_TEST_TAG = "FORGOT_PIN_TEXT"
 
 @Composable
 fun PinLoginScreen(viewModel: PinViewModel) {
   val showError by viewModel.showError.observeAsState(initial = false)
+  val showProgressBar by viewModel.showProgressBar.observeAsState(initial = false)
   val pinUiState = viewModel.pinUiState.value
+  val applicationConfiguration = remember { viewModel.applicationConfiguration }
 
   PinLoginPage(
+    applicationConfiguration = applicationConfiguration,
+    showProgressBar = showProgressBar,
     showError = showError,
     pinUiState = pinUiState,
     onMenuLoginClicked = viewModel::onMenuItemClicked,
@@ -91,20 +99,21 @@ fun PinLoginScreen(viewModel: PinViewModel) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PinLoginPage(
+  applicationConfiguration: ApplicationConfiguration,
   modifier: Modifier = Modifier,
+  showProgressBar: Boolean,
   showError: Boolean,
   pinUiState: PinUiState,
   onSetPin: (CharArray) -> Unit,
   onMenuLoginClicked: (Boolean) -> Unit,
   onShowPinError: (Boolean) -> Unit,
-  forgotPin: () -> Unit,
+  forgotPin: (Context) -> Unit,
   onPinEntered: (CharArray, (Boolean) -> Unit) -> Unit,
 ) {
   var showMenu by remember { mutableStateOf(false) }
   var showForgotPinDialog by remember { mutableStateOf(false) }
   var newPin by remember { mutableStateOf(charArrayOf()) }
   val bringIntoViewRequester = remember { BringIntoViewRequester() }
-
   LaunchedEffect(Unit) { bringIntoViewRequester.bringIntoView() }
 
   Scaffold(
@@ -120,8 +129,15 @@ fun PinLoginPage(
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (showForgotPinDialog) {
-        ForgotPinDialog(forgotPin = forgotPin, onDismissDialog = { showForgotPinDialog = false })
+      if (
+        showForgotPinDialog &&
+          !applicationConfiguration.loginConfig.supervisorContactNumber.isNullOrBlank()
+      ) {
+        ForgotPinDialog(
+          supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
+          forgotPin = forgotPin,
+          onDismissDialog = { showForgotPinDialog = false },
+        )
       }
       Column {
         Spacer(modifier = modifier.fillMaxHeight(0.22f))
@@ -153,7 +169,7 @@ fun PinLoginPage(
 
           // Only show error message and forgot password when not setting the pin
           if (!pinUiState.setupPin) {
-            if (pinUiState.showProgressBar) CircularProgressBar()
+            if (showProgressBar) CircularProgressBar()
 
             if (showError) {
               Text(
@@ -174,14 +190,15 @@ fun PinLoginPage(
                     .padding(top = 24.dp)
                     .align(Alignment.CenterHorizontally)
                     .clickable { showForgotPinDialog = !showForgotPinDialog }
-                    .bringIntoViewRequester(bringIntoViewRequester),
+                    .bringIntoViewRequester(bringIntoViewRequester)
+                    .testTag(FORGOT_PIN_TEST_TAG), // <-- Added test tag here
               )
             }
           } else {
             // Enable button when a new PIN of required length is entered
             Button(
               onClick = { onSetPin(newPin) },
-              enabled = newPin.size == pinUiState.pinLength && !pinUiState.showProgressBar,
+              enabled = newPin.size == pinUiState.pinLength && !showProgressBar,
               modifier =
                 modifier
                   .bringIntoViewRequester(bringIntoViewRequester)
@@ -195,7 +212,7 @@ fun PinLoginPage(
               elevation = null,
             ) {
               Box(modifier = Modifier.padding(8.dp), contentAlignment = Alignment.Center) {
-                if (pinUiState.showProgressBar) {
+                if (showProgressBar) {
                   CircularProgressIndicator(
                     modifier = modifier.size(18.dp).testTag(CIRCULAR_PROGRESS_INDICATOR),
                     strokeWidth = 1.6.dp,
@@ -265,10 +282,13 @@ private fun PinTopBar(
 
 @Composable
 fun ForgotPinDialog(
-  forgotPin: () -> Unit,
+  supervisorContactNumber: String?,
+  forgotPin: (Context) -> Unit,
   onDismissDialog: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
+  val context = LocalContext.current
+
   AlertDialog(
     onDismissRequest = onDismissDialog,
     title = {
@@ -278,7 +298,20 @@ fun ForgotPinDialog(
         fontSize = 20.sp,
       )
     },
-    text = { Text(text = stringResource(R.string.please_contact_supervisor), fontSize = 16.sp) },
+    text = {
+      Column(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+      ) {
+        Text(
+          text = stringResource(R.string.call_supervisor),
+          fontSize = 16.sp,
+        )
+        Text(
+          text = supervisorContactNumber?.takeIf { it.isNotBlank() } ?: "",
+          fontSize = 16.sp,
+        )
+      }
+    },
     buttons = {
       Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
@@ -294,7 +327,7 @@ fun ForgotPinDialog(
           modifier =
             modifier.padding(horizontal = 10.dp).clickable {
               onDismissDialog()
-              forgotPin()
+              forgotPin(context)
             },
         )
       }
@@ -306,6 +339,13 @@ fun ForgotPinDialog(
 @PreviewWithBackgroundExcludeGenerated
 private fun PinSetupPreview() {
   PinLoginPage(
+    applicationConfiguration =
+      ApplicationConfiguration(
+        appId = "appId",
+        configType = "application",
+        appTitle = "FHIRCore App",
+      ),
+    showProgressBar = false,
     showError = false,
     pinUiState =
       PinUiState(
@@ -327,6 +367,13 @@ private fun PinSetupPreview() {
 @PreviewWithBackgroundExcludeGenerated
 private fun PinSetupPreviewWithProgress() {
   PinLoginPage(
+    applicationConfiguration =
+      ApplicationConfiguration(
+        appId = "appId",
+        configType = "application",
+        appTitle = "FHIRCore App",
+      ),
+    showProgressBar = true,
     showError = false,
     pinUiState =
       PinUiState(
@@ -335,7 +382,6 @@ private fun PinSetupPreviewWithProgress() {
         setupPin = true,
         pinLength = 4,
         showLogo = true,
-        showProgressBar = true,
       ),
     onSetPin = {},
     onMenuLoginClicked = {},
@@ -349,6 +395,13 @@ private fun PinSetupPreviewWithProgress() {
 @PreviewWithBackgroundExcludeGenerated
 private fun PinLoginPreview() {
   PinLoginPage(
+    applicationConfiguration =
+      ApplicationConfiguration(
+        appId = "appId",
+        configType = "application",
+        appTitle = "FHIRCore App",
+      ),
+    showProgressBar = false,
     showError = false,
     pinUiState =
       PinUiState(
