@@ -20,8 +20,10 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material.MaterialTheme
+import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 
+@AndroidEntryPoint
 class ClearDataActivity : BaseMultiLanguageActivity() {
 
   private val viewModel by viewModels<ClearDataViewModel>()

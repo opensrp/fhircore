@@ -173,9 +173,19 @@ fun ClearData(
 
 @Composable
 @PreviewWithBackgroundExcludeGenerated
-private fun ClearDataScreenPreview() {
+private fun ClearDataScreenSyncedPreview() {
   ClearData(
     unsyncedResourceCount = 0,
+    appName = "OpenSRP 2",
+    onDeleteData = {},
+  )
+}
+
+@Composable
+@PreviewWithBackgroundExcludeGenerated
+private fun ClearDataScreenUnsyncedPreview() {
+  ClearData(
+    unsyncedResourceCount = 77,
     appName = "OpenSRP 2",
     onDeleteData = {},
   )
