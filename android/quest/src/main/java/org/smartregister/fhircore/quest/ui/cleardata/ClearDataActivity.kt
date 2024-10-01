@@ -23,6 +23,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 @AndroidEntryPoint
 class ClearDataActivity : BaseMultiLanguageActivity() {
@@ -37,15 +38,17 @@ class ClearDataActivity : BaseMultiLanguageActivity() {
       val appName = viewModel.getAppName()
 
       setContent {
-        ClearDataScreen(
-          viewModel = viewModel,
-          unsyncedResourceCount = unsyncedResources,
-          appName = appName.toString(),
-          onDeleteData = {
-            viewModel.clearAppData()
-            finish()
-          },
-        )
+        AppTheme {
+          ClearDataScreen(
+            viewModel = viewModel,
+            unsyncedResourceCount = unsyncedResources,
+            appName = appName.toString(),
+            onDeleteData = {
+              viewModel.clearAppData()
+              finish()
+            },
+          )
+        }
       }
     }
   }
