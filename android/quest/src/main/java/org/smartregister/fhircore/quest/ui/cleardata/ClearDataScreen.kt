@@ -130,21 +130,25 @@ fun ClearData(
             color = MaterialTheme.colors.onSurface,
           ),
       )
-      Spacer(modifier = Modifier.height(24.dp))
-      Text(
-        text =
-          stringResource(
-            R.string.clear_data_data_loss_warning,
-            appName,
-            appName,
-          ),
-        fontSize = 16.sp,
-        style =
-          MaterialTheme.typography.h6.copy(
-            fontSize = 18.sp,
-            color = MaterialTheme.colors.onSurface,
-          ),
-      )
+
+      if (!isDeleteEnabled) {
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+          text =
+            stringResource(
+              R.string.clear_data_data_loss_warning,
+              appName,
+              appName,
+            ),
+          fontSize = 16.sp,
+          style =
+            MaterialTheme.typography.h6.copy(
+              fontSize = 18.sp,
+              color = MaterialTheme.colors.onSurface,
+            ),
+        )
+      }
+
       Spacer(modifier = Modifier.weight(1f))
       Button(
         onClick = onDeleteData,
