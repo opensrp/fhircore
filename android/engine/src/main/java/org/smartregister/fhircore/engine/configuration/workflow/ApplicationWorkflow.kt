@@ -62,4 +62,7 @@ enum class ApplicationWorkflow {
 
   /** A workflow to launch pdf generation */
   LAUNCH_PDF_GENERATION,
+
+  /** Represents nothing/no action */
+  NOTHING,
 }
