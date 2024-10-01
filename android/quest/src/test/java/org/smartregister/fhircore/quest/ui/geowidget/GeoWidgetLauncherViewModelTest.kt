@@ -117,7 +117,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testShowNoLocationDialogShouldNotSetLiveDataValueWhenConfigIsNull() {
+  fun testShowNoLocationDialogShouldNotSetLiveDataValueWhenConfigIsNull() = runTest {
     val geoWidgetConfiguration =
       GeoWidgetConfiguration(
         appId = "appId",
@@ -138,7 +138,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testShowNoLocationDialogShouldSetLiveDataValueWhenConfigIsPresent() {
+  fun testShowNoLocationDialogShouldSetLiveDataValueWhenConfigIsPresent() = runTest {
     viewModel.showNoLocationDialog(geoWidgetConfiguration)
     val value = viewModel.noLocationFoundDialog.value
     assertNotNull(value)
