@@ -1,9 +1,11 @@
 # PDF Generation
 
 ## Overview
-The PDF generation feature using the `HtmlPopulator` class simplifies the process of dynamically populating HTML templates with data from a QuestionnaireResponse, making it easy to generate customized content based on user responses.
+The PDF generation feature is using the `HtmlPopulator` class that simplifies the process of dynamically populating HTML templates with data from a QuestionnaireResponse, making it easy to generate customized content based on user responses.
 
-The `HtmlPopulator` class is utilized by replacing custom tags with data from a QuestionnaireResponse. It supports tags such as `@is-not-empty`, `@answer-as-list`, `@answer`, `@submitted-date`, and `@contains`.
+The `HtmlPopulator` class is utilized by replacing custom tags with data from a QuestionnaireResponse. Currently supported tags are: `@is-not-empty`, `@answer-as-list`, `@answer`, `@submitted-date`, `@contains`, and `@is-questionnaire-submitted`.
+
+The `HtmlPopulator` class allows multiple QuestionnaireResponses to be populated into the HTML. Please use `questionnaireId/linkId` format to describe which linkId from which Questionnaire you want to retrieve the answer from.
 
 ## Usage
 Below are examples of how each custom tag can be used in an HTML template and the expected output.
@@ -12,7 +14,7 @@ Below are examples of how each custom tag can be used in an HTML template and th
 
 #### Template HTML:
 ``` html
-<p>@is-not-empty('linkId')This content will be included if the answer exists.@is-not-empty('linkId')</p>
+<p>@is-not-empty('questionnaireId/linkId')This content will be included if the answer exists.@is-not-empty('questionnaireId/linkId')</p>
 ```
 
 #### Explanation:
@@ -23,7 +25,7 @@ The `@is-not-empty` tag checks if there is an answer for the specified `linkId`.
 #### Template HTML:
 ``` html
 <ul>
-  @answer-as-list('linkId')
+  @answer-as-list('questionnaireId/linkId')
 </ul>
 ```
 
@@ -34,7 +36,7 @@ The `@answer-as-list` tag will be replaced with a list of answers for the specif
 
 #### Template HTML:
 ``` html
-<p>The answer is: @answer('linkId')</p>
+<p>The answer is: @answer('questionnaireId/linkId')</p>
 ```
 
 #### Explanation:
@@ -44,21 +46,31 @@ The `@answer tag` will be replaced with the answer for the specified `linkId`. I
 
 #### Template HTML:
 ``` html
-<p>Submitted on: @submitted-date('MM/dd/yyyy')</p>
+<p>Submitted on: @submitted-date('questionnaireId','MM/dd/yyyy')</p>
 ```
 
 #### Explanation:
-The `@submitted-date` tag will be replaced with the formatted submission date. If no format is provided, a default date format will be used.
+The `@submitted-date` tag will be replaced with the formatted submission date from the specified `questionnaireId`. If no format is provided, a default date format will be used.
 
 ### @contains
 
 #### Template HTML:
 ``` html
-<p>@contains('linkId', 'indicator')This content will be included if the indicator is found.@contains('linkId', 'indicator')</p>
+<p>@contains('questionnaireId/linkId', 'indicator')This content will be included if the indicator is found.@contains('questionnaireId/linkId', 'indicator')</p>
 ```
 
 #### Explanation:
 The `@contains` tag checks if the specified `linkId` contains the given `indicator`. If the indicator is found, the content within the tags will be included in the final HTML. If the indicator is not found, the content will be removed.
+
+### @is-questionnaire-submitted
+
+#### Template HTML:
+``` html
+<p>@is-questionnaire-submitted('questionnaireId')This content will only show if the Questionnaire Response of the described Questionnaire exists.@is-questionnaire-submitted('questionnaireId')</p>
+```
+
+#### Explanation:
+The `@is-questionnaire-submitted` tag checks if the specified `questionnaireId` has been submitted i.e. the matching Questionnaire Response is passed to the HtmlPopulator class. If the Questionnaire Response is found, the content within the tags will be included in the final HTML. If the indicator is not found, the content will be removed.
 
 ## Example
 
@@ -66,13 +78,13 @@ The `@contains` tag checks if the specified `linkId` contains the given `indicat
 ``` html
 <html>
   <body>
-    <p>@is-not-empty('name')Name: @answer('name')@is-not-empty('name')</p>
+    <p>@is-not-empty('Q123/name')Name: @answer('Q123/name')@is-not-empty('Q123/name')</p>
     <p>Hobbies:</p>
     <ul>
-      @answer-as-list('hobbies')
+      @answer-as-list('Q123/hobbies')
     </ul>
-    <p>Submitted on: @submitted-date('yyyy-MM-dd')</p>
-    <p>@contains('age', '30')This person is 30 years old.@contains('age', '30')</p>
+    <p>Submitted on: @submitted-date('Q123','yyyy-MM-dd')</p>
+    <p>@contains('Q123/age', '30')This person is 30 years old.@contains('Q123/age', '30')</p>
   </body>
 </html>
 ```

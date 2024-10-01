@@ -22,6 +22,7 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.PdfConfig
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -42,6 +43,7 @@ data class ActionConfig(
   val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   val popNavigationBackStack: Boolean? = null,
   val multiSelectViewConfig: MultiSelectViewConfig? = null,
+  val pdfConfig: PdfConfig? = null,
 ) : Parcelable, java.io.Serializable {
   fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()): Bundle =
     Bundle().apply {

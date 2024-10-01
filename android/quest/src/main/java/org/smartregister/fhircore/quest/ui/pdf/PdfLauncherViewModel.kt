@@ -44,17 +44,14 @@ constructor(
    * Retrieve the [QuestionnaireResponse] for the given questionnaire and subject.
    *
    * @param questionnaireId The ID of the questionnaire.
-   * @param subjectId The ID of the subject.
-   * @param subjectType The type of the subject (resource type).
+   * @param subjectReference The reference of the subject e.g. Patient/123.
    * @return The [QuestionnaireResponse] if found, otherwise null.
    */
   suspend fun retrieveQuestionnaireResponse(
     questionnaireId: String,
-    subjectId: String,
-    subjectType: ResourceType,
+    subjectReference: String,
   ): QuestionnaireResponse? {
-    val searchQuery =
-      createQuestionnaireResponseSearchQuery(questionnaireId, subjectId, subjectType)
+    val searchQuery = createQuestionnaireResponseSearchQuery(questionnaireId, subjectReference)
     return defaultRepository.search<QuestionnaireResponse>(searchQuery).maxByOrNull {
       it.meta.lastUpdated
     }
@@ -64,17 +61,15 @@ constructor(
    * Create a search query for [QuestionnaireResponse].
    *
    * @param questionnaireId The ID of the questionnaire.
-   * @param subjectId The ID of the subject.
-   * @param subjectType The type of the subject (resource type).
+   * @param subjectReference The reference of the subject e.g. Patient/123.
    * @return The search query for [QuestionnaireResponse].
    */
   private fun createQuestionnaireResponseSearchQuery(
     questionnaireId: String,
-    subjectId: String,
-    subjectType: ResourceType,
+    subjectReference: String,
   ): Search {
     return Search(ResourceType.QuestionnaireResponse).apply {
-      filter(QuestionnaireResponse.SUBJECT, { value = "$subjectType/$subjectId" })
+      filter(QuestionnaireResponse.SUBJECT, { value = subjectReference })
       filter(
         QuestionnaireResponse.QUESTIONNAIRE,
         { value = "${ResourceType.Questionnaire}/$questionnaireId" },

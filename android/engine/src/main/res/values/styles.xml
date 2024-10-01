@@ -63,6 +63,7 @@
         <item name="questionnaireQuestionTextStyle">@style/TextAppearance.Material3.BodyLarge</item>
         <item name="questionnaireMediaImageStyle">@style/AppTheme.MediaImageStyle</item>
         <item name="questionnaireHelpHeaderStyle">@style/AppTheme.HelpHeaderStyle</item>
+        <item name="questionnaireNextButtonCircularProgressIndicatorStyle">@style/AppTheme.NextButtonCircularProgressIndicatorStyle</item>
         <!-- Help card container color -->
         <item
             name="android:colorBackground"
@@ -77,6 +78,10 @@
             name="colorOnSurfaceVariant"
             >@color/onSurfaceVariant_neutral_variant_30</item>
         <!-- /Help card container color -->
+    </style>
+
+    <style name="AppTheme.NextButtonCircularProgressIndicatorStyle" parent="Questionnaire.NextButtonCircularProgressIndicatorStyle">
+        <item name="indicatorColor">@color/colorPrimary</item>
     </style>
 
     <style name="AppTheme.QuestionnaireSubmitButtonStyle" parent="Widget.MaterialComponents.Button">
