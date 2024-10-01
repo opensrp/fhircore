@@ -947,16 +947,19 @@ class RulesFactoryTest : RobolectricTest() {
   fun testExtractPreferenceValuesReturnsPractitionerId() {
     val preferenceKey = PreferenceDataStore.PRACTITIONER_ID
     val expectedValue = "1234"
-    //every { configurationRegistry.preferenceDataStore } returns preferenceDataStore
+    // every { configurationRegistry.preferenceDataStore } returns preferenceDataStore
     every {
       configurationRegistry.preferenceDataStore.readOnce(
-        preferenceKey, "")
+        preferenceKey,
+        "",
+      )
     } returns expectedValue
 
-    val result = rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(preferenceKey.name)
+    val result =
+      rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(preferenceKey.name)
 
-    verify { configurationRegistry.preferenceDataStore.readOnce(preferenceKey, "")}
-    //.sharedPreferencesHelper.read(sharedPreferenceKey, "") }
+    verify { configurationRegistry.preferenceDataStore.readOnce(preferenceKey, "") }
+    // .sharedPreferencesHelper.read(sharedPreferenceKey, "") }
     Assert.assertEquals(expectedValue, result)
   }
 
@@ -970,7 +973,8 @@ class RulesFactoryTest : RobolectricTest() {
         "",
       )
     } returns expectedValue
-    val result = rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(preferenceKey.name)
+    val result =
+      rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(preferenceKey.name)
 
     verify { configurationRegistry.preferenceDataStore.readOnce(preferenceKey, "") }
     Assert.assertEquals(expectedValue, result)
@@ -987,7 +991,8 @@ class RulesFactoryTest : RobolectricTest() {
         "",
       )
     } returns expectedValue
-    val result = rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(preferenceKey.name)
+    val result =
+      rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(preferenceKey.name)
 
     verify { configurationRegistry.preferenceDataStore.readOnce(preferenceKey, "") }
     Assert.assertEquals(expectedValue, result)
@@ -1003,7 +1008,8 @@ class RulesFactoryTest : RobolectricTest() {
         "",
       )
     } returns expectedValue
-    val result = rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(preferenceKey.name)
+    val result =
+      rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(preferenceKey.name)
 
     verify { configurationRegistry.preferenceDataStore.readOnce(preferenceKey, "") }
     Assert.assertEquals(expectedValue, result)
@@ -1019,13 +1025,14 @@ class RulesFactoryTest : RobolectricTest() {
         "",
       )
     } returns expectedValue
-    val result = rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(preferenceKey.name)
+    val result =
+      rulesEngineService.extractPractitionerInfoFromPreferenceDataStore(preferenceKey.name)
 
     verify { configurationRegistry.preferenceDataStore.readOnce(preferenceKey, "") }
     Assert.assertEquals(expectedValue, result)
   }
 
-  //TODO: Review failing test here
+  // TODO: Review failing test here
   @Test
   fun testExtractPrefValuesThrowsAnExceptionWhenKeyIsInvalid() {
     val practitionerKey = "INVALIDKEY"
