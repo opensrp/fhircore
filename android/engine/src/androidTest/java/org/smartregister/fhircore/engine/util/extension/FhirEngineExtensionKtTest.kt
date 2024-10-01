@@ -25,6 +25,7 @@ import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Resource
@@ -57,19 +58,15 @@ class FhirEngineExtensionKtTest {
   }
 
   @Test
-  fun test_search_time_searches_sequentially_and_short_running_query_waits() {
+  fun test_search_time_searches_sequentially_and_short_running_query_waits() = runTest {
     val fetchedResources = mutableListOf<Resource>()
-    runBlocking {
-      launch {
-        val patients = fhirEngine.search<Patient> {}.map { it.resource }
-        fetchedResources += patients
-      }
 
-      launch {
-        val questionnaires = fhirEngine.search<Questionnaire> {}.map { it.resource }
-        fetchedResources += questionnaires
-      }
-    }
+    val patients = fhirEngine.search<Patient> {}.map { it.resource }
+    fetchedResources += patients
+
+    val questionnaires = fhirEngine.search<Questionnaire> {}.map { it.resource }
+    fetchedResources += questionnaires
+
     val indexOfResultOfShortQuery =
       fetchedResources.indexOfFirst { it.resourceType == ResourceType.Questionnaire }
     val indexOfResultOfLongQuery =

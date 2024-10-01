@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
-import CoroutineTestRule
 import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
@@ -59,8 +58,6 @@ class GeoWidgetViewModelTest {
 
   @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
-
   @Inject lateinit var configService: ConfigService
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
@@ -86,7 +83,7 @@ class GeoWidgetViewModelTest {
   @Before
   fun setUp() {
     MockitoAnnotations.initMocks(this)
-    viewModel = GeoWidgetViewModel(dispatcherProvider)
+    viewModel = GeoWidgetViewModel()
     hiltRule.inject()
     sharedPreferencesHelper = mockk()
     configurationRegistry = mockk()
@@ -104,7 +101,7 @@ class GeoWidgetViewModelTest {
           context = ApplicationProvider.getApplicationContext(),
         ),
       )
-    geoWidgetViewModel = spyk(GeoWidgetViewModel(dispatcherProvider))
+    geoWidgetViewModel = spyk(GeoWidgetViewModel())
 
     coEvery { defaultRepository.create(any()) } returns emptyList()
   }

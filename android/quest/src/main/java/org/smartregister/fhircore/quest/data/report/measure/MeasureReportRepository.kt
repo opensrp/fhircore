@@ -24,6 +24,7 @@ import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.NoSuchElementException
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.exceptions.FHIRException
@@ -48,7 +49,6 @@ class MeasureReportRepository
 @Inject
 constructor(
   override val fhirEngine: FhirEngine,
-  override val dispatcherProvider: DispatcherProvider,
   override val sharedPreferencesHelper: SharedPreferencesHelper,
   override val preferenceDataStore: PreferenceDataStore,
   override val configurationRegistry: ConfigurationRegistry,
@@ -59,10 +59,10 @@ constructor(
   override val fhirPathDataExtractor: FhirPathDataExtractor,
   override val parser: IParser,
   @ApplicationContext override val context: Context,
+  override val dispatcherProvider: DispatcherProvider,
 ) :
   DefaultRepository(
     fhirEngine = fhirEngine,
-    dispatcherProvider = dispatcherProvider,
     sharedPreferencesHelper = sharedPreferencesHelper,
     configurationRegistry = configurationRegistry,
     configService = configService,
@@ -70,6 +70,7 @@ constructor(
     fhirPathDataExtractor = fhirPathDataExtractor,
     parser = parser,
     context = context,
+    dispatcherProvider = dispatcherProvider,
     preferenceDataStore = preferenceDataStore,
   ) {
 
@@ -94,31 +95,29 @@ constructor(
   ): List<MeasureReport> {
     val measureReport = mutableListOf<MeasureReport>()
     try {
-      withContext(dispatcherProvider.io()) {
-        if (subjects.isNotEmpty()) {
-          subjects
-            .map {
-              runMeasureReport(
-                measureUrl = measureUrl,
-                reportType = MeasureReportViewModel.SUBJECT,
-                startDateFormatted = startDateFormatted,
-                endDateFormatted = endDateFormatted,
-                subject = it,
-                practitionerId = practitionerId,
-              )
-            }
-            .forEach { subject -> measureReport.add(subject) }
-        } else {
-          runMeasureReport(
+      if (subjects.isNotEmpty()) {
+        subjects
+          .map {
+            runMeasureReport(
               measureUrl = measureUrl,
-              reportType = MeasureReportViewModel.POPULATION,
+              reportType = MeasureReportViewModel.SUBJECT,
               startDateFormatted = startDateFormatted,
               endDateFormatted = endDateFormatted,
-              subject = null,
+              subject = it,
               practitionerId = practitionerId,
             )
-            .also { measureReport.add(it) }
-        }
+          }
+          .forEach { subject -> measureReport.add(subject) }
+      } else {
+        runMeasureReport(
+            measureUrl = measureUrl,
+            reportType = MeasureReportViewModel.POPULATION,
+            startDateFormatted = startDateFormatted,
+            endDateFormatted = endDateFormatted,
+            subject = null,
+            practitionerId = practitionerId,
+          )
+          .also { measureReport.add(it) }
       }
 
       measureReport.forEach { report ->
@@ -132,6 +131,8 @@ constructor(
         addOrUpdate(resource = report)
       }
     } catch (exception: NullPointerException) {
+      Timber.e(exception, "Exception thrown with measureUrl: $measureUrl.")
+    } catch (exception: IllegalStateException) {
       Timber.e(exception, "Exception thrown with measureUrl: $measureUrl.")
     }
     return measureReport
@@ -155,17 +156,29 @@ constructor(
     subject: String?,
     practitionerId: String?,
   ): MeasureReport {
-    return fhirOperator.evaluateMeasure(
-      measure =
-        knowledgeManager
-          .loadResources(ResourceType.Measure.name, measureUrl, null, null, null)
-          .firstOrNull() as Measure,
-      start = startDateFormatted,
-      end = endDateFormatted,
-      reportType = reportType,
-      subjectId = subject,
-      practitioner = practitionerId.takeIf { it?.isNotBlank() == true },
-    )
+    return withContext(dispatcherProvider.io()) {
+      try {
+        fhirOperator.evaluateMeasure(
+          measure =
+            knowledgeManager
+              .loadResources(ResourceType.Measure.name, measureUrl, null, null, null)
+              .firstOrNull() as Measure,
+          start = startDateFormatted,
+          end = endDateFormatted,
+          reportType = reportType,
+          subjectId = subject,
+          practitioner = practitionerId.takeIf { it?.isNotBlank() == true },
+        )
+      } catch (exception: IllegalArgumentException) {
+        Timber.e(exception)
+        throw IllegalArgumentException()
+      } catch (exception: NoSuchElementException) {
+        Timber.e(exception)
+        throw IllegalStateException(
+          "No FHIR resource found in Knowledge Manager with URL $measureUrl",
+        )
+      }
+    }
   }
 
   /**

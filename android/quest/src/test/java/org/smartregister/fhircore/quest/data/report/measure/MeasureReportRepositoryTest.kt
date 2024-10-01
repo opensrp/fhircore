@@ -49,7 +49,6 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.rulesengine.services.LocationService
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
@@ -114,7 +113,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
       spyk(
         RegisterRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = DefaultDispatcherProvider(),
+          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           preferenceDataStore = mockk(),
           configurationRegistry = configurationRegistry,
@@ -129,7 +128,6 @@ class MeasureReportRepositoryTest : RobolectricTest() {
     measureReportRepository =
       MeasureReportRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = DefaultDispatcherProvider(),
         sharedPreferencesHelper = mockk(),
         preferenceDataStore = mockk(),
         configurationRegistry = configurationRegistry,
@@ -140,6 +138,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
         fhirPathDataExtractor = mockk(),
         parser = parser,
         context = ApplicationProvider.getApplicationContext(),
+        dispatcherProvider = dispatcherProvider,
       )
   }
 
