@@ -17,7 +17,7 @@
         android:installLocation="internalOnly"
         android:label="@string/app_name"
         android:largeHeap="true"
-        android:manageSpaceActivity="org.smartregister.fhircore.quest.ui.DataActivity"
+        android:manageSpaceActivity="org.smartregister.fhircore.quest.ui.cleardata.ClearDataActivity"
         android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar"
@@ -27,7 +27,7 @@
         tools:replace="android:theme,android:allowBackup">
 
         <activity
-            android:name="org.smartregister.fhircore.quest.ui.DataActivity"
+            android:name="org.smartregister.fhircore.quest.ui.cleardata.ClearDataActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
