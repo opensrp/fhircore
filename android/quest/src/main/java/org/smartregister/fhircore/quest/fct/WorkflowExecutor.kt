@@ -50,8 +50,7 @@ class WorkflowExecutor(
     private val fhirEngine: FhirEngine,
     private val fhirPathEngine: FHIRPathEngine,
     private val transformSupportServices: TransformSupportServices,
-    private val workflowCarePlanGenerator: WorkflowCarePlanGenerator,
-    private val dbBridge: DatabaseBridge
+    private val workflowCarePlanGenerator: WorkflowCarePlanGenerator
 ) {
 
     private val structureMapUtilities by lazy {

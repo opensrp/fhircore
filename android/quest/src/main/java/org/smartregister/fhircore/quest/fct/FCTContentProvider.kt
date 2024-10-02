@@ -18,6 +18,7 @@ import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.task.WorkflowCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
@@ -34,6 +35,8 @@ class FCTContentProvider : ContentProvider() {
     private lateinit var workflowCarePlanGenerator: WorkflowCarePlanGenerator
     private lateinit var fhirPathEngine: FHIRPathEngine
     private lateinit var transformSupportService: TransformSupportServices
+    private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+    private lateinit var secureSharedPreference: SecureSharedPreference
 
     @InstallIn(SingletonComponent::class)
     @EntryPoint
@@ -48,6 +51,7 @@ class FCTContentProvider : ContentProvider() {
         fun workflowCareplanGenerator(): WorkflowCarePlanGenerator
         fun fhirPathEngine(): FHIRPathEngine
         fun transformSupportService(): TransformSupportServices
+        fun secureSharedPreference(): SecureSharedPreference
     }
 
     private fun getFhirEngine(appContext: Context): FhirEngine {
@@ -90,6 +94,22 @@ class FCTContentProvider : ContentProvider() {
         return hiltEntryPoint.transformSupportService()
     }
 
+    private fun getSharedPreferencesHelper(appContext: Context): SharedPreferencesHelper {
+        val hiltEntryPoint = EntryPointAccessors.fromApplication(
+            appContext,
+            FCTProviderEntryPoint::class.java
+        )
+        return hiltEntryPoint.sharedPreferenceHelper()
+    }
+
+    private fun getSecureSharedPreference(appContext: Context): SecureSharedPreference {
+        val hiltEntryPoint = EntryPointAccessors.fromApplication(
+            appContext,
+            FCTProviderEntryPoint::class.java
+        )
+        return hiltEntryPoint.secureSharedPreference()
+    }
+
     override fun onCreate(): Boolean {
 
         fhirEngine = getFhirEngine(context!!)
@@ -97,6 +117,8 @@ class FCTContentProvider : ContentProvider() {
         workflowCarePlanGenerator = getWorkflowCareplanGenerator(context!!)
         fhirPathEngine = getFhirPathEngine(context!!)
         transformSupportService = getTransformSupportService(context!!)
+        sharedPreferencesHelper = getSharedPreferencesHelper(context!!)
+        secureSharedPreference = getSecureSharedPreference(context!!)
         return true
     }
 
@@ -122,43 +144,47 @@ class FCTContentProvider : ContentProvider() {
         Timber.d("--method: $method --arg: $arg --extras: $extras")
         val decompressArg = arg!!.decompress()
 
-        return when (method) {
+        val result = when (method) {
 
             DB_OPERATION -> {
                 val dbBridge = DatabaseBridge(context!!, fhirEngine)
-                val result = dbBridge.execute(decompressArg)
-                Bundle().apply {
-                    putString(DATA, result.compress())
-                }
+                dbBridge.execute(decompressArg)
             }
 
             EXECUTE_RULES -> {
                 val dbBridge = DatabaseBridge(context!!, fhirEngine)
                 val ruleExecutor = RuleExecutor(rulesFactory, dbBridge)
-                val result = ruleExecutor.execute(decompressArg)
-                Bundle().apply {
-                    putString(DATA, result.compress())
-                }
+                ruleExecutor.execute(decompressArg)
             }
 
             EXECUTE_WORKFLOW -> {
-                val dbBridge = DatabaseBridge(context!!, fhirEngine)
                 val workflowExecutor = WorkflowExecutor(
                     context!!,
                     fhirEngine,
                     fhirPathEngine,
                     transformSupportService,
-                    workflowCarePlanGenerator,
-                    dbBridge
+                    workflowCarePlanGenerator
                 )
-                val result = workflowExecutor.execute(decompressArg)
-                Bundle().apply {
-                    putString(DATA, result.compress())
-                }
+                workflowExecutor.execute(decompressArg)
             }
 
-            else -> Bundle()
+            GET_INSIGHTS -> {
+                val dbBridge = DatabaseBridge(context!!, fhirEngine)
+                val allInsights = AllInsights(
+                    fhirEngine,
+                    dbBridge = dbBridge,
+                    sharedPreferencesHelper = sharedPreferencesHelper,
+                    secureSharedPreference = secureSharedPreference,
+                )
+                allInsights.execute(decompressArg)
+            }
 
+            else -> "_"
+
+        }
+
+        return Bundle().apply {
+            putString(DATA, result.compress())
         }
     }
 
@@ -179,5 +205,6 @@ class FCTContentProvider : ContentProvider() {
         const val DB_OPERATION = "db_operation"
         const val EXECUTE_RULES = "execute_rules"
         const val EXECUTE_WORKFLOW = "execute_workflow"
+        const val GET_INSIGHTS = "get_insights"
     }
 }
