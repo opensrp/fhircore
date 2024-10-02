@@ -28,20 +28,16 @@ object ContentCache {
   private val cache = LruCache<String, Resource>(cacheSize)
 
   @JvmStatic
-  suspend fun saveResource(resourceId: String, resource: Resource) =
+  suspend fun saveResource(resource: Resource) =
     withContext(Dispatchers.IO) {
-      cache.put("${resource::class.simpleName}/$resourceId", resource)
-      Timber.i("ContentCache:saveResource: $resourceId")
+      cache.put("${resource.resourceType.name}/${resource.idPart}", resource.copy())
     }
 
   @JvmStatic
-  fun getResource(resourceId: String): Resource? {
-    return cache[resourceId]?.also { Timber.i("ContentCache:getResource: $resourceId") }
-  }
+  fun getResource(resourceId: String) = cache[resourceId]?.copy()
 
   suspend fun invalidate() =
     withContext(Dispatchers.IO) {
       cache.evictAll()
-      Timber.i("ContentCache: clearing cache")
     }
 }

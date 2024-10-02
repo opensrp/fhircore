@@ -52,7 +52,7 @@ class ContentCacheTest {
 
   @Test
   fun `saveResource should store resource in cache`() = runTest {
-    ContentCache.saveResource(resourceId, mockResource)
+    ContentCache.saveResource(mockResource)
     advanceUntilIdle() // Ensure coroutine has finished
 
     val cachedResource = ContentCache.getResource("${mockResource::class.simpleName}/$resourceId")
@@ -62,7 +62,7 @@ class ContentCacheTest {
 
   @Test
   fun `getResource should return the correct resource from cache`() = runTest {
-    ContentCache.saveResource(resourceId, mockResource)
+    ContentCache.saveResource(mockResource)
     advanceUntilIdle() // Ensure coroutine has finished
 
     val result = ContentCache.getResource("${mockResource::class.simpleName}/$resourceId")
@@ -77,7 +77,7 @@ class ContentCacheTest {
 
   @Test
   fun `invalidate should clear all resources from cache`() = runTest {
-    ContentCache.saveResource(resourceId, mockResource)
+    ContentCache.saveResource(mockResource)
     advanceUntilIdle() // Ensure coroutine has finished
 
     ContentCache.invalidate()
