@@ -97,6 +97,8 @@ suspend fun FhirEngine.countUnSyncedResources() =
     .eachCount()
     .map { it.key to it.value }
 
+suspend fun FhirEngine.totalUnsyncedResources() = this.getUnsyncedLocalChanges().size
+
 suspend fun <R : Resource> FhirEngine.batchedSearch(search: Search) =
   if (search.count != null) {
     this.search<R>(search)
