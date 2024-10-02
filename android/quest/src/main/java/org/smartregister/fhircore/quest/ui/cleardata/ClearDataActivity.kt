@@ -42,11 +42,8 @@ class ClearDataActivity : BaseMultiLanguageActivity() {
           ClearDataScreen(
             viewModel = viewModel,
             unsyncedResourceCount = unsyncedResources,
-            appName = appName.toString(),
-            onDeleteData = {
-              viewModel.clearAppData()
-              finish()
-            },
+            appName = appName,
+            onDeleteData = { viewModel.clearAppData(this@ClearDataActivity) },
           )
         }
       }

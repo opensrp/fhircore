@@ -17,12 +17,14 @@
 package org.smartregister.fhircore.quest.ui.cleardata
 
 import android.app.Application
+import androidx.core.app.ActivityCompat.finishAffinity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
 import javax.inject.Inject
+import kotlin.system.exitProcess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -53,7 +55,7 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
   }
 
-  fun clearAppData() {
+  fun clearAppData(activity: ClearDataActivity) {
     viewModelScope.launch(Dispatchers.IO) {
       try {
         clearCache()
@@ -67,6 +69,9 @@ constructor(
         _dataCleared.value = true
       } catch (e: Exception) {
         _dataCleared.value = false
+      } finally {
+        finishAffinity(activity)
+        exitProcess(0)
       }
     }
   }
@@ -83,6 +88,7 @@ constructor(
   private fun clearCache() {
     try {
       appContext.cacheDir.deleteRecursively()
+      appContext.externalCacheDir?.deleteRecursively()
     } catch (e: Exception) {
       Timber.e(e, "Failed to clear cache")
     }
@@ -137,6 +143,11 @@ constructor(
   }
 
   fun getAppName(): String {
-    return applicationConfiguration.appTitle
+    return try {
+      applicationConfiguration.appTitle
+    } catch (e: Exception) {
+      Timber.e(e, "Failed to get appTitle")
+      ""
+    }
   }
 }
