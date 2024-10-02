@@ -646,7 +646,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       samplePatientRegisterQuestionnaire
 
     runBlocking {
-      ContentCache.saveResource(questionnaireConfig.id, samplePatientRegisterQuestionnaire)
+      ContentCache.saveResource(samplePatientRegisterQuestionnaire)
     }
     val questionnaire =
       questionnaireViewModel.retrieveQuestionnaire(

@@ -222,7 +222,7 @@ constructor(
               }
                 ?: run {
                   fhirEngine.get<StructureMap>(structureMapId).also {
-                    ContentCache.saveResource(structureMapId, it)
+                    ContentCache.saveResource(it)
                   }
                 }
             structureMapUtilities.transform(

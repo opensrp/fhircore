@@ -151,14 +151,12 @@ constructor(
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
     var result =
       ContentCache.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id)
-        ?.copy()
     if (result == null) {
       result =
         defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also { questionnaire,
           ->
           ContentCache.saveResource(
-            questionnaireConfig.id,
-            questionnaire.copy(),
+            questionnaire,
           )
         }
     }
@@ -659,7 +657,7 @@ constructor(
                     }
                       ?: run {
                         defaultRepository.loadResource<StructureMap>(smID)?.also {
-                          ContentCache.saveResource(smID, it)
+                          ContentCache.saveResource(it)
                         }
                       }
                   }
