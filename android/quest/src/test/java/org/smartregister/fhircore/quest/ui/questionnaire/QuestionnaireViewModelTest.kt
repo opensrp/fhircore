@@ -645,9 +645,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
       samplePatientRegisterQuestionnaire
 
-    runBlocking {
-      ContentCache.saveResource(samplePatientRegisterQuestionnaire)
-    }
+    runBlocking { ContentCache.saveResource(samplePatientRegisterQuestionnaire) }
     val questionnaire =
       questionnaireViewModel.retrieveQuestionnaire(
         questionnaireConfig = questionnaireConfig,
