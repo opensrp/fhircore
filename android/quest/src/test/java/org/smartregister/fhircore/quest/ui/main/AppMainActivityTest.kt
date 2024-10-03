@@ -17,10 +17,13 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResult
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.MutableLiveData
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
@@ -32,22 +35,29 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkConstructor
+import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import java.io.Serializable
 import java.time.OffsetDateTime
-import kotlin.test.assertNotNull
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatchers.anyBoolean
+import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mockito.doNothing
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.event.AppEvent
@@ -68,12 +78,14 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk(relaxed = true, relaxUnitFun = true)
 
   private lateinit var appMainActivity: AppMainActivity
+  private lateinit var navController: NavController
   private var eventBus: EventBus = mockk(relaxUnitFun = true, relaxed = true)
 
   @Before
   fun setUp() {
     hiltRule.inject()
     appMainActivity = spyk(Robolectric.buildActivity(AppMainActivity::class.java).create().get())
+    navController = mockk(relaxed = true)
     every { appMainActivity.eventBus } returns eventBus
   }
 
@@ -201,5 +213,44 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   fun testStartForResult() {
     val resultLauncher = appMainActivity.startForResult
     Assert.assertNotNull(resultLauncher)
+  }
+
+  @Test
+  fun testBackPressInGeoWidgetLauncherFragment() {
+    // Mock the current destination as geoWidgetLauncherFragment
+    every { navController.currentDestination?.id } returns
+      org.smartregister.fhircore.quest.R.id.geoWidgetLauncherFragment
+    val context = mockk<Context>(relaxed = true)
+    every { context.getSystemService(any()) } returns mockk(relaxed = true)
+    mockkStatic(AlertDialog::class)
+    val dialog = mockk<AlertDialog.Builder>(relaxed = true)
+    mockkConstructor(AlertDialog.Builder::class)
+    every { constructedWith<AlertDialog.Builder>(any(), any()) } returns dialog
+    doNothing().`when`(dialog.show())
+
+    // Mock the AlertDialog
+    //    val alertDialog = mockk<AlertDialog>(relaxed = true)
+    //    mockkStatic(AlertDialogue::class)
+    //    every { AlertDialogue.showAlert(context, any(), any(), any(), any(), any()) } returns
+    // mockk(relaxed = true)
+
+    // Trigger the back press to indirectly test the private method
+    appMainActivity.onBackPressedDispatcher.onBackPressed()
+
+    // Verify that the AlertDialog is shown
+    coVerify {
+      AlertDialogue.showAlert(
+        context,
+        AlertIntent.CONFIRM,
+        any<CharSequence>(),
+        anyString(),
+        {},
+        anyInt(),
+        {},
+        anyInt(),
+        anyBoolean(),
+        null
+      )
+    }
   }
 }

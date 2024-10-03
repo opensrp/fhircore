@@ -57,7 +57,6 @@ data class ApplicationConfiguration(
       id = null,
     ),
   val codingSystems: List<CodingSystemConfig> = emptyList(),
-  val appExitDialog: AppExitDialogConfig? = null,
 ) : Configuration()
 
 enum class SyncStrategy {

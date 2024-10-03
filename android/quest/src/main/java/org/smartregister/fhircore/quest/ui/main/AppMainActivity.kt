@@ -316,17 +316,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             navController.currentDestination?.id?.equals(R.id.geoWidgetLauncherFragment)!! ||
               navController.currentDestination?.id?.equals(R.id.registerFragment)!!
           ) {
-            val title =
-              appMainViewModel.applicationConfiguration.appExitDialog?.title
-                ?: getString(R.string.exit_app)
-            val message =
-              appMainViewModel.applicationConfiguration.appExitDialog?.message
-                ?: getString(R.string.exit_app_message)
             AlertDialogue.showAlert(
               this@AppMainActivity,
               alertIntent = AlertIntent.CONFIRM,
-              title = title,
-              message = message,
+              title = getString(R.string.exit_app),
+              message = getString(R.string.exit_app_message),
               cancellable = false,
               confirmButtonListener = { finish() },
               neutralButtonListener = { dialog -> dialog.dismiss() },
