@@ -249,7 +249,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
         {},
         anyInt(),
         anyBoolean(),
-        null
+        null,
       )
     }
   }
