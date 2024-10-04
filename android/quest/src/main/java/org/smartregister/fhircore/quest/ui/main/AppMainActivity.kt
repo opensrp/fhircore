@@ -309,13 +309,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     onBackPressedDispatcher.addCallback(
       object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
-          val navController =
+          val navHostFragment =
             (supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment)
-              .navController
-          if (
-            navController.currentDestination?.id?.equals(R.id.geoWidgetLauncherFragment)!! ||
-              navController.currentDestination?.id?.equals(R.id.registerFragment)!!
-          ) {
+          if (navHostFragment.childFragmentManager.backStackEntryCount == 0) {
             AlertDialogue.showAlert(
               this@AppMainActivity,
               alertIntent = AlertIntent.CONFIRM,
@@ -325,7 +321,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
               confirmButtonListener = { finish() },
               neutralButtonListener = { dialog -> dialog.dismiss() },
             )
-          } else navController.navigateUp()
+          } else navHostFragment.navController.navigateUp()
         }
       },
     )
