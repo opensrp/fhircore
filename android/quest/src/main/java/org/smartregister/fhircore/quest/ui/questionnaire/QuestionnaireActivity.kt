@@ -284,6 +284,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       .showAsterisk(this.questionnaireConfig.showRequiredTextAsterisk)
       .showRequiredText(this.questionnaireConfig.showRequiredText)
       .setIsReadOnly(questionnaireConfig.isSummary())
+      .setShowSubmitAnywayButton(questionnaireConfig.showSubmitAnywayButton.toBooleanStrict())
       .apply {
         if (questionnaireResponse != null) {
           questionnaireResponse
