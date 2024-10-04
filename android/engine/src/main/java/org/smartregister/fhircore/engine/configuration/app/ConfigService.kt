@@ -112,7 +112,7 @@ interface ConfigService {
     return listOf(
       activeGroupSearchParameter,
       flagStatusSearchParameter,
-      medicationSortSearchParameter
+      medicationSortSearchParameter,
     )
   }
 
