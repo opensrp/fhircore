@@ -28,8 +28,7 @@
 
 # Keep Gson's data model classes
 -keep class sun.misc.Unsafe { *; }
--keep class com.yourapp.** { *; }
--keepclassmembers class com.yourapp.** {
+-keepclassmembers class org.smartregister.fhircore.quest.** {
     @com.google.gson.annotations.SerializedName <fields>;
 }
 
@@ -62,7 +61,6 @@
 #    public static int wtf(...);
 #}
 
-# Please add these rules to your existing keep rules in order to suppress warnings.
 # This is generated automatically by the Android Gradle plugin.
 -dontwarn androidx.test.platform.app.AppComponentFactoryRegistry
 -dontwarn androidx.test.platform.concurrent.DirectExecutor
@@ -121,5 +119,39 @@
 -keepattributes Exceptions
 -keep class ** implements java.lang.reflect.ParameterizedType { *; }
 
--keep class org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse { *; }
--keep class org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponseImpl { *; }
+-keep class org.smartregister.fhircore.engine.data.remote.model.response.** { *; }
+
+-keep class com.auth0.jwt.interfaces.** { *; }
+
+-keep class com.fasterxml.jackson.core.type.** { *; }
+
+-keepattributes *Annotation*
+
+# Keep Jackson ObjectMapper and related serializers/deserializers
+-keep class com.fasterxml.jackson.databind.ObjectMapper { *; }
+-keep class com.fasterxml.jackson.databind.** { *; }
+
+# Keep TypeReference (used for generic types)
+-keep class com.fasterxml.jackson.core.type.TypeReference { *; }
+
+-keep class com.auth0.jwt.** { *; }
+
+-keep class com.google.gson.** { *; }
+
+-keep class org.apache.commons.logging.** { *; }
+-keep class org.apache.commons.jexl3.** { *; }
+
+-keep class org.jeasy.rules.jexl.** { *; }
+
+-keep class org.slf4j.** { *; }
+
+# Keep the JexlBuilder and Engine classes to prevent issues during initialization
+-keep class org.apache.commons.jexl3.JexlBuilder { *; }
+-keep class org.apache.commons.jexl3.internal.Engine { *; }
+
+# Keep all public methods in the JexlRule class to avoid access issues
+-keep public class org.jeasy.rules.jexl.JexlRule { *; }
+
+
+-keep class org.smartregister.fhircore.engine.data.** { *; }
+-keep class org.smartregister.fhircore.engine.domain.model.** { *; }
