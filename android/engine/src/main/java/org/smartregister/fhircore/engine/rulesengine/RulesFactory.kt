@@ -423,14 +423,15 @@ constructor(
 
     /**
      * This function filters resources provided the condition extracted from the
-     * [conditionalFhirPathExpression] is met
+     * [conditionalFhirPathExpression] is met. Returns the original source or empty resources list
+     * if FHIR path expression is null.
      */
     fun filterResources(
       resources: List<Resource>?,
-      conditionalFhirPathExpression: String,
+      conditionalFhirPathExpression: String?,
     ): List<Resource> {
-      if (conditionalFhirPathExpression.isEmpty()) {
-        return emptyList()
+      if (conditionalFhirPathExpression.isNullOrBlank()) {
+        return resources ?: emptyList()
       }
       return resources?.filter {
         fhirPathDataExtractor.extractValue(it, conditionalFhirPathExpression).toBoolean()

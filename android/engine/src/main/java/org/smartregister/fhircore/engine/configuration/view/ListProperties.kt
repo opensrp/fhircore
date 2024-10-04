@@ -44,7 +44,7 @@ data class ListProperties(
   val showDivider: Boolean = true,
   val emptyList: NoResultsConfig? = null,
   val orientation: ListOrientation = ListOrientation.VERTICAL,
-  val resources: List<ListResource> = emptyList(),
+  val resources: List<ListResourceConfig> = emptyList(),
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): ListProperties {
     return this.copy(
@@ -61,12 +61,12 @@ enum class ListOrientation {
 
 @Serializable
 @Parcelize
-data class ListResource(
+data class ListResourceConfig(
   val id: String? = null,
   val relatedResourceId: String? = null,
   val resourceType: ResourceType,
   val conditionalFhirPathExpression: String? = null,
   val sortConfig: SortConfig? = null,
   val fhirPathExpression: String? = null,
-  val relatedResources: List<ListResource> = emptyList(),
+  val relatedResources: List<ListResourceConfig> = emptyList(),
 ) : Parcelable, java.io.Serializable

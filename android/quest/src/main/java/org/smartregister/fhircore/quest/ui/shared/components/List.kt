@@ -51,7 +51,7 @@ import org.smartregister.fhircore.engine.configuration.register.RegisterCardConf
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ListOrientation
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
-import org.smartregister.fhircore.engine.configuration.view.ListResource
+import org.smartregister.fhircore.engine.configuration.view.ListResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -187,7 +187,7 @@ private fun ListWithHorizontalOrientationPreview() {
           borderRadius = 10,
           emptyList = NoResultsConfig(message = ""),
           resources =
-            listOf(ListResource(id = "carePlanList", resourceType = ResourceType.CarePlan)),
+            listOf(ListResourceConfig(id = "carePlanList", resourceType = ResourceType.CarePlan)),
           fillMaxHeight = true,
           registerCard =
             RegisterCardConfig(
@@ -251,7 +251,7 @@ private fun ListWithVerticalOrientationPreview() {
           borderRadius = 10,
           emptyList = NoResultsConfig(message = "No care Plans"),
           resources =
-            listOf(ListResource(id = "carePlanList", resourceType = ResourceType.CarePlan)),
+            listOf(ListResourceConfig(id = "carePlanList", resourceType = ResourceType.CarePlan)),
           fillMaxWidth = true,
           registerCard =
             RegisterCardConfig(

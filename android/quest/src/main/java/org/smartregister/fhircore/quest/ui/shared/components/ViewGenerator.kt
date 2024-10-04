@@ -135,11 +135,7 @@ fun GenerateView(
                 .conditional(
                   properties.clickable.toBoolean(),
                   {
-                    clickable {
-                      (properties as RowProperties)
-                        .actions
-                        .handleClickEvent(navController, resourceData)
-                    }
+                    clickable { properties.actions.handleClickEvent(navController, resourceData) }
                   },
                 ),
             verticalArrangement =
@@ -212,11 +208,7 @@ fun GenerateView(
                 .conditional(
                   properties.clickable.toBoolean(),
                   {
-                    clickable {
-                      (properties as RowProperties)
-                        .actions
-                        .handleClickEvent(navController, resourceData)
-                    }
+                    clickable { properties.actions.handleClickEvent(navController, resourceData) }
                   },
                 ),
             horizontalArrangement =
