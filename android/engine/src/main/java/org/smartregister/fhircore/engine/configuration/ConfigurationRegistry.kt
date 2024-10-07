@@ -603,7 +603,7 @@ constructor(
        */
       try {
         if (resource is MetadataResource && resource.name != null) {
-          knowledgeManager.install(
+          knowledgeManager.index(
             writeToFile(resource.overwriteCanonicalURL()),
           )
         }
