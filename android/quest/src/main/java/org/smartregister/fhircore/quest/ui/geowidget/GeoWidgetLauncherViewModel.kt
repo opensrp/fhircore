@@ -23,6 +23,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,6 +51,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationIds
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
@@ -63,6 +65,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   val configurationRegistry: ConfigurationRegistry,
+  @ApplicationContext val context: Context,
 ) : ViewModel() {
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
@@ -175,8 +178,10 @@ constructor(
     }
   }
 
-  fun showNoLocationDialog(geoWidgetConfiguration: GeoWidgetConfiguration) {
-    geoWidgetConfiguration.noResults?.let { _noLocationFoundDialog.postValue(true) }
+  suspend fun showNoLocationDialog(geoWidgetConfiguration: GeoWidgetConfiguration) {
+    geoWidgetConfiguration.noResults?.let {
+      _noLocationFoundDialog.postValue(context.retrieveRelatedEntitySyncLocationIds().isEmpty())
+    }
   }
 
   suspend fun onQuestionnaireSubmission(
