@@ -105,12 +105,16 @@ class UserSettingInsightScreenTest {
   @Test
   fun testProgressIndicatorShowWhenFetchingTheData() {
     val unsyncedResources = emptyList<Pair<String, Int>>()
-    initComposable(unsyncedResourcesFlow = MutableStateFlow(unsyncedResources))
+    initComposable(
+      unsyncedResourcesFlow = MutableStateFlow(unsyncedResources),
+      showProgressIndicator = true
+    )
     composeRule.onNodeWithTag(CIRCULAR_PROGRESS_INDICATOR).assertExists().assertIsDisplayed()
   }
 
   private fun initComposable(
     unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>> = MutableSharedFlow(),
+    showProgressIndicator: Boolean = false,
   ) {
     scenario.onActivity { activity ->
       activity.setContent {
@@ -127,7 +131,7 @@ class UserSettingInsightScreenTest {
           buildDate = "29 jan 2023",
           unsyncedResourcesFlow = unsyncedResourcesFlow,
           navController = rememberNavController(),
-          showProgressIndicator = true,
+          showProgressIndicator = showProgressIndicator,
           onRefreshRequest = {},
           dateFormat = DEFAULT_FORMAT_SDF_DD_MM_YYYY,
         )
