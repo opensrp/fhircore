@@ -321,14 +321,14 @@ android {
       manifestPlaceholders["appLabel"] = "PSI WFA"
     }
 
-    create("eusmMg") {
+    create("eusm_mg") {
       dimension = "apps"
       applicationIdSuffix = ".eusm_mg"
       versionNameSuffix = "-eusm_mg"
       manifestPlaceholders["appLabel"] = "EUSM Madagascar"
     }
     
-    create("eusmBi") {
+    create("eusm_bi") {
       dimension = "apps"
       applicationIdSuffix = ".eusm_bi"
       versionNameSuffix = "-eusm_bi"
