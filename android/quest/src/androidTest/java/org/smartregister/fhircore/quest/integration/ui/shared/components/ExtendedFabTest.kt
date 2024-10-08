@@ -63,6 +63,7 @@ class ExtendedFabTest {
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = TestNavHostController(LocalContext.current),
         lazyListState = null,
+        decodeImage = null,
       )
     }
   }
@@ -90,6 +91,7 @@ class ExtendedFabTest {
         resourceData = null,
         navController = TestNavHostController(LocalContext.current),
         lazyListState = null,
+        decodeImage = null,
       )
     }
     composeRule
@@ -150,6 +152,7 @@ class ExtendedFabTest {
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = TestNavHostController(LocalContext.current),
         lazyListState = null,
+        decodeImage = null,
       )
     }
     composeRule.run {
@@ -188,6 +191,7 @@ class ExtendedFabTest {
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = TestNavHostController(LocalContext.current),
         lazyListState = null,
+        decodeImage = null,
       )
     }
     composeRule.run {

@@ -383,7 +383,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
-        decodedImageMap = decodedImageMap,
+        decodeImage = decodedImageMap,
       )
     }
     composeRule

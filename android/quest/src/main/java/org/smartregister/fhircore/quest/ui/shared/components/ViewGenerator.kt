@@ -34,9 +34,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,7 +71,7 @@ fun GenerateView(
   properties: ViewProperties,
   resourceData: ResourceData,
   navController: NavController,
-  decodedImageMap: SnapshotStateMap<String, Bitmap> = mutableStateMapOf(),
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   if (properties.visible.toBoolean()) {
     when (properties.viewType) {
@@ -90,6 +88,7 @@ fun GenerateView(
           buttonProperties = properties as ButtonProperties,
           resourceData = resourceData,
           navController = navController,
+          decodeImage = decodeImage,
         )
       ViewType.COLUMN -> {
         val children = (properties as ColumnProperties).children
@@ -112,7 +111,7 @@ fun GenerateView(
                 properties = properties,
                 resourceData = resourceData,
                 navController = navController,
-                decodedImageMap = decodedImageMap,
+                decodeImage = decodeImage,
               )
             }
           }
@@ -151,7 +150,7 @@ fun GenerateView(
                 properties = child.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
                 navController = navController,
-                decodedImageMap = decodedImageMap,
+                decodeImage = decodeImage,
               )
               if (properties.showDivider.toBoolean() && index < children.lastIndex) {
                 Divider(
@@ -185,7 +184,7 @@ fun GenerateView(
                 properties = properties.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
                 navController = navController,
-                decodedImageMap = decodedImageMap,
+                decodeImage = decodeImage,
               )
             }
           }
@@ -224,7 +223,7 @@ fun GenerateView(
                 properties = child.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
                 navController = navController,
-                decodedImageMap = decodedImageMap,
+                decodeImage = decodeImage,
               )
             }
           }
@@ -236,6 +235,7 @@ fun GenerateView(
           serviceCardProperties = properties as ServiceCardProperties,
           resourceData = resourceData,
           navController = navController,
+          decodeImage = decodeImage,
         )
       ViewType.CARD ->
         CardView(
@@ -243,7 +243,7 @@ fun GenerateView(
           viewProperties = properties as CardViewProperties,
           resourceData = resourceData,
           navController = navController,
-          decodedImageMap = decodedImageMap,
+          decodeImage = decodeImage,
         )
       ViewType.PERSONAL_DATA ->
         PersonalDataView(
@@ -262,7 +262,7 @@ fun GenerateView(
           viewProperties = properties as ListProperties,
           resourceData = resourceData,
           navController = navController,
-          decodedImageMap = decodedImageMap,
+          decodeImage = decodeImage,
         )
       ViewType.IMAGE ->
         Image(
@@ -270,7 +270,7 @@ fun GenerateView(
           imageProperties = properties as ImageProperties,
           resourceData = resourceData,
           navController = navController,
-          decodedImageMap = decodedImageMap,
+          decodeImage = decodeImage,
         )
       ViewType.STACK ->
         StackView(
@@ -278,7 +278,7 @@ fun GenerateView(
           stackViewProperties = properties as StackViewProperties,
           resourceData = resourceData,
           navController = navController,
-          decodedImageMap = decodedImageMap,
+          decodeImage = decodeImage,
         )
     }
   }
