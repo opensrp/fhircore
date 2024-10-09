@@ -221,7 +221,7 @@ fun UserSettingScreen(
       if (enableManualSync) {
         UserSettingRow(
           icon = Icons.Rounded.Sync,
-          text = stringResource(id = R.string.manual_sync),
+          text = "Start Profiling",
           clickListener = { onEvent(UserSettingsEvent.SyncData(context)) },
           modifier = modifier.testTag(USER_SETTING_ROW_SYNC),
         )

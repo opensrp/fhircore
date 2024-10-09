@@ -23,6 +23,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
@@ -33,11 +34,16 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.SettingsOptions
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
@@ -75,6 +81,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val workManager: WorkManager,
   val dispatcherProvider: DispatcherProvider,
+  val defaultRepository: DefaultRepository,
   private val preferenceDataStore: PreferenceDataStore,
 ) : ViewModel() {
 
@@ -144,8 +151,12 @@ constructor(
         }
       }
       is UserSettingsEvent.SyncData -> {
-        if (event.context.isDeviceOnline()) {
-          viewModelScope.launch(dispatcherProvider.main()) { syncBroadcaster.runOneTimeSync() }
+        if (true) {
+          viewModelScope.launch(dispatcherProvider.main()) {
+            fhirEngine.search<Group>(Search(ResourceType.Group))
+            fhirEngine.search<Task>(Search(ResourceType.Task))
+            fhirEngine.search<Patient>(Search(ResourceType.Patient))
+          }
         } else {
           event.context.showToast(
             event.context.getString(R.string.sync_failed),
