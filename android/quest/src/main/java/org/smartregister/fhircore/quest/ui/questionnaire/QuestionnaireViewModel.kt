@@ -834,9 +834,9 @@ constructor(
   }
 
   private fun getStringRepresentation(base: Base): String =
-    if (base.isResource)
+    if (base.isResource) {
       FhirContext.forR4Cached().newJsonParser().encodeResourceToString(base as Resource)
-    else base.toString()
+    } else base.toString()
 
   /**
    * This function generates CarePlans for the [QuestionnaireResponse.subject] using the configured

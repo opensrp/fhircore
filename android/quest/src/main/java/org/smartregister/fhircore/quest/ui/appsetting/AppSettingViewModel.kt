@@ -25,6 +25,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -51,6 +52,7 @@ import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.retrieveImplementationGuideDefinitionResources
+import org.smartregister.fhircore.engine.util.forEachAsync
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import retrofit2.HttpException
 import timber.log.Timber
@@ -164,7 +166,7 @@ constructor(
           .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
             val chunkedResourceIdList =
               entry.value.chunked(ConfigurationRegistry.MANIFEST_PROCESSOR_BATCH_SIZE)
-            chunkedResourceIdList.forEach { parentIt ->
+            chunkedResourceIdList.forEachAsync(Dispatchers.IO) { parentIt ->
               Timber.d(
                 "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
               )
