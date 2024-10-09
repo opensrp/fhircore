@@ -323,15 +323,15 @@ android {
 
     create("eusmMg") {
       dimension = "apps"
-      applicationIdSuffix = ".eusm-mg"
-      versionNameSuffix = "-eusm-mg"
+      applicationIdSuffix = ".eusmMg"
+      versionNameSuffix = "-eusmMg"
       manifestPlaceholders["appLabel"] = "EUSM Madagascar"
     }
 
     create("eusmBi") {
       dimension = "apps"
-      applicationIdSuffix = ".eusm-bi"
-      versionNameSuffix = "-eusm-bi"
+      applicationIdSuffix = ".eusmBi"
+      versionNameSuffix = "-eusmBi"
       manifestPlaceholders["appLabel"] = "EUSM Burundi"
     }
 
