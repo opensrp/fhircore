@@ -33,7 +33,6 @@ import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
-import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
@@ -65,6 +64,7 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
+import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.CodingSystemUsage
@@ -82,6 +82,7 @@ import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.checkResourceValid
 import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
@@ -182,9 +183,9 @@ constructor(
       }
 
       currentQuestionnaireResponse.processMetadata(
-        questionnaire,
-        questionnaireConfig,
-        context,
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
+        context = context,
       )
 
       val bundle =
@@ -387,6 +388,11 @@ constructor(
           }
         }
 
+        // Set Encounter on QR if the ResourceType is Encounter
+        if (this.resourceType == ResourceType.Encounter) {
+          questionnaireResponse.setEncounter(this.asReference())
+        }
+
         // Set the Group's Related Entity Location metadata tag on Resource before saving.
         this.applyRelatedEntityLocationMetaTag(questionnaireConfig, context, subjectType)
 
@@ -533,10 +539,11 @@ constructor(
         !questionnaireConfig.resourceIdentifier.isNullOrEmpty() &&
         subjectType != null
     ) {
-      searchLatestQuestionnaireResponse(
+      searchQuestionnaireResponse(
           resourceId = questionnaireConfig.resourceIdentifier!!,
           resourceType = questionnaireConfig.resourceType ?: subjectType,
           questionnaireId = questionnaire.logicalId,
+          encounterId = questionnaireConfig.encounterId,
         )
         ?.contained
         ?.asSequence()
@@ -781,7 +788,7 @@ constructor(
 
     if (libraryFilters.isNotEmpty()) {
       defaultRepository.fhirEngine
-        .search<Library> {
+        .batchedSearch<Library> {
           filter(
             Resource.RES_ID,
             *libraryFilters.toTypedArray(),
@@ -999,18 +1006,31 @@ constructor(
    * [resourceId] that was extracted from the [Questionnaire] identified as [questionnaireId].
    * Returns null if non is found.
    */
-  suspend fun searchLatestQuestionnaireResponse(
+  suspend fun searchQuestionnaireResponse(
     resourceId: String,
     resourceType: ResourceType,
     questionnaireId: String,
+    encounterId: String?,
   ): QuestionnaireResponse? {
     val search =
       Search(ResourceType.QuestionnaireResponse).apply {
-        filter(QuestionnaireResponse.SUBJECT, { value = "$resourceType/$resourceId" })
+        filter(
+          QuestionnaireResponse.SUBJECT,
+          { value = resourceId.asReference(resourceType).reference },
+        )
         filter(
           QuestionnaireResponse.QUESTIONNAIRE,
-          { value = "${ResourceType.Questionnaire}/$questionnaireId" },
+          { value = questionnaireId.asReference(ResourceType.Questionnaire).reference },
         )
+        if (!encounterId.isNullOrBlank()) {
+          filter(
+            QuestionnaireResponse.ENCOUNTER,
+            {
+              value =
+                encounterId.extractLogicalIdUuid().asReference(ResourceType.Encounter).reference
+            },
+          )
+        }
       }
     val questionnaireResponses: List<QuestionnaireResponse> = defaultRepository.search(search)
     return questionnaireResponses.maxByOrNull { it.meta.lastUpdated }
@@ -1023,7 +1043,7 @@ constructor(
   ): List<Resource> {
     return when {
       subjectResourceType != null && subjectResourceIdentifier != null ->
-        LinkedList<Resource>().apply {
+        mutableListOf<Resource>().apply {
           loadResource(subjectResourceType, subjectResourceIdentifier)?.let { add(it) }
           val actionParametersExcludingSubject =
             actionParameters.filterNot {
@@ -1033,7 +1053,7 @@ constructor(
             }
           addAll(retrievePopulationResources(actionParametersExcludingSubject))
         }
-      else -> LinkedList(retrievePopulationResources(actionParameters))
+      else -> retrievePopulationResources(actionParameters)
     }
   }
 
@@ -1082,10 +1102,11 @@ constructor(
           !resourceIdentifier.isNullOrEmpty() &&
           (questionnaireConfig.isEditable() || questionnaireConfig.isReadOnly())
       ) {
-        searchLatestQuestionnaireResponse(
+        searchQuestionnaireResponse(
             resourceId = resourceIdentifier,
             resourceType = resourceType,
             questionnaireId = questionnaire.logicalId,
+            encounterId = questionnaireConfig.encounterId,
           )
           ?.let {
             QuestionnaireResponse().apply {
@@ -1098,14 +1119,49 @@ constructor(
         null
       }
 
+    // Exclude the configured fields from QR
+    if (questionnaireResponse != null) {
+      val exclusionLinkIdsMap: Map<String, Boolean> =
+        questionnaireConfig.linkIds
+          ?.asSequence()
+          ?.filter { it.type == LinkIdType.PREPOPULATION_EXCLUSION }
+          ?.associateBy { it.linkId }
+          ?.mapValues { it.value.type == LinkIdType.PREPOPULATION_EXCLUSION } ?: emptyMap()
+
+      questionnaireResponse.item =
+        excludePrepopulationFields(questionnaireResponse.item.toMutableList(), exclusionLinkIdsMap)
+    }
     return Pair(questionnaireResponse, launchContextResources)
+  }
+
+  fun excludePrepopulationFields(
+    items: MutableList<QuestionnaireResponseItemComponent>,
+    exclusionMap: Map<String, Boolean>,
+  ): MutableList<QuestionnaireResponseItemComponent> {
+    val stack = LinkedList<MutableList<QuestionnaireResponseItemComponent>>()
+    stack.push(items)
+    while (stack.isNotEmpty()) {
+      val currentItems = stack.pop()
+      val iterator = currentItems.iterator()
+      while (iterator.hasNext()) {
+        val item = iterator.next()
+        if (exclusionMap.containsKey(item.linkId)) {
+          iterator.remove()
+        } else if (item.item.isNotEmpty()) {
+          stack.push(item.item)
+        }
+      }
+    }
+    return items
   }
 
   private fun List<QuestionnaireResponseItemComponent>.removeUnAnsweredItems():
     List<QuestionnaireResponseItemComponent> {
-    return this.filter { it.hasAnswer() || it.item.isNotEmpty() }
+    return this.asSequence()
+      .filter { it.hasAnswer() || it.item.isNotEmpty() }
       .onEach { it.item = it.item.removeUnAnsweredItems() }
       .filter { it.hasAnswer() || it.item.isNotEmpty() }
+      .toList()
   }
 
   /**

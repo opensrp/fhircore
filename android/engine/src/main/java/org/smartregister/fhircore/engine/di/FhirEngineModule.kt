@@ -55,7 +55,7 @@ class FhirEngineModule {
     FhirEngineProvider.init(
       FhirEngineConfiguration(
         enableEncryptionIfSupported = !BuildConfig.DEBUG,
-        databaseErrorStrategy = DatabaseErrorStrategy.UNSPECIFIED,
+        databaseErrorStrategy = DatabaseErrorStrategy.RECREATE_AT_OPEN,
         ServerConfiguration(
           baseUrl = configService.provideAuthConfiguration().fhirServerBaseUrl,
           authenticator = tokenAuthenticator,
