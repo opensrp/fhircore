@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util
 
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -43,4 +44,8 @@ suspend fun <A, B> Iterable<A>.pmap(f: suspend (A) -> B): Iterable<B> = coroutin
  */
 suspend fun <T> Iterable<T>.forEachAsync(action: suspend (T) -> Unit): Unit = coroutineScope {
   forEach { launch(Dispatchers.Default) { action(it) } }
+}
+
+suspend fun <T> Iterable<T>.forEachAsync(dispatcher: CoroutineDispatcher, action: suspend (T) -> Unit): Unit = coroutineScope {
+  forEach { launch(dispatcher) { action(it) } }
 }
