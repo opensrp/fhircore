@@ -66,6 +66,7 @@ data class QuestionnaireConfig(
   val managingEntityRelationshipCode: String? = null,
   val uniqueIdAssignment: UniqueIdAssignmentConfig? = null,
   val linkIds: List<LinkIdConfig>? = null,
+  val showSubmitAnywayButton: String = "false",
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
@@ -100,6 +101,7 @@ data class QuestionnaireConfig(
         uniqueIdAssignment?.copy(linkId = uniqueIdAssignment.linkId.interpolate(computedValuesMap)),
       linkIds = linkIds?.onEach { it.linkId.interpolate(computedValuesMap) },
       saveButtonText = saveButtonText?.interpolate(computedValuesMap),
+      showSubmitAnywayButton = showSubmitAnywayButton.interpolate(computedValuesMap),
     )
 }
 
