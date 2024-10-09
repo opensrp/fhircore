@@ -160,7 +160,7 @@
     },
     {
       "id": "taskRegister",
-      "display": "Priority followup",
+      "display": "{{nav.menu.priority}}",
       "showCount": true,
       "menuIconConfig": {
         "type": "local",

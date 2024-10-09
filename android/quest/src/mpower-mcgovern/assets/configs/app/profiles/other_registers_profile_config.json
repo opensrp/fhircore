@@ -568,7 +568,7 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "4234",
+            "id": "4",
             "title": "Member registration info",
             "saveButtonText": "Update registration",
             "setPractitionerDetails": true,
@@ -576,7 +576,7 @@
             "type": "EDIT",
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
-              "4242"
+              "81"
             ]
           }
         }

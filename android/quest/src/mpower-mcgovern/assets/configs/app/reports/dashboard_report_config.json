@@ -164,14 +164,14 @@
       "name": "totalHHVisitCount",
       "condition": "true",
       "actions": [
-        "data.put('totalHHVisitCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('6485')\")))"
+        "data.put('totalHHVisitCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('21')\")))"
       ]
     },
     {
       "name": "totalElcoCount",
       "condition": "true",
       "actions": [
-        "data.put('totalElcoCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('6483')\")))"
+        "data.put('totalElcoCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('16')\")))"
       ]
     },
     {
@@ -192,49 +192,49 @@
       "name": "total0To6ChildCount",
       "condition": "true",
       "actions": [
-        "data.put('total0To6ChildCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4218') or QuestionnaireResponse.questionnaire.contains('4220')\")))"
+        "data.put('total0To6ChildCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('5') or QuestionnaireResponse.questionnaire.contains('6')\")))"
       ]
     },
     {
       "name": "total7To24ChildCount",
       "condition": "true",
       "actions": [
-        "data.put('total7To24ChildCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4222') or QuestionnaireResponse.questionnaire.contains('4224') or QuestionnaireResponse.questionnaire.contains('4226')\")))"
+        "data.put('total7To24ChildCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('7') or QuestionnaireResponse.questionnaire.contains('8') or QuestionnaireResponse.questionnaire.contains('9')\")))"
       ]
     },
     {
       "name": "total18To36ChildCount",
       "condition": "true",
       "actions": [
-        "data.put('total18To36ChildCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4226')\")))"
+        "data.put('total18To36ChildCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('9')\")))"
       ]
     },
     {
       "name": "totalAncCount",
       "condition": "true",
       "actions": [
-        "data.put('totalAncCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('5591')\")))"
+        "data.put('totalAncCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('18')\")))"
       ]
     },
     {
       "name": "totalPncCount",
       "condition": "true",
       "actions": [
-        "data.put('totalPncCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('6058')\")))"
+        "data.put('totalPncCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('20')\")))"
       ]
     },
     {
       "name": "totalEyeServiceCount",
       "condition": "true",
       "actions": [
-        "data.put('totalEyeServiceCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4966')\")))"
+        "data.put('totalEyeServiceCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('14')\")))"
       ]
     },
     {
       "name": "totalNcdServiceCount",
       "condition": "true",
       "actions": [
-        "data.put('totalNcdServiceCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4968')\")))"
+        "data.put('totalNcdServiceCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('15')\")))"
       ]
     },
     {
@@ -410,7 +410,7 @@
       "condition": "true",
       "priority": 2,
       "actions": [
-        "data.put('ancFollowupTask', service.filterResources(data.get('completedTasks'), \"Task.reasonReference.reference.contains('5591')\"))"
+        "data.put('ancFollowupTask', service.filterResources(data.get('completedTasks'), \"Task.reasonReference.reference.contains('18')\"))"
       ]
     },
     {
@@ -449,7 +449,7 @@
       "name": "totalPregnancyOutcomeCount",
       "condition": "true",
       "actions": [
-        "data.put('totalPregnancyOutcomeCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('6056')\")))"
+        "data.put('totalPregnancyOutcomeCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('19')\")))"
       ]
     },
     {
@@ -457,7 +457,7 @@
       "condition": "true",
       "priority": 2,
       "actions": [
-        "data.put('totalChildFollowupCount', size(service.filterResources(data.get('completedTasks'), \"Task.input.value.reference.contains('4242')\")))"
+        "data.put('totalChildFollowupCount', size(service.filterResources(data.get('completedTasks'), \"Task.input.value.reference.contains('81')\")))"
       ]
     },
     {
@@ -520,7 +520,7 @@
       "name": "totalPregnancyReferralCount",
       "condition": "true",
       "actions": [
-        "data.put('totalPregnancyReferralCount', size(service.filterResources(Task, \"Task.input[0].value.coding.code = 'pregnancy_problems' and Task.reasonReference.reference.contains('4235')\")))"
+        "data.put('totalPregnancyReferralCount', size(service.filterResources(Task, \"Task.input[0].value.coding.code = 'pregnancy_problems' and Task.reasonReference.reference.contains('13')\")))"
       ]
     },
     {

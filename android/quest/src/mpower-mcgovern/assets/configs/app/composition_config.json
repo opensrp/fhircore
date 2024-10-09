@@ -261,7 +261,7 @@
         {
           "title": "Add Family Member",
           "focus": {
-            "reference": "Questionnaire/4234",
+            "reference": "Questionnaire/4",
             "identifier": {
               "value": "family-member-registration"
             }
@@ -281,7 +281,7 @@
         {
           "title": "Add Family",
           "focus": {
-            "reference": "Questionnaire/2870",
+            "reference": "Questionnaire/3",
             "identifier": {
               "value": "family-registration"
             }

@@ -365,7 +365,7 @@
         "condition": "true",
         "priority": 5,
         "actions": [
-          "data.put('taskQuestionnaireId', data.get('applicableForPncFollowup') ? '6058' : data.get('otherTaskQuestionnaireId'))"
+          "data.put('taskQuestionnaireId', data.get('applicableForPncFollowup') ? '20' : data.get('otherTaskQuestionnaireId'))"
         ]
       },
       {

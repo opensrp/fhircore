@@ -1121,7 +1121,7 @@
                     "trigger": "ON_CLICK",
                     "workflow": "LAUNCH_QUESTIONNAIRE",
                     "questionnaire": {
-                      "id": "4236",
+                      "id": "10",
                       "title": "{{hh.due.referral}}",
                       "resourceType": "Patient",
                       "resourceIdentifier": "@{patientId}"
@@ -1144,7 +1144,7 @@
                     "trigger": "ON_CLICK",
                     "workflow": "LAUNCH_QUESTIONNAIRE",
                     "questionnaire": {
-                      "id": "4237",
+                      "id": "11",
                       "title": "{{hh.due.referral}}",
                       "resourceType": "Patient",
                       "resourceIdentifier": "@{patientId}"
@@ -1167,7 +1167,7 @@
                     "trigger": "ON_CLICK",
                     "workflow": "LAUNCH_QUESTIONNAIRE",
                     "questionnaire": {
-                      "id": "4238",
+                      "id": "12",
                       "title": "{{hh.due.referral}}",
                       "resourceType": "Patient",
                       "resourceIdentifier": "@{patientId}"
@@ -1190,7 +1190,7 @@
                     "trigger": "ON_CLICK",
                     "workflow": "LAUNCH_QUESTIONNAIRE",
                     "questionnaire": {
-                      "id": "6058",
+                      "id": "20",
                       "title": "@{pncFollowupTaskName}",
                       "resourceType": "Patient",
                       "resourceIdentifier": "@{patientId}"
@@ -1292,7 +1292,7 @@
                     "trigger": "ON_CLICK",
                     "workflow": "LAUNCH_QUESTIONNAIRE",
                     "questionnaire": {
-                      "id": "6483",
+                      "id": "16",
                       "title": "Eligible Couple Visit",
                       "resourceType": "Patient",
                       "resourceIdentifier": "@{patientId}"
@@ -1576,7 +1576,7 @@
                         "trigger": "ON_CLICK",
                         "workflow": "LAUNCH_QUESTIONNAIRE",
                         "questionnaire": {
-                          "id": "4966",
+                          "id": "14",
                           "title": "{{hh.service.eye}}",
                           "resourceType": "Patient",
                           "resourceIdentifier": "@{patientId}"
@@ -1853,7 +1853,7 @@
                         "trigger": "ON_CLICK",
                         "workflow": "LAUNCH_QUESTIONNAIRE",
                         "questionnaire": {
-                          "id": "4968",
+                          "id": "15",
                           "title": "{{hh.service.ncd}}",
                           "resourceType": "Patient",
                           "resourceIdentifier": "@{patientId}"
@@ -2070,7 +2070,7 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "4234",
+            "id": "4",
             "title": "Member registration info",
             "saveButtonText": "Update registration",
             "setPractitionerDetails": true,
@@ -2105,11 +2105,11 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "5589",
+            "id": "17",
             "title": "{{patient.menu.register.pregnancy}}",
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
-              "5593"
+              "82"
             ]
           },
           "params": [
@@ -2223,7 +2223,7 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "6056",
+            "id": "19",
             "title": "{{patient.menu.pregnancy.outcome}}",
             "resourceIdentifier": "@{patientId}",
             "groupResource": {
@@ -2269,7 +2269,7 @@
                         "filterCriteria": [
                           {
                             "dataType": "REFERENCE",
-                            "value": "PlanDefinition/5593"
+                            "value": "PlanDefinition/82"
                           }
                         ]
                       },
