@@ -140,14 +140,14 @@ constructor(
     if (BuildConfig.DEBUG) {
       val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
       Timber.d("Rule executed in $timeToFireRules millisecond(s)")
-    } else rulesEngine.fire(rules, facts)
+    } else {
+      rulesEngine.fire(rules, facts)
+    }
     return facts.get(DATA) as Map<String, Any>
   }
 
   /** Provide access to utility functions accessible to the users defining rules in JSON format. */
   inner class RulesEngineService {
-
-    val parser = fhirContext.newJsonParser()
 
     private var conf: Configuration =
       Configuration.defaultConfiguration().apply { addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL) }
@@ -192,13 +192,14 @@ constructor(
 
       return if (referenceFhirPathExpression.isNullOrEmpty()) {
         value
-      } else
+      } else {
         value.filter {
           resource.logicalId ==
             fhirPathDataExtractor
               .extractValue(it, referenceFhirPathExpression)
               .extractLogicalIdUuid()
         }
+      }
     }
 
     /**
@@ -679,14 +680,18 @@ constructor(
         }
 
       val updatedResource =
-        parser.parseResource(resource::class.java, updatedResourceDocument.jsonString())
+        fhirContext
+          .newJsonParser()
+          .parseResource(resource::class.java, updatedResourceDocument.jsonString())
       CoroutineScope(dispatcherProvider.io()).launch {
         if (purgeAffectedResources) {
           defaultRepository.purge(updatedResource as Resource, forcePurge = true)
         }
         if (createLocalChangeEntitiesAfterPurge) {
           defaultRepository.addOrUpdate(resource = updatedResource as Resource)
-        } else defaultRepository.createRemote(resource = arrayOf(updatedResource as Resource))
+        } else {
+          defaultRepository.createRemote(resource = arrayOf(updatedResource as Resource))
+        }
       }
     }
 

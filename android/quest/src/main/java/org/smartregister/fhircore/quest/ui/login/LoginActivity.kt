@@ -24,10 +24,13 @@ import androidx.activity.viewModels
 import androidx.annotation.VisibleForTesting
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
+import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
+import org.smartregister.fhircore.engine.datastore.ContentCache
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
 import org.smartregister.fhircore.engine.sync.AppSyncWorker
@@ -53,7 +56,13 @@ open class LoginActivity : BaseMultiLanguageActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     this.applyWindowInsetListener()
-
+    loginViewModel.launchDialPad.observe(
+      this,
+    ) { phone ->
+      if (!phone.isNullOrBlank()) {
+        startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:$phone") })
+      }
+    }
     // Cancel sync background job to get new auth token; login required, refresh token expired
     val cancelBackgroundSync =
       intent.extras?.getBoolean(TokenAuthenticator.CANCEL_BACKGROUND_SYNC, false) ?: false
@@ -78,16 +87,18 @@ open class LoginActivity : BaseMultiLanguageActivity() {
           navigateToPinLogin(launchSetup = false)
         }
       }
-
+      viewModelScope.launch { ContentCache.invalidate() }
       navigateToHome.observe(loginActivity) { launchHomeScreen ->
         if (launchHomeScreen) {
           downloadNowWorkflowConfigs()
           if (isPinEnabled && !hasActivePin) {
             navigateToPinLogin(launchSetup = true)
-          } else loginActivity.navigateToHome()
+          } else {
+            loginActivity.navigateToHome()
+          }
         }
       }
-      launchDialPad.observe(loginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
+      launchDialPad.observe(loginActivity) { if (!it.isNullOrBlank()) launchDialPad(it) }
     }
   }
 
@@ -126,7 +137,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  private fun launchDialPad(phone: String) {
-    startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
+  fun launchDialPad(phone: String) {
+    startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:$phone") })
   }
 }

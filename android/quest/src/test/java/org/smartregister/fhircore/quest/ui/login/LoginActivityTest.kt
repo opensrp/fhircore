@@ -19,7 +19,9 @@ package org.smartregister.fhircore.quest.ui.login
 import android.content.Context
 import android.content.Intent
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -28,7 +30,9 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkObject
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
@@ -61,6 +65,7 @@ class LoginActivityTest : RobolectricTest() {
   private val loginActivityController =
     Robolectric.buildActivity(Faker.TestLoginActivity::class.java)
   private lateinit var loginActivity: LoginActivity
+  val context = InstrumentationRegistry.getInstrumentation().targetContext!!
 
   @Before
   fun setUp() {
@@ -78,11 +83,30 @@ class LoginActivityTest : RobolectricTest() {
   }
 
   @Test
-  fun testLaunchDialPadShouldStartActionDialActivity() {
-    loginActivity.loginViewModel.forgotPassword()
+  fun testForgotPasswordLoadsContact() {
+    val launchDialPadObserver =
+      Observer<String?> { dialPadUri ->
+        if (dialPadUri != null) {
+          Assert.assertEquals("1234567890", dialPadUri)
+        }
+      }
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+    try {
+      loginActivity.loginViewModel.launchDialPad.observeForever(launchDialPadObserver)
+      loginActivity.loginViewModel.forgotPassword(context)
+    } finally {
+      loginActivity.loginViewModel.launchDialPad.removeObserver(launchDialPadObserver)
+    }
+  }
+
+  @Test
+  fun testLaunchDialPadStartsDialIntentWithCorrectPhoneNumber() {
+    val phoneNumber = "1234567890"
+    loginActivity.launchDialPad(phoneNumber)
     val resultIntent = shadowOf(loginActivity).nextStartedActivity
+    Assert.assertNotNull(resultIntent)
     Assert.assertEquals(Intent.ACTION_DIAL, resultIntent.action)
-    Assert.assertEquals("tel:0123456789", resultIntent.data.toString())
+    Assert.assertEquals(phoneNumber, resultIntent.data?.schemeSpecificPart.toString())
   }
 
   @Test
@@ -125,9 +149,13 @@ class LoginActivityTest : RobolectricTest() {
 
   @Test
   @Ignore("Weird: Cannot set session pin")
-  fun testNavigateToScreenShouldLaunchPinLoginWithoutSetup() {
+  fun testNavigateToScreenShouldLaunchPinLoginWithoutSetup() = runBlocking {
     // Return a session pin, login with pin is enabled by default
-    secureSharedPreference.saveSessionPin("1234".toCharArray())
+    val onSavedPinMock = mockk<() -> Unit>(relaxed = true)
+    secureSharedPreference.saveSessionPin(pin = "1234".toCharArray(), onSavedPin = onSavedPinMock)
+
+    verify { onSavedPinMock.invoke() }
+
     every { secureSharedPreference.retrieveSessionPin() } returns "1234"
 
     loginActivity.loginViewModel.updateNavigateHome(true)

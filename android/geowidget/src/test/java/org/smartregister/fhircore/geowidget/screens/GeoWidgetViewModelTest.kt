@@ -48,7 +48,6 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.geowidget.model.ServicePointType
-import org.smartregister.fhircore.geowidget.rule.CoroutineTestRule
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
@@ -58,8 +57,6 @@ class GeoWidgetViewModelTest {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
-
-  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
 
   @Inject lateinit var configService: ConfigService
 
@@ -93,7 +90,6 @@ class GeoWidgetViewModelTest {
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = coroutinesTestRule.testDispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           configService = configService,
@@ -101,9 +97,10 @@ class GeoWidgetViewModelTest {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = ApplicationProvider.getApplicationContext(),
+          dispatcherProvider = dispatcherProvider,
         ),
       )
-    geoWidgetViewModel = spyk(GeoWidgetViewModel(coroutinesTestRule.testDispatcherProvider))
+    geoWidgetViewModel = spyk(GeoWidgetViewModel(dispatcherProvider))
 
     coEvery { defaultRepository.create(any()) } returns emptyList()
   }

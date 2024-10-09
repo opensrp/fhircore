@@ -56,12 +56,14 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Procedure
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -80,6 +82,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.event.EventTriggerCondition
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.configuration.event.UpdateWorkflowValueConfig
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
@@ -95,7 +98,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.formatDate
@@ -120,25 +123,24 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var parser: IParser
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @BindValue
   val configService: ConfigService =
     spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
   private val application = ApplicationProvider.getApplicationContext<Application>()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
-  private lateinit var dispatcherProvider: DefaultDispatcherProvider
   private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var defaultRepository: DefaultRepository
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    dispatcherProvider = DefaultDispatcherProvider()
     sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
         configService = configService,
@@ -146,6 +148,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         fhirPathDataExtractor = fhirPathDataExtractor,
         parser = parser,
         context = context,
+        dispatcherProvider = dispatcherProvider,
       )
   }
 
@@ -551,7 +554,6 @@ class DefaultRepositoryTest : RobolectricTest() {
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
@@ -559,6 +561,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = context,
+          dispatcherProvider = dispatcherProvider,
         ),
       )
     coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
@@ -629,7 +632,6 @@ class DefaultRepositoryTest : RobolectricTest() {
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
@@ -637,6 +639,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = context,
+          dispatcherProvider = dispatcherProvider,
         ),
       )
 
@@ -885,6 +888,90 @@ class DefaultRepositoryTest : RobolectricTest() {
     )
 
     coVerify(exactly = 0) { fhirEngine.update(any()) }
+  }
+
+  @Test
+  fun testNonCareplanRelatedResourcesUpdatedCorrectlyAndWithNoSpecifiedBaseResource() = runTest {
+    val encounter =
+      Encounter().apply {
+        id = "test-Encounter"
+        period = Period().apply { start = Date().plusDays(-2) }
+        status = Encounter.EncounterStatus.INPROGRESS
+        type =
+          listOf(
+            CodeableConcept().apply {
+              coding =
+                listOf(
+                  Coding().apply {
+                    system = "http://smartregister.org/"
+                    code = "SVISIT"
+                    display = "Service Point Visit"
+                  },
+                )
+              text = "Service Point Visit"
+            },
+          )
+      }
+    val eventWorkflow =
+      EventWorkflow(
+        triggerConditions =
+          listOf(
+            EventTriggerCondition(
+              eventResourceId = "encounterToBeClosed",
+              matchAll = false,
+              conditionalFhirPathExpressions =
+                listOf(
+                  "true",
+                ),
+            ),
+          ),
+        eventResources =
+          listOf(
+            ResourceConfig(
+              id = "encounterToBeClosed",
+              resource = ResourceType.Encounter,
+              configRules = listOf(),
+              dataQueries =
+                listOf(
+                  DataQuery(
+                    paramName = "reason-code",
+                    filterCriteria =
+                      listOf(
+                        FilterCriterionConfig.TokenFilterCriterionConfig(
+                          dataType = Enumerations.DataType.CODEABLECONCEPT,
+                          value = Code(system = "http://smartregister.org/", code = "SVISIT"),
+                        ),
+                      ),
+                  ),
+                ),
+            ),
+          ),
+        updateValues =
+          listOf(
+            UpdateWorkflowValueConfig(
+              jsonPathExpression = "Encounter.status",
+              value = JsonPrimitive("finished"),
+              resourceType = ResourceType.Encounter,
+            ),
+          ),
+        resourceFilterExpressions =
+          listOf(
+            ResourceFilterExpression(
+              conditionalFhirPathExpressions = listOf("Encounter.period.end < now()"),
+              matchAll = true,
+            ),
+          ),
+      )
+    fhirEngine.create(encounter)
+    defaultRepository.updateResourcesRecursively(
+      resourceConfig = eventWorkflow.eventResources[0],
+      eventWorkflow = eventWorkflow,
+    )
+    val resourceSlot = slot<Encounter>()
+    val captured = resourceSlot.captured
+    coVerify { fhirEngine.update(capture(resourceSlot)) }
+    Assert.assertEquals("test-Encounter", captured.id)
+    Assert.assertEquals(Encounter.EncounterStatus.FINISHED, captured.status)
   }
 
   @Test

@@ -79,7 +79,7 @@
     <string name="forgot_password">Forgot Password</string>
     <string name="forgot_password_title">Forgot Password!</string>
     <string name="more">More</string>
-    <string name="call_supervisor">Please call your supervisor at %1$s</string>
+    <string name="call_supervisor">Please contact your supervisor.</string>
     <string name="cancel" tools:ignore="ButtonCase">CANCEL</string>
     <string name="dial_number">DIAL NUMBER</string>
     <string name="register">Register</string>
@@ -113,7 +113,6 @@
     <string name="incorrect_pin_please_retry">Incorrect PIN, please try again</string>
     <string name="pin_menu_login">Login</string>
     <string name="forgot_pin">Forgot PIN?</string>
-    <string name="please_contact_supervisor">Please contact your supervisor.</string>
     <string name="percentage" translatable="false">%</string>
     <string name="logging_out">Logging out. Please wait…</string>
     <string name="session_expired">Session has been expired and must login again</string>
@@ -151,6 +150,7 @@
     <string name="weeks">Week(s)</string>
     <string name="days">Days(s)</string>
     <string name="initializing">Initializing settings &#8230;</string>
+    <string name="initializing_application">Initializing application &#8230;</string>
     <string name="username_sample" translatable="false">e.g JohnDoe</string>
     <string name="percentage_progress" translatable="false">%1$d%%</string>
     <string name="error_occurred">Something went wrong…</string>
@@ -190,10 +190,11 @@
     <string name="no_data">No data set</string>
     <string name="sync_complete">Sync complete</string>
     <string name="sync_error">Sync error</string>
-    <string name="minutes_remaining">Calculating minutes remaining...</string>
+    <string name="minutes_remaining">Calculating minutes remaining…</string>
     <string name="sync_up_inprogress"> %1$d%% Syncing up…</string>
     <string name="sync_down_inprogress"> %1$d%% Syncing down…</string>
     <string name="default_html_title">file</string>
     <string name="retry">RETRY</string>
     <string name="unsynced_data_present">There\'s some un-synced data</string>
+    <string name="missing_supervisor_contact">Supervisor contact missing or the provided phone number is invalid</string>
 </resources>
