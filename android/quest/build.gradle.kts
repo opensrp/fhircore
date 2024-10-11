@@ -91,11 +91,10 @@ android {
     create("release") {
       enableV1Signing = false
       enableV2Signing = true
-      keyAlias = System.getenv("KEYSTORE_ALIAS") ?: """${project.extra["KEYSTORE_ALIAS"]}"""
-      keyPassword = System.getenv("KEY_PASSWORD") ?: """${project.extra["KEY_PASSWORD"]}"""
-      storePassword =
-        System.getenv("KEYSTORE_PASSWORD") ?: """${project.extra["KEYSTORE_PASSWORD"]}"""
-      storeFile = file(System.getProperty("user.home") + "/fhircore.keystore.jks")
+      keyAlias = "sid-release"
+      keyPassword = "490f-8e57-6a1fc1ab3b6a"
+      storePassword = "490f-8e57-6a1fc1ab3b6a"
+      storeFile = file(System.getProperty("user.home") + "/OneDrive/Documents/sid-release.jks")
     }
   }
 
