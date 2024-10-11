@@ -1,0 +1,42 @@
+---
+title: PDF
+---
+
+# PDF configuration
+
+Launch a PDF preview from a defined HTML structure and Questionnaire Responses that contains data to be populated into the PDF. App user then can save that previewed PDF into their device as a file.
+
+:::info
+The [PDF Generation](https://docs.opensrp.io/engineering/app/configuring/pdf-generation) feature is responsible in populating data from Questionnaire Response to HTML.
+:::
+
+## Sample JSON
+
+```json
+{
+  "trigger": "ON_CLICK",
+  "workflow": "LAUNCH_PDF_GENERATION",
+  "pdfConfig": {
+    "title": "Depression Report",
+    "titleSuffix": "James",
+    "structureReference": "Binary/b1234",
+    "subjectReference": "Patient/p1234",
+    "questionnaireReferences": [
+      "Questionnaire/q1",
+      "Questionnaire/q2",
+      "Questionnaire/q3",
+      "Questionnaire/q4"
+    ]
+  }
+}
+```
+
+## Config properties
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+`title` | The saved PDF file title | No | `null` |
+`titleSuffix` | The saved PDF file title suffix; usually contains the subject name | No |  `null` |
+`structureReference` | The Binary resource that contains HTML structure of the PDF | Yes | `null` |
+`subjectReference` | The subject/patient/child who the answers from the Questionnaire Response apply to | Yes | `null` |
+`questionnaireReferences` | The Questionnaire resource that is related to a Questionnaire Response which contains data to be populated into the PDF | Yes | `[]` |
