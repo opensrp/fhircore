@@ -799,18 +799,6 @@ constructor(
     return Pair(customResourceSearchParams, fhirResourceSearchParams)
   }
 
-  inline fun <reified T : Configuration> transformConfiguration(
-    configJson: String
-  ): T {
-    return localizationHelper
-      .parseTemplate(
-        bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
-        locale = Locale.getDefault(),
-        template = configJson,
-      )
-      .decodeJson<T>(jsonInstance = json)
-  }
-
   companion object {
     const val BASE_CONFIG_PATH = "configs/%s"
     const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"
