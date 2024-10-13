@@ -72,6 +72,7 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
@@ -424,7 +425,7 @@ class RulesFactoryTest : RobolectricTest() {
   @Test
   fun mapResourceToLabeledCSVReturnsCorrectLabels() {
     val fhirPathExpression = "Patient.active and (Patient.birthDate >= today() - 5 'years')"
-    val resource = Patient().setActive(true).setBirthDate(LocalDate.parse("2019-10-03").toDate())
+    val resource = Patient().setActive(true).setBirthDate(Date().plusYears(-5))
 
     val result = rulesEngineService.mapResourceToLabeledCSV(resource, fhirPathExpression, "CHILD")
     Assert.assertEquals("CHILD", result)

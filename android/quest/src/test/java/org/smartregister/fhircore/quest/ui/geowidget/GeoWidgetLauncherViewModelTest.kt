@@ -16,9 +16,12 @@
 
 package org.smartregister.fhircore.quest.ui.geowidget
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
@@ -68,6 +71,8 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
 
+  private lateinit var applicationContext: Context
+
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var viewModel: GeoWidgetLauncherViewModel
   private val geoWidgetConfiguration =
@@ -98,6 +103,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
+    applicationContext = ApplicationProvider.getApplicationContext<HiltTestApplication>()
     viewModel =
       GeoWidgetLauncherViewModel(
         defaultRepository = defaultRepository,
@@ -105,13 +111,13 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferencesHelper,
         resourceDataRulesExecutor = resourceDataRulesExecutor,
         configurationRegistry = configurationRegistry,
+        context = applicationContext,
       )
-
     runBlocking { defaultRepository.addOrUpdate(resource = location) }
   }
 
   @Test
-  fun testShowNoLocationDialogShouldNotSetLiveDataValueWhenConfigIsNull() {
+  fun testShowNoLocationDialogShouldNotSetLiveDataValueWhenConfigIsNull() = runTest {
     val geoWidgetConfiguration =
       GeoWidgetConfiguration(
         appId = "appId",
@@ -132,7 +138,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testShowNoLocationDialogShouldSetLiveDataValueWhenConfigIsPresent() {
+  fun testShowNoLocationDialogShouldSetLiveDataValueWhenConfigIsPresent() = runTest {
     viewModel.showNoLocationDialog(geoWidgetConfiguration)
     val value = viewModel.noLocationFoundDialog.value
     assertNotNull(value)

@@ -6,7 +6,7 @@ OpenSRP supports device-to-device syncing through an additional library. To add 
 
 To enable P2P sync we need to make changes to enable viewing P2P UI elements and configure what to sync over P2P.
 
-### Navigation configurations
+### Example P2P configuration
 
 ```json
 {
@@ -41,7 +41,7 @@ actions |  Action to be performed when once clicks on the display above. See act
 DEVICE_TO_DEVICE_SYNC application workflow can be triggered via configurable actions as indicated in the sample navigation configuration above.
 :::
 
-#### Resources to sync
+### Resources to sync
 
 You also need to define which resources to be synced. This configuration should be added as part of [Application configuration](https://docs.opensrp.io/engineering/android-app/configuring/config-types/application)
 
@@ -63,5 +63,8 @@ You also need to define which resources to be synced. This configuration should 
     ]
 }
 ```
-This can be simplified by a sample workflow show on the image below.
+
+### Example P2P sync workflow
+
+The workflow below shows an example of syncronzing data from device to device.
 ![P2P_SYNC](/img/p2p.png)

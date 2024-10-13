@@ -98,12 +98,29 @@ interface ConfigService {
         description = "Search the status field"
       }
 
-    return listOf(activeGroupSearchParameter, flagStatusSearchParameter)
+    val medicationSortSearchParameter =
+      SearchParameter().apply {
+        url = MEDICATION_SORT_URL
+        addBase("Medication")
+        name = SORT_SEARCH_PARAM
+        code = SORT_SEARCH_PARAM
+        type = Enumerations.SearchParamType.NUMBER
+        expression = "Medication.extension.where(url = '$MEDICATION_SORT_URL').value"
+        description = "Search the sort field"
+      }
+
+    return listOf(
+      activeGroupSearchParameter,
+      flagStatusSearchParameter,
+      medicationSortSearchParameter,
+    )
   }
 
   companion object {
     const val ACTIVE_SEARCH_PARAM = "active"
     const val APP_VERSION = "AppVersion"
     const val STATUS_SEARCH_PARAM = "status"
+    const val SORT_SEARCH_PARAM = "sort"
+    const val MEDICATION_SORT_URL = "http://smartregister.org/SearchParameter/medication-sort"
   }
 }

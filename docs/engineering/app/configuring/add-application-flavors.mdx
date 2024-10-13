@@ -35,13 +35,17 @@ productFlavors {
 The product flavors are easily modigied to the specified app flavor e.g.
 
 ```
-create("afyayangu") {
+create("afyaYangu") {
       dimension = "apps"
-      applicationIdSuffix = ".afyayangu"
-      versionNameSuffix = "-afyayangu"
+      applicationIdSuffix = ".afyaYangu"
+      versionNameSuffix = "-afyaYangu"
       manifestPlaceholders["appLabel"] = "Afya Yangu"
     }
 ```
+
+:::tip
+Remember to use **[camelCase](https://en.wikipedia.org/wiki/Camel_case)** when adding the **flavor name** e.g `newFlavor`, **`applicationIdSuffix`** e.g `.newFlavor` and **`versionNameSuffix`** e.g `-newFlavor`
+:::
 
 ### Config properties of productFlavors
 |Property | Description | Required | Default |

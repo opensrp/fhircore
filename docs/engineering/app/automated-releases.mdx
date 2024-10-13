@@ -62,12 +62,15 @@ To add a flavor, add an entry to the `productFlavors` map in [`android/opensrp/b
 ```
 create("newFlavor") {
     dimension = "apps"
-    applicationIdSuffix = ".new-flavor"
-    versionNameSuffix = "-new-flavor"
+    applicationIdSuffix = ".newFlavor"
+    versionNameSuffix = "-newFlavor"
     manifestPlaceholders["appLabel"] = "New Flavor App Name"
 }
 ```
- Note, flavor names should always be camel cased
+
+:::tip
+Remember to use **[camelCase](https://en.wikipedia.org/wiki/Camel_case)** when adding the **flavor name** e.g `newFlavor`, **`applicationIdSuffix`** e.g `.newFlavor` and **`versionNameSuffix`** e.g `-newFlavor`
+:::
 
 You can add the following resources:
 

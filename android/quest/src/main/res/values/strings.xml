@@ -133,4 +133,6 @@
     <string name="scan_qr_camera_instruction">Place your camera over the entire QR Code to start scanning</string>
     <string name="failed_to_get_gps_location">Failed to get GPS location</string>
     <string name="space_asterisk" translatable="false">\u0020\u002a</string>
+    <string name="exit_app">Exit App</string>
+    <string name="exit_app_message">Are you sure you want to exit from the app?</string>
 </resources>
