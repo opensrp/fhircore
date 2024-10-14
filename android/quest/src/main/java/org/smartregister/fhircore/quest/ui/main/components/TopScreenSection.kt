@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.main.components
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,17 +41,13 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -113,6 +110,7 @@ fun TopScreenSection(
   performSearchOnValueChanged: Boolean = true,
   isFilterIconEnabled: Boolean = false,
   topScreenSection: TopScreenSectionConfig? = null,
+  decodeImage: ((String) -> Bitmap?)?,
   onClick: (ToolbarClickEvent) -> Unit = {},
 ) {
   val currentContext = LocalContext.current
@@ -140,7 +138,7 @@ fun TopScreenSection(
       Icon(
         when (toolBarHomeNavigation) {
           ToolBarHomeNavigation.OPEN_DRAWER -> Icons.Filled.Menu
-          ToolBarHomeNavigation.NAVIGATE_BACK -> Icons.Filled.ArrowBack
+          ToolBarHomeNavigation.NAVIGATE_BACK -> Icons.AutoMirrored.Filled.ArrowBack
         },
         contentDescription = DRAWER_MENU,
         tint = Color.White,
@@ -157,7 +155,13 @@ fun TopScreenSection(
       // if menu icons are more than two then we will add a overflow menu for other menu icons
       // to support m3 guidelines
       // https://m3.material.io/components/top-app-bar/guidelines#b1b64842-7d88-4c3f-8ffb-4183fe648c9e
-      SetupToolbarIcons(topScreenSection?.menuIcons, navController, modifier, onClick)
+      SetupToolbarIcons(
+        menuIcons = topScreenSection?.menuIcons,
+        navController = navController,
+        modifier = modifier,
+        onClick = onClick,
+        decodeImage = decodeImage,
+      )
 
       if (isFilterIconEnabled) Spacer(modifier = Modifier.width(24.dp))
 
@@ -237,9 +241,7 @@ fun TopScreenSection(
             when {
               !searchQuery.isBlank() -> {
                 IconButton(
-                  onClick = {
-                    onSearchTextChanged(SearchQuery.emptyText, performSearchOnValueChanged)
-                  },
+                  onClick = { onSearchTextChanged(SearchQuery.emptyText, true) },
                   modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
                 ) {
                   Icon(
@@ -289,18 +291,17 @@ fun SetupToolbarIcons(
   navController: NavController,
   modifier: Modifier,
   onClick: (ToolbarClickEvent) -> Unit,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   if (menuIcons?.isNotEmpty() == true && menuIcons.size > 2) {
-    var menuExpanded by remember { mutableStateOf(false) }
     Row {
       RenderMenuIcons(
         menuIcons = menuIcons.take(2),
         navController = navController,
         modifier = modifier,
         onClick = onClick,
+        decodeImage = decodeImage,
       )
-      // FIXME - Do not use material 3 library for now. We have to use dropdown menu to render the
-      // other menu icons
     }
   } else {
     menuIcons?.let {
@@ -309,6 +310,7 @@ fun SetupToolbarIcons(
         navController = navController,
         modifier = modifier,
         onClick = onClick,
+        decodeImage = decodeImage,
       )
     }
   }
@@ -320,6 +322,7 @@ fun RenderMenuIcons(
   navController: NavController,
   modifier: Modifier,
   onClick: (ToolbarClickEvent) -> Unit,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
     items(menuIcons) {
@@ -331,6 +334,7 @@ fun RenderMenuIcons(
           modifier
             .clickable { onClick(ToolbarClickEvent.Actions(it.actions)) }
             .testTag(TOP_ROW_TOGGLE_ICON_TEST_tAG),
+        decodeImage = decodeImage,
       )
     }
   }
@@ -361,6 +365,7 @@ fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
           ),
       ),
     navController = rememberNavController(),
+    decodeImage = null,
   )
 }
 
@@ -377,6 +382,7 @@ fun TopScreenSectionWithFilterCountNinetyNinePreview() {
     onClick = {},
     isSearchBarVisible = true,
     navController = rememberNavController(),
+    decodeImage = null,
   )
 }
 
@@ -401,6 +407,7 @@ fun TopScreenSectionNoFilterIconPreview() {
             ImageProperties(imageConfig = ImageConfig(reference = "ic_service_points")),
           ),
       ),
+    decodeImage = null,
   )
 }
 
@@ -426,6 +433,7 @@ fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
             ImageProperties(imageConfig = ImageConfig(reference = "ic_service_points")),
           ),
       ),
+    decodeImage = null,
   )
 }
 
@@ -442,5 +450,6 @@ fun TopScreenSectionWithToggleIconPreview() {
     onClick = {},
     isSearchBarVisible = true,
     navController = rememberNavController(),
+    decodeImage = null,
   )
 }

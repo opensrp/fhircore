@@ -35,8 +35,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -70,7 +68,7 @@ fun List(
   viewProperties: ListProperties,
   resourceData: ResourceData,
   navController: NavController,
-  decodedImageMap: SnapshotStateMap<String, Bitmap> = mutableStateMapOf(),
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   val density = LocalDensity.current
   val currentListResourceData = resourceData.listResourceDataMap?.get(viewProperties.id)
@@ -138,7 +136,7 @@ fun List(
                       viewProperties = interpolatedChildViewProperties,
                       resourceData = listResourceData,
                       navController = navController,
-                      decodedImageMap = decodedImageMap,
+                      decodeImage = decodeImage,
                       areViewPropertiesInterpolated =
                         true, // Prevents double interpolation (in this function and inside the
                       // ViewRenderer) which is a waste
@@ -161,7 +159,7 @@ fun List(
                 viewProperties = viewProperties.registerCard.views,
                 resourceData = listResourceData,
                 navController = navController,
-                decodedImageMap = mutableStateMapOf(),
+                decodeImage = decodeImage,
               )
             }
           }
@@ -231,6 +229,7 @@ private fun ListWithHorizontalOrientationPreview() {
           baseResourceType = ResourceType.Patient,
           computedValuesMap = emptyMap(),
         ),
+      decodeImage = null,
     )
   }
 }
@@ -282,6 +281,7 @@ private fun ListWithVerticalOrientationPreview() {
           baseResourceType = ResourceType.Patient,
           computedValuesMap = emptyMap(),
         ),
+      decodeImage = null,
     )
   }
 }

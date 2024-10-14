@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import com.google.android.fhir.datacapture.extensions.logicalId
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Resource
 import org.jeasy.rules.api.Facts
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
@@ -29,7 +30,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
-import javax.inject.Inject
 
 /**
  * This class is used to fire rules used to extract and manipulate data from FHIR resources.
@@ -115,7 +115,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
     this.forEach { baseListResource ->
       val relatedResourcesQueue =
         ArrayDeque<Pair<Resource, List<ListResourceConfig>>>().apply {
-          addFirst(Pair(baseListResource, listOf(listResourceConfig)))
+          addFirst(Pair(baseListResource, listResourceConfig.relatedResources))
         }
 
       val listItemRelatedResources = mutableMapOf<String, List<Resource>>()

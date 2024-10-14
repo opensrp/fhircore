@@ -69,4 +69,5 @@ data class ListResourceConfig(
   val sortConfig: SortConfig? = null,
   val fhirPathExpression: String? = null,
   val relatedResources: List<ListResourceConfig> = emptyList(),
+  val isRevInclude: Boolean = true,
 ) : Parcelable, java.io.Serializable

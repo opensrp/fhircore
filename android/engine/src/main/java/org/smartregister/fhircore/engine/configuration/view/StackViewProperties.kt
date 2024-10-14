@@ -36,7 +36,7 @@ data class StackViewProperties(
   override val clickable: String = "false",
   override val visible: String = "true",
   val opacity: Float = 0f,
-  val size: Int? = 0,
+  val size: Int = 0,
   val children: List<ViewProperties> = emptyList(),
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): StackViewProperties {
