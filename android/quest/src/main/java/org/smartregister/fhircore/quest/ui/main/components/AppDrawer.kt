@@ -529,7 +529,8 @@ private fun SideMenuItem(
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(
-      modifier = modifier.padding(end = 16.dp).testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG),
+      modifier =
+        modifier.padding(end = 16.dp).testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).weight(1f),
       verticalAlignment = Alignment.CenterVertically,
     ) {
       if (startIcon != null) {
@@ -585,6 +586,7 @@ private fun SideMenuItemText(
     text = title,
     color = textColor,
     fontSize = textSize.sp,
+    overflow = TextOverflow.Ellipsis,
     fontWeight = if (boldText) FontWeight.Bold else FontWeight.Normal,
     modifier = Modifier.testTag(SIDE_MENU_ITEM_TEXT_TEST_TAG),
   )
