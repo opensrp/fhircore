@@ -92,7 +92,7 @@ fun MeasureReport.StratifierGroupComponent.findPercentage(
 ): String {
   return if (denominator == 0) {
     "0"
-  } else
+  } else {
     findPopulation(MeasurePopulationType.NUMERATOR)
       ?.count
       ?.toBigDecimal()
@@ -103,6 +103,7 @@ fun MeasureReport.StratifierGroupComponent.findPercentage(
         reportConfiguration?.roundingStrategy?.value ?: DEFAULT_ROUNDING_STRATEGY.value,
       )
       .toString()
+  }
 }
 
 val MeasureReport.StratifierGroupComponent.displayText
@@ -165,5 +166,5 @@ suspend inline fun FhirEngine.retrievePreviouslyGeneratedMeasureReports(
   search.filter(MeasureReport.MEASURE, { value = measureUrl })
   subjects.forEach { search.filter(MeasureReport.SUBJECT, { value = it }) }
 
-  return this.search<MeasureReport>(search).map { it.resource }
+  return this.batchedSearch<MeasureReport>(search).map { it.resource }
 }

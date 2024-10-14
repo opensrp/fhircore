@@ -321,11 +321,18 @@ android {
       manifestPlaceholders["appLabel"] = "PSI WFA"
     }
 
-    create("eusm") {
+    create("eusmMg") {
       dimension = "apps"
-      applicationIdSuffix = ".eusm"
-      versionNameSuffix = "-eusm"
-      manifestPlaceholders["appLabel"] = "EUSM"
+      applicationIdSuffix = ".eusmMg"
+      versionNameSuffix = "-eusmMg"
+      manifestPlaceholders["appLabel"] = "EUSM Madagascar"
+    }
+
+    create("eusmBi") {
+      dimension = "apps"
+      applicationIdSuffix = ".eusmBi"
+      versionNameSuffix = "-eusmBi"
+      manifestPlaceholders["appLabel"] = "EUSM Burundi"
     }
 
     create("demoEir") {
@@ -425,6 +432,7 @@ tasks.withType<Test> {
 configurations { all { exclude(group = "xpp3") } }
 
 dependencies {
+  implementation(libs.gms.play.services.location)
   coreLibraryDesugaring(libs.core.desugar)
 
   // Application dependencies
@@ -435,7 +443,6 @@ dependencies {
   implementation(libs.material)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
-  implementation(libs.gms.play.services.location)
   implementation(libs.mlkit.barcode.scanning)
 
   implementation(libs.bundles.cameraX)

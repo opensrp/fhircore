@@ -85,8 +85,8 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMonthPeriodWorker
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
-import org.smartregister.fhircore.quest.util.extensions.decodeBinaryResourcesToBitmap
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import org.smartregister.fhircore.quest.util.extensions.resourceReferenceToBitMap
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
 
 @HiltViewModel
@@ -134,18 +134,20 @@ constructor(
   }
 
   fun retrieveIconsAsBitmap() {
-    navigationConfiguration.clientRegisters
-      .asSequence()
-      .filter {
-        it.menuIconConfig != null &&
-          it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
-          !it.menuIconConfig!!.reference.isNullOrEmpty()
-      }
-      .decodeBinaryResourcesToBitmap(
-        viewModelScope,
-        registerRepository,
-        configurationRegistry.decodedImageMap,
-      )
+    viewModelScope.launch(dispatcherProvider.io()) {
+      navigationConfiguration.clientRegisters
+        .asSequence()
+        .filter {
+          it.menuIconConfig != null &&
+            it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
+            !it.menuIconConfig?.reference.isNullOrBlank()
+        }
+        .mapNotNull { it.menuIconConfig!!.reference }
+        .resourceReferenceToBitMap(
+          fhirEngine = fhirEngine,
+          decodedImageMap = configurationRegistry.decodedImageMap,
+        )
+    }
   }
 
   fun retrieveAppMainUiState(refreshAll: Boolean = true) {
@@ -290,11 +292,15 @@ constructor(
           NavigationArg.SCREEN_TITLE to
             if (startDestinationConfig.screenTitle.isNullOrEmpty()) {
               topMenuConfig.display
-            } else startDestinationConfig.screenTitle,
+            } else {
+              startDestinationConfig.screenTitle
+            },
           NavigationArg.REGISTER_ID to
             if (startDestinationConfig.id.isNullOrEmpty()) {
               clickAction?.id ?: topMenuConfig.id
-            } else startDestinationConfig.id,
+            } else {
+              startDestinationConfig.id
+            },
         )
       }
       LauncherType.MAP -> bundleOf(NavigationArg.GEO_WIDGET_ID to startDestinationConfig.id)

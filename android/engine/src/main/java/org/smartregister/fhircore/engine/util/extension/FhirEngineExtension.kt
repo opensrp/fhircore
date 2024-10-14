@@ -18,9 +18,10 @@ package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.util.UrlUtil
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.google.android.fhir.search.search
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.IdType
@@ -40,7 +41,7 @@ suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: St
 }
 
 suspend fun FhirEngine.searchCompositionByIdentifier(identifier: String): Composition? =
-  this.search<Composition> {
+  this.batchedSearch<Composition> {
       filter(Composition.IDENTIFIER, { value = of(Identifier().apply { value = identifier }) })
     }
     .map { it.resource }
@@ -50,7 +51,9 @@ suspend fun FhirEngine.loadLibraryAtPath(fhirOperator: FhirOperator, path: Strin
   // resource path could be Library/123 OR something like http://fhir.labs.common/Library/123
   val library =
     runCatching { get<Library>(IdType(path).idPart) }.getOrNull()
-      ?: search<Library> { filter(Library.URL, { value = path }) }.map { it.resource }.firstOrNull()
+      ?: batchedSearch<Library> { filter(Library.URL, { value = path }) }
+        .map { it.resource }
+        .firstOrNull()
 }
 
 suspend fun FhirEngine.loadLibraryAtPath(
@@ -72,7 +75,7 @@ suspend fun FhirEngine.loadCqlLibraryBundle(fhirOperator: FhirOperator, measureP
     // resource path could be Measure/123 OR something like http://fhir.labs.common/Measure/123
     val measure: Measure? =
       if (UrlUtil.isValid(measurePath)) {
-        search<Measure> { filter(Measure.URL, { value = measurePath }) }
+        batchedSearch<Measure> { filter(Measure.URL, { value = measurePath }) }
           .map { it.resource }
           .firstOrNull()
       } else {
@@ -93,3 +96,29 @@ suspend fun FhirEngine.countUnSyncedResources() =
     .groupingBy { it.resourceType.spaceByUppercase() }
     .eachCount()
     .map { it.key to it.value }
+
+suspend fun <R : Resource> FhirEngine.batchedSearch(search: Search) =
+  if (search.count != null) {
+    this.search<R>(search)
+  } else {
+    val result = mutableListOf<SearchResult<R>>()
+    var offset = search.from ?: 0
+    val pageCount = 100
+    do {
+      search.from = offset
+      search.count = pageCount
+      val searchResults = this.search<R>(search)
+      result += searchResults
+      offset += searchResults.size
+    } while (searchResults.size == pageCount)
+
+    result
+  }
+
+suspend inline fun <reified R : Resource> FhirEngine.batchedSearch(
+  init: Search.() -> Unit,
+): List<SearchResult<R>> {
+  val search = Search(type = R::class.java.newInstance().resourceType)
+  search.init()
+  return this.batchedSearch<R>(search)
+}

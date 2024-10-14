@@ -27,10 +27,14 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import java.io.File
+import java.io.FileInputStream
 import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @InstallIn(SingletonComponent::class)
@@ -39,10 +43,29 @@ class CoreModule {
 
   @Singleton
   @Provides
-  fun provideWorkerContextProvider(): SimpleWorkerContext =
+  fun provideWorkerContextProvider(@ApplicationContext context: Context): SimpleWorkerContext =
     SimpleWorkerContext().apply {
       setExpansionProfile(Parameters())
       isCanRunWithoutTerminology = true
+      context.filesDir
+        .resolve(ConfigurationRegistry.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER)
+        .list()
+        ?.forEach { resourceFolder ->
+          context.filesDir
+            .resolve("${ConfigurationRegistry.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/$resourceFolder")
+            .list()
+            ?.forEach { file ->
+              cacheResource(
+                FhirContext.forR4Cached()
+                  .newJsonParser()
+                  .parseResource(
+                    FileInputStream(
+                      File(context.filesDir.resolve("km/$resourceFolder/$file").toString()),
+                    ),
+                  ) as Resource,
+              )
+            }
+        }
     }
 
   @Singleton

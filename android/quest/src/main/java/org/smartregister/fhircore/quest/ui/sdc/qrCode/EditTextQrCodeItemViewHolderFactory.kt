@@ -92,9 +92,10 @@ internal class EditTextQrCodeItemViewHolderFactory(
           editable.toString().let {
             if (it.isBlank()) {
               null
-            } else
+            } else {
               QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
                 .setValue(StringType(it))
+            }
           }
 
         qrCodeAnswerChangeListener.onQrCodeChanged(

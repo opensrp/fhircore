@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.data.local.register
 import android.content.Context
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
@@ -40,7 +39,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import timber.log.Timber
 
 class RegisterRepository
 @Inject
@@ -93,29 +91,20 @@ constructor(
     fhirResourceConfig: FhirResourceConfig?,
     paramsMap: Map<String, String>?,
   ): Long {
-    val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
-    val fhirResource = fhirResourceConfig ?: registerConfiguration.fhirResource
-    val baseResourceConfig = fhirResource.baseResource
-    val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
-    val filterByRelatedEntityLocation = registerConfiguration.filterDataByRelatedEntityLocation
-    val search =
-      Search(baseResourceConfig.resource).apply {
-        applyConfiguredSortAndFilters(
-          resourceConfig = baseResourceConfig,
-          sortData = false,
-          filterActiveResources = registerConfiguration.activeResourceFilters,
-          configComputedRuleValues = configComputedRuleValues,
-        )
-        applyFilterByRelatedEntityLocationMetaTag(
-          baseResourceType = baseResourceConfig.resource,
-          filterByRelatedEntityLocation = filterByRelatedEntityLocation,
-        )
-      }
-    return search.count(
-      onFailure = {
-        Timber.e(it, "Error counting register data for register id: ${registerConfiguration.id}")
-      },
-    )
+    return withContext(dispatcherProvider.io()) {
+      val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
+      val fhirResource = fhirResourceConfig ?: registerConfiguration.fhirResource
+      val baseResourceConfig = fhirResource.baseResource
+      val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
+      val filterByRelatedEntityLocation = registerConfiguration.filterDataByRelatedEntityLocation
+      val filterActiveResources = registerConfiguration.activeResourceFilters
+      countResources(
+        filterByRelatedEntityLocation = filterByRelatedEntityLocation,
+        baseResourceConfig = baseResourceConfig,
+        filterActiveResources = filterActiveResources,
+        configComputedRuleValues = configComputedRuleValues,
+      )
+    }
   }
 
   override suspend fun loadProfileData(
@@ -145,9 +134,8 @@ constructor(
 
       val retrievedRelatedResources =
         retrieveRelatedResources(
-          resources = listOf(baseResource),
+          resource = baseResource,
           relatedResourcesConfigs = resourceConfig.relatedResources,
-          relatedResourceWrapper = RelatedResourceWrapper(),
           configComputedRuleValues = configComputedRuleValues,
         )
 
