@@ -1070,14 +1070,20 @@ constructor(
         if (currentPage != null && pageSize != null) {
           val fromIndex = currentPage * pageSize
           val toIndex = (currentPage + 1) * pageSize
-          with(searchResults.subList(fromIndex, min(toIndex, searchResults.size))) {
-            mapResourceToRepositoryResourceData(
-              relatedResourcesConfig = relatedResourcesConfig,
-              configComputedRuleValues = configComputedRuleValues,
-              secondaryResourceConfigs = secondaryResourceConfigs,
-              filterActiveResources = filterActiveResources,
-              baseResourceConfig = baseResourceConfig,
-            )
+          val maxSublistIndex = min(toIndex, searchResults.size)
+
+          if (fromIndex < maxSublistIndex) {
+            with(searchResults.subList(fromIndex, maxSublistIndex)) {
+              mapResourceToRepositoryResourceData(
+                relatedResourcesConfig = relatedResourcesConfig,
+                configComputedRuleValues = configComputedRuleValues,
+                secondaryResourceConfigs = secondaryResourceConfigs,
+                filterActiveResources = filterActiveResources,
+                baseResourceConfig = baseResourceConfig,
+              )
+            }
+          } else {
+            emptyList()
           }
         } else {
           searchResults.mapResourceToRepositoryResourceData(
