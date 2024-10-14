@@ -183,6 +183,7 @@ constructor(
       relatedResourceKey: String,
       referenceFhirPathExpression: String?,
       relatedResourcesMap: Map<String, List<Resource>>? = null,
+      isRevInclude: Boolean = true,
     ): List<Resource> {
       val value: List<Resource> =
         relatedResourcesMap?.get(relatedResourceKey)
@@ -192,14 +193,23 @@ constructor(
             emptyList()
           }
 
-      return if (referenceFhirPathExpression.isNullOrEmpty()) {
-        value
+      if (referenceFhirPathExpression.isNullOrEmpty()) {
+        return value
+      }
+
+      // Reverse search; look for related resource that references the provided resource
+      return if (isRevInclude) {
+        value.filter { res ->
+          fhirPathDataExtractor.extractData(res, referenceFhirPathExpression).all {
+            resource.logicalId == it.primitiveValue().extractLogicalIdUuid()
+          }
+        }
       } else {
-        value.filter {
-          resource.logicalId ==
-            fhirPathDataExtractor
-              .extractValue(it, referenceFhirPathExpression)
-              .extractLogicalIdUuid()
+        // Forward search; extract value provided resource, then search resources with matching id
+        value.filter { res ->
+          fhirPathDataExtractor.extractData(resource, referenceFhirPathExpression).all {
+            res.logicalId == it.primitiveValue().extractLogicalIdUuid()
+          }
         }
       }
     }
