@@ -160,9 +160,6 @@ class FCTContentProvider : ContentProvider() {
             EXECUTE_WORKFLOW -> {
                 val workflowExecutor = WorkflowExecutor(
                     context!!,
-                    fhirEngine,
-                    fhirPathEngine,
-                    transformSupportService,
                     workflowCarePlanGenerator
                 )
                 workflowExecutor.execute(decompressArg)
