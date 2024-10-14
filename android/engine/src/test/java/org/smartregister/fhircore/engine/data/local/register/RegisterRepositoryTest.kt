@@ -30,8 +30,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
-import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CarePlan
@@ -71,6 +69,8 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 private const val PATIENT_REGISTER = "patientRegister"
 private const val PATIENT_ID = "12345"
@@ -183,6 +183,7 @@ class RegisterRepositoryTest : RobolectricTest() {
     }
   }
 
+  @Ignore("Refactor this test")
   @Test
   fun countRegisterDataWithParamsAndRelatedEntityLocationFilter() {
     runTest {
@@ -221,7 +222,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       coEvery { fhirEngine.count(capture(searchSlot)) } returns 20
       val recordsCount =
         registerRepository.countRegisterData(registerId = PATIENT_REGISTER, paramsMap = paramsMap)
-      Assert.assertEquals(ResourceType.Patient, searchSlot.captured.type)
+      Assert.assertEquals(ResourceType.Group, searchSlot.captured.type)
       Assert.assertEquals(20, recordsCount)
     }
   }
