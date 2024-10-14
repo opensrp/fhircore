@@ -95,7 +95,7 @@ fun UserSettingInsightScreen(
   unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
   navController: NavController,
   onRefreshRequest: () -> Unit,
-  dateFormat: String,
+  dateFormat: String = DEFAULT_FORMAT_SDF_DD_MM_YYYY,
 ) {
   val unsyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
 

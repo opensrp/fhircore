@@ -117,7 +117,7 @@ class UserSettingInsightScreenTest {
           buildDate = "29 jan 2023",
           unsyncedResourcesFlow = unsyncedResourcesFlow,
           navController = rememberNavController(),
-          onRefreshRequest = {},
+          onRefreshRequest = {}
         )
       }
       this.activity = activity
