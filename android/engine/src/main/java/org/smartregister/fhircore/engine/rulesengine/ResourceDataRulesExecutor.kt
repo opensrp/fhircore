@@ -116,7 +116,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
     this.forEach { baseListResource ->
       val relatedResourcesQueue =
         ArrayDeque<Pair<Resource, List<ListResourceConfig>>>().apply {
-          addFirst(Pair(baseListResource, listOf(listResourceConfig)))
+          addFirst(Pair(baseListResource, listResourceConfig.relatedResources))
         }
 
       val listItemRelatedResources = mutableMapOf<String, List<Resource>>()

@@ -183,6 +183,50 @@ class RegisterRepositoryTest : RobolectricTest() {
     }
   }
 
+  @Ignore("Refactor this test")
+  @Test
+  fun countRegisterDataWithParamsAndRelatedEntityLocationFilter() {
+    runTest {
+      val paramsList =
+        arrayListOf(
+          ActionParameter(
+            key = "paramsName",
+            paramType = ActionParameterType.PARAMDATA,
+            value = "testing1",
+            dataType = DataType.STRING,
+            linkId = null,
+          ),
+          ActionParameter(
+            key = "paramName2",
+            paramType = ActionParameterType.PARAMDATA,
+            value = "testing2",
+            dataType = DataType.STRING,
+            linkId = null,
+          ),
+        )
+      paramsList
+        .asSequence()
+        .filter { it.paramType == ActionParameterType.PARAMDATA && it.value.isNotEmpty() }
+        .associate { it.key to it.value }
+      val paramsMap = emptyMap<String, String>()
+      val searchSlot = slot<Search>()
+      every {
+        registerRepository.retrieveRegisterConfiguration(PATIENT_REGISTER, emptyMap())
+      } returns
+        RegisterConfiguration(
+          appId = "app",
+          id = PATIENT_REGISTER,
+          fhirResource = fhirResourceConfig(),
+          filterDataByRelatedEntityLocation = true,
+        )
+      coEvery { fhirEngine.count(capture(searchSlot)) } returns 20
+      val recordsCount =
+        registerRepository.countRegisterData(registerId = PATIENT_REGISTER, paramsMap = paramsMap)
+      Assert.assertEquals(ResourceType.Group, searchSlot.captured.type)
+      Assert.assertEquals(20, recordsCount)
+    }
+  }
+
   @Test
   fun testLoadRegisterDataWithForwardAndReverseIncludedResources() =
     runTest(timeout = 90.seconds) {

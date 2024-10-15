@@ -21,8 +21,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -44,15 +42,15 @@ fun StackView(
   stackViewProperties: StackViewProperties,
   resourceData: ResourceData,
   navController: NavController,
-  decodedImageMap: SnapshotStateMap<String, Bitmap> = mutableStateMapOf(),
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   val backgroundColor = stackViewProperties.backgroundColor.parseColor()
-  val size = stackViewProperties.size
 
   Box(
     modifier =
-      Modifier.background(backgroundColor.copy(alpha = stackViewProperties.opacity))
-        .size(size!!.dp)
+      modifier
+        .background(backgroundColor.copy(alpha = stackViewProperties.opacity))
+        .size(stackViewProperties.size.dp)
         .testTag(STACK_VIEW_TEST_TAG),
     contentAlignment = castViewAlignment(stackViewProperties.alignment),
   ) {
@@ -62,7 +60,7 @@ fun StackView(
         properties = child.interpolate(resourceData.computedValuesMap),
         resourceData = resourceData,
         navController = navController,
-        decodedImageMap = decodedImageMap,
+        decodeImage = decodeImage,
       )
     }
   }
@@ -101,5 +99,6 @@ private fun PreviewStack() {
         baseResourceType = ResourceType.Patient,
         computedValuesMap = emptyMap(),
       ),
+    decodeImage = null,
   )
 }

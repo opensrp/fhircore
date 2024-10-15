@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -40,7 +41,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -83,6 +83,7 @@ fun ServiceCard(
   serviceCardProperties: ServiceCardProperties,
   resourceData: ResourceData,
   navController: NavController,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   val serviceMemberIconsTint = serviceCardProperties.serviceMemberIconsTint.parseColor()
   if (serviceCardProperties.showVerticalDivider) {
@@ -125,6 +126,7 @@ fun ServiceCard(
         serviceCardProperties = serviceCardProperties,
         navController = navController,
         resourceData = resourceData,
+        decodeImage = decodeImage,
       )
     }
   } else {
@@ -162,6 +164,7 @@ fun ServiceCard(
         serviceCardProperties = serviceCardProperties,
         navController = navController,
         resourceData = resourceData,
+        decodeImage = decodeImage,
       )
     }
   }
@@ -204,9 +207,7 @@ private fun RowScope.RenderDetails(
         horizontalArrangement = Arrangement.End,
       ) {
         memberIcons.forEach {
-          if (
-            it.isNotEmpty() && ServiceMemberIcon.values().map { icon -> icon.name }.contains(it)
-          ) {
+          if (it.isNotEmpty() && ServiceMemberIcon.entries.map { icon -> icon.name }.contains(it)) {
             Icon(
               painter = painterResource(id = ServiceMemberIcon.valueOf(it).icon),
               contentDescription = null,
@@ -244,6 +245,7 @@ private fun RowScope.RenderActionButtons(
   serviceCardProperties: ServiceCardProperties,
   navController: NavController,
   resourceData: ResourceData,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   Box(modifier = Modifier.weight(weight).padding(start = 6.dp)) {
     if (serviceCardProperties.serviceButton != null || serviceCardProperties.services != null) {
@@ -261,6 +263,7 @@ private fun RowScope.RenderActionButtons(
                 buttonProperties = serviceCardProperties.serviceButton!!,
                 resourceData = resourceData,
                 navController = navController,
+                decodeImage = decodeImage,
               )
             }
           }
@@ -283,6 +286,7 @@ private fun RowScope.RenderActionButtons(
                 buttonProperties = buttonProperties,
                 resourceData = resourceData,
                 navController = navController,
+                decodeImage = decodeImage,
               )
             }
           }
@@ -410,7 +414,7 @@ private fun ServiceCardServiceOverduePreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
-      decodedImageMap = remember { mutableStateMapOf() },
+      decodeImage = null,
     )
   }
 }
@@ -466,7 +470,7 @@ private fun ServiceCardServiceOverdueWithBackgroundColorPreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
-      decodedImageMap = remember { mutableStateMapOf() },
+      decodeImage = null,
     )
   }
 }
@@ -522,7 +526,7 @@ private fun ServiceCardServiceOverdueWithNoBackgroundColorAndStatusPreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
-      decodedImageMap = remember { mutableStateMapOf() },
+      decodeImage = null,
     )
   }
 }
@@ -578,7 +582,7 @@ private fun ServiceCardServiceDuePreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
-      decodedImageMap = remember { mutableStateMapOf() },
+      decodeImage = null,
     )
   }
 }
@@ -633,7 +637,7 @@ private fun ServiceCardServiceUpcomingPreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
-      decodedImageMap = remember { mutableStateMapOf() },
+      decodeImage = null,
     )
   }
 }
@@ -669,7 +673,7 @@ private fun ServiceCardServiceFamilyMemberPreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
-      decodedImageMap = remember { mutableStateMapOf() },
+      decodeImage = null,
     )
   }
 }
@@ -715,7 +719,7 @@ private fun ServiceCardServiceWithTinyServiceButtonPreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
-      decodedImageMap = remember { mutableStateMapOf() },
+      decodeImage = null,
     )
   }
 }
@@ -769,7 +773,7 @@ private fun ServiceCardServiceCompletedPreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
-      decodedImageMap = remember { mutableStateMapOf() },
+      decodeImage = null,
     )
   }
 }
@@ -817,7 +821,7 @@ private fun ServiceCardANCServiceDuePreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
-      decodedImageMap = remember { mutableStateMapOf() },
+      decodeImage = null,
     )
   }
 }
@@ -875,7 +879,7 @@ private fun ServiceCardANCServiceOverduePreview() {
       viewProperties = viewProperties,
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
-      decodedImageMap = remember { mutableStateMapOf() },
+      decodeImage = null,
     )
   }
 }

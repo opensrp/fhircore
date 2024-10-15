@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.geowidget
 
+import android.graphics.Bitmap
 import android.view.View
 import android.widget.FrameLayout
 import androidx.compose.foundation.layout.Box
@@ -58,6 +59,7 @@ fun GeoWidgetLauncherScreen(
   search: (String) -> Unit,
   isFirstTimeSync: Boolean,
   appDrawerUIState: AppDrawerUIState,
+  decodeImage: ((String) -> Bitmap?)?,
   onAppMainEvent: (AppMainEvent) -> Unit,
 ) {
   val context = LocalContext.current
@@ -87,6 +89,7 @@ fun GeoWidgetLauncherScreen(
           isFilterIconEnabled = false,
           topScreenSection = geoWidgetConfiguration.topScreenSection,
           navController = navController,
+          decodeImage = decodeImage,
         ) { event ->
           when (event) {
             ToolbarClickEvent.Navigate ->
