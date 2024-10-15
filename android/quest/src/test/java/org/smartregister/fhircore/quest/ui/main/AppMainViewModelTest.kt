@@ -185,7 +185,7 @@ class AppMainViewModelTest : RobolectricTest() {
     )
     Assert.assertEquals(
       appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp),
-      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null),
+      appMainViewModel.getSyncTime(),
     )
     coVerify { appMainViewModel.retrieveAppMainUiState() }
   }
