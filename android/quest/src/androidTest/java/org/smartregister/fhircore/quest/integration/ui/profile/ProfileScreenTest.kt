@@ -77,6 +77,7 @@ class ProfileScreenTest {
           profileUiState = profileUiState,
           snackStateFlow = snackBarStateFlow,
           onEvent = {},
+          decodeImage = null,
         )
       }
     }
