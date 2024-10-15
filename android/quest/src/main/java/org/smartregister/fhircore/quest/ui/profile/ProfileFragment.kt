@@ -63,20 +63,17 @@ class ProfileFragment : Fragment() {
     with(profileFragmentArgs) {
       lifecycleScope.launch {
         profileViewModel.run {
-          decodeBinaryResourceIconsToBitmap(profileId)
           retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
         }
       }
     }
 
     profileViewModel.refreshProfileDataLiveData.observe(viewLifecycleOwner) {
-      viewLifecycleOwner.lifecycleScope.launch {
-        if (it == true) {
-          with(profileFragmentArgs) {
-            profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
-          }
-          profileViewModel.refreshProfileDataLiveData.value = null
+      if (it == true) {
+        with(profileFragmentArgs) {
+          profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
         }
+        profileViewModel.refreshProfileDataLiveData.value = null
       }
     }
 
@@ -87,9 +84,9 @@ class ProfileFragment : Fragment() {
           ProfileScreen(
             navController = findNavController(),
             profileUiState = profileViewModel.profileUiState.value,
-            onEvent = profileViewModel::onEvent,
             snackStateFlow = profileViewModel.snackBarStateFlow,
-            decodedImageMap = configurationRegistry.decodedImageMap,
+            onEvent = profileViewModel::onEvent,
+            decodeImage = { profileViewModel.getImageBitmap(it) },
           )
         }
       }

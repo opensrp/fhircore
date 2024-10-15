@@ -52,7 +52,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.SyncStrategy
-import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
@@ -86,7 +85,6 @@ import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMo
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
-import org.smartregister.fhircore.quest.util.extensions.resourceReferenceToBitMap
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
 
 @HiltViewModel
@@ -131,23 +129,6 @@ constructor(
 
   private val measureReportConfigurations: List<MeasureReportConfiguration> by lazy {
     configurationRegistry.retrieveConfigurations(ConfigType.MeasureReport)
-  }
-
-  fun retrieveIconsAsBitmap() {
-    viewModelScope.launch(dispatcherProvider.io()) {
-      navigationConfiguration.clientRegisters
-        .asSequence()
-        .filter {
-          it.menuIconConfig != null &&
-            it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
-            !it.menuIconConfig?.reference.isNullOrBlank()
-        }
-        .mapNotNull { it.menuIconConfig!!.reference }
-        .resourceReferenceToBitMap(
-          fhirEngine = fhirEngine,
-          decodedImageMap = configurationRegistry.decodedImageMap,
-        )
-    }
   }
 
   fun retrieveAppMainUiState(refreshAll: Boolean = true) {
