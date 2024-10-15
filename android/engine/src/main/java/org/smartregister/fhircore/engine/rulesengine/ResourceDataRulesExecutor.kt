@@ -30,6 +30,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 /**
  * This class is used to fire rules used to extract and manipulate data from FHIR resources.
@@ -73,7 +74,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
     listResourceDataStateMap: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
   ) {
     listProperties.resources.forEach { listResource ->
-      filteredListResources(relatedResourcesMap, listResource)
+      filteredListResources(relatedResourcesMap, listResource, computedValuesMap)
         .mapToResourceData(
           listResourceConfig = listResource,
           relatedResourcesMap = relatedResourcesMap,
@@ -133,11 +134,14 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
                 relatedResourcesMap = relatedResourcesMap,
               )
             }
+
+          val interpolatedConditionalFhirPathExpression =
+            relatedListResourceConfig.conditionalFhirPathExpression?.interpolate(computedValuesMap)
+
           rulesFactory.rulesEngineService
             .filterResources(
               resources = retrievedRelatedResources,
-              conditionalFhirPathExpression =
-                relatedListResourceConfig.conditionalFhirPathExpression,
+              conditionalFhirPathExpression = interpolatedConditionalFhirPathExpression,
             )
             .also { filteredResources ->
               // Add to queue for processing
@@ -198,14 +202,17 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
   private fun filteredListResources(
     relatedResourceMap: Map<String, List<Resource>>,
     listResource: ListResourceConfig,
+    computedValuesMap: Map<String, Any>,
   ): List<Resource> {
     val relatedResourceKey = listResource.relatedResourceId ?: listResource.resourceType.name
+    val interpolatedConditionalFhirPathExpression =
+      listResource.conditionalFhirPathExpression?.interpolate(computedValuesMap)
 
     // Filter by condition derived from fhirPathExpression otherwise return original or empty list
     val resources =
       rulesFactory.rulesEngineService.filterResources(
         resources = relatedResourceMap[relatedResourceKey],
-        conditionalFhirPathExpression = listResource.conditionalFhirPathExpression,
+        conditionalFhirPathExpression = interpolatedConditionalFhirPathExpression,
       )
 
     // Sort resources if valid sort configuration is provided
