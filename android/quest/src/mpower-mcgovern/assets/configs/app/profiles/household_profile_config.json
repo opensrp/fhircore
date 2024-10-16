@@ -243,13 +243,6 @@
                 },
                 {
                   "paramType": "PREPOPULATE",
-                  "linkId": "e7fddd5f-85fc-48a6-b267-d93409315f2f",
-                  "dataType": "STRING",
-                  "key": "familyHeadName",
-                  "value": "@{familyHeadName}"
-                },
-                {
-                  "paramType": "PREPOPULATE",
                   "linkId": "64758eff-3f4c-491d-8cf6-307860b18850",
                   "dataType": "STRING",
                   "key": "otherMemberRegistration",
@@ -317,13 +310,6 @@
                   "dataType": "STRING",
                   "key": "familySystemId",
                   "value": "@{familyId}"
-                },
-                {
-                  "paramType": "PREPOPULATE",
-                  "linkId": "e7fddd5f-85fc-48a6-b267-d93409315f2f",
-                  "dataType": "STRING",
-                  "key": "familyHeadName",
-                  "value": "@{familyHeadName}"
                 },
                 {
                   "paramType": "PREPOPULATE",
@@ -485,14 +471,6 @@
       "condition": "true",
       "actions": [
         "data.put('otherMemberRegistration', false)"
-      ]
-    },
-    {
-      "name": "familyHeadName",
-      "condition": "true",
-      "priority": 2,
-      "actions": [
-        "data.put('familyHeadName', data.get('familyAdultMemberCount') > 0 ? null : data.get('familyName'))"
       ]
     },
     {

@@ -212,6 +212,8 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".mpower.mcgovern"
       versionNameSuffix = "-mpower-mcgovern"
+      versionCode = 3
+      versionName = "2.0.1"
       manifestPlaceholders["appLabel"] = "fhir mHealth"
     }
 

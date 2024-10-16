@@ -77,6 +77,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "Timing_Repeat" -> Timing.TimingRepeatComponent()
       "PlanDefinition_Action" -> PlanDefinition.PlanDefinitionActionComponent()
       "Group_Characteristic" -> Group.GroupCharacteristicComponent()
+      "Group_Member" -> Group.GroupMemberComponent()
       "Observation_Component" -> Observation.ObservationComponentComponent()
       "Task_Input" -> Task.ParameterComponent()
       "Task_Output" -> Task.TaskOutputComponent()
