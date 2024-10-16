@@ -65,6 +65,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -89,6 +90,8 @@ internal class LoginViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
@@ -129,6 +132,7 @@ internal class LoginViewModelTest : RobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           dispatcherProvider = dispatcherProvider,
           workManager = workManager,
+          preferenceDataStore = preferenceDataStore,
         ),
       )
   }
@@ -199,6 +203,8 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testSuccessfulOnlineLoginWithActiveSessionWithSavedPractitionerDetails() {
     updateCredentials()
+
+    // TODO: THIS IS AN OBJECT TYPE ---->?PRACTITIONER DETAILS
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS.name,
       PractitionerDetails(),
@@ -535,6 +541,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       UserInfo(),
     ) {}
     Assert.assertNotNull(
+      // TODO: READS OBJECT TYPE -----> PRACTITIONER DETAILS
       sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
     )
   }
@@ -571,6 +578,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       ),
     ) {}
     Assert.assertNotNull(
+      // TODO: READS OBJECT TYPE -----> PRACTITIONER DETAILS
       sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
     )
   }
@@ -616,6 +624,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       UserInfo().apply { keycloakUuid = "my-test-practitioner-id" },
     ) {}
     Assert.assertNotNull(
+      // TODO: READS OBJECT TYPE -----> PRACTITIONER DETAILS
       sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
     )
   }

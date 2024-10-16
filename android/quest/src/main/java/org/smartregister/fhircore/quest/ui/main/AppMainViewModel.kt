@@ -58,6 +58,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.sync.CustomSyncWorker
@@ -96,6 +97,7 @@ constructor(
   val secureSharedPreference: SecureSharedPreference,
   val syncBroadcaster: SyncBroadcaster,
   val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
   val dispatcherProvider: DispatcherProvider,
@@ -108,7 +110,7 @@ constructor(
       appMainUiStateOf(
         navigationConfiguration =
           NavigationConfiguration(
-            sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "")!!,
+            preferenceDataStore.readOnce(PreferenceDataStore.APP_ID, "") ?: "",
           ),
       ),
     )
@@ -179,6 +181,7 @@ constructor(
   fun onEvent(event: AppMainEvent) {
     when (event) {
       is AppMainEvent.SwitchLanguage -> {
+        // TODO: Writes an object type --->AppMainEvent
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
           setAppLocale(event.language.tag)
@@ -203,6 +206,7 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         if (event.state is CurrentSyncJobStatus.Succeeded) {
+          // TODO: Writes an object type ---> OffsetDateTime
           sharedPreferencesHelper.write(
             SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
             formatLastSyncTimestamp(event.state.timestamp),
@@ -256,6 +260,7 @@ constructor(
       }
   }
 
+  // TODO : Read an object type ---> AppMainEvent
   private fun loadCurrentLanguage() =
     Locale.forLanguageTag(
         sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
@@ -272,6 +277,7 @@ constructor(
     return if (parse == null) "" else simpleDateFormat.format(parse)
   }
 
+  // TODO: Reads an object type ---> OffsetDateTime
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
