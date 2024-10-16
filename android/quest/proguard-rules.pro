@@ -21,7 +21,7 @@
 #-renamesourcefileattribute SourceFile
 
 #-dontshrink
--dontobfuscate
+#-dontobfuscate
 #-dontoptimize
 #-printmapping
 
