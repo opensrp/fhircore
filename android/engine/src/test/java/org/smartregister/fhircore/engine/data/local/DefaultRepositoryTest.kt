@@ -543,7 +543,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.loadResource<Group>("73847") } returns group
 
     Assert.assertThrows(IllegalStateException::class.java) {
-      runBlocking { defaultRepository.removeGroup(group.logicalId, false, emptyMap()) }
+      runBlocking { defaultRepository.removeGroup(group.logicalId, false) }
     }
   }
 
@@ -576,7 +576,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       }
     coEvery { fhirEngine.loadResource<Group>(group.id) } returns group
 
-    defaultRepositorySpy.removeGroup(group.id, isDeactivateMembers = false, emptyMap())
+    defaultRepositorySpy.removeGroup(group.id, isDeactivateMembers = false)
     coVerify { defaultRepositorySpy.delete(managingEntityRelatedPerson) }
     Assert.assertFalse(group.active)
   }
@@ -597,7 +597,6 @@ class DefaultRepositoryTest : RobolectricTest() {
       memberId = memberId,
       groupId = null,
       groupMemberResourceType = patientMemberRep.resourceType,
-      configComputedRuleValues = emptyMap(),
     )
     Assert.assertFalse(patientMemberRep.active)
     coVerify { defaultRepositorySpy.addOrUpdate(resource = patientMemberRep) }
@@ -620,7 +619,6 @@ class DefaultRepositoryTest : RobolectricTest() {
       memberId = memberId,
       groupId = null,
       groupMemberResourceType = patientMemberRep.resourceType,
-      configComputedRuleValues = emptyMap(),
     )
     Assert.assertTrue(patientMemberRep.active)
   }
@@ -671,7 +669,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { defaultRepository.delete(any()) } just runs
     coEvery { defaultRepository.addOrUpdate(resource = any()) } just runs
 
-    runBlocking { defaultRepository.removeGroup(groupId, true, emptyMap()) }
+    runBlocking { defaultRepository.removeGroup(groupId, true) }
 
     coVerify { defaultRepository.delete(relatedPerson) }
     coVerify { defaultRepository.addOrUpdate(resource = patient) }
@@ -713,7 +711,6 @@ class DefaultRepositoryTest : RobolectricTest() {
         memberId = memberId,
         groupId = groupId,
         groupMemberResourceType = groupMemberResourceType,
-        emptyMap(),
       )
     }
 

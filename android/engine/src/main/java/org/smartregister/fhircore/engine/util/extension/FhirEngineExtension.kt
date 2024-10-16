@@ -30,6 +30,7 @@ import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.RelatedArtifact
 import org.hl7.fhir.r4.model.Resource
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import timber.log.Timber
 
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
@@ -103,7 +104,7 @@ suspend fun <R : Resource> FhirEngine.batchedSearch(search: Search) =
   } else {
     val result = mutableListOf<SearchResult<R>>()
     var offset = search.from ?: 0
-    val pageCount = 100
+    val pageCount = DefaultRepository.DEFAULT_BATCH_SIZE
     do {
       search.from = offset
       search.count = pageCount
@@ -121,4 +122,12 @@ suspend inline fun <reified R : Resource> FhirEngine.batchedSearch(
   val search = Search(type = R::class.java.newInstance().resourceType)
   search.init()
   return this.batchedSearch<R>(search)
+}
+
+suspend inline fun <reified R : Resource> FhirEngine.getOrNull(id: String): R? {
+  return try {
+    get<R>(id)
+  } catch (e: ResourceNotFoundException) {
+    null
+  }
 }

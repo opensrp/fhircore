@@ -92,6 +92,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.getOrNull
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationIds
 import org.smartregister.fhircore.engine.util.extension.updateFrom
@@ -248,23 +249,9 @@ constructor(
 
   suspend fun loadManagingEntity(group: Group) =
     group.managingEntity?.let { reference ->
-      fhirEngine
-        .batchedSearch<RelatedPerson> {
-          filter(RelatedPerson.RES_ID, { value = of(reference.extractId()) })
-        }
-        .map { it.resource }
-        .firstOrNull()
-        ?.let { relatedPerson ->
-          fhirEngine
-            .batchedSearch<Patient> {
-              filter(
-                Patient.RES_ID,
-                { value = of(relatedPerson.patient.extractId()) },
-              )
-            }
-            .map { it.resource }
-            .firstOrNull()
-        }
+      fhirEngine.getOrNull<RelatedPerson>(reference.extractId())?.let { relatedPerson ->
+        fhirEngine.getOrNull<Patient>(relatedPerson.patient.extractId())
+      }
     }
 
   suspend fun changeManagingEntity(
@@ -320,20 +307,11 @@ constructor(
   suspend fun removeGroup(
     groupId: String,
     isDeactivateMembers: Boolean?,
-    configComputedRuleValues: Map<String, Any>,
   ) {
     loadResource<Group>(groupId)?.let { group ->
       if (!group.active) throw IllegalStateException("Group already deleted")
       group.managingEntity
-        ?.let { reference ->
-          searchResourceFor<RelatedPerson>(
-            token = RelatedPerson.RES_ID,
-            subjectType = ResourceType.RelatedPerson,
-            subjectId = reference.extractId(),
-            configComputedRuleValues = configComputedRuleValues,
-          )
-        }
-        ?.firstOrNull()
+        ?.let { reference -> fhirEngine.getOrNull<RelatedPerson>(reference.extractId()) }
         ?.let { relatedPerson -> delete(relatedPerson) }
 
       group.apply {
@@ -360,7 +338,6 @@ constructor(
     memberId: String,
     groupId: String?,
     groupMemberResourceType: ResourceType?,
-    configComputedRuleValues: Map<String, Any>,
   ) {
     val fhirResource: Resource? =
       try {
@@ -379,15 +356,7 @@ constructor(
       if (groupId != null) {
         loadResource<Group>(groupId)?.let { group ->
           group.managingEntity
-            ?.let { reference ->
-              searchResourceFor<RelatedPerson>(
-                token = RelatedPerson.RES_ID,
-                subjectType = ResourceType.RelatedPerson,
-                subjectId = reference.extractId(),
-                configComputedRuleValues = configComputedRuleValues,
-              )
-            }
-            ?.firstOrNull()
+            ?.let { reference -> fhirEngine.getOrNull<RelatedPerson>(reference.extractId()) }
             ?.let { relatedPerson ->
               if (relatedPerson.patient.id.extractLogicalIdUuid() == memberId) {
                 delete(relatedPerson)
@@ -521,13 +490,6 @@ constructor(
         }
       }
 
-      val searchResults =
-        searchIncludedResources(
-          relatedResourcesConfigs = currentRelatedResourceConfigs,
-          resources = currentResources,
-          configComputedRuleValues = configComputedRuleValues,
-        )
-
       val fwdIncludedRelatedConfigsMap =
         currentRelatedResourceConfigs
           ?.revIncludeRelatedResourceConfigs(false)
@@ -539,6 +501,13 @@ constructor(
           ?.revIncludeRelatedResourceConfigs(true)
           ?.groupBy { "${it.resource.name}_${it.searchParameter}".lowercase() }
           ?.mapValues { it.value.first() }
+
+      val searchResults =
+        searchIncludedResources(
+          relatedResourcesConfigs = currentRelatedResourceConfigs,
+          resources = currentResources,
+          configComputedRuleValues = configComputedRuleValues,
+        )
 
       searchResults.forEach { searchResult ->
         searchResult.included?.forEach { entry ->
@@ -666,16 +635,6 @@ constructor(
     resources: List<Resource>,
     configComputedRuleValues: Map<String, Any>,
   ): List<SearchResult<Resource>> {
-    val search =
-      Search(resources.first().resourceType).apply {
-        val filters =
-          resources.map {
-            val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.logicalId) }
-            apply
-          }
-        filter(Resource.RES_ID, *filters.toTypedArray())
-      }
-
     // Forward include related resources e.g. a member or managingEntity of a Group resource
     val forwardIncludeResourceConfigs =
       relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(false)
@@ -684,33 +643,43 @@ constructor(
     val reverseIncludeResourceConfigs =
       relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(true)
 
-    search.apply {
-      reverseIncludeResourceConfigs?.forEach { resourceConfig ->
-        revInclude(
-          resourceConfig.resource,
-          ReferenceClientParam(resourceConfig.searchParameter),
-        ) {
-          (this as Search).applyConfiguredSortAndFilters(
-            resourceConfig = resourceConfig,
-            sortData = true,
-            configComputedRuleValues = configComputedRuleValues,
-          )
+    val search =
+      Search(resources.first().resourceType).apply {
+        val filters =
+          resources.map {
+            val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.logicalId) }
+            apply
+          }
+
+        filter(Resource.RES_ID, *filters.toTypedArray())
+
+        reverseIncludeResourceConfigs?.forEach { resourceConfig ->
+          revInclude(
+            resourceConfig.resource,
+            ReferenceClientParam(resourceConfig.searchParameter),
+          ) {
+            (this as Search).applyConfiguredSortAndFilters(
+              resourceConfig = resourceConfig,
+              sortData = true,
+              configComputedRuleValues = configComputedRuleValues,
+            )
+          }
+        }
+
+        forwardIncludeResourceConfigs?.forEach { resourceConfig ->
+          include(
+            resourceConfig.resource,
+            ReferenceClientParam(resourceConfig.searchParameter),
+          ) {
+            (this as Search).applyConfiguredSortAndFilters(
+              resourceConfig = resourceConfig,
+              sortData = true,
+              configComputedRuleValues = configComputedRuleValues,
+            )
+          }
         }
       }
 
-      forwardIncludeResourceConfigs?.forEach { resourceConfig ->
-        include(
-          resourceConfig.resource,
-          ReferenceClientParam(resourceConfig.searchParameter),
-        ) {
-          (this as Search).applyConfiguredSortAndFilters(
-            resourceConfig = resourceConfig,
-            sortData = true,
-            configComputedRuleValues = configComputedRuleValues,
-          )
-        }
-      }
-    }
     return kotlin
       .runCatching { fhirEngine.batchedSearch<Resource>(search) }
       .onFailure { Timber.e(it, "Error fetching related resources") }
