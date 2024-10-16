@@ -21,10 +21,14 @@
 #-renamesourcefileattribute SourceFile
 
 #-dontshrink
--dontobfuscate
+#-dontobfuscate
 #-dontoptimize
+#-printmapping
 
 -keepattributes Signature, RuntimeVisibleAnnotations
+-keepattributes SourceFile,LineNumberTable
+-keepattributes Exceptions
+-keepattributes *Annotation*
 
 # Keep Gson's data model classes
 -keep class sun.misc.Unsafe { *; }
@@ -51,15 +55,15 @@
 # Keep all classes that implement Serializable
 -keep class * implements java.io.Serializable { *; }
 
-## Remove all Android log calls (Log.e, Log.d, Log.w, etc.)
-#-assumenosideeffects class android.util.Log {
-#    public static int d(...);
-#    public static int e(...);
-#    public static int i(...);
-#    public static int v(...);
-#    public static int w(...);
-#    public static int wtf(...);
-#}
+# Remove all Android log calls (Log.e, Log.d, Log.w, etc.)
+-assumenosideeffects class android.util.Log {
+    public static int d(...);
+    public static int e(...);
+    public static int i(...);
+    public static int v(...);
+    public static int w(...);
+    public static int wtf(...);
+}
 
 # This is generated automatically by the Android Gradle plugin.
 -dontwarn androidx.test.platform.app.AppComponentFactoryRegistry
@@ -110,25 +114,19 @@
 -keep class org.apiguardian.** { *; }
 -dontwarn org.apiguardian.**
 
--keep class org.apache.commons.logging.impl.Log4JLogger { *; }
-
--keep class com.google.android.gms.location.FusedLocationProviderClient { *; }
--keep class com.google.android.gms.location.LocationCallback { *; }
+-keep interface com.google.android.gms.location.FusedLocationProviderClient
+-keep class com.google.android.gms.location.LocationCallback.** { *; }
 -dontwarn com.google.android.gms.**
 
--keepattributes Exceptions
 -keep class ** implements java.lang.reflect.ParameterizedType { *; }
-
--keep class org.smartregister.fhircore.engine.data.remote.model.response.** { *; }
 
 -keep class com.auth0.jwt.interfaces.** { *; }
 
 -keep class com.fasterxml.jackson.core.type.** { *; }
 
--keepattributes *Annotation*
-
 # Keep Jackson ObjectMapper and related serializers/deserializers
 -keep class com.fasterxml.jackson.databind.ObjectMapper { *; }
+-keep class com.fasterxml.jackson.databind.ObjectMapper$* { *; }
 -keep class com.fasterxml.jackson.databind.** { *; }
 
 # Keep TypeReference (used for generic types)
@@ -139,19 +137,100 @@
 -keep class com.google.gson.** { *; }
 
 -keep class org.apache.commons.logging.** { *; }
--keep class org.apache.commons.jexl3.** { *; }
+-keep interface org.apache.commons.logging.Log
+-keep class org.apache.commons.logging.impl.** { *; }
+-keep class org.apache.commons.logging.LogFactory { *; }
+-keep class org.apache.commons.logging.impl.LogFactoryImpl { *; }
+-keep class org.apache.commons.logging.impl.SimpleLog { *; }
+-keep class org.apache.commons.logging.impl.Log4JLogger { *; }
+-keep class org.apache.commons.logging.impl.Jdk13LumberjackLogger { *; }
+-keep class org.apache.commons.logging.LogConfigurationException
+-keep class java.lang.ExceptionInInitializerError
 
--keep class org.jeasy.rules.jexl.** { *; }
+# Keep all classes with references to reflection (necessary for LogFactory)
+-keepclassmembers class * {
+    public void set*(***);
+    public *** get*(***);
+}
 
+# Keep Apache Commons BeanUtils classes, in case they’re needed
+-keep class org.apache.commons.beanutils.** { *; }
+
+-keep class org.apache.log4j.** { *; }
 -keep class org.slf4j.** { *; }
 
-# Keep the JexlBuilder and Engine classes to prevent issues during initialization
--keep class org.apache.commons.jexl3.JexlBuilder { *; }
--keep class org.apache.commons.jexl3.internal.Engine { *; }
-
-# Keep all public methods in the JexlRule class to avoid access issues
--keep public class org.jeasy.rules.jexl.JexlRule { *; }
-
-
--keep class org.smartregister.fhircore.engine.data.** { *; }
 -keep class org.smartregister.fhircore.engine.domain.model.** { *; }
+-keep class org.smartregister.fhircore.engine.configuration.** { *; }
+-keep class org.smartregister.fhircore.engine.data.remote.model.response.** { *; }
+-keep class org.smartregister.fhircore.engine.data.** { *; }
+-keep class org.smartregister.fhircore.engine.** { *; }
+-keep class org.smartregister.fhircore.geowidget.** { *; }
+-keep class org.smartregister.fhircore.quest.** { *; }
+
+-keep enum * { *; }
+
+-keepclassmembers class * {
+    *;
+}
+
+# Keep constructors for logging classes
+-keepclassmembers class org.apache.commons.logging.** {
+    public <init>(...);
+}
+
+# Keep all class members that could be accessed via reflection
+-keepattributes Signature, InnerClasses, EnclosingMethod
+-keep class * extends java.lang.reflect.** { *; }
+-keepclassmembers class * {
+    *;
+}
+
+-keep class org.jeasy.rules.jexl.** { *; }
+-keep class org.jeasy.rules.jexl.JexlRule { *; }
+-keep class org.jeasy.rules.core.** { *; }
+
+-keep class org.apache.commons.jexl3.** { *; }
+-keep class org.apache.commons.jexl3.JexlBuilder { *; }
+-keep class org.apache.commons.jexl3.internal.** { *; }
+-keep class org.apache.commons.jexl3.internal.Engine { *; }
+-keep class org.apache.commons.jexl3.introspection.** { *; }
+-keep class org.apache.commons.jexl3.introspection.JexlSandbox { *; }
+-keep class org.apache.commons.jexl3.JexlEngine { *; }
+-keep class org.apache.commons.logging.impl.Jdk14Logger { *; }
+-keep class org.apache.commons.jexl3.internal.introspection.Uberspect { *; }
+-keep interface org.apache.commons.jexl3.introspection.JexlUberspect
+-keep class org.apache.commons.jexl3.introspection.JexlUberspect$** { *; }
+
+# Keep constructors for JEXL-related classes
+-keepclassmembers class org.apache.commons.jexl3.** {
+    public <init>(...);
+}
+
+-keepclassmembers class org.apache.commons.jexl3.internal.Engine {
+   <init>();
+   void getUberspect();
+}
+
+-keep class org.apache.commons.lang3.StringUtils { *; }
+-keep class org.apache.commons.lang3.RegExUtils { *; }
+
+-keepclasseswithmembers class ** {
+    @kotlin.Metadata public final class *;
+}
+
+-keep class kotlinx.coroutines.** { *; }
+
+-keep class javax.script.** { *; }
+-dontwarn javax.script.**
+-keep class java.beans.** { *; }
+-dontwarn java.beans.**
+
+-keep class org.apache.commons.jexl3.introspection.JexlSandbox { *; }
+-keep interface org.apache.commons.jexl3.introspection.JexlUberspect
+
+-keep class java.util.Map { *; }
+-keep class java.nio.charset.Charset { *; }
+
+-keep class kotlin.Metadata
+
+-keep class timber.log.Timber { *; }
