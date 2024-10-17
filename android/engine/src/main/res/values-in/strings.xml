@@ -52,6 +52,7 @@
     <string name="syncing_retry">Coba lagi sinkronisasi</string>
     <string name="syncing_in_progress">Sinkronisasi sedang berlangsung</string>
     <string name="loading">Memuat</string>
+    <string name="loading_ellipsis">Memuat…</string>
     <string name="error_logging_out">Pesan kesalahan logout: %1$s</string>
     <string name="cannot_logout_user">Tidak dapat logout: Sudah logout atau perangkat sedang offline.</string>
     <string name="error_loading_config_http_error">Tidak dapat memuat konfigurasi. Silakan coba lagi nanti</string>

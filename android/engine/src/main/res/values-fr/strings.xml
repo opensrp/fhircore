@@ -54,6 +54,7 @@
     <string name="syncing_retry">Réessayer la synchronisation</string>
     <string name="syncing_in_progress">Synchronisation en cours</string>
     <string name="loading">Chargement</string>
+    <string name="loading_ellipsis">Chargement…</string>
     <string name="error_logging_out">Message d\'erreur de déconnexion %1$s</string>
     <string name="cannot_logout_user">Impossible de se déconnecter : Déjà déconnecté ou l\'appareil est hors ligne.</string>
     <string name="error_loading_config_http_error">Impossible de charger la configuration. Veuillez réessayer plus tard</string>

@@ -45,6 +45,7 @@
     <string name="syncing_retry">Jaribu kusawazisha tena</string>
     <string name="syncing_in_progress">Kusawazisha inaendelea</string>
     <string name="loading">Inapakia</string>
+    <string name="loading_ellipsis">Inapakia…</string>
     <string name="error_loading_form">Hitilafu kounyesha fomu</string>
     <string name="error_saving_form">Hitilafu imetokea, haiwezi kuhifadhi fomu</string>
     <string name="replace_photo">Badilisha picha</string>

@@ -55,6 +55,7 @@
     <string name="syncing_retry">Reintentar sincronización</string>
     <string name="syncing_in_progress">Sincronización en curso</string>
     <string name="loading">Cargando</string>
+    <string name="loading_ellipsis">Cargando…</string>
     <string name="error_logging_out">Mensaje de error al cerrar sesión: %1$s</string>
     <string name="cannot_logout_user">No se puede cerrar sesión: ya se ha cerrado sesión o el dispositivo está desconectado.</string>
     <string name="error_loading_config_http_error">No se pudo cargar la configuración. Inténtalo de nuevo más tarde</string>
