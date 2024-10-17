@@ -72,6 +72,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
+import org.smartregister.fhircore.engine.util.extension.DEFAULT_FORMAT_SDF_DD_MM_YYYY
+import org.smartregister.fhircore.engine.util.extension.formatDate
 
 const val USER_INSIGHT_TOP_APP_BAR = "userInsightToAppBar"
 const val INSIGHT_UNSYNCED_DATA = "insightUnsyncedData"
@@ -93,6 +95,7 @@ fun UserSettingInsightScreen(
   unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
   navController: NavController,
   onRefreshRequest: () -> Unit,
+  dateFormat: String = DEFAULT_FORMAT_SDF_DD_MM_YYYY,
 ) {
   val unsyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
 
@@ -235,7 +238,8 @@ fun UserSettingInsightScreen(
               (if (Build.DEVICE.isNullOrEmpty()) "-" else Build.DEVICE),
             stringResource(R.string.os_version) to
               (if (Build.VERSION.BASE_OS.isNullOrEmpty()) "-" else Build.VERSION.BASE_OS),
-            stringResource(R.string.device_date) to (formatTimestamp(Build.TIME).ifEmpty { "-" }),
+            stringResource(R.string.device_date) to
+              (formatDate(Build.TIME, desireFormat = dateFormat).ifEmpty { "-" }),
           )
         InsightInfoView(
           title = stringResource(id = R.string.device_info),
@@ -365,6 +369,7 @@ fun UserSettingInsightScreenPreview() {
       unsyncedResourcesFlow = MutableSharedFlow(),
       navController = rememberNavController(),
       onRefreshRequest = {},
+      dateFormat = DEFAULT_FORMAT_SDF_DD_MM_YYYY,
     )
   }
 }
