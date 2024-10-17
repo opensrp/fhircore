@@ -292,7 +292,7 @@ fun RegisterScreenWithDataPreview() {
       pagesCount = 1,
       progressPercentage = flowOf(0),
       isSyncUpload = flowOf(false),
-      params = emptyMap(),
+      params = emptyList(),
     )
   val searchText = remember { mutableStateOf(SearchQuery.emptyText) }
   val currentPage = remember { mutableIntStateOf(0) }

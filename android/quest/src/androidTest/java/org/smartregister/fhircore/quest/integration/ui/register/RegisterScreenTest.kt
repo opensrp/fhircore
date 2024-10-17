@@ -131,7 +131,7 @@ class RegisterScreenTest {
         pagesCount = 0,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -172,7 +172,7 @@ class RegisterScreenTest {
         pagesCount = 1,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -216,7 +216,7 @@ class RegisterScreenTest {
         pagesCount = 1,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -260,7 +260,7 @@ class RegisterScreenTest {
         pagesCount = 1,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -305,7 +305,7 @@ class RegisterScreenTest {
         pagesCount = 0,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -351,7 +351,7 @@ class RegisterScreenTest {
         pagesCount = 0,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -436,7 +436,7 @@ class RegisterScreenTest {
               ),
             ),
           ),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -488,7 +488,7 @@ class RegisterScreenTest {
         progressPercentage = flowOf(100),
         isSyncUpload = flowOf(false),
         currentSyncJobStatus = flowOf(CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -539,7 +539,7 @@ class RegisterScreenTest {
         progressPercentage = flowOf(100),
         isSyncUpload = flowOf(false),
         currentSyncJobStatus = flowOf(CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)

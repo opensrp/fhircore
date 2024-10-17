@@ -27,4 +27,5 @@ data class RegisterContentConfig(
   val visible: Boolean? = null,
   val computedRules: List<String>? = null,
   val searchByQrCode: Boolean? = null,
+  val dataFilterFields: List<RegisterFilterField> = emptyList(),
 )
