@@ -48,8 +48,7 @@ fun StackView(
 
   Box(
     modifier =
-      modifier
-        .background(backgroundColor.copy(alpha = stackViewProperties.opacity))
+      Modifier.background(backgroundColor.copy(alpha = stackViewProperties.opacity))
         .size(stackViewProperties.size.dp)
         .testTag(STACK_VIEW_TEST_TAG),
     contentAlignment = castViewAlignment(stackViewProperties.alignment),
