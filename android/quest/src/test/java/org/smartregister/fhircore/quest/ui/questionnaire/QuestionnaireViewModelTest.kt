@@ -1196,7 +1196,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       defaultRepository.removeGroup(
         groupId = theQuestionnaireConfig.groupResource?.groupIdentifier!!,
         isDeactivateMembers = true,
-        configComputedRuleValues = emptyMap(),
       )
     }
   }
@@ -1223,7 +1222,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         memberId = patient.logicalId,
         groupId = theQuestionnaireConfig.groupResource?.groupIdentifier!!,
         groupMemberResourceType = ResourceType.Patient,
-        configComputedRuleValues = emptyMap(),
       )
     }
   }
