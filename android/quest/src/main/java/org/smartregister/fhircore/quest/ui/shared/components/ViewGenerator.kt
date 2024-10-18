@@ -329,5 +329,11 @@ fun generateModifier(viewProperties: ViewProperties): Modifier =
 private fun Modifier.applyCommonProperties(viewProperties: ViewProperties): Modifier =
   this.conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
     .conditional(viewProperties.fillMaxHeight, { fillMaxHeight() })
-    .background(viewProperties.backgroundColor.parseColor())
+    .background(viewProperties.backgroundColor.parseColor().let { baseColor ->
+      if (viewProperties.opacity != null) {
+        baseColor.copy(alpha = viewProperties.opacity!!.toFloat())
+      } else {
+        baseColor
+      }
+    })
     .clip(RoundedCornerShape(viewProperties.borderRadius.dp))

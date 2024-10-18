@@ -36,6 +36,7 @@ abstract class ViewProperties : java.io.Serializable {
   abstract val fillMaxHeight: Boolean
   abstract val clickable: String
   abstract val visible: String
+  abstract val opacity: Float?
 
   abstract fun interpolate(computedValuesMap: Map<String, Any>): ViewProperties
 }

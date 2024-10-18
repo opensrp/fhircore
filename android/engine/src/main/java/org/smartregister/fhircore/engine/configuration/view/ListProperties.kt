@@ -39,6 +39,7 @@ data class ListProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   override val visible: String = "true",
+  override val opacity: Float? = null,
   val id: String = "listId",
   val registerCard: RegisterCardConfig,
   val showDivider: Boolean = true,

@@ -27,7 +27,7 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 data class StackViewProperties(
   override val viewType: ViewType = ViewType.STACK,
   override val weight: Float = 0f,
-  override val backgroundColor: String? = "#FFFFFF",
+  override val backgroundColor: String? = null,
   override val padding: Int = 0,
   override val borderRadius: Int = 0,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
@@ -35,7 +35,7 @@ data class StackViewProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   override val visible: String = "true",
-  val opacity: Float = 0f,
+  override val opacity: Float? = null,
   val size: Int = 0,
   val children: List<ViewProperties> = emptyList(),
 ) : ViewProperties(), Parcelable {
