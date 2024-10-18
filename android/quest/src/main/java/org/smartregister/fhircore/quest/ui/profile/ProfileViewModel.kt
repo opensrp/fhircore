@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -30,8 +31,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -55,9 +56,8 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
-import org.smartregister.fhircore.quest.util.extensions.decodeImageResourcesToBitmap
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
-import org.smartregister.fhircore.quest.util.extensions.resourceReferenceToBitMap
+import org.smartregister.fhircore.quest.util.extensions.referenceToBitmap
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
@@ -84,73 +84,45 @@ constructor(
   private val listResourceDataStateMap =
     mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
 
-  /**
-   * This function retrieves an image that was synced from the backend as a [Binary] resource, the
-   * content of the Binary resource is a base64 encoding of the actual image. The encoded imaged is
-   * then transformed into bitmap for use in an Image Composable (returns null if the referenced
-   * resource doesn't exist)
-   */
-  suspend fun decodeBinaryResourceIconsToBitmap(profileId: String) {
-    val profileConfig =
-      configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
-        configId = profileId,
-        configType = ConfigType.Profile,
-      )
-    withContext(dispatcherProvider.io()) {
-      profileConfig.overFlowMenuItems
-        .asSequence()
-        .filter { it.icon != null && !it.icon?.reference.isNullOrBlank() }
-        .mapNotNull { it.icon!!.reference }
-        .resourceReferenceToBitMap(
-          fhirEngine = registerRepository.fhirEngine,
-          decodedImageMap = configurationRegistry.decodedImageMap,
-        )
-    }
-  }
+  private val decodedImageMap = mutableStateMapOf<String, Bitmap>()
 
-  suspend fun retrieveProfileUiState(
+  fun retrieveProfileUiState(
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
     paramsList: Array<ActionParameter>? = emptyArray(),
   ) {
-    if (resourceId.isNotEmpty()) {
-      val repositoryResourceData =
-        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
-      val paramsMap: Map<String, String> = paramsList.toParamDataMap()
-      val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
-      val resourceData =
-        resourceDataRulesExecutor
-          .processResourceData(
-            repositoryResourceData = repositoryResourceData,
-            ruleConfigs = profileConfigs.rules,
-            params = paramsMap,
+    viewModelScope.launch {
+      if (resourceId.isNotEmpty()) {
+        val repositoryResourceData =
+          registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
+        val paramsMap: Map<String, String> = paramsList.toParamDataMap()
+        val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
+        val resourceData =
+          resourceDataRulesExecutor
+            .processResourceData(
+              repositoryResourceData = repositoryResourceData,
+              ruleConfigs = profileConfigs.rules,
+              params = paramsMap,
+            )
+            .copy(listResourceDataMap = listResourceDataStateMap)
+
+        profileUiState.value =
+          ProfileUiState(
+            resourceData = resourceData,
+            profileConfiguration = profileConfigs,
+            snackBarTheme = applicationConfiguration.snackBarTheme,
+            showDataLoadProgressIndicator = false,
           )
-          .copy(listResourceDataMap = listResourceDataStateMap)
 
-      profileUiState.value =
-        ProfileUiState(
-          resourceData = resourceData,
-          profileConfiguration = profileConfigs,
-          snackBarTheme = applicationConfiguration.snackBarTheme,
-          showDataLoadProgressIndicator = false,
-          decodedImageMap = configurationRegistry.decodedImageMap,
-        )
-
-      profileConfigs.views.retrieveListProperties().forEach { listProperties ->
-        resourceDataRulesExecutor.processListResourceData(
-          listProperties = listProperties,
-          relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
-          computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
-          listResourceDataStateMap = listResourceDataStateMap,
-        )
-      }
-
-      withContext(dispatcherProvider.io()) {
-        profileConfigs.views.decodeImageResourcesToBitmap(
-          fhirEngine = registerRepository.fhirEngine,
-          decodedImageMap = configurationRegistry.decodedImageMap,
-        )
+        profileConfigs.views.retrieveListProperties().forEach { listProperties ->
+          resourceDataRulesExecutor.processListResourceData(
+            listProperties = listProperties,
+            relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
+            computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
+            listResourceDataStateMap = listResourceDataStateMap,
+          )
+        }
       }
     }
   }
@@ -291,5 +263,9 @@ constructor(
         }
       }
     }
+  }
+
+  fun getImageBitmap(reference: String) = runBlocking {
+    reference.referenceToBitmap(registerRepository.fhirEngine, decodedImageMap)
   }
 }

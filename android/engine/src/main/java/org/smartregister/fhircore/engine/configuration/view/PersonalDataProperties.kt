@@ -35,6 +35,7 @@ data class PersonalDataProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   override val visible: String = "true",
+  override val opacity: Float? = null,
   val personalDataItems: List<PersonalDataItem> = emptyList(),
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): PersonalDataProperties {

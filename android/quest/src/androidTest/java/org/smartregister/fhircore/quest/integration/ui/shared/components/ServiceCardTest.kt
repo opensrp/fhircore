@@ -46,6 +46,7 @@ class ServiceCardTest {
         serviceCardProperties = initTestServiceCardProperties(),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule
@@ -62,6 +63,7 @@ class ServiceCardTest {
           initTestServiceCardProperties(serviceStatus = ServiceStatus.OVERDUE.name, text = "1"),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule.onNodeWithText("1", useUnmergedTree = true).assertExists().assertIsDisplayed()
@@ -74,6 +76,7 @@ class ServiceCardTest {
         serviceCardProperties = initTestServiceCardProperties(visible = "false"),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule.onNodeWithText("Next visit 09-10-2022", useUnmergedTree = true).assertDoesNotExist()
@@ -86,6 +89,7 @@ class ServiceCardTest {
         serviceCardProperties = initTestServiceCardProperties(showVerticalDivider = false),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule.onNodeWithTag(DIVIDER_TEST_TAG).assertDoesNotExist()
