@@ -31,7 +31,6 @@ import org.smartregister.fhircore.engine.configuration.view.StackViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import org.smartregister.fhircore.engine.util.extension.parseColor
 
 const val STACK_VIEW_TEST_TAG = "stackViewTestTag"
 
@@ -43,7 +42,6 @@ fun StackView(
   navController: NavController,
   decodeImage: ((String) -> Bitmap?)?,
 ) {
-
   Box(
     modifier.size(stackViewProperties.size.dp).testTag(STACK_VIEW_TEST_TAG),
     contentAlignment = castViewAlignment(stackViewProperties.alignment),

@@ -74,14 +74,17 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
     listResourceDataStateMap: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
   ) {
     listProperties.resources.forEach { listResource ->
+      // A new list is required on each iteration
+      val resourceDataSnapshotStateList = mutableStateListOf<ResourceData>()
+      listResourceDataStateMap[listProperties.id] = resourceDataSnapshotStateList
+
       filteredListResources(relatedResourcesMap, listResource, computedValuesMap)
         .mapToResourceData(
           listResourceConfig = listResource,
           relatedResourcesMap = relatedResourcesMap,
           ruleConfigs = listProperties.registerCard.rules,
           computedValuesMap = computedValuesMap,
-          resourceDataSnapshotStateList =
-            listResourceDataStateMap.getOrPut(listProperties.id) { mutableStateListOf() },
+          resourceDataSnapshotStateList = resourceDataSnapshotStateList,
           listResourceDataStateMap = listResourceDataStateMap,
         )
     }
@@ -123,17 +126,15 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
       while (relatedResourcesQueue.isNotEmpty()) {
         val (currentResource, currentListResourceConfig) = relatedResourcesQueue.removeFirst()
         currentListResourceConfig.forEach { relatedListResourceConfig ->
-          val retrievedRelatedResources: List<Resource>? =
-            relatedListResourceConfig.fhirPathExpression?.let {
-              rulesFactory.rulesEngineService.retrieveRelatedResources(
-                resource = currentResource,
-                relatedResourceKey =
-                  relatedListResourceConfig.relatedResourceId
-                    ?: relatedListResourceConfig.resourceType.name,
-                referenceFhirPathExpression = it,
-                relatedResourcesMap = relatedResourcesMap,
-              )
-            }
+          val retrievedRelatedResources: List<Resource> =
+            rulesFactory.rulesEngineService.retrieveRelatedResources(
+              resource = currentResource,
+              relatedResourceKey =
+                relatedListResourceConfig.relatedResourceId
+                  ?: relatedListResourceConfig.resourceType.name,
+              referenceFhirPathExpression = relatedListResourceConfig.fhirPathExpression,
+              relatedResourcesMap = relatedResourcesMap,
+            )
 
           val interpolatedConditionalFhirPathExpression =
             relatedListResourceConfig.conditionalFhirPathExpression?.interpolate(computedValuesMap)

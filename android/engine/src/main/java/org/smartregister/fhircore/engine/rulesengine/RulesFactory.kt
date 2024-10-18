@@ -188,7 +188,7 @@ constructor(
       val value: List<Resource> =
         relatedResourcesMap?.get(relatedResourceKey)
           ?: if (facts.getFact(relatedResourceKey) != null) {
-            facts.getFact(relatedResourceKey).value as List<Resource>
+            facts.getFact(relatedResourceKey).value as List<Resource>? ?: emptyList()
           } else {
             emptyList()
           }
