@@ -115,6 +115,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
+          preferenceDataStore = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
           configRulesExecutor = mockk(),
@@ -128,6 +129,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
       MeasureReportRepository(
         fhirEngine = fhirEngine,
         sharedPreferencesHelper = mockk(),
+        preferenceDataStore = mockk(),
         configurationRegistry = configurationRegistry,
         configService = mockk(),
         configRulesExecutor = mockk(),
