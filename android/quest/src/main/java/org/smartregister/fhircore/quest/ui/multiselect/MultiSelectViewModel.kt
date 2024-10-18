@@ -26,6 +26,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -37,6 +38,7 @@ import org.smartregister.fhircore.engine.ui.multiselect.TreeBuilder
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import timber.log.Timber
 
 @HiltViewModel
 class MultiSelectViewModel
@@ -143,8 +145,13 @@ constructor(
     }
   }
 
-  suspend fun saveSelectedLocations(context: Context) {
-    context.syncLocationIdsProtoStore.updateData { selectedNodes }
+  suspend fun saveSelectedLocations(context: Context, onSaveDone: () -> Unit) {
+    try {
+      context.syncLocationIdsProtoStore.updateData { selectedNodes }
+      onSaveDone()
+    } catch (ioException: IOException) {
+      Timber.e("Error saving selected locations", ioException)
+    }
   }
 
   fun search() {

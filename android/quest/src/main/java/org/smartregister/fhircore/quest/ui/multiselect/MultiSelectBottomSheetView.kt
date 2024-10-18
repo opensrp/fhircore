@@ -60,6 +60,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.ui.multiselect.MultiSelectView
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
@@ -73,9 +74,10 @@ fun MultiSelectBottomSheetView(
   onDismiss: () -> Unit,
   searchTextState: MutableState<String>,
   onSearchTextChanged: (String) -> Unit,
-  onSelectionDone: () -> Unit,
+  onSelectionDone: (List<MultiSelectViewAction>) -> Unit,
   search: () -> Unit,
   isLoading: State<Boolean?>,
+  multiSelectViewAction: List<MultiSelectViewAction>,
 ) {
   val keyboardController = LocalSoftwareKeyboardController.current
   Scaffold(
@@ -184,11 +186,19 @@ fun MultiSelectBottomSheetView(
           item {
             if (syncLocationStateMap.isNotEmpty() && rootTreeNodes.isNotEmpty()) {
               Button(
-                onClick = { onSelectionDone() },
+                onClick = { onSelectionDone(multiSelectViewAction) },
                 modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),
               ) {
                 Text(
-                  text = stringResource(id = R.string.sync_data).uppercase(),
+                  text =
+                    stringResource(
+                        id =
+                          when (multiSelectViewAction.first()) {
+                            MultiSelectViewAction.SYNC_DATA -> R.string.sync_data
+                            MultiSelectViewAction.FILTER_DATA -> R.string.apply_filter
+                          },
+                      )
+                      .uppercase(),
                   modifier = Modifier.padding(8.dp),
                 )
               }

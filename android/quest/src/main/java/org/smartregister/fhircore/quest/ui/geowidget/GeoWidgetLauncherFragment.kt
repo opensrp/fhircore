@@ -235,6 +235,24 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
+
+    viewLifecycleOwner.lifecycleScope.launch {
+      viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+        eventBus.events
+          .getFor(MainNavigationScreen.GeoWidgetLauncher.eventId(navArgs.geoWidgetId))
+          .onEach { appEvent ->
+            if (appEvent is AppEvent.RefreshData) {
+              geoWidgetFragment.clearMapFeatures()
+              appMainViewModel.countRegisterData()
+              geoWidgetLauncherViewModel.retrieveLocations(
+                geoWidgetConfig = geoWidgetConfiguration,
+                searchText = searchViewModel.searchQuery.value.query,
+              )
+            }
+          }
+          .launchIn(lifecycleScope)
+      }
+    }
     geoWidgetLauncherViewModel.noLocationFoundDialog.observe(viewLifecycleOwner) { show ->
       if (show) {
         AlertDialogue.showAlert(
