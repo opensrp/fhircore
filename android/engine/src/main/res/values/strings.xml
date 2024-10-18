@@ -197,4 +197,5 @@
     <string name="retry">RETRY</string>
     <string name="unsynced_data_present">There\'s some un-synced data</string>
     <string name="missing_supervisor_contact">Supervisor contact missing or the provided phone number is invalid</string>
+    <string name="apply_filter">APPLY FILTER</string>
 </resources>
