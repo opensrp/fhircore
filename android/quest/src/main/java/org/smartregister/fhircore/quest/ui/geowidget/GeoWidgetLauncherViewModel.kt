@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.quest.ui.geowidget
 
 import android.content.Context
+import android.graphics.Bitmap
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -29,6 +31,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonPrimitive
 import org.hl7.fhir.r4.model.Enumerations
@@ -55,6 +58,7 @@ import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyn
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+import org.smartregister.fhircore.quest.util.extensions.referenceToBitmap
 
 @HiltViewModel
 class GeoWidgetLauncherViewModel
@@ -79,6 +83,8 @@ constructor(
   }
 
   val geoJsonFeatures: MutableStateFlow<List<GeoJsonFeature>> = MutableStateFlow(emptyList())
+
+  private val decodedImageMap = mutableStateMapOf<String, Bitmap>()
 
   fun retrieveLocations(geoWidgetConfig: GeoWidgetConfiguration, searchText: String?) {
     viewModelScope.launch {
@@ -264,6 +270,10 @@ constructor(
     sharedPreferencesHelper
       .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
       .isNullOrEmpty() && applicationConfiguration.usePractitionerAssignedLocationOnSync
+
+  fun getImageBitmap(reference: String) = runBlocking {
+    reference.referenceToBitmap(defaultRepository.fhirEngine, decodedImageMap)
+  }
 
   private companion object {
     const val KEY_LATITUDE = "positionLatitude"

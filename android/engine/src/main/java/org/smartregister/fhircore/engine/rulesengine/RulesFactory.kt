@@ -183,23 +183,33 @@ constructor(
       relatedResourceKey: String,
       referenceFhirPathExpression: String?,
       relatedResourcesMap: Map<String, List<Resource>>? = null,
+      isRevInclude: Boolean = true,
     ): List<Resource> {
       val value: List<Resource> =
         relatedResourcesMap?.get(relatedResourceKey)
           ?: if (facts.getFact(relatedResourceKey) != null) {
-            facts.getFact(relatedResourceKey).value as List<Resource>
+            facts.getFact(relatedResourceKey).value as List<Resource>? ?: emptyList()
           } else {
             emptyList()
           }
 
-      return if (referenceFhirPathExpression.isNullOrEmpty()) {
-        value
+      if (referenceFhirPathExpression.isNullOrEmpty()) {
+        return value
+      }
+
+      // Reverse search; look for related resource that references the provided resource
+      return if (isRevInclude) {
+        value.filter { res ->
+          fhirPathDataExtractor.extractData(res, referenceFhirPathExpression).all {
+            resource.logicalId == it.primitiveValue().extractLogicalIdUuid()
+          }
+        }
       } else {
-        value.filter {
-          resource.logicalId ==
-            fhirPathDataExtractor
-              .extractValue(it, referenceFhirPathExpression)
-              .extractLogicalIdUuid()
+        // Forward search; extract value provided resource, then search resources with matching id
+        value.filter { res ->
+          fhirPathDataExtractor.extractData(resource, referenceFhirPathExpression).all {
+            res.logicalId == it.primitiveValue().extractLogicalIdUuid()
+          }
         }
       }
     }
@@ -424,14 +434,15 @@ constructor(
 
     /**
      * This function filters resources provided the condition extracted from the
-     * [conditionalFhirPathExpression] is met
+     * [conditionalFhirPathExpression] is met. Returns the original source or empty resources list
+     * if FHIR path expression is null.
      */
     fun filterResources(
       resources: List<Resource>?,
-      conditionalFhirPathExpression: String,
+      conditionalFhirPathExpression: String?,
     ): List<Resource> {
-      if (conditionalFhirPathExpression.isEmpty()) {
-        return emptyList()
+      if (conditionalFhirPathExpression.isNullOrBlank()) {
+        return resources ?: emptyList()
       }
       return resources?.filter {
         fhirPathDataExtractor.extractValue(it, conditionalFhirPathExpression).toBoolean()

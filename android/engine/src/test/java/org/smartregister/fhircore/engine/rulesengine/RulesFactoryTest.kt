@@ -73,6 +73,7 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
@@ -299,6 +300,29 @@ class RulesFactoryTest : RobolectricTest() {
     Assert.assertEquals(1, result.size)
     Assert.assertEquals("CarePlan", result[0].resourceType.name)
     Assert.assertEquals("careplan-1", result[0].logicalId)
+  }
+
+  @Test
+  fun retrieveRelatedResourcesReturnsCorrectResourceWithForwardInclude() {
+    val patient = Faker.buildPatient()
+    val group =
+      Group().apply {
+        id = "grp1"
+        addMember(
+          Group.GroupMemberComponent().apply { entity = patient.asReference() },
+        )
+      }
+    populateFactsWithResources(group)
+    val result =
+      rulesEngineService.retrieveRelatedResources(
+        resource = group,
+        relatedResourceKey = ResourceType.Patient.name,
+        referenceFhirPathExpression = "Group.member.entity.reference",
+        isRevInclude = false,
+      )
+    Assert.assertEquals(1, result.size)
+    Assert.assertEquals("Patient", result[0].resourceType.name)
+    Assert.assertEquals(patient.logicalId, result[0].logicalId)
   }
 
   @Test
@@ -890,13 +914,16 @@ class RulesFactoryTest : RobolectricTest() {
     Assert.assertTrue(result.isEmpty())
   }
 
-  private fun populateFactsWithResources() {
+  private fun populateFactsWithResources(vararg resource: Resource = emptyArray()) {
     val carePlanRelatedResource = mutableListOf(Faker.buildCarePlan())
-    val patientRelatedResource = mutableListOf(Faker.buildPatient())
+    val patient = Faker.buildPatient()
+    val patientRelatedResource = mutableListOf(patient)
+
     val facts = ReflectionHelpers.getField<Facts>(rulesFactory, "facts")
     facts.apply {
       put(carePlanRelatedResource[0].resourceType.name, carePlanRelatedResource)
       put(patientRelatedResource[0].resourceType.name, patientRelatedResource)
+      resource.forEach { put(it.resourceType.name, it) }
     }
     ReflectionHelpers.setField(rulesFactory, "facts", facts)
   }

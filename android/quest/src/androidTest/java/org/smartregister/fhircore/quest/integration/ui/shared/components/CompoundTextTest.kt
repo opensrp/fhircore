@@ -48,6 +48,7 @@ class CompoundTextTest {
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeTestRule.onNodeWithText("Full Name, Age").assertExists().assertIsDisplayed()
@@ -69,6 +70,7 @@ class CompoundTextTest {
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeTestRule.onNodeWithText("Yesterday").assertExists().assertIsDisplayed()
