@@ -52,6 +52,7 @@ class TopScreenSectionTest {
         navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
         onClick = {},
+        decodeImage = null,
       )
     }
 
@@ -83,6 +84,7 @@ class TopScreenSectionTest {
         navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
         onClick = {},
+        decodeImage = null,
       )
     }
 
@@ -116,6 +118,7 @@ class TopScreenSectionTest {
         navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
         onClick = {},
+        decodeImage = null,
       )
     }
 
@@ -135,6 +138,7 @@ class TopScreenSectionTest {
         navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
         onClick = {},
+        decodeImage = null,
       )
     }
     composeTestRule.onNodeWithTag(TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG).assertDoesNotExist()
@@ -150,6 +154,7 @@ class TopScreenSectionTest {
         navController = TestNavHostController(LocalContext.current),
         isSearchBarVisible = true,
         onClick = {},
+        decodeImage = null,
       )
     }
     composeTestRule.onNodeWithTag(TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG).assertIsDisplayed()

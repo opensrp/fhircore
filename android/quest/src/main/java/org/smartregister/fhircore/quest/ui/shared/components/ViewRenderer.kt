@@ -18,9 +18,6 @@ package org.smartregister.fhircore.quest.ui.shared.components
 
 import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
@@ -51,7 +48,7 @@ fun ViewRenderer(
   viewProperties: List<ViewProperties>,
   resourceData: ResourceData,
   navController: NavController,
-  decodedImageMap: SnapshotStateMap<String, Bitmap>,
+  decodeImage: ((String) -> Bitmap?)?,
   areViewPropertiesInterpolated: Boolean = false,
 ) {
   viewProperties.forEach { properties ->
@@ -66,7 +63,7 @@ fun ViewRenderer(
       properties = interpolatedProperties,
       resourceData = resourceData,
       navController = navController,
-      decodedImageMap = decodedImageMap,
+      decodeImage = decodeImage,
     )
   }
 }
@@ -101,7 +98,7 @@ private fun PreviewWeightedViewsInRow() {
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
-    decodedImageMap = remember { mutableStateMapOf() },
+    decodeImage = null,
   )
 }
 
@@ -157,7 +154,7 @@ private fun PreviewWrappedViewsInRow() {
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
-    decodedImageMap = remember { mutableStateMapOf() },
+    decodeImage = null,
   )
 }
 
@@ -195,7 +192,7 @@ private fun PreviewSameSizedViewInRow() {
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
-    decodedImageMap = remember { mutableStateMapOf() },
+    decodeImage = null,
   )
 }
 
@@ -314,6 +311,6 @@ private fun PreviewCardViewWithRows() {
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
-    decodedImageMap = remember { mutableStateMapOf() },
+    decodeImage = null,
   )
 }
