@@ -89,6 +89,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule.onNodeWithText("Upcoming household service").assertExists().assertIsDisplayed()
@@ -114,6 +115,7 @@ class ViewGeneratorTest {
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule
@@ -140,6 +142,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule
@@ -172,6 +175,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule
@@ -204,6 +208,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule.onNodeWithTag(COLUMN_DIVIDER_TEST_TAG).assertExists()
@@ -257,6 +262,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule.onNodeWithText("Richard Brown, M, 29", useUnmergedTree = true).assertDoesNotExist()
@@ -284,6 +290,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule
@@ -316,6 +323,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule
@@ -342,6 +350,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule.onNodeWithText("Sex").assertIsDisplayed()
@@ -359,6 +368,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule
@@ -383,7 +393,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
-        decodedImageMap = decodedImageMap,
+        decodeImage = { reference -> decodedImageMap[reference] },
       )
     }
     composeRule
@@ -410,6 +420,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule

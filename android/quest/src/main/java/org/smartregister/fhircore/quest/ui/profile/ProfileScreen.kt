@@ -43,7 +43,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
@@ -89,8 +89,8 @@ fun ProfileScreen(
   navController: NavController,
   profileUiState: ProfileUiState,
   snackStateFlow: SharedFlow<SnackBarMessageConfig>,
-  decodedImageMap: MutableMap<String, Bitmap> = mutableMapOf(),
   onEvent: (ProfileEvent) -> Unit,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   val scaffoldState = rememberScaffoldState()
   val lazyListState = rememberLazyListState()
@@ -111,6 +111,7 @@ fun ProfileScreen(
           lazyListState = lazyListState,
           onEvent = onEvent,
           collapsible = false,
+          decodeImage = decodeImage,
         )
       } else {
         CustomProfileTopAppBar(
@@ -118,6 +119,7 @@ fun ProfileScreen(
           profileUiState = profileUiState,
           onEvent = onEvent,
           lazyListState = lazyListState,
+          decodeImage = decodeImage,
         )
       }
     },
@@ -129,6 +131,7 @@ fun ProfileScreen(
           resourceData = profileUiState.resourceData,
           navController = navController,
           lazyListState = lazyListState,
+          decodeImage = decodeImage,
         )
       }
     },
@@ -174,7 +177,7 @@ fun ProfileScreen(
             resourceData =
               profileUiState.resourceData ?: ResourceData("", ResourceType.Patient, emptyMap()),
             navController = navController,
-            decodedImageMap = profileUiState.decodedImageMap,
+            decodeImage = decodeImage,
           )
         }
       }
@@ -189,6 +192,7 @@ fun CustomProfileTopAppBar(
   profileUiState: ProfileUiState,
   onEvent: (ProfileEvent) -> Unit,
   lazyListState: LazyListState,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   val topBarConfig = remember { profileUiState.profileConfiguration?.topAppBar ?: TopBarConfig() }
 
@@ -205,6 +209,7 @@ fun CustomProfileTopAppBar(
       collapsible = topBarConfig.collapsible,
       onEvent = onEvent,
       lazyListState = lazyListState,
+      decodeImage = decodeImage,
     )
     if (topBarConfig.collapsible) {
       AnimatedVisibility(visible = lazyListState.isScrollingDown()) {
@@ -214,6 +219,7 @@ fun CustomProfileTopAppBar(
           profileUiState = profileUiState,
           navController = navController,
           titleContentPadding = 16,
+          decodeImage = decodeImage,
         )
       }
     } else {
@@ -223,6 +229,7 @@ fun CustomProfileTopAppBar(
         profileUiState = profileUiState,
         navController = navController,
         titleContentPadding = 0,
+        decodeImage = decodeImage,
       )
     }
   }
@@ -235,6 +242,7 @@ private fun RenderSimpleAppTopBar(
   profileUiState: ProfileUiState,
   navController: NavController,
   titleContentPadding: Int,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   Column(
     modifier =
@@ -249,7 +257,7 @@ private fun RenderSimpleAppTopBar(
       resourceData =
         profileUiState.resourceData ?: ResourceData("", ResourceType.Patient, emptyMap()),
       navController = navController,
-      decodedImageMap = profileUiState.decodedImageMap,
+      decodeImage = decodeImage,
     )
   }
 }
@@ -263,6 +271,7 @@ private fun SimpleTopAppBar(
   profileUiState: ProfileUiState,
   lazyListState: LazyListState,
   collapsible: Boolean,
+  decodeImage: ((String) -> Bitmap?)?,
   onEvent: (ProfileEvent) -> Unit,
 ) {
   TopAppBar(
@@ -289,7 +298,7 @@ private fun SimpleTopAppBar(
     navigationIcon = {
       IconButton(onClick = { navController.popBackStack() }) {
         Icon(
-          Icons.Filled.ArrowBack,
+          Icons.AutoMirrored.Filled.ArrowBack,
           null,
           modifier = modifier.testTag(PROFILE_TOP_BAR_ICON_TEST_TAG),
         )
@@ -300,6 +309,7 @@ private fun SimpleTopAppBar(
         profileUiState = profileUiState,
         onEvent = onEvent,
         navController = navController,
+        decodeImage = decodeImage,
       )
     },
     elevation = elevation.dp,
@@ -312,6 +322,7 @@ private fun ProfileTopAppBarMenuAction(
   onEvent: (ProfileEvent) -> Unit,
   navController: NavController,
   modifier: Modifier = Modifier,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   if (!profileUiState.profileConfiguration?.overFlowMenuItems.isNullOrEmpty()) {
     var showOverflowMenu by remember { mutableStateOf(false) }
@@ -363,6 +374,7 @@ private fun ProfileTopAppBarMenuAction(
               tint = contentColor,
               navController = navController,
               resourceData = profileUiState.resourceData!!,
+              decodeImage = decodeImage,
             )
             if (overflowMenuItemConfig.icon != null) Spacer(modifier = Modifier.width(4.dp))
             Text(text = overflowMenuItemConfig.title, color = contentColor)

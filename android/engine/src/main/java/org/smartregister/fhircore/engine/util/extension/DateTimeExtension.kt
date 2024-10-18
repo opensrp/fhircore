@@ -29,6 +29,7 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.R
+import timber.log.Timber
 
 const val SDF_DD_MMM_YYYY = "dd-MMM-yyyy"
 const val SDF_YYYY_MM_DD = "yyyy-MM-dd"
@@ -39,6 +40,9 @@ const val SDF_YYYY = "yyyy"
 const val SDF_D_MMM_YYYY_WITH_COMA = "d MMM, yyyy"
 const val SDFHH_MM = "HH:mm"
 const val SDF_E_MMM_DD_YYYY = "E, MMM dd yyyy"
+const val DEFAULT_FORMAT_SDF_DD_MM_YYYY = "EEE, MMM dd - hh:mm a"
+const val SDF_YYYY_MMM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss"
+const val MMM_D_HH_MM_AA = "MMM d, hh:mm aa"
 
 fun yesterday(): Date = DateTimeType.now().apply { add(Calendar.DATE, -1) }.value
 
@@ -149,3 +153,60 @@ fun calculateAge(date: Date, context: Context, localDateNow: LocalDate = LocalDa
 
 private fun Context.abbreviateString(resourceId: Int, content: Int) =
   if (content > 0) "$content${this.getString(resourceId).lowercase().abbreviate()} " else ""
+
+fun formatDate(timeMillis: Long, desireFormat: String): String {
+  return try {
+    // Try formatting with the provided format
+    val format = SimpleDateFormat(desireFormat, Locale.getDefault())
+    val date = Date(timeMillis)
+    format.format(date)
+  } catch (e: Exception) {
+    // If formatting fails, fall back to the default format
+    val defaultFormat = SimpleDateFormat(DEFAULT_FORMAT_SDF_DD_MM_YYYY, Locale.getDefault())
+    val date = Date(timeMillis)
+    defaultFormat.format(date)
+  }
+}
+
+/**
+ * Reformats a given date string from its current format to a specified desired format. If the date
+ * string cannot be parsed in the provided current format, the method will return the original date
+ * string as a fallback.
+ *
+ * @param inputDateString The date string that needs to be reformatted.
+ * @param currentFormat The format in which the input date string is provided (e.g., "dd-MM-yyyy").
+ * @param desiredFormat The format in which the output date string should be returned (default:
+ *   "yyyy-MM-dd HH:mm:ss"). If no desired format is specified, it defaults to "yyyy-MM-dd
+ *   HH:mm:ss".
+ * @return A string representing the date in the desired format if parsing succeeds, or the original
+ *   input date string if parsing fails.
+ *
+ * Example usage:
+ * ```
+ * val reformattedDate = reformatDate("08-10-2024 15:30", "dd-MM-yyyy HH:mm", "yyyy-MM-dd HH:mm:ss")
+ * println(reformattedDate) // Output: "2024-10-08 15:30:00"
+ *
+ * val invalidDate = reformatDate("InvalidDate", "dd-MM-yyyy", "yyyy-MM-dd")
+ * println(invalidDate) // Output: "InvalidDate"
+ * ```
+ */
+fun reformatDate(
+  inputDateString: String,
+  currentFormat: String,
+  desiredFormat: String,
+): String {
+  return try {
+    // Create a SimpleDateFormat with the current format of the input date
+    val inputDateFormat = SimpleDateFormat(currentFormat, Locale.getDefault())
+    // Parse the input date string into a Date object
+    val date = inputDateFormat.parse(inputDateString)
+    // Create a SimpleDateFormat for the desired format
+    val outputDateFormat = SimpleDateFormat(desiredFormat, Locale.getDefault())
+    // Format the date into the desired format and return the result
+    outputDateFormat.format(date ?: Date())
+  } catch (e: Exception) {
+    // In case of any exception, return the original input date string
+    Timber.e(e)
+    inputDateString
+  }
+}
