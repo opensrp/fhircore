@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import android.graphics.Bitmap
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -44,13 +43,9 @@ fun StackView(
   navController: NavController,
   decodeImage: ((String) -> Bitmap?)?,
 ) {
-  val backgroundColor = stackViewProperties.backgroundColor.parseColor()
 
   Box(
-    modifier =
-      Modifier.background(backgroundColor.copy(alpha = stackViewProperties.opacity))
-        .size(stackViewProperties.size.dp)
-        .testTag(STACK_VIEW_TEST_TAG),
+    modifier.size(stackViewProperties.size.dp).testTag(STACK_VIEW_TEST_TAG),
     contentAlignment = castViewAlignment(stackViewProperties.alignment),
   ) {
     stackViewProperties.children.forEach { child ->
