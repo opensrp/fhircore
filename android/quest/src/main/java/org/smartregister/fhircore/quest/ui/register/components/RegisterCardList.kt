@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.register.components
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,8 +26,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -66,6 +65,7 @@ fun RegisterCardList(
   currentPage: MutableState<Int>,
   showPagination: Boolean = false,
   onSearchByQrSingleResultAction: (ResourceData) -> Unit,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   LazyColumn(modifier = Modifier.testTag(REGISTER_CARD_LIST_TEST_TAG), state = lazyListState) {
     items(
@@ -81,7 +81,7 @@ fun RegisterCardList(
           viewProperties = registerCardConfig.views,
           resourceData = pagingItems[index]!!,
           navController = navController,
-          decodedImageMap = remember { mutableStateMapOf() },
+          decodeImage = decodeImage,
         )
       }
       Divider(color = DividerColor, thickness = 1.dp)

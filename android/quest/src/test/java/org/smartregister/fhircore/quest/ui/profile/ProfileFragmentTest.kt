@@ -27,6 +27,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
@@ -147,7 +148,7 @@ class ProfileFragmentTest : RobolectricTest() {
         questionnaireResponse = questionnaireResponse,
       )
 
-    coEvery { profileViewModel.retrieveProfileUiState(any(), any(), any(), any()) } just runs
+    every { profileViewModel.retrieveProfileUiState(any(), any(), any(), any()) } just runs
     coEvery { profileViewModel.emitSnackBarState(any()) } just runs
 
     runBlocking { profileFragment.handleQuestionnaireSubmission(questionnaireSubmission) }

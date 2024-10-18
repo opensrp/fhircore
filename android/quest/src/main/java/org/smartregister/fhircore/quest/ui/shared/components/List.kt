@@ -35,8 +35,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -51,7 +49,7 @@ import org.smartregister.fhircore.engine.configuration.register.RegisterCardConf
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ListOrientation
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
-import org.smartregister.fhircore.engine.configuration.view.ListResource
+import org.smartregister.fhircore.engine.configuration.view.ListResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -70,7 +68,7 @@ fun List(
   viewProperties: ListProperties,
   resourceData: ResourceData,
   navController: NavController,
-  decodedImageMap: SnapshotStateMap<String, Bitmap> = mutableStateMapOf(),
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   val density = LocalDensity.current
   val currentListResourceData = resourceData.listResourceDataMap?.get(viewProperties.id)
@@ -138,7 +136,7 @@ fun List(
                       viewProperties = interpolatedChildViewProperties,
                       resourceData = listResourceData,
                       navController = navController,
-                      decodedImageMap = decodedImageMap,
+                      decodeImage = decodeImage,
                       areViewPropertiesInterpolated =
                         true, // Prevents double interpolation (in this function and inside the
                       // ViewRenderer) which is a waste
@@ -161,7 +159,7 @@ fun List(
                 viewProperties = viewProperties.registerCard.views,
                 resourceData = listResourceData,
                 navController = navController,
-                decodedImageMap = mutableStateMapOf(),
+                decodeImage = decodeImage,
               )
             }
           }
@@ -187,7 +185,7 @@ private fun ListWithHorizontalOrientationPreview() {
           borderRadius = 10,
           emptyList = NoResultsConfig(message = ""),
           resources =
-            listOf(ListResource(id = "carePlanList", resourceType = ResourceType.CarePlan)),
+            listOf(ListResourceConfig(id = "carePlanList", resourceType = ResourceType.CarePlan)),
           fillMaxHeight = true,
           registerCard =
             RegisterCardConfig(
@@ -231,6 +229,7 @@ private fun ListWithHorizontalOrientationPreview() {
           baseResourceType = ResourceType.Patient,
           computedValuesMap = emptyMap(),
         ),
+      decodeImage = null,
     )
   }
 }
@@ -251,7 +250,7 @@ private fun ListWithVerticalOrientationPreview() {
           borderRadius = 10,
           emptyList = NoResultsConfig(message = "No care Plans"),
           resources =
-            listOf(ListResource(id = "carePlanList", resourceType = ResourceType.CarePlan)),
+            listOf(ListResourceConfig(id = "carePlanList", resourceType = ResourceType.CarePlan)),
           fillMaxWidth = true,
           registerCard =
             RegisterCardConfig(
@@ -282,6 +281,7 @@ private fun ListWithVerticalOrientationPreview() {
           baseResourceType = ResourceType.Patient,
           computedValuesMap = emptyMap(),
         ),
+      decodeImage = null,
     )
   }
 }

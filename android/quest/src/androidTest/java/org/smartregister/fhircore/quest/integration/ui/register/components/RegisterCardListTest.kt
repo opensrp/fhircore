@@ -60,6 +60,7 @@ class RegisterCardListTest {
         registerUiState = RegisterUiState(),
         currentPage = mutableStateOf(1),
         onSearchByQrSingleResultAction = {},
+        decodeImage = null,
       )
     }
 
@@ -85,6 +86,7 @@ class RegisterCardListTest {
         registerUiState = RegisterUiState(),
         currentPage = mutableStateOf(1),
         onSearchByQrSingleResultAction = {},
+        decodeImage = null,
       )
     }
 
@@ -117,6 +119,7 @@ class RegisterCardListTest {
         currentPage = mutableStateOf(1),
         showPagination = true,
         onSearchByQrSingleResultAction = {},
+        decodeImage = null,
       )
     }
 
@@ -143,6 +146,7 @@ class RegisterCardListTest {
         registerUiState = RegisterUiState(),
         currentPage = mutableStateOf(1),
         onSearchByQrSingleResultAction = {},
+        decodeImage = null,
       )
     }
 

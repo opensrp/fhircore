@@ -52,7 +52,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.SyncStrategy
-import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
@@ -74,8 +73,10 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.countUnSyncedResources
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
+import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.reformatDate
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -86,7 +87,6 @@ import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMo
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
-import org.smartregister.fhircore.quest.util.extensions.resourceReferenceToBitMap
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
 
 @HiltViewModel
@@ -133,23 +133,6 @@ constructor(
     configurationRegistry.retrieveConfigurations(ConfigType.MeasureReport)
   }
 
-  fun retrieveIconsAsBitmap() {
-    viewModelScope.launch(dispatcherProvider.io()) {
-      navigationConfiguration.clientRegisters
-        .asSequence()
-        .filter {
-          it.menuIconConfig != null &&
-            it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
-            !it.menuIconConfig?.reference.isNullOrBlank()
-        }
-        .mapNotNull { it.menuIconConfig!!.reference }
-        .resourceReferenceToBitMap(
-          fhirEngine = fhirEngine,
-          decodedImageMap = configurationRegistry.decodedImageMap,
-        )
-    }
-  }
-
   fun retrieveAppMainUiState(refreshAll: Boolean = true) {
     if (refreshAll) {
       appMainUiState.value =
@@ -157,7 +140,7 @@ constructor(
           appTitle = applicationConfiguration.appTitle,
           currentLanguage = loadCurrentLanguage(),
           username = secureSharedPreference.retrieveSessionUsername() ?: "",
-          lastSyncTime = retrieveLastSyncTimestamp() ?: "",
+          lastSyncTime = getSyncTime(),
           languages = configurationRegistry.fetchLanguages(),
           navigationConfiguration = navigationConfiguration,
           registerCountMap = registerCountMap,
@@ -165,6 +148,47 @@ constructor(
     }
 
     countRegisterData()
+  }
+  // todo - if we can move this method to somewhere else where it can be accessed easily on multiple
+  // view models
+  /**
+   * Retrieves the last sync time from shared preferences and returns it in a formatted way. This
+   * method handles both cases:
+   * 1. The time stored as a timestamp in milliseconds (preferred).
+   * 2. Backward compatibility where the time is stored in a formatted string.
+   *
+   * @return A formatted sync time string.
+   */
+  fun getSyncTime(): String {
+    var result = ""
+
+    // First, check if we have any previously stored sync time in SharedPreferences.
+    retrieveLastSyncTimestamp()?.let { storedDate ->
+
+      // Try to treat the stored time as a timestamp (in milliseconds).
+      runCatching {
+          // Attempt to convert the stored date to Long (i.e., millis format) and format it.
+          result =
+            formatDate(
+              timeMillis = storedDate.toLong(),
+              desireFormat = applicationConfiguration.dateFormat,
+            )
+        }
+        .onFailure {
+          // If conversion to Long fails, it's likely that the stored date is in a formatted string
+          // (backward compatibility).
+          // Reformat the stored date using the provided SYNC_TIMESTAMP_OUTPUT_FORMAT.
+          result =
+            reformatDate(
+              inputDateString = storedDate,
+              currentFormat = SYNC_TIMESTAMP_OUTPUT_FORMAT,
+              desiredFormat = applicationConfiguration.dateFormat,
+            )
+        }
+    }
+
+    // Return the result (either formatted time in millis or re-formatted backward-compatible date).
+    return result
   }
 
   fun countRegisterData() {
@@ -205,7 +229,7 @@ constructor(
         if (event.state is CurrentSyncJobStatus.Succeeded) {
           sharedPreferencesHelper.write(
             SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-            formatLastSyncTimestamp(event.state.timestamp),
+            event.state.timestamp.toInstant().toEpochMilli().toString(),
           )
           retrieveAppMainUiState()
           viewModelScope.launch { retrieveAppMainUiState() }

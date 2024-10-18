@@ -40,6 +40,7 @@ data class ImageProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   override val visible: String = "true",
+  override val opacity: Float? = null,
   val tint: String? = null,
   val text: String? = null,
   val imageConfig: ImageConfig? = null,

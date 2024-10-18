@@ -43,6 +43,7 @@ data class ButtonProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   override val visible: String = "true",
+  override val opacity: Float? = null,
   val contentColor: String? = null,
   val enabled: String = "true",
   val text: String? = null,

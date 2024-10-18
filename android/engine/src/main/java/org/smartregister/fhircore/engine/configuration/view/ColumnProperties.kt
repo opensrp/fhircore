@@ -37,6 +37,7 @@ data class ColumnProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   override val visible: String = "true",
+  override val opacity: Float? = null,
   val spacedBy: Int = 8,
   val wrapContent: Boolean = false,
   val arrangement: ColumnArrangement? = null,

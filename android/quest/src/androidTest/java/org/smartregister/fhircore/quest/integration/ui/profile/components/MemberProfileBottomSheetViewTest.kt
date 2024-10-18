@@ -50,6 +50,7 @@ class MemberProfileBottomSheetViewTest {
         buttonProperties = buttonProperties,
         onViewProfile = { /*Do nothing*/},
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+        decodeImage = null,
       )
     }
   }

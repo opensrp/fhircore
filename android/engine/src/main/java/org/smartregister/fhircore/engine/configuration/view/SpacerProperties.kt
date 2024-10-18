@@ -33,6 +33,7 @@ data class SpacerProperties(
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
+  override val opacity: Float? = null,
   override val clickable: String = "false",
   override val visible: String = "true",
   val height: Float? = null,

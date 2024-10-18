@@ -85,5 +85,6 @@
   ],
   "logGpsLocation": [
     "QUESTIONNAIRE"
-  ]
+  ],
+  "dateFormat": "MMM d, hh:mm aa"
 }

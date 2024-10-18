@@ -155,6 +155,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                 navController = findNavController(),
                 unSyncedResourceCount = appMainViewModel.unSyncedResourcesCount,
                 onCountUnSyncedResources = appMainViewModel::updateUnSyncedResourcesCount,
+                decodeImage = { geoWidgetLauncherViewModel.getImageBitmap(it) },
               )
             },
             snackbarHost = { snackBarHostState ->
@@ -189,6 +190,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                 isFirstTimeSync = geoWidgetLauncherViewModel.isFirstTime(),
                 appDrawerUIState = appDrawerUIState,
                 onAppMainEvent = appMainViewModel::onEvent,
+                decodeImage = { TODO("Return bitmap") },
               )
             }
           }

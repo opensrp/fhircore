@@ -21,6 +21,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.domain.model.LauncherType
+import org.smartregister.fhircore.engine.util.extension.DEFAULT_FORMAT_SDF_DD_MM_YYYY
 
 @Serializable
 data class ApplicationConfiguration(
@@ -57,6 +58,7 @@ data class ApplicationConfiguration(
       id = null,
     ),
   val codingSystems: List<CodingSystemConfig> = emptyList(),
+  var dateFormat: String = DEFAULT_FORMAT_SDF_DD_MM_YYYY,
 ) : Configuration()
 
 enum class SyncStrategy {

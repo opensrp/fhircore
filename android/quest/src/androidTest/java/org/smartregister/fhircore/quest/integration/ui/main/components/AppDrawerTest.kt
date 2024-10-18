@@ -184,6 +184,7 @@ class AppDrawerTest {
         appVersionPair = Pair(1, "0.0.1"),
         onCountUnSyncedResources = {},
         unSyncedResourceCount = remember { mutableIntStateOf(0) },
+        decodeImage = null,
       )
     }
   }
