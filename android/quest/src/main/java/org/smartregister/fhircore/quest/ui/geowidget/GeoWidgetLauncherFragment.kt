@@ -62,6 +62,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
+import org.smartregister.fhircore.geowidget.screens.GeoJsonDataRequester
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
@@ -82,7 +83,7 @@ import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 import timber.log.Timber
 
 @AndroidEntryPoint
-class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
+class GeoWidgetLauncherFragment : Fragment(), OnSyncListener, GeoJsonDataRequester {
 
   @Inject lateinit var eventBus: EventBus
 
@@ -105,10 +106,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
     savedInstanceState: Bundle?,
   ): View {
     buildGeoWidgetFragment()
-    geoWidgetLauncherViewModel.retrieveLocations(
-      geoWidgetConfig = geoWidgetConfiguration,
-      searchText = searchViewModel.searchQuery.value.query,
-    )
+
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
@@ -184,13 +182,14 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                     GeoWidgetEvent.SearchFeatures(
                       searchQuery = SearchQuery(searchText, SearchMode.KeyboardInput),
                       geoWidgetConfig = geoWidgetConfiguration,
+                      onReceiveData = geoWidgetFragment::handleGeoJsonFeatures,
                     ),
                   )
                 },
                 isFirstTimeSync = geoWidgetLauncherViewModel.isFirstTime(),
                 appDrawerUIState = appDrawerUIState,
                 onAppMainEvent = appMainViewModel::onEvent,
-                decodeImage = { TODO("Return bitmap") },
+                decodeImage = { geoWidgetLauncherViewModel.getImageBitmap(it) },
               )
             }
           }
@@ -223,10 +222,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         if (syncJobStatus is CurrentSyncJobStatus.Succeeded) {
           geoWidgetFragment.clearMapFeatures()
         }
-        geoWidgetLauncherViewModel.retrieveLocations(
-          geoWidgetConfig = geoWidgetConfiguration,
-          searchText = searchViewModel.searchQuery.value.query,
-        )
+        requestData(geoWidgetFragment::handleGeoJsonFeatures)
         appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
       }
       else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
@@ -244,10 +240,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
             if (appEvent is AppEvent.RefreshData) {
               geoWidgetFragment.clearMapFeatures()
               appMainViewModel.countRegisterData()
-              geoWidgetLauncherViewModel.retrieveLocations(
-                geoWidgetConfig = geoWidgetConfiguration,
-                searchText = searchViewModel.searchQuery.value.query,
-              )
+              requestData(geoWidgetFragment::handleGeoJsonFeatures)
             }
           }
           .launchIn(lifecycleScope)
@@ -272,8 +265,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         )
       }
     }
-
-    setOnQuestionnaireSubmissionListener { geoWidgetFragment.submitFeatures(listOf(it)) }
+    setOnQuestionnaireSubmissionListener(geoWidgetFragment::handleGeoJsonFeatures)
   }
 
   override fun onPause() {
@@ -301,6 +293,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
     geoWidgetFragment =
       GeoWidgetFragment.builder()
+        .setGeoJsonDataRequester(this)
         .setUseGpsOnAddingLocation(false)
         .setAddLocationButtonVisibility(geoWidgetConfiguration.showAddLocation)
         .setOnAddLocationListener { feature: GeoJsonFeature ->
@@ -332,13 +325,11 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         .showCurrentLocationButtonVisibility(geoWidgetConfiguration.showLocation)
         .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.showPlaneSwitcher)
         .build()
-
-    lifecycleScope.launch {
-      geoWidgetLauncherViewModel.geoJsonFeatures.collect { geoWidgetFragment.submitFeatures(it) }
-    }
   }
 
-  private fun setOnQuestionnaireSubmissionListener(emitFeature: (GeoJsonFeature) -> Unit) {
+  private fun setOnQuestionnaireSubmissionListener(
+    handleGeoJsonFeature: (List<GeoJsonFeature>) -> Unit
+  ) {
     viewLifecycleOwner.lifecycleScope.launch {
       repeatOnLifecycle(Lifecycle.State.STARTED) {
         eventBus.events
@@ -348,12 +339,20 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
               val extractedResourceIds = appEvent.questionnaireSubmission.extractedResourceIds
               geoWidgetLauncherViewModel.onQuestionnaireSubmission(
                 extractedResourceIds = extractedResourceIds,
-                emitFeature = emitFeature,
+                handleGeoJsonFeature = handleGeoJsonFeature,
               )
             }
           }
           .launchIn(lifecycleScope)
       }
     }
+  }
+
+  override fun requestData(onReceiveData: (List<GeoJsonFeature>) -> Unit) {
+    geoWidgetLauncherViewModel.retrieveLocations(
+      geoWidgetConfig = geoWidgetConfiguration,
+      searchText = searchViewModel.searchQuery.value.query,
+      onReceiveData = onReceiveData,
+    )
   }
 }

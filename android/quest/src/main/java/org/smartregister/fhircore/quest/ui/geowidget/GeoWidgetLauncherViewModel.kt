@@ -29,7 +29,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -85,11 +84,13 @@ constructor(
     configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
   }
 
-  val geoJsonFeatures: MutableStateFlow<List<GeoJsonFeature>> = MutableStateFlow(emptyList())
-
   private val decodedImageMap = mutableStateMapOf<String, Bitmap>()
 
-  fun retrieveLocations(geoWidgetConfig: GeoWidgetConfiguration, searchText: String?) {
+  fun retrieveLocations(
+    geoWidgetConfig: GeoWidgetConfiguration,
+    searchText: String?,
+    onReceiveData: (List<GeoJsonFeature>) -> Unit
+  ) {
     viewModelScope.launch {
       val totalCount =
         withContext(dispatcherProvider.io()) {
@@ -169,7 +170,7 @@ constructor(
               )
             }
             .toList()
-        geoJsonFeatures.value =
+        val geoJsonFeatures =
           if (searchText.isNullOrBlank()) {
             registerData
           } else {
@@ -182,6 +183,8 @@ constructor(
             }
           }
 
+        onReceiveData(geoJsonFeatures)
+
         Timber.w(
           locationsWithoutCoordinates.joinToString("\n") {
             val position = (it.resource as Location).position
@@ -190,7 +193,7 @@ constructor(
         )
         pageNumber++
         count += DefaultRepository.DEFAULT_BATCH_SIZE
-        registerDataCount += geoJsonFeatures.value.size
+        registerDataCount += geoJsonFeatures.size
         locationsWithoutCoordinatesCount += locationsWithoutCoordinates.size
       }
 
@@ -256,7 +259,11 @@ constructor(
   fun onEvent(geoWidgetEvent: GeoWidgetEvent) {
     when (geoWidgetEvent) {
       is GeoWidgetEvent.SearchFeatures ->
-        retrieveLocations(geoWidgetEvent.geoWidgetConfig, geoWidgetEvent.searchQuery.query)
+        retrieveLocations(
+          geoWidgetEvent.geoWidgetConfig,
+          geoWidgetEvent.searchQuery.query,
+          geoWidgetEvent.onReceiveData
+        )
     }
   }
 
@@ -270,7 +277,7 @@ constructor(
 
   suspend fun onQuestionnaireSubmission(
     extractedResourceIds: List<IdType>,
-    emitFeature: (GeoJsonFeature) -> Unit,
+    handleGeoJsonFeature: (List<GeoJsonFeature>) -> Unit,
   ) {
     val locationId =
       extractedResourceIds.firstOrNull { it.resourceType == ResourceType.Location.name } ?: return
@@ -278,7 +285,7 @@ constructor(
       defaultRepository.loadResource<Location>(locationId.valueAsString.extractLogicalIdUuid())
         ?: return
 
-    val feature =
+    val geoJsonFeature =
       GeoJsonFeature(
         id = location.id,
         geometry =
@@ -290,7 +297,7 @@ constructor(
               ),
           ),
       )
-    emitFeature(feature)
+    handleGeoJsonFeature(listOf(geoJsonFeature))
   }
 
   fun launchQuestionnaire(

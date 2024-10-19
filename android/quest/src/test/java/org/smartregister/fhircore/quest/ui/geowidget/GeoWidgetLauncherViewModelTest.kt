@@ -146,34 +146,28 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Tech debt : Tracked by issue https://github.com/opensrp/fhircore/issues/3514")
-  fun testRetrieveLocationsShouldReturnGeoJsonFeatureList() = runTest {
-    viewModel.retrieveLocations(geoWidgetConfiguration, null)
-    assertTrue(viewModel.geoJsonFeatures.value.isNotEmpty())
-    assertEquals("loc1", viewModel.geoJsonFeatures.value.first().id)
-  }
-
-  @Test
-  @Ignore("Investigate why this test is not running")
+  @Ignore(
+    "Investigate why this test is not running, issue https://github.com/opensrp/fhircore/issues/3514"
+  )
   fun testOnQuestionnaireSubmission() = runTest {
-    val emitFeature: (GeoJsonFeature) -> Unit = spyk({})
+    val handleGeoJsonFeature: (List<GeoJsonFeature>) -> Unit = spyk({})
     val extractedResourceIds = listOf(IdType(ResourceType.Location.name, location.logicalId))
 
     viewModel.onQuestionnaireSubmission(
       extractedResourceIds = extractedResourceIds,
-      emitFeature = emitFeature,
+      handleGeoJsonFeature = handleGeoJsonFeature,
     )
-    val geoJsonFeatureSlot = slot<GeoJsonFeature>()
-    verify { emitFeature(capture(geoJsonFeatureSlot)) }
+    val geoJsonFeatureSlot = slot<List<GeoJsonFeature>>()
+    verify { handleGeoJsonFeature(capture(geoJsonFeatureSlot)) }
 
     val geoJsonFeature = geoJsonFeatureSlot.captured
     assertEquals(
       location.position.longitude.toDouble(),
-      geoJsonFeature.geometry?.coordinates?.first(),
+      geoJsonFeature.first().geometry?.coordinates?.first(),
     )
     assertEquals(
       location.position.latitude.toDouble(),
-      geoJsonFeature.geometry?.coordinates?.last(),
+      geoJsonFeature.first().geometry?.coordinates?.last(),
     )
   }
 

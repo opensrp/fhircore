@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.mapbox.geojson.Feature
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
@@ -27,13 +25,6 @@ import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment.Companion.
 class GeoWidgetViewModel : ViewModel() {
 
   val mapFeatures = ArrayDeque<Feature>()
-  private val _features = MutableLiveData<List<GeoJsonFeature>>(mutableListOf())
-  val features: LiveData<List<GeoJsonFeature>>
-    get() = _features
-
-  fun submitFeatures(geoJsonFeatures: List<GeoJsonFeature>) {
-    _features.postValue(geoJsonFeatures)
-  }
 
   fun updateMapFeatures(geoJsonFeatures: List<GeoJsonFeature>) {
     if (mapFeatures.size <= MAP_FEATURES_LIMIT) {

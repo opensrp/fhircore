@@ -73,6 +73,7 @@ class GeoWidgetFragment : Fragment() {
   internal var showCurrentLocationButton: Boolean = true
   internal var showPlaneSwitcherButton: Boolean = true
   internal var showAddLocationButton: Boolean = true
+  internal lateinit var geoJsonDataRequester: GeoJsonDataRequester
   private var mapView: KujakuMapView? = null
   private lateinit var geoWidgetViewModel: GeoWidgetViewModel
 
@@ -90,12 +91,7 @@ class GeoWidgetFragment : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     geoWidgetViewModel = ViewModelProvider(this)[GeoWidgetViewModel::class.java]
-    geoWidgetViewModel.features.observe(viewLifecycleOwner) { result ->
-      if (result.isNotEmpty()) {
-        geoWidgetViewModel.updateMapFeatures(result)
-        zoomMapWithFeatures()
-      }
-    }
+    geoJsonDataRequester.requestData { data -> handleGeoJsonFeatures(data) }
   }
 
   override fun onStart() {
@@ -310,6 +306,13 @@ class GeoWidgetFragment : Fragment() {
     )
   }
 
+  fun handleGeoJsonFeatures(geoJsonFeatures: List<GeoJsonFeature>) {
+    if (geoJsonFeatures.isNotEmpty()) {
+      geoWidgetViewModel.updateMapFeatures(geoJsonFeatures)
+      zoomMapWithFeatures()
+    }
+  }
+
   private fun zoomMapWithFeatures() {
     mapView?.getMapAsync { mapboxMap ->
       val features = geoWidgetViewModel.mapFeatures.toList()
@@ -340,6 +343,7 @@ class GeoWidgetFragment : Fragment() {
 
   class Builder {
 
+    private lateinit var geoJsonDataRequester: GeoJsonDataRequester
     private var onAddLocationCallback: (GeoJsonFeature) -> Unit = {}
     private var onCancelAddingLocationCallback: () -> Unit = {}
     private var onClickLocationCallback: (GeoJsonFeature, FragmentManager) -> Unit =
@@ -377,6 +381,10 @@ class GeoWidgetFragment : Fragment() {
       this.showPlaneSwitcherButton = show
     }
 
+    fun setGeoJsonDataRequester(geoJsonDataRequester: GeoJsonDataRequester) = apply {
+      this.geoJsonDataRequester = geoJsonDataRequester
+    }
+
     fun build(): GeoWidgetFragment {
       return GeoWidgetFragment().apply {
         this.onAddLocationCallback = this@Builder.onAddLocationCallback
@@ -387,13 +395,8 @@ class GeoWidgetFragment : Fragment() {
         this.showCurrentLocationButton = this@Builder.showCurrentLocationButton
         this.showPlaneSwitcherButton = this@Builder.showPlaneSwitcherButton
         this.showAddLocationButton = this@Builder.showAddLocationButton
+        this.geoJsonDataRequester = this@Builder.geoJsonDataRequester
       }
-    }
-  }
-
-  fun submitFeatures(geoJsonFeatures: List<GeoJsonFeature>) {
-    if (this::geoWidgetViewModel.isInitialized) {
-      geoWidgetViewModel.submitFeatures(geoJsonFeatures)
     }
   }
 
