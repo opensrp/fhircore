@@ -64,6 +64,7 @@ class UserSettingFragmentTest : RobolectricTest() {
   private val resourceService: FhirResourceService = mockk()
   private val application: Context = ApplicationProvider.getApplicationContext()
   private var sharedPreferencesHelper: SharedPreferencesHelper
+  private lateinit var preferenceDataStore: PreferenceDataStore
   private var configService: ConfigService
   private var fhirResourceDataSource: FhirResourceDataSource
   private lateinit var syncBroadcaster: SyncBroadcaster
@@ -74,6 +75,7 @@ class UserSettingFragmentTest : RobolectricTest() {
 
   init {
     sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
+    preferenceDataStore = PreferenceDataStore(context = context, dataStore = mockk())
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
   }

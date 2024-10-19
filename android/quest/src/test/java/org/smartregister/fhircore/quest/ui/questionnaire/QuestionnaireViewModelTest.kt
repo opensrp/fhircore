@@ -94,6 +94,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
@@ -130,6 +131,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var fhirValidatorProvider: Provider<FhirValidator>
+
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   @Inject lateinit var configService: ConfigService
 
@@ -184,6 +187,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
+          preferenceDataStore = preferenceDataStore,
           configurationRegistry = configurationRegistry,
           configService = configService,
           configRulesExecutor = configRulesExecutor,
@@ -211,6 +215,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           transformSupportServices = mockk(),
           sharedPreferencesHelper = sharedPreferencesHelper,
           fhirValidatorProvider = fhirValidatorProvider,
+          preferenceDataStore = preferenceDataStore,
           fhirOperator = fhirOperator,
           fhirPathDataExtractor = fhirPathDataExtractor,
           configurationRegistry = configurationRegistry,
