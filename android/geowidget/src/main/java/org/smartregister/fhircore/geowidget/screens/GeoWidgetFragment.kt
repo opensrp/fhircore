@@ -313,25 +313,28 @@ class GeoWidgetFragment : Fragment() {
 
   private fun zoomMapWithFeatures() {
     mapView?.getMapAsync { mapboxMap ->
-      val featureCollection =
-        FeatureCollection.fromFeatures(geoWidgetViewModel.mapFeatures.toList())
-      val locationPoints =
-        featureCollection
-          .features()
-          ?.asSequence()
-          ?.filter { it.geometry() is Point }
-          ?.map { it.geometry() as Point }
-          ?.toMutableList() ?: emptyList()
+      val features = geoWidgetViewModel.mapFeatures.toList()
+      if (features.isNotEmpty()) {
+        val featureCollection = FeatureCollection.fromFeatures(features)
+        val locationPoints =
+          featureCollection
+            .features()
+            ?.asSequence()
+            ?.filter { it.geometry() is Point }
+            ?.map { it.geometry() as Point }
+            ?.toMutableList() ?: emptyList()
 
-      val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(locationPoints))
-      val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, 1000.0)
-      val bounds = LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0])
-      val finalCameraPosition = CameraUpdateFactory.newLatLngBounds(bounds, 50)
+        val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(locationPoints))
+        val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, 1000.0)
+        val bounds = LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0])
+        val finalCameraPosition = CameraUpdateFactory.newLatLngBounds(bounds, 50)
 
-      with(mapboxMap) {
-        (style?.getSourceAs(requireContext().getString(R.string.data_set_quest)) as GeoJsonSource?)
-          ?.apply { setGeoJson(featureCollection) }
-        easeCamera(finalCameraPosition)
+        with(mapboxMap) {
+          (style?.getSourceAs(requireContext().getString(R.string.data_set_quest))
+              as GeoJsonSource?)
+            ?.apply { setGeoJson(featureCollection) }
+          easeCamera(finalCameraPosition)
+        }
       }
     }
   }

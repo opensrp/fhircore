@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.geowidget
 
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.compose.material.SnackbarDuration
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -26,7 +27,6 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -57,8 +57,11 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationIds
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.Geometry
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.util.extensions.referenceToBitmap
+import timber.log.Timber
+import javax.inject.Inject
 
 @HiltViewModel
 class GeoWidgetLauncherViewModel
@@ -114,8 +117,9 @@ constructor(
       }
       var count = 0
       var pageNumber = 0
+      var locationsWithoutCoordinatesCount = 0L
       while (count < totalCount) {
-        val registerData =
+        val (locationsWithCoordinates, locationsWithoutCoordinates) =
           defaultRepository
             .searchResourcesRecursively(
               filterActiveResources = null,
@@ -129,8 +133,13 @@ constructor(
             )
             .asSequence()
             .filter { it.resource is Location }
-            .filter { (it.resource as Location).hasPosition() }
-            .filter { with((it.resource as Location).position) { hasLongitude() && hasLatitude() } }
+            .partition {
+              with((it.resource as Location).position) { hasLongitude() && hasLatitude() }
+            }
+
+        val registerData =
+          locationsWithCoordinates
+            .asSequence()
             .map {
               Pair(
                 it.resource as Location,
@@ -171,8 +180,41 @@ constructor(
               } == true
             }
           }
+
+        Timber.w(
+          locationsWithoutCoordinates.joinToString("\n") {
+            val position = (it.resource as Location).position
+            "Location id ${it.resource.logicalId} coordinates (${position.longitude},${position.latitude}) invalid."
+          },
+        )
         pageNumber++
         count += DefaultRepository.DEFAULT_BATCH_SIZE
+        locationsWithoutCoordinatesCount += locationsWithoutCoordinates.size
+      }
+
+      if (locationsWithoutCoordinatesCount > 0) {
+        val message =
+          context.getString(
+            R.string.locations_without_coordinates,
+            locationsWithoutCoordinatesCount,
+            totalCount,
+          )
+        Timber.w(message)
+        emitSnackBarState(
+          SnackBarMessageConfig(
+            message = message,
+            actionLabel = context.getString(org.smartregister.fhircore.engine.R.string.ok),
+            duration = SnackbarDuration.Long,
+          ),
+        )
+      } else {
+        emitSnackBarState(
+          SnackBarMessageConfig(
+            message = context.getString(R.string.all_locations_rendered, totalCount),
+            actionLabel = context.getString(org.smartregister.fhircore.engine.R.string.ok),
+            duration = SnackbarDuration.Short,
+          ),
+        )
       }
     }
   }
