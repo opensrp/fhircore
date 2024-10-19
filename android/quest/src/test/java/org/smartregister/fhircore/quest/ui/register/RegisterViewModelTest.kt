@@ -156,7 +156,7 @@ class RegisterViewModelTest : RobolectricTest() {
       mutableStateOf(RegisterUiState(registerId = registerId))
     // Search with empty string should paginate the data
     registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery.emptyText))
-    verify { registerViewModel.paginateRegisterData(any(), any()) }
+    verify { registerViewModel.retrieveRegisterUiState(any(), any(), any(), any()) }
 
     // Search for the word 'Khan' should call the filterRegisterData function
     registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery("Khan")))
