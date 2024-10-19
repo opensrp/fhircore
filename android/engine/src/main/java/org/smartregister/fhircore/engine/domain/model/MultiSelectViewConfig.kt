@@ -30,6 +30,8 @@ import kotlinx.serialization.Serializable
  *   extracting the value used to identify if the current resource is Root. The key is the FHIRPath
  *   expression while value is the content to compare against.
  * @property viewActions The actions to be performed when the multiselect action button is pressed
+ * @property mutuallyExclusive Setup the multi choice checkbox such that only a single (root level)
+ *   selection can be performed at a time.
  */
 @Serializable
 @Parcelize
