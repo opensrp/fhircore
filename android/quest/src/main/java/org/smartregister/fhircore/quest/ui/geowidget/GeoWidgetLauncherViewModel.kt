@@ -27,6 +27,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -61,7 +62,6 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.util.extensions.referenceToBitmap
 import timber.log.Timber
-import javax.inject.Inject
 
 @HiltViewModel
 class GeoWidgetLauncherViewModel
@@ -118,6 +118,7 @@ constructor(
       var count = 0
       var pageNumber = 0
       var locationsWithoutCoordinatesCount = 0L
+      var registerDataCount = 0L
       while (count < totalCount) {
         val (locationsWithCoordinates, locationsWithoutCoordinates) =
           defaultRepository
@@ -189,15 +190,19 @@ constructor(
         )
         pageNumber++
         count += DefaultRepository.DEFAULT_BATCH_SIZE
+        registerDataCount += geoJsonFeatures.value.size
         locationsWithoutCoordinatesCount += locationsWithoutCoordinates.size
       }
 
-      if (locationsWithoutCoordinatesCount > 0) {
+      val locationsCount = if (searchText.isNullOrBlank()) totalCount else registerDataCount
+
+      // Account for locations without coordinates
+      if (locationsWithoutCoordinatesCount in 1..locationsCount) {
         val message =
           context.getString(
             R.string.locations_without_coordinates,
             locationsWithoutCoordinatesCount,
-            totalCount,
+            locationsCount,
           )
         Timber.w(message)
         emitSnackBarState(
@@ -208,13 +213,42 @@ constructor(
           ),
         )
       } else {
+        val message =
+          if (searchText.isNullOrBlank()) {
+            context.getString(R.string.all_locations_rendered)
+          } else context.getString(R.string.all_matching_locations_rendered, locationsCount)
         emitSnackBarState(
           SnackBarMessageConfig(
-            message = context.getString(R.string.all_locations_rendered, totalCount),
+            message = message,
             actionLabel = context.getString(org.smartregister.fhircore.engine.R.string.ok),
             duration = SnackbarDuration.Short,
           ),
         )
+      }
+
+      // Account for missing locations
+      if (locationsCount == 0L) {
+        if (!searchText.isNullOrBlank()) {
+          val message =
+            context.getString(
+              R.string.no_found_locations_matching_text,
+              searchText,
+            )
+          Timber.w(message)
+          emitSnackBarState(
+            SnackBarMessageConfig(
+              message = message,
+              actionLabel = context.getString(org.smartregister.fhircore.engine.R.string.ok),
+              duration = SnackbarDuration.Long,
+            ),
+          )
+        } else {
+          SnackBarMessageConfig(
+            message = context.getString(R.string.no_locations_to_render),
+            actionLabel = context.getString(org.smartregister.fhircore.engine.R.string.ok),
+            duration = SnackbarDuration.Long,
+          )
+        }
       }
     }
   }
@@ -228,7 +262,9 @@ constructor(
 
   suspend fun showNoLocationDialog(geoWidgetConfiguration: GeoWidgetConfiguration) {
     geoWidgetConfiguration.noResults?.let {
-      _noLocationFoundDialog.postValue(context.retrieveRelatedEntitySyncLocationIds().isEmpty())
+      _noLocationFoundDialog.postValue(
+        context.retrieveRelatedEntitySyncLocationIds().isEmpty(),
+      )
     }
   }
 
