@@ -69,6 +69,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import kotlin.math.min
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
@@ -85,7 +86,6 @@ import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.ui.shared.models.SearchMode
 import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.util.QrCodeScanUtils
-import kotlin.math.min
 
 const val DRAWER_MENU = "Drawer Menu"
 const val SEARCH = "Search"
@@ -353,7 +353,7 @@ fun SetupToolbarIcons(
               onClick = {
                 onClick(ToolbarClickEvent.Actions(it.actions))
                 showOverflowMenu = !showOverflowMenu
-              }
+              },
             ) {
               Image(
                 imageProperties = it,

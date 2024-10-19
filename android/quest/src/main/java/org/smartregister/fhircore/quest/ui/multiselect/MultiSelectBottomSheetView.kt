@@ -52,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -64,7 +65,9 @@ import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.ui.multiselect.MultiSelectView
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
+import org.smartregister.fhircore.engine.ui.multiselect.updateNestedCheckboxState
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.util.extension.isIn
 
 @Composable
 fun MultiSelectBottomSheetView(
@@ -78,6 +81,7 @@ fun MultiSelectBottomSheetView(
   search: () -> Unit,
   isLoading: State<Boolean?>,
   multiSelectViewAction: List<MultiSelectViewAction>,
+  mutuallyExclusive: Boolean,
 ) {
   val keyboardController = LocalSoftwareKeyboardController.current
   Scaffold(
@@ -173,11 +177,41 @@ fun MultiSelectBottomSheetView(
         LazyColumn(
           modifier = Modifier.padding(horizontal = 8.dp),
         ) {
-          items(rootTreeNodes, key = { item -> item.id }) {
+          items(rootTreeNodes, key = { item -> item.id }) { rootTreeNode ->
             Column {
               MultiSelectView(
-                rootTreeNode = it,
+                rootTreeNode = rootTreeNode,
                 syncLocationStateMap = syncLocationStateMap,
+                onChecked = {
+                  if (mutuallyExclusive) {
+                    rootTreeNodes.forEach { currentNode ->
+                      val currentNodeToggleableState =
+                        syncLocationStateMap[currentNode.id]?.toggleableState
+                      if (
+                        currentNode.id != rootTreeNode.id &&
+                          currentNodeToggleableState != null &&
+                          currentNodeToggleableState.isIn(
+                            ToggleableState.On,
+                            ToggleableState.Indeterminate,
+                          )
+                      ) {
+                        // De-select the root and its children
+                        syncLocationStateMap[currentNode.id] =
+                          SyncLocationState(
+                            locationId = currentNode.id,
+                            parentLocationId = currentNode.parent?.id,
+                            toggleableState = ToggleableState.Off,
+                          )
+
+                        updateNestedCheckboxState(
+                          currentTreeNode = currentNode,
+                          syncLocationStateMap = syncLocationStateMap,
+                          checked = false,
+                        )
+                      }
+                    }
+                  }
+                },
               ) { treeNode ->
                 Column { Text(text = treeNode.data) }
               }

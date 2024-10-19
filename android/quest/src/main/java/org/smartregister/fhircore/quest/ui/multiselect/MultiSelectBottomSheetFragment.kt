@@ -90,7 +90,8 @@ class MultiSelectBottomSheetFragment : BottomSheetDialogFragment() {
     return ComposeView(requireContext()).apply {
       setContent {
         AppTheme {
-          if (bottomSheetArgs.multiSelectViewConfig != null) {
+          val multiSelectViewConfig = bottomSheetArgs.multiSelectViewConfig
+          if (multiSelectViewConfig != null) {
             MultiSelectBottomSheetView(
               rootTreeNodes = multiSelectViewModel.rootTreeNodes,
               syncLocationStateMap = multiSelectViewModel.selectedNodes,
@@ -101,7 +102,8 @@ class MultiSelectBottomSheetFragment : BottomSheetDialogFragment() {
               onSelectionDone = ::onSelectionDone,
               search = multiSelectViewModel::search,
               isLoading = multiSelectViewModel.isLoading.observeAsState(),
-              multiSelectViewAction = bottomSheetArgs.multiSelectViewConfig!!.viewActions,
+              multiSelectViewAction = multiSelectViewConfig.viewActions,
+              mutuallyExclusive = multiSelectViewConfig.mutuallyExclusive,
             )
           } else {
             Box(contentAlignment = Alignment.Center) {

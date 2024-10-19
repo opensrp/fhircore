@@ -39,6 +39,7 @@ data class MultiSelectViewConfig(
   val contentFhirPathExpression: String,
   val rootNodeFhirPathExpression: KeyValueConfig,
   val viewActions: List<MultiSelectViewAction> = listOf(MultiSelectViewAction.FILTER_DATA),
+  val mutuallyExclusive: Boolean = true,
 ) : java.io.Serializable, Parcelable
 
 enum class MultiSelectViewAction {
