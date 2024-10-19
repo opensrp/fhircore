@@ -77,9 +77,4 @@ class GeoWidgetViewModel : ViewModel() {
     map[ServicePointType.LYCÉE.name.lowercase()] = ServicePointType.LYCÉE
     return map
   }
-
-  override fun onCleared() {
-    super.onCleared()
-    clearMapFeatures()
-  }
 }

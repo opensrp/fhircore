@@ -120,7 +120,6 @@ class GeoWidgetFragment : Fragment() {
 
   override fun onDestroy() {
     super.onDestroy()
-    geoWidgetViewModel.clearMapFeatures()
     mapView?.onDestroy()
   }
 
