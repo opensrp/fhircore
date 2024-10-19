@@ -22,5 +22,5 @@ sealed class AppEvent {
   data class OnSubmitQuestionnaire(val questionnaireSubmission: QuestionnaireSubmission) :
     AppEvent()
 
-  data object RefreshRegisterData : AppEvent()
+  data object RefreshData : AppEvent()
 }

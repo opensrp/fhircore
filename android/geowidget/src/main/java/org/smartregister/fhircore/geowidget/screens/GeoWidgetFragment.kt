@@ -73,6 +73,7 @@ class GeoWidgetFragment : Fragment() {
   internal var showCurrentLocationButton: Boolean = true
   internal var showPlaneSwitcherButton: Boolean = true
   internal var showAddLocationButton: Boolean = true
+  internal lateinit var geoJsonDataRequester: GeoJsonDataRequester
   private var mapView: KujakuMapView? = null
   private lateinit var geoWidgetViewModel: GeoWidgetViewModel
 
@@ -90,12 +91,7 @@ class GeoWidgetFragment : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     geoWidgetViewModel = ViewModelProvider(this)[GeoWidgetViewModel::class.java]
-    geoWidgetViewModel.features.observe(viewLifecycleOwner) { result ->
-      if (result.isNotEmpty()) {
-        geoWidgetViewModel.updateMapFeatures(result)
-        zoomMapWithFeatures()
-      }
-    }
+    geoJsonDataRequester.requestData { data -> handleGeoJsonFeatures(data) }
   }
 
   override fun onStart() {
@@ -120,7 +116,6 @@ class GeoWidgetFragment : Fragment() {
 
   override fun onDestroy() {
     super.onDestroy()
-    geoWidgetViewModel.clearMapFeatures()
     mapView?.onDestroy()
   }
 
@@ -311,33 +306,45 @@ class GeoWidgetFragment : Fragment() {
     )
   }
 
+  fun handleGeoJsonFeatures(geoJsonFeatures: List<GeoJsonFeature>) {
+    if (geoJsonFeatures.isNotEmpty()) {
+      geoWidgetViewModel.updateMapFeatures(geoJsonFeatures)
+      zoomMapWithFeatures()
+    }
+  }
+
   private fun zoomMapWithFeatures() {
     mapView?.getMapAsync { mapboxMap ->
-      val featureCollection =
-        FeatureCollection.fromFeatures(geoWidgetViewModel.mapFeatures.toList())
-      val locationPoints =
-        featureCollection
-          .features()
-          ?.asSequence()
-          ?.filter { it.geometry() is Point }
-          ?.map { it.geometry() as Point }
-          ?.toMutableList() ?: emptyList()
+      val features = geoWidgetViewModel.mapFeatures.toList()
+      if (features.isNotEmpty()) {
+        val featureCollection = FeatureCollection.fromFeatures(features)
+        val locationPoints =
+          featureCollection
+            .features()
+            ?.asSequence()
+            ?.filter { it.geometry() is Point }
+            ?.map { it.geometry() as Point }
+            ?.toMutableList() ?: emptyList()
 
-      val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(locationPoints))
-      val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, 1000.0)
-      val bounds = LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0])
-      val finalCameraPosition = CameraUpdateFactory.newLatLngBounds(bounds, 50)
+        val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(locationPoints))
+        val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, PADDING_IN_METRES)
+        val bounds = LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0])
+        val finalCameraPosition =
+          CameraUpdateFactory.newLatLngBounds(bounds, CAMERA_POSITION_PADDING)
 
-      with(mapboxMap) {
-        (style?.getSourceAs(requireContext().getString(R.string.data_set_quest)) as GeoJsonSource?)
-          ?.apply { setGeoJson(featureCollection) }
-        easeCamera(finalCameraPosition)
+        with(mapboxMap) {
+          (style?.getSourceAs(requireContext().getString(R.string.data_set_quest))
+              as GeoJsonSource?)
+            ?.apply { setGeoJson(featureCollection) }
+          easeCamera(finalCameraPosition)
+        }
       }
     }
   }
 
   class Builder {
 
+    private lateinit var geoJsonDataRequester: GeoJsonDataRequester
     private var onAddLocationCallback: (GeoJsonFeature) -> Unit = {}
     private var onCancelAddingLocationCallback: () -> Unit = {}
     private var onClickLocationCallback: (GeoJsonFeature, FragmentManager) -> Unit =
@@ -375,6 +382,10 @@ class GeoWidgetFragment : Fragment() {
       this.showPlaneSwitcherButton = show
     }
 
+    fun setGeoJsonDataRequester(geoJsonDataRequester: GeoJsonDataRequester) = apply {
+      this.geoJsonDataRequester = geoJsonDataRequester
+    }
+
     fun build(): GeoWidgetFragment {
       return GeoWidgetFragment().apply {
         this.onAddLocationCallback = this@Builder.onAddLocationCallback
@@ -385,13 +396,8 @@ class GeoWidgetFragment : Fragment() {
         this.showCurrentLocationButton = this@Builder.showCurrentLocationButton
         this.showPlaneSwitcherButton = this@Builder.showPlaneSwitcherButton
         this.showAddLocationButton = this@Builder.showAddLocationButton
+        this.geoJsonDataRequester = this@Builder.geoJsonDataRequester
       }
-    }
-  }
-
-  fun submitFeatures(geoJsonFeatures: List<GeoJsonFeature>) {
-    if (this::geoWidgetViewModel.isInitialized) {
-      geoWidgetViewModel.submitFeatures(geoJsonFeatures)
     }
   }
 
@@ -399,6 +405,8 @@ class GeoWidgetFragment : Fragment() {
 
   companion object {
     const val MAP_FEATURES_LIMIT = 1000
+    const val PADDING_IN_METRES = 1000.0
+    const val CAMERA_POSITION_PADDING = 50
 
     fun builder() = Builder()
   }

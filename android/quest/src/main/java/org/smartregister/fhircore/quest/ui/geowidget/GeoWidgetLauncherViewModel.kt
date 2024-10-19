@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.geowidget
 
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.compose.material.SnackbarDuration
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -28,7 +29,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -57,8 +57,10 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationIds
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.Geometry
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.util.extensions.referenceToBitmap
+import timber.log.Timber
 
 @HiltViewModel
 class GeoWidgetLauncherViewModel
@@ -82,11 +84,13 @@ constructor(
     configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
   }
 
-  val geoJsonFeatures: MutableStateFlow<List<GeoJsonFeature>> = MutableStateFlow(emptyList())
-
   private val decodedImageMap = mutableStateMapOf<String, Bitmap>()
 
-  fun retrieveLocations(geoWidgetConfig: GeoWidgetConfiguration, searchText: String?) {
+  fun retrieveLocations(
+    geoWidgetConfig: GeoWidgetConfiguration,
+    searchText: String?,
+    onReceiveData: (List<GeoJsonFeature>) -> Unit,
+  ) {
     viewModelScope.launch {
       val totalCount =
         withContext(dispatcherProvider.io()) {
@@ -114,8 +118,10 @@ constructor(
       }
       var count = 0
       var pageNumber = 0
+      var locationsWithoutCoordinatesCount = 0L
+      var registerDataCount = 0L
       while (count < totalCount) {
-        val registerData =
+        val (locationsWithCoordinates, locationsWithoutCoordinates) =
           defaultRepository
             .searchResourcesRecursively(
               filterActiveResources = null,
@@ -129,8 +135,13 @@ constructor(
             )
             .asSequence()
             .filter { it.resource is Location }
-            .filter { (it.resource as Location).hasPosition() }
-            .filter { with((it.resource as Location).position) { hasLongitude() && hasLatitude() } }
+            .partition {
+              with((it.resource as Location).position) { hasLongitude() && hasLatitude() }
+            }
+
+        val registerData =
+          locationsWithCoordinates
+            .asSequence()
             .map {
               Pair(
                 it.resource as Location,
@@ -159,7 +170,7 @@ constructor(
               )
             }
             .toList()
-        geoJsonFeatures.value =
+        val geoJsonFeatures =
           if (searchText.isNullOrBlank()) {
             registerData
           } else {
@@ -171,8 +182,76 @@ constructor(
               } == true
             }
           }
+
+        onReceiveData(geoJsonFeatures)
+
+        Timber.w(
+          locationsWithoutCoordinates.joinToString("\n") {
+            val position = (it.resource as Location).position
+            "Location id ${it.resource.logicalId} coordinates (${position.longitude},${position.latitude}) invalid."
+          },
+        )
         pageNumber++
         count += DefaultRepository.DEFAULT_BATCH_SIZE
+        registerDataCount += geoJsonFeatures.size
+        locationsWithoutCoordinatesCount += locationsWithoutCoordinates.size
+      }
+
+      val locationsCount = if (searchText.isNullOrBlank()) totalCount else registerDataCount
+
+      // Account for locations without coordinates
+      if (locationsWithoutCoordinatesCount in 1..locationsCount) {
+        val message =
+          context.getString(
+            R.string.locations_without_coordinates,
+            locationsWithoutCoordinatesCount,
+            locationsCount,
+          )
+        Timber.w(message)
+        emitSnackBarState(
+          SnackBarMessageConfig(
+            message = message,
+            actionLabel = context.getString(org.smartregister.fhircore.engine.R.string.ok),
+            duration = SnackbarDuration.Long,
+          ),
+        )
+      } else {
+        val message =
+          if (searchText.isNullOrBlank()) {
+            context.getString(R.string.all_locations_rendered)
+          } else context.getString(R.string.all_matching_locations_rendered, locationsCount)
+        emitSnackBarState(
+          SnackBarMessageConfig(
+            message = message,
+            actionLabel = context.getString(org.smartregister.fhircore.engine.R.string.ok),
+            duration = SnackbarDuration.Short,
+          ),
+        )
+      }
+
+      // Account for missing locations
+      if (locationsCount == 0L) {
+        if (!searchText.isNullOrBlank()) {
+          val message =
+            context.getString(
+              R.string.no_found_locations_matching_text,
+              searchText,
+            )
+          Timber.w(message)
+          emitSnackBarState(
+            SnackBarMessageConfig(
+              message = message,
+              actionLabel = context.getString(org.smartregister.fhircore.engine.R.string.ok),
+              duration = SnackbarDuration.Long,
+            ),
+          )
+        } else {
+          SnackBarMessageConfig(
+            message = context.getString(R.string.no_locations_to_render),
+            actionLabel = context.getString(org.smartregister.fhircore.engine.R.string.ok),
+            duration = SnackbarDuration.Long,
+          )
+        }
       }
     }
   }
@@ -180,19 +259,25 @@ constructor(
   fun onEvent(geoWidgetEvent: GeoWidgetEvent) {
     when (geoWidgetEvent) {
       is GeoWidgetEvent.SearchFeatures ->
-        retrieveLocations(geoWidgetEvent.geoWidgetConfig, geoWidgetEvent.searchQuery.query)
+        retrieveLocations(
+          geoWidgetEvent.geoWidgetConfig,
+          geoWidgetEvent.searchQuery.query,
+          geoWidgetEvent.onReceiveData,
+        )
     }
   }
 
   suspend fun showNoLocationDialog(geoWidgetConfiguration: GeoWidgetConfiguration) {
     geoWidgetConfiguration.noResults?.let {
-      _noLocationFoundDialog.postValue(context.retrieveRelatedEntitySyncLocationIds().isEmpty())
+      _noLocationFoundDialog.postValue(
+        context.retrieveRelatedEntitySyncLocationIds().isEmpty(),
+      )
     }
   }
 
   suspend fun onQuestionnaireSubmission(
     extractedResourceIds: List<IdType>,
-    emitFeature: (GeoJsonFeature) -> Unit,
+    handleGeoJsonFeature: (List<GeoJsonFeature>) -> Unit,
   ) {
     val locationId =
       extractedResourceIds.firstOrNull { it.resourceType == ResourceType.Location.name } ?: return
@@ -200,7 +285,7 @@ constructor(
       defaultRepository.loadResource<Location>(locationId.valueAsString.extractLogicalIdUuid())
         ?: return
 
-    val feature =
+    val geoJsonFeature =
       GeoJsonFeature(
         id = location.id,
         geometry =
@@ -212,7 +297,7 @@ constructor(
               ),
           ),
       )
-    emitFeature(feature)
+    handleGeoJsonFeature(listOf(geoJsonFeature))
   }
 
   fun launchQuestionnaire(
