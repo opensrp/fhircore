@@ -328,7 +328,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener, GeoJsonDataRequest
   }
 
   private fun setOnQuestionnaireSubmissionListener(
-    handleGeoJsonFeature: (List<GeoJsonFeature>) -> Unit
+    handleGeoJsonFeature: (List<GeoJsonFeature>) -> Unit,
   ) {
     viewLifecycleOwner.lifecycleScope.launch {
       repeatOnLifecycle(Lifecycle.State.STARTED) {

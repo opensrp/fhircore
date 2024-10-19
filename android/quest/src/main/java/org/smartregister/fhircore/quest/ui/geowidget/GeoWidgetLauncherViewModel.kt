@@ -89,7 +89,7 @@ constructor(
   fun retrieveLocations(
     geoWidgetConfig: GeoWidgetConfiguration,
     searchText: String?,
-    onReceiveData: (List<GeoJsonFeature>) -> Unit
+    onReceiveData: (List<GeoJsonFeature>) -> Unit,
   ) {
     viewModelScope.launch {
       val totalCount =
@@ -262,7 +262,7 @@ constructor(
         retrieveLocations(
           geoWidgetEvent.geoWidgetConfig,
           geoWidgetEvent.searchQuery.query,
-          geoWidgetEvent.onReceiveData
+          geoWidgetEvent.onReceiveData,
         )
     }
   }

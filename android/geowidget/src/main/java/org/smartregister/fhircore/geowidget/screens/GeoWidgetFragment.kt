@@ -327,9 +327,10 @@ class GeoWidgetFragment : Fragment() {
             ?.toMutableList() ?: emptyList()
 
         val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(locationPoints))
-        val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, 1000.0)
+        val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, PADDING_IN_METRES)
         val bounds = LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0])
-        val finalCameraPosition = CameraUpdateFactory.newLatLngBounds(bounds, 50)
+        val finalCameraPosition =
+          CameraUpdateFactory.newLatLngBounds(bounds, CAMERA_POSITION_PADDING)
 
         with(mapboxMap) {
           (style?.getSourceAs(requireContext().getString(R.string.data_set_quest))
@@ -404,6 +405,8 @@ class GeoWidgetFragment : Fragment() {
 
   companion object {
     const val MAP_FEATURES_LIMIT = 1000
+    const val PADDING_IN_METRES = 1000.0
+    const val CAMERA_POSITION_PADDING = 50
 
     fun builder() = Builder()
   }

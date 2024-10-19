@@ -147,7 +147,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
 
   @Test
   @Ignore(
-    "Investigate why this test is not running, issue https://github.com/opensrp/fhircore/issues/3514"
+    "Investigate why this test is not running, issue https://github.com/opensrp/fhircore/issues/3514",
   )
   fun testOnQuestionnaireSubmission() = runTest {
     val handleGeoJsonFeature: (List<GeoJsonFeature>) -> Unit = spyk({})
