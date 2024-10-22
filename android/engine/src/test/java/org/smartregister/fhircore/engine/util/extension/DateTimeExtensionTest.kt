@@ -137,4 +137,26 @@ class DateTimeExtensionTest : RobolectricTest() {
   fun isTodayWithDateYesterdayShouldReturnFalse() {
     assertFalse(yesterday().isToday())
   }
+
+  @Test
+  fun testReformatDateWithValidDate() {
+    val inputDateString = "2022-02-02"
+    val currentFormat = "yyyy-MM-dd"
+    val desiredFormat = "dd/MM/yyyy"
+
+    val result = reformatDate(inputDateString, currentFormat, desiredFormat)
+
+    assertEquals("02/02/2022", result)
+  }
+
+  @Test
+  fun testReformatDateWithInvalidDateFormat() {
+    val inputDateString = "02/02/2022"
+    val currentFormat = "yyyy-MM-dd"
+    val desiredFormat = "dd/MM/yyyy"
+
+    val result = reformatDate(inputDateString, currentFormat, desiredFormat)
+
+    assertEquals(inputDateString, result)
+  }
 }

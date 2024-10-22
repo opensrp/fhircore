@@ -41,7 +41,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
-import org.smartregister.fhircore.engine.configuration.view.ListResource
+import org.smartregister.fhircore.engine.configuration.view.ListResourceConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -158,7 +158,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
       val anotherPatient =
         Faker.buildPatient(id = "anotherPatient", given = "Abel", family = "Mandela")
       val listResource =
-        ListResource(
+        ListResourceConfig(
           "id",
           resourceType = ResourceType.Patient,
           sortConfig =
@@ -211,7 +211,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
       val viewType = ViewType.CARD
       val patient = Faker.buildPatient()
       val listResource =
-        ListResource(
+        ListResourceConfig(
           "id",
           resourceType = ResourceType.Patient,
           conditionalFhirPathExpression = "Patient.active",
@@ -254,13 +254,13 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
       val viewType = ViewType.CARD
       val patient = Faker.buildPatient()
       val listResource =
-        ListResource(
+        ListResourceConfig(
           "id",
           resourceType = ResourceType.Patient,
           conditionalFhirPathExpression = "Patient.active",
           relatedResources =
             listOf(
-              ListResource(
+              ListResourceConfig(
                 null,
                 resourceType = ResourceType.Task,
                 fhirPathExpression = "Task.for.reference",
@@ -320,12 +320,12 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
       val patient = Faker.buildPatient()
       val anotherPatient = Faker.buildPatient("anotherId")
       val listResource =
-        ListResource(
+        ListResourceConfig(
           resourceType = ResourceType.Patient,
           conditionalFhirPathExpression = "Patient.active",
           relatedResources =
             listOf(
-              ListResource(
+              ListResourceConfig(
                 id = patientReadyTasks,
                 resourceType = ResourceType.Task,
                 conditionalFhirPathExpression = "Task.status = 'ready'",
