@@ -64,7 +64,7 @@ class MultiSelectBottomSheetFragment : BottomSheetDialogFragment() {
   private fun onSelectionDone(viewActions: List<MultiSelectViewAction>) {
     val context = requireContext()
     lifecycleScope.launch {
-      multiSelectViewModel.saveSelectedLocations(context) {
+      multiSelectViewModel.saveSelectedLocations(context, viewActions) {
         viewActions.distinct().forEach { viewAction ->
           when (viewAction) {
             MultiSelectViewAction.SYNC_DATA ->
