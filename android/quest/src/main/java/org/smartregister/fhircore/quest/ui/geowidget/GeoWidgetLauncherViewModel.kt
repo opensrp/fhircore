@@ -271,7 +271,7 @@ constructor(
   suspend fun showNoLocationDialog(geoWidgetConfiguration: GeoWidgetConfiguration) {
     geoWidgetConfiguration.noResults?.let {
       _noLocationFoundDialog.postValue(
-        context.retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA).isEmpty(),
+        context.retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.FILTER_DATA).isEmpty(),
       )
     }
   }
