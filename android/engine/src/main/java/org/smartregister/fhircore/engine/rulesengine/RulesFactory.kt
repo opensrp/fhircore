@@ -557,6 +557,7 @@ constructor(
       return source?.take(limit) ?: emptyList()
     }
 
+    @JvmOverloads
     fun mapResourcesToExtractedValues(
       resources: List<Resource>?,
       fhirPathExpression: String,
@@ -566,6 +567,23 @@ constructor(
       }
       return resources?.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
         ?: emptyList()
+    }
+
+    @JvmOverloads
+    fun mapResourcesToExtractedValues(
+      resources: List<Resource>?,
+      fhirPathExpression: String,
+      separator: String = ",",
+    ): String {
+      if (fhirPathExpression.isEmpty()) {
+        return ""
+      }
+      val results: List<Any> =
+        mapResourcesToExtractedValues(
+          resources = resources,
+          fhirPathExpression = fhirPathExpression,
+        )
+      return results.joinToString(separator)
     }
 
     fun computeTotalCount(relatedResourceCounts: List<RelatedResourceCount>?): Long =
