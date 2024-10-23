@@ -22,4 +22,6 @@ data class PinUiState(
   val setupPin: Boolean,
   val pinLength: Int,
   val showLogo: Boolean,
+  val selectedUser: String? = null,
+  val loggedInUsers: Collection<String> = emptyList(),
 )

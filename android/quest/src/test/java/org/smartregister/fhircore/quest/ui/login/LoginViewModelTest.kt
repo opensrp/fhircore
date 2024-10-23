@@ -39,6 +39,8 @@ import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import okhttp3.internal.http.RealResponseBody
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CareTeam
@@ -49,6 +51,7 @@ import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.OrganizationAffiliation
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.PractitionerRole
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
@@ -71,6 +74,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.practitionerNameKey
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.AccountManagerShadow
@@ -157,7 +161,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testSuccessfulOfflineLogin() {
     val activity = mockedActivity()
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, this.thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, this.thisPassword.toCharArray())
 
     every {
       accountAuthenticator.validateLoginCredentials(thisUsername, thisPassword.toCharArray())
@@ -179,7 +183,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     val activity = mockedActivity()
 
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, this.thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, this.thisPassword.toCharArray())
 
     every {
       accountAuthenticator.validateLoginCredentials(thisUsername, thisPassword.toCharArray())
@@ -199,11 +203,34 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testSuccessfulOnlineLoginWithActiveSessionWithSavedPractitionerDetails() {
     updateCredentials()
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-      PractitionerDetails(),
-    )
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns
+      Result.success(
+        OAuthResponse(
+          accessToken = "very_new_top_of_the_class_access_token",
+          tokenType = "you_guess_it",
+          refreshToken = "another_very_refreshing_token",
+          refreshExpiresIn = 540000,
+          scope = "open_my_guy",
+        ),
+      )
+    coEvery { keycloakService.fetchUserInfo() } returns
+      Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
+    // Mock result for retrieving a FHIR resource using user's keycloak uuid
+    val bundle = Bundle()
+    val bundleEntry =
+      Bundle.BundleEntryComponent().apply {
+        resource =
+          practitionerDetails().apply {
+            fhirPractitionerDetails.id = "$thisUsername-practitioner-id"
+          }
+      }
+    coEvery { fhirResourceService.getResource(any()) } returns bundle.addEntry(bundleEntry)
     every { tokenAuthenticator.sessionActive() } returns true
+
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
+
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertTrue(loginViewModel.navigateToHome.value!!)
@@ -218,14 +245,114 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testUnSuccessfulOnlineLoginUsingDifferentUsername() {
+  fun testSuccessfulOnlineLoginForDifferentUserInTheSameLocationWithSyncStrategyLocation() =
+    runTest {
+      updateCredentials()
+      secureSharedPreference.saveMultiCredentials("nativeUser", "n4t1veP5wd".toCharArray())
+      sharedPreferencesHelper.write(ResourceType.Location.name, listOf("test-location"))
+      sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("test-careteam"))
+      sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("test-organization"))
+      sharedPreferencesHelper.write(
+        practitionerNameKey("nativeUser"),
+        "nativeUser-practitioner-id",
+      )
+
+      coEvery {
+        tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+      } returns
+        Result.success(
+          OAuthResponse(
+            accessToken = "very_new_top_of_the_class_access_token",
+            tokenType = "you_guess_it",
+            refreshToken = "another_very_refreshing_token",
+            refreshExpiresIn = 540000,
+            scope = "open_my_guy",
+          ),
+        )
+      coEvery { keycloakService.fetchUserInfo() } returns
+        Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
+      val bundle =
+        Bundle().apply {
+          addEntry(
+            Bundle.BundleEntryComponent().apply {
+              resource =
+                practitionerDetails().apply {
+                  fhirPractitionerDetails =
+                    FhirPractitionerDetails().apply {
+                      practitionerId = StringType("my-test-practitioner-id")
+                      locations = mutableListOf(Location().apply { id = "test-location" })
+                      careTeams = listOf(CareTeam().apply { id = "test-careteam" })
+                      organizations = listOf(Organization().apply { id = "test-organization" })
+                    }
+                }
+            },
+          )
+        }
+      coEvery { fhirResourceService.getResource(any()) } returns bundle
+      every { tokenAuthenticator.sessionActive() } returns false
+
+      loginViewModel.login(mockedActivity(isDeviceOnline = true))
+      advanceUntilIdle()
+
+      Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+      Assert.assertTrue(loginViewModel.navigateToHome.value!!)
+
+      // Login was successful savePractitionerDetails was called
+      val practitionerDetailsSlot = slot<PractitionerDetails>()
+      verify {
+        loginViewModel.savePractitionerDetails(capture(practitionerDetailsSlot), any(), any())
+      }
+
+      Assert.assertNotNull(practitionerDetailsSlot.captured)
+    }
+
+  @Test
+  fun testUnSuccessfulOnlineLoginForDifferentUserInDifferentLocationWithSyncStrategyLocation() {
     updateCredentials()
-    secureSharedPreference.saveCredentials("nativeUser", "n4t1veP5wd".toCharArray())
+    secureSharedPreference.saveMultiCredentials("nativeUser", "n4t1veP5wd".toCharArray())
+    sharedPreferencesHelper.write(ResourceType.Location.name, listOf("test-location"))
+    sharedPreferencesHelper.write(
+      practitionerNameKey("nativeUser"),
+      "nativeUser-practitioner-id",
+    )
+
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns
+      Result.success(
+        OAuthResponse(
+          accessToken = "very_new_top_of_the_class_access_token",
+          tokenType = "you_guess_it",
+          refreshToken = "another_very_refreshing_token",
+          refreshExpiresIn = 540000,
+          scope = "open_my_guy",
+        ),
+      )
+    coEvery { keycloakService.fetchUserInfo() } returns
+      Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
+    val bundle =
+      Bundle().apply {
+        addEntry(
+          Bundle.BundleEntryComponent().apply {
+            resource =
+              practitionerDetails().apply {
+                fhirPractitionerDetails =
+                  FhirPractitionerDetails().apply {
+                    practitionerId = StringType("my-test-practitioner-id")
+                    locations = listOf(Location().apply { id = "another-test-location" })
+                    organizations = listOf()
+                    careTeams = listOf()
+                  }
+              }
+          },
+        )
+      }
+    coEvery { fhirResourceService.getResource(any()) } returns bundle
     every { tokenAuthenticator.sessionActive() } returns false
+
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
-    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertEquals(
-      LoginErrorState.MULTI_USER_LOGIN_ATTEMPT,
+      LoginErrorState.ERROR_MATCHING_SYNC_STRATEGY,
       loginViewModel.loginErrorState.value!!,
     )
   }
@@ -233,7 +360,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testSuccessfulNewOnlineLoginShouldFetchUserInfoAndPractitioner() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery {
       tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
@@ -272,18 +399,18 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertTrue(loginViewModel.navigateToHome.value!!)
 
     // Login was successful savePractitionerDetails was called
-    val bundleSlot = slot<Bundle>()
-    verify { loginViewModel.savePractitionerDetails(capture(bundleSlot), any(), any()) }
+    val practitionerDetailsSlot = slot<PractitionerDetails>()
+    verify {
+      loginViewModel.savePractitionerDetails(capture(practitionerDetailsSlot), any(), any())
+    }
 
-    Assert.assertNotNull(bundleSlot.captured)
-    Assert.assertTrue(bundleSlot.captured.entry.isNotEmpty())
-    Assert.assertTrue(bundleSlot.captured.entry[0].resource is PractitionerDetails)
+    Assert.assertNotNull(practitionerDetailsSlot.captured)
   }
 
   @Test
   fun testUnSuccessfulOnlineLoginUserInfoNotFetched() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery {
       tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
@@ -314,7 +441,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testUnSuccessfulOnlineLoginWhenAccessTokenNotReceived() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery {
       tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
@@ -349,7 +476,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testUnsuccessfulOnlineLoginWithUnknownHostExceptionEmitsError() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery {
       tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
@@ -364,7 +491,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testUnsuccessfulOnlineLoginWithHTTPHostExceptionCode400EmitsErrorFetchingUser() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
 
     coEvery {
@@ -381,7 +508,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testUnsuccessfulOnlineLoginWithHTTPHostExceptionCode401EmitsInvalidCredentialsError() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
 
     coEvery {
@@ -398,7 +525,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun `loginViewModel#fetchPractitioner() should call onFetchUserInfo with exception when SocketTimeoutException is thrown`() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery { keycloakService.fetchUserInfo() }.throws(SocketTimeoutException())
 
@@ -421,7 +548,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun `loginViewModel#fetchPractitioner() should call onFetchUserInfo with exception when UnknownHostException is thrown`() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery { keycloakService.fetchUserInfo() }.throws(UnknownHostException())
 
@@ -444,7 +571,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun `loginViewModel#fetchPractitioner() should call onFetchPractitioner with exception when UnknownHostException is thrown`() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery { keycloakService.fetchUserInfo() } returns
       Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
@@ -473,7 +600,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun `loginViewModel#fetchPractitioner() should call onFetchPractitioner with exception when SocketTimeoutException is thrown`() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    secureSharedPreference.saveMultiCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery { keycloakService.fetchUserInfo() } returns
       Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
@@ -520,22 +647,14 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testSavePractitionerDetailsChaRole() {
     coEvery { defaultRepository.createRemote(true, any()) } just runs
     loginViewModel.savePractitionerDetails(
-      Bundle()
-        .addEntry(
-          Bundle.BundleEntryComponent().apply {
-            resource =
-              practitionerDetails().apply {
-                fhirPractitionerDetails =
-                  FhirPractitionerDetails().apply {
-                    practitionerId = StringType("my-test-practitioner-id")
-                  }
-              }
-          },
-        ),
+      practitionerDetails().apply {
+        fhirPractitionerDetails =
+          FhirPractitionerDetails().apply { practitionerId = StringType("my-test-practitioner-id") }
+      },
       UserInfo(),
     ) {}
     Assert.assertNotNull(
-      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+      sharedPreferencesHelper.read(practitionerNameKey(loginViewModel.username.value!!)),
     )
   }
 
@@ -543,35 +662,29 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testSavePractitionerDetailsChaRoleWithIdentifier() {
     coEvery { defaultRepository.createRemote(true, any()) } just runs
     loginViewModel.savePractitionerDetails(
-      Bundle()
-        .addEntry(
-          Bundle.BundleEntryComponent().apply {
-            resource =
-              practitionerDetails().apply {
-                fhirPractitionerDetails =
-                  FhirPractitionerDetails().apply {
-                    practitioners =
-                      listOf(
-                        Practitioner().apply {
-                          identifier =
-                            listOf(
-                              Identifier().apply {
-                                use = Identifier.IdentifierUse.SECONDARY
-                                value = "cha"
-                              },
-                            )
-                        },
-                      )
-                  }
-              }
-          },
-        ),
+      practitionerDetails().apply {
+        fhirPractitionerDetails =
+          FhirPractitionerDetails().apply {
+            practitioners =
+              listOf(
+                Practitioner().apply {
+                  identifier =
+                    listOf(
+                      Identifier().apply {
+                        use = Identifier.IdentifierUse.SECONDARY
+                        value = "cha"
+                      },
+                    )
+                },
+              )
+          }
+      },
       UserInfo(
         keycloakUuid = "cha",
       ),
     ) {}
     Assert.assertNotNull(
-      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+      sharedPreferencesHelper.read(practitionerNameKey(loginViewModel.username.value!!)),
     )
   }
 
@@ -579,44 +692,37 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testSavePractitionerDetailsSupervisorRole() {
     coEvery { defaultRepository.createRemote(false, any()) } just runs
     loginViewModel.savePractitionerDetails(
-      Bundle()
-        .addEntry(
-          Bundle.BundleEntryComponent().apply {
-            resource =
-              practitionerDetails().apply {
-                fhirPractitionerDetails =
-                  FhirPractitionerDetails().apply {
-                    practitioners =
-                      listOf(
-                        Practitioner().apply {
-                          identifier.add(
-                            Identifier().apply {
-                              use = Identifier.IdentifierUse.SECONDARY
-                              value = "my-test-practitioner-id"
-                            },
-                          )
-                        },
-                      )
-                    careTeams = listOf(CareTeam().apply { id = "my-care-team-id" })
-                    organizations = listOf(Organization().apply { id = "my-organization-id" })
-                    locations = listOf(Location().apply { id = "my-organization-id" })
-                    locationHierarchyList =
-                      listOf(LocationHierarchy().apply { id = "my-location-hierarchy-id" })
-                    groups = listOf(Group().apply { id = "my-group-id" })
-                    practitionerRoles =
-                      listOf(PractitionerRole().apply { id = "my-practitioner-role-id" })
-                    organizationAffiliations =
-                      listOf(
-                        OrganizationAffiliation().apply { id = "my-organization-affiliation-id" },
-                      )
-                  }
-              }
-          },
-        ),
+      practitionerDetails().apply {
+        fhirPractitionerDetails =
+          FhirPractitionerDetails().apply {
+            practitioners =
+              listOf(
+                Practitioner().apply {
+                  identifier.add(
+                    Identifier().apply {
+                      use = Identifier.IdentifierUse.SECONDARY
+                      value = "my-test-practitioner-id"
+                    },
+                  )
+                },
+              )
+            careTeams = listOf(CareTeam().apply { id = "my-care-team-id" })
+            organizations = listOf(Organization().apply { id = "my-organization-id" })
+            locations = listOf(Location().apply { id = "my-organization-id" })
+            locationHierarchyList =
+              listOf(LocationHierarchy().apply { id = "my-location-hierarchy-id" })
+            groups = listOf(Group().apply { id = "my-group-id" })
+            practitionerRoles = listOf(PractitionerRole().apply { id = "my-practitioner-role-id" })
+            organizationAffiliations =
+              listOf(
+                OrganizationAffiliation().apply { id = "my-organization-affiliation-id" },
+              )
+          }
+      },
       UserInfo().apply { keycloakUuid = "my-test-practitioner-id" },
     ) {}
     Assert.assertNotNull(
-      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+      sharedPreferencesHelper.read(practitionerNameKey(loginViewModel.username.value!!)),
     )
   }
 

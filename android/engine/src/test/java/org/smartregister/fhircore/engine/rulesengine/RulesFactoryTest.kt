@@ -972,15 +972,11 @@ class RulesFactoryTest : RobolectricTest() {
   fun testExtractSharedPrefValuesReturnsPractitionerId() {
     val sharedPreferenceKey = "PRACTITIONER_ID"
     val expectedValue = "1234"
-    every {
-      configurationRegistry.sharedPreferencesHelper.read(
-        sharedPreferenceKey,
-        "",
-      )
-    } returns expectedValue
+    every { configurationRegistry.sharedPreferencesHelper.retrieveSessionPractitionerId() } returns
+      expectedValue
     val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
 
-    verify { configurationRegistry.sharedPreferencesHelper.read(sharedPreferenceKey, "") }
+    verify { configurationRegistry.sharedPreferencesHelper.retrieveSessionPractitionerId() }
     Assert.assertEquals(expectedValue, result)
   }
 

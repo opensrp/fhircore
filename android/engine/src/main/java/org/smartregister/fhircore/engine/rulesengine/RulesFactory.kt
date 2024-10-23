@@ -366,10 +366,7 @@ constructor(
       try {
         return when (key) {
           SharedPreferenceKey.PRACTITIONER_ID ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.PRACTITIONER_ID.name,
-              "",
-            )
+            configurationRegistry.sharedPreferencesHelper.retrieveSessionPractitionerId() ?: ""
           SharedPreferenceKey.CARE_TEAM ->
             configurationRegistry.sharedPreferencesHelper.read(
               SharedPreferenceKey.CARE_TEAM.name,

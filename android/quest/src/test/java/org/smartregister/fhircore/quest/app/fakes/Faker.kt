@@ -42,6 +42,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
@@ -114,6 +115,7 @@ object Faker {
     SharedPreferencesHelper(
       ApplicationProvider.getApplicationContext<Application>(),
       Gson(),
+      SecureSharedPreference(ApplicationProvider.getApplicationContext()),
     )
 
   fun buildPatient(
