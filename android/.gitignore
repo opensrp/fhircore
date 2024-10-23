@@ -21,3 +21,5 @@ keystore.properties
 
 # Gradle Properties
 gradle.properties
+
+/sentry.properties
