@@ -217,7 +217,7 @@ constructor(
             source.setParameter(ActivityDefinition.SP_VERSION, IntegerType(index))
             val structureMapId = IdType(action.transform).idPart
             val structureMap =
-              ContentCache.getResource(ResourceType.StructureMap.name + "/" + structureMapId)?.let {
+              ContentCache.getResource(ResourceType.StructureMap, structureMapId)?.let {
                 it as StructureMap
               }
                 ?: run {

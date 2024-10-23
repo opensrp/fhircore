@@ -20,6 +20,7 @@ import androidx.collection.LruCache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 
 object ContentCache {
   private val maxMemory: Int = (Runtime.getRuntime().maxMemory() / 1024).toInt()
@@ -32,7 +33,7 @@ object ContentCache {
       cache.put("${resource.resourceType.name}/${resource.idPart}", resource.copy())
     }
 
-  @JvmStatic fun getResource(resourceId: String) = cache[resourceId]?.copy()
+  @JvmStatic fun getResource(type: ResourceType, id: String) = cache["$type/$id"]?.copy()
 
   suspend fun invalidate() = withContext(Dispatchers.IO) { cache.evictAll() }
 }

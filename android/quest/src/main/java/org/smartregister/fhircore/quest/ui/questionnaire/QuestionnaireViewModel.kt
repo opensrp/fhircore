@@ -149,8 +149,7 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
-    var result =
-      ContentCache.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id)
+    var result = ContentCache.getResource(ResourceType.Questionnaire, questionnaireConfig.id)
     if (result == null) {
       result =
         defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also { questionnaire,
@@ -651,14 +650,18 @@ constructor(
               StructureMapExtractionContext(
                 transformSupportServices = transformSupportServices,
                 structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
-                  structureMapUrl?.substringAfterLast("/")?.let { smID ->
-                    ContentCache.getResource(ResourceType.StructureMap.name + "/" + smID)?.let {
-                      it as StructureMap
-                    }
+                  structureMapUrl?.substringAfterLast("/")?.let { structureMapId ->
+                    ContentCache.getResource(
+                        ResourceType.StructureMap,
+                        structureMapId,
+                      )
+                      ?.let { it as StructureMap }
                       ?: run {
-                        defaultRepository.loadResource<StructureMap>(smID)?.also {
-                          ContentCache.saveResource(it)
-                        }
+                        defaultRepository
+                          .loadResource<StructureMap>(
+                            structureMapId,
+                          )
+                          ?.also { ContentCache.saveResource(it) }
                       }
                   }
                 },
@@ -843,7 +846,10 @@ constructor(
                   cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
                     resultParameterResource.isResource
                 ) {
-                  defaultRepository.create(true, resultParameterResource as Resource)
+                  defaultRepository.create(
+                    true,
+                    resultParameterResource as Resource,
+                  )
                   resultParameterResource
                 } else {
                   null
@@ -1150,7 +1156,10 @@ constructor(
           ?.mapValues { it.value.type == LinkIdType.PREPOPULATION_EXCLUSION } ?: emptyMap()
 
       questionnaireResponse.item =
-        excludePrepopulationFields(questionnaireResponse.item.toMutableList(), exclusionLinkIdsMap)
+        excludePrepopulationFields(
+          questionnaireResponse.item.toMutableList(),
+          exclusionLinkIdsMap,
+        )
     }
     return Pair(questionnaireResponse, launchContextResources)
   }

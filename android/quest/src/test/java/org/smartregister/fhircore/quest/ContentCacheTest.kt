@@ -38,7 +38,7 @@ class ContentCacheTest {
 
   private val testDispatcher = StandardTestDispatcher()
   private val resourceId = "123"
-  private val mockResource: Resource = Questionnaire()
+  private val mockResource: Resource = Questionnaire().apply { id = resourceId }
 
   @Before
   fun setUp() {
@@ -55,9 +55,9 @@ class ContentCacheTest {
     ContentCache.saveResource(mockResource)
     advanceUntilIdle() // Ensure coroutine has finished
 
-    val cachedResource = ContentCache.getResource("${mockResource::class.simpleName}/$resourceId")
+    val cachedResource = ContentCache.getResource(mockResource.resourceType, mockResource.idPart)
     assertNotNull(cachedResource)
-    assertEquals(mockResource, cachedResource)
+    assertEquals(mockResource.idPart, cachedResource?.idPart)
   }
 
   @Test
@@ -65,13 +65,13 @@ class ContentCacheTest {
     ContentCache.saveResource(mockResource)
     advanceUntilIdle() // Ensure coroutine has finished
 
-    val result = ContentCache.getResource("${mockResource::class.simpleName}/$resourceId")
-    assertEquals(mockResource, result)
+    val result = ContentCache.getResource(mockResource.resourceType, mockResource.idPart)
+    assertEquals(mockResource.idPart, result?.idPart)
   }
 
   @Test
   fun `getResource should return null if resource does not exist`() = runTest {
-    val result = ContentCache.getResource("non_existing_id")
+    val result = ContentCache.getResource(mockResource.resourceType, "non_existing_id")
     assertNull(result)
   }
 
@@ -83,7 +83,7 @@ class ContentCacheTest {
     ContentCache.invalidate()
     advanceUntilIdle() // Ensure coroutine has finished
 
-    val result = ContentCache.getResource("${mockResource::class.simpleName}/$resourceId")
+    val result = ContentCache.getResource(mockResource.resourceType, mockResource.idPart)
     assertNull(result)
   }
 }

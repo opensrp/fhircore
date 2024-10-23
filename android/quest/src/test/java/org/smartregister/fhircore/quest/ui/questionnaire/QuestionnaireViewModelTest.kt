@@ -645,14 +645,17 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
       samplePatientRegisterQuestionnaire
 
-    runBlocking { ContentCache.saveResource(samplePatientRegisterQuestionnaire) }
+    coEvery { defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id) } returns
+      samplePatientRegisterQuestionnaire
+
+    ContentCache.saveResource(samplePatientRegisterQuestionnaire)
     val questionnaire =
       questionnaireViewModel.retrieveQuestionnaire(
         questionnaireConfig = questionnaireConfig,
       )
     Assert.assertEquals(
-      samplePatientRegisterQuestionnaire,
-      ContentCache.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id),
+      samplePatientRegisterQuestionnaire.idPart,
+      ContentCache.getResource(ResourceType.Questionnaire, questionnaireConfig.id)?.idPart,
     )
     Assert.assertNotNull(questionnaire)
     Assert.assertEquals(questionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
@@ -663,15 +666,16 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
       samplePatientRegisterQuestionnaire
 
-    runBlocking {
-      val questionnaire =
-        questionnaireViewModel.retrieveQuestionnaire(
-          questionnaireConfig = questionnaireConfig,
-        )
+    coEvery { defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id) } returns
+      samplePatientRegisterQuestionnaire
 
-      Assert.assertNotNull(questionnaire)
-      Assert.assertEquals(questionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
-    }
+    val questionnaire =
+      questionnaireViewModel.retrieveQuestionnaire(
+        questionnaireConfig = questionnaireConfig,
+      )
+
+    Assert.assertNotNull(questionnaire)
+    Assert.assertEquals(questionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
 
     coVerify(exactly = 1) { defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id) }
   }
