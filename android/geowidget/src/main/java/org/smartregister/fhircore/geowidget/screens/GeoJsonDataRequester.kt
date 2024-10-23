@@ -14,16 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.geowidget
+package org.smartregister.fhircore.geowidget.screens
 
-import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
-import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 
-sealed class GeoWidgetEvent {
-  data class SearchFeatures(
-    val searchQuery: SearchQuery = SearchQuery.emptyText,
-    val geoWidgetConfig: GeoWidgetConfiguration,
-    val onReceiveData: (List<GeoJsonFeature>) -> Unit,
-  ) : GeoWidgetEvent()
+interface GeoJsonDataRequester {
+  fun requestData(onReceiveData: (List<GeoJsonFeature>) -> Unit)
 }

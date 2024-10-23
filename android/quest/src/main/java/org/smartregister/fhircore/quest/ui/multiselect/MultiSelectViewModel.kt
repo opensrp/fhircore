@@ -26,17 +26,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.IOException
 import javax.inject.Inject
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.dataFilterLocationIdsProtoStore
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
+import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewConfig
 import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.ui.multiselect.TreeBuilder
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import timber.log.Timber
 
 @HiltViewModel
 class MultiSelectViewModel
@@ -55,10 +59,16 @@ constructor(
   fun populateLookupMap(context: Context, multiSelectViewConfig: MultiSelectViewConfig) {
     viewModelScope.launch {
       isLoading.postValue(true)
-      // Mark previously selected nodes
-      val previouslySelectedNodes = context.syncLocationIdsProtoStore.data.firstOrNull()
-      if (!previouslySelectedNodes.isNullOrEmpty()) {
-        previouslySelectedNodes.values.forEach { selectedNodes[it.locationId] = it }
+      // Populate previously selected nodes for every Multi-Select view action
+      multiSelectViewConfig.viewActions.forEach {
+        val previouslySelectedNodes =
+          context.retrieveRelatedEntitySyncLocationState(
+            multiSelectViewAction = it,
+            filterToggleableStateOn = false,
+          )
+        previouslySelectedNodes.forEach { syncLocationState ->
+          selectedNodes[syncLocationState.locationId] = syncLocationState
+        }
       }
 
       val repositoryResourceData =
@@ -143,8 +153,25 @@ constructor(
     }
   }
 
-  suspend fun saveSelectedLocations(context: Context) {
-    context.syncLocationIdsProtoStore.updateData { selectedNodes }
+  suspend fun saveSelectedLocations(
+    context: Context,
+    viewActions: List<MultiSelectViewAction>,
+    onSaveDone: () -> Unit,
+  ) {
+    try {
+      viewActions.forEach {
+        when (it) {
+          MultiSelectViewAction.SYNC_DATA ->
+            context.syncLocationIdsProtoStore.updateData { selectedNodes }
+          MultiSelectViewAction.FILTER_DATA ->
+            context.dataFilterLocationIdsProtoStore.updateData { selectedNodes }
+        }
+      }
+
+      onSaveDone()
+    } catch (ioException: IOException) {
+      Timber.e("Error saving selected locations", ioException)
+    }
   }
 
   fun search() {

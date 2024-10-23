@@ -40,7 +40,10 @@ import androidx.core.view.updatePadding
 import java.io.Serializable
 import java.util.Locale
 import kotlinx.coroutines.flow.firstOrNull
+import org.smartregister.fhircore.engine.datastore.dataFilterLocationIdsProtoStore
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
+import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
+import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
@@ -221,13 +224,21 @@ inline fun <reified T : Parcelable> Intent.parcelableArrayList(key: String): Arr
     else -> @Suppress("DEPRECATION") getParcelableArrayListExtra(key)
   }
 
-suspend fun Context.retrieveRelatedEntitySyncLocationIds(): List<String> {
-  val selectedLocationStateMap = this.syncLocationIdsProtoStore.data.firstOrNull()
-  return selectedLocationStateMap
-    ?.values
-    ?.filter {
+suspend fun Context.retrieveRelatedEntitySyncLocationState(
+  multiSelectViewAction: MultiSelectViewAction,
+  filterToggleableStateOn: Boolean = true,
+): List<SyncLocationState> {
+  val selectedLocationStateMap =
+    when (multiSelectViewAction) {
+      MultiSelectViewAction.SYNC_DATA -> this.syncLocationIdsProtoStore.data.firstOrNull()
+      MultiSelectViewAction.FILTER_DATA -> this.dataFilterLocationIdsProtoStore.data.firstOrNull()
+    }
+  return if (filterToggleableStateOn) {
+    selectedLocationStateMap?.values?.filter {
       it.toggleableState == ToggleableState.On &&
         selectedLocationStateMap[it.parentLocationId]?.toggleableState != ToggleableState.On
     }
-    ?.map { it.locationId } ?: emptyList()
+  } else {
+    selectedLocationStateMap?.values?.toList()
+  } ?: emptyList()
 }
