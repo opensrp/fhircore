@@ -447,6 +447,8 @@ dependencies {
 
   implementation(libs.bundles.cameraX)
 
+  implementation("com.github.anrwatchdog:anrwatchdog:1.4.0")
+
   // Annotation processors
   kapt(libs.hilt.compiler)
   kapt(libs.dagger.hilt.compiler)

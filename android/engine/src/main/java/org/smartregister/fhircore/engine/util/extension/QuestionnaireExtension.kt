@@ -217,7 +217,6 @@ suspend fun Questionnaire.prepopulateWithComputedConfigValues(
   require(questionnaireConfig.id.isNotBlank())
 
   // Compute questionnaire config rules and add extra questionnaire params to action parameters
-
   val questionnaireComputedValues =
     questionnaireConfig.configRules?.let { questionnaireConfigRulesComputeFunc.invoke(it) }
       ?: emptyMap()

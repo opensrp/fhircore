@@ -18,10 +18,14 @@ package org.smartregister.fhircore.quest
 
 import android.app.Application
 import android.database.CursorWindow
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
+import android.os.StrictMode.VmPolicy
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.github.anrwatchdog.ANRWatchDog
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
@@ -56,6 +60,15 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
   private var fhirServerHost: URL? = null
 
   override fun onCreate() {
+    StrictMode.setThreadPolicy(
+      ThreadPolicy.Builder().detectAll().penaltyLog().build(),
+    )
+    StrictMode.setVmPolicy(
+      VmPolicy.Builder().detectAll().penaltyLog().build(),
+    )
+
+    ANRWatchDog(200).setANRListener { Timber.e(it) }.setReportAllThreads().start()
+
     super.onCreate()
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
