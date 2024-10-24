@@ -244,25 +244,25 @@ android {
       manifestPlaceholders["appLabel"] = "MOH eCHIS"
     }
 
-    create("sidBunda") {
+    create("sidBundaStage") {
       dimension = "apps"
-      applicationIdSuffix = ".sidBunda"
-      versionNameSuffix = "-sidBunda"
-      manifestPlaceholders["appLabel"] = "BidanKu"
+      applicationIdSuffix = ".sidBundaStage"
+      versionNameSuffix = "-sidBundaStage"
+      manifestPlaceholders["appLabel"] = "BidanKu Stage"
     }
 
-    create("sidCadre") {
+    create("sidCadreStage") {
       dimension = "apps"
-      applicationIdSuffix = ".sidCadre"
-      versionNameSuffix = "-sidCadre"
-      manifestPlaceholders["appLabel"] = "KaderKu"
+      applicationIdSuffix = ".sidCadreStage"
+      versionNameSuffix = "-sidCadreStage"
+      manifestPlaceholders["appLabel"] = "KaderKu Stage"
     }
 
-    create("sidEir") {
+    create("sidEirStage") {
       dimension = "apps"
-      applicationIdSuffix = ".sidEir"
-      versionNameSuffix = "-sidEir"
-      manifestPlaceholders["appLabel"] = "VaksinatorKu"
+      applicationIdSuffix = ".sidEirStage"
+      versionNameSuffix = "-sidEirStage"
+      manifestPlaceholders["appLabel"] = "VaksinatorKu Stage"
     }
 
     create("sidEcd") {
