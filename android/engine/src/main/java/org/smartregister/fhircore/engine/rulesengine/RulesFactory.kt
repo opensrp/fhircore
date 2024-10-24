@@ -45,6 +45,7 @@ import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -53,7 +54,6 @@ import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.rulesengine.services.DateService
 import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.SDF_DD_MMM_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
 import org.smartregister.fhircore.engine.util.extension.daysPassed
@@ -361,33 +361,32 @@ constructor(
      * PractitionerCareTeam, PractitionerOrganization and PractitionerLocation, using rules on the
      * configs.
      */
-    fun extractPractitionerInfoFromSharedPrefs(practitionerKey: String): String? {
-      val key = SharedPreferenceKey.valueOf(practitionerKey)
+    fun extractPractitionerInfoFromPreferenceDataStore(practitionerKey: String): String? {
       try {
-        return when (key) {
-          SharedPreferenceKey.PRACTITIONER_ID ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.PRACTITIONER_ID.name,
+        return when (practitionerKey) {
+          PreferenceDataStore.PRACTITIONER_ID.name ->
+            configurationRegistry.preferenceDataStore.readOnce(
+              PreferenceDataStore.PRACTITIONER_ID,
               "",
             )
-          SharedPreferenceKey.CARE_TEAM ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.CARE_TEAM.name,
+          PreferenceDataStore.CARE_TEAM_NAME.name ->
+            configurationRegistry.preferenceDataStore.readOnce(
+              PreferenceDataStore.CARE_TEAM_NAME,
               "",
             )
-          SharedPreferenceKey.ORGANIZATION ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.ORGANIZATION.name,
+          PreferenceDataStore.ORGANIZATION_NAME.name ->
+            configurationRegistry.preferenceDataStore.readOnce(
+              PreferenceDataStore.ORGANIZATION_NAME,
               "",
             )
-          SharedPreferenceKey.PRACTITIONER_LOCATION ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.PRACTITIONER_LOCATION.name,
+          PreferenceDataStore.PRACTITIONER_LOCATION.name ->
+            configurationRegistry.preferenceDataStore.readOnce(
+              PreferenceDataStore.PRACTITIONER_LOCATION,
               "",
             )
-          SharedPreferenceKey.PRACTITIONER_LOCATION_ID ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name,
+          PreferenceDataStore.PRACTITIONER_LOCATION_ID.toString() ->
+            configurationRegistry.preferenceDataStore.readOnce(
+              PreferenceDataStore.PRACTITIONER_LOCATION_ID,
               "",
             )
           else -> ""

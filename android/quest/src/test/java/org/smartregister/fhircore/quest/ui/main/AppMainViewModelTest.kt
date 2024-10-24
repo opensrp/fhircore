@@ -60,6 +60,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.Language
@@ -107,6 +108,7 @@ class AppMainViewModelTest : RobolectricTest() {
   private val application: Context = ApplicationProvider.getApplicationContext()
   private val syncBroadcaster: SyncBroadcaster = mockk(relaxed = true)
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  private lateinit var preferenceDataStore: PreferenceDataStore
   private lateinit var appMainViewModel: AppMainViewModel
 
   @Before
@@ -124,6 +126,7 @@ class AppMainViewModelTest : RobolectricTest() {
           syncBroadcaster = syncBroadcaster,
           secureSharedPreference = secureSharedPreference,
           sharedPreferencesHelper = sharedPreferencesHelper,
+          preferenceDataStore = preferenceDataStore,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
           dispatcherProvider = dispatcherProvider,

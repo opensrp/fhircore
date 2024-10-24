@@ -91,6 +91,7 @@ object Faker {
           fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
           sharedPreferencesHelper = mockk(),
+          preferenceDataStore = mockk(),
           dispatcherProvider = testDispatcherProvider,
           configService = configService,
           json = json,
