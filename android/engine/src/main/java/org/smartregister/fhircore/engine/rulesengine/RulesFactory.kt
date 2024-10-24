@@ -569,6 +569,14 @@ constructor(
         ?: emptyList()
     }
 
+    /**
+     * This function combines all the string values retrieved from the [resources] using the
+     * [fhirPathExpression] to a list separated by the [separator]
+     *
+     * e.g for a provided list of Patients we can extract a string containing the family names using
+     * the [Patient.name.family] as the [fhirpathExpression] and [ | ] as the [separator] the
+     * returned string would be [John | Jane | James]
+     */
     @JvmOverloads
     fun mapResourcesToExtractedValues(
       resources: List<Resource>?,
