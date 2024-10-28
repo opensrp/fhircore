@@ -141,7 +141,7 @@ fun ClickableImageIcon(
         )
         .conditional(
           imageProperties.size != null,
-          { size(imageProperties.size!!.dp) },
+          { size(if (imageProperties.size!! >= 22) imageProperties.size!!.dp else 16.dp) },
           { size(20.dp) },
         )
         .conditional(
