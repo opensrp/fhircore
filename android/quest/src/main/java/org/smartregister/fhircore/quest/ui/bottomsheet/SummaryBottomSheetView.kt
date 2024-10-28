@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.quest.ui.bottomsheet
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.remember
 import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -34,6 +32,6 @@ fun SummaryBottomSheetView(
     viewProperties = properties,
     resourceData = resourceData,
     navController = navController,
-    decodedImageMap = remember { mutableStateMapOf() },
+    decodeImage = null,
   )
 }

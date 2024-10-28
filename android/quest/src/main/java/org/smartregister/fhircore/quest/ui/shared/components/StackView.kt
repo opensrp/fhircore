@@ -17,12 +17,9 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import android.graphics.Bitmap
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -34,7 +31,6 @@ import org.smartregister.fhircore.engine.configuration.view.StackViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import org.smartregister.fhircore.engine.util.extension.parseColor
 
 const val STACK_VIEW_TEST_TAG = "stackViewTestTag"
 
@@ -44,16 +40,10 @@ fun StackView(
   stackViewProperties: StackViewProperties,
   resourceData: ResourceData,
   navController: NavController,
-  decodedImageMap: SnapshotStateMap<String, Bitmap> = mutableStateMapOf(),
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
-  val backgroundColor = stackViewProperties.backgroundColor.parseColor()
-  val size = stackViewProperties.size
-
   Box(
-    modifier =
-      Modifier.background(backgroundColor.copy(alpha = stackViewProperties.opacity))
-        .size(size!!.dp)
-        .testTag(STACK_VIEW_TEST_TAG),
+    modifier.size(stackViewProperties.size.dp).testTag(STACK_VIEW_TEST_TAG),
     contentAlignment = castViewAlignment(stackViewProperties.alignment),
   ) {
     stackViewProperties.children.forEach { child ->
@@ -62,7 +52,7 @@ fun StackView(
         properties = child.interpolate(resourceData.computedValuesMap),
         resourceData = resourceData,
         navController = navController,
-        decodedImageMap = decodedImageMap,
+        decodeImage = decodeImage,
       )
     }
   }
@@ -101,5 +91,6 @@ private fun PreviewStack() {
         baseResourceType = ResourceType.Patient,
         computedValuesMap = emptyMap(),
       ),
+    decodeImage = null,
   )
 }
