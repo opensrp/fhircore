@@ -1306,6 +1306,51 @@ class RulesFactoryTest : RobolectricTest() {
     }
   }
 
+  @Test
+  fun mapResourcesToExtractedValuesReturnsCorrectlyFormattedString() {
+    val patientsList =
+      listOf(
+        Patient().apply {
+          birthDate = LocalDate.parse("2015-10-03").toDate()
+          addName().apply { family = "alpha" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2017-10-03").toDate()
+          addName().apply { family = "beta" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2018-10-03").toDate()
+          addName().apply { family = "gamma" }
+        },
+      )
+
+    val names =
+      rulesEngineService.mapResourcesToExtractedValues(patientsList, "Patient.name.family", " | ")
+    Assert.assertEquals("alpha | beta | gamma", names)
+  }
+
+  @Test
+  fun mapResourcesToExtractedValuesReturnsEmptyStringWhenFhirPathExpressionIsEmpty() {
+    val patientsList =
+      listOf(
+        Patient().apply {
+          birthDate = LocalDate.parse("2015-10-03").toDate()
+          addName().apply { family = "alpha" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2017-10-03").toDate()
+          addName().apply { family = "beta" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2018-10-03").toDate()
+          addName().apply { family = "gamma" }
+        },
+      )
+
+    val names = rulesEngineService.mapResourcesToExtractedValues(patientsList, "", " | ")
+    Assert.assertEquals("", names)
+  }
+
   private fun getListOfResource(): List<Resource> {
     return listOf(
       Group().apply { id = "group-id-1" },
