@@ -35,7 +35,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonPrimitive
 import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -53,7 +52,6 @@ import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
@@ -273,31 +271,6 @@ constructor(
         context.retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA).isEmpty(),
       )
     }
-  }
-
-  suspend fun onQuestionnaireSubmission(
-    extractedResourceIds: List<IdType>,
-    handleGeoJsonFeature: (List<GeoJsonFeature>) -> Unit,
-  ) {
-    val locationId =
-      extractedResourceIds.firstOrNull { it.resourceType == ResourceType.Location.name } ?: return
-    val location =
-      defaultRepository.loadResource<Location>(locationId.valueAsString.extractLogicalIdUuid())
-        ?: return
-
-    val geoJsonFeature =
-      GeoJsonFeature(
-        id = location.id,
-        geometry =
-          Geometry(
-            coordinates = // MapBox coordinates are represented as Long,Lat (NOT Lat,Long)
-            listOf(
-                location.position.longitude.toDouble(),
-                location.position.latitude.toDouble(),
-              ),
-          ),
-      )
-    handleGeoJsonFeature(listOf(geoJsonFeature))
   }
 
   fun launchQuestionnaire(

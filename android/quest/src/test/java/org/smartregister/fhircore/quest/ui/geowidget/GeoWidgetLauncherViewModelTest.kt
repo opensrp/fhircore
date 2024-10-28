@@ -18,22 +18,15 @@ package org.smartregister.fhircore.quest.ui.geowidget
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
-import io.mockk.slot
-import io.mockk.spyk
-import io.mockk.verify
-import javax.inject.Inject
-import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.DecimalType
-import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert.assertEquals
@@ -53,9 +46,10 @@ import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import javax.inject.Inject
+import kotlin.test.assertTrue
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -143,32 +137,6 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
     val value = viewModel.noLocationFoundDialog.value
     assertNotNull(value)
     assertTrue(value!!)
-  }
-
-  @Test
-  @Ignore(
-    "Investigate why this test is not running, issue https://github.com/opensrp/fhircore/issues/3514",
-  )
-  fun testOnQuestionnaireSubmission() = runTest {
-    val handleGeoJsonFeature: (List<GeoJsonFeature>) -> Unit = spyk({})
-    val extractedResourceIds = listOf(IdType(ResourceType.Location.name, location.logicalId))
-
-    viewModel.onQuestionnaireSubmission(
-      extractedResourceIds = extractedResourceIds,
-      handleGeoJsonFeature = handleGeoJsonFeature,
-    )
-    val geoJsonFeatureSlot = slot<List<GeoJsonFeature>>()
-    verify { handleGeoJsonFeature(capture(geoJsonFeatureSlot)) }
-
-    val geoJsonFeature = geoJsonFeatureSlot.captured
-    assertEquals(
-      location.position.longitude.toDouble(),
-      geoJsonFeature.first().geometry?.coordinates?.first(),
-    )
-    assertEquals(
-      location.position.latitude.toDouble(),
-      geoJsonFeature.first().geometry?.coordinates?.last(),
-    )
   }
 
   @Test
