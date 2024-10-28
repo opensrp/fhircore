@@ -39,7 +39,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import java.io.Serializable
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.datastore.dataFilterLocationIdsProtoStore
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
@@ -229,9 +231,13 @@ suspend fun Context.retrieveRelatedEntitySyncLocationState(
   filterToggleableStateOn: Boolean = true,
 ): List<SyncLocationState> {
   val selectedLocationStateMap =
-    when (multiSelectViewAction) {
-      MultiSelectViewAction.SYNC_DATA -> this.syncLocationIdsProtoStore.data.firstOrNull()
-      MultiSelectViewAction.FILTER_DATA -> this.dataFilterLocationIdsProtoStore.data.firstOrNull()
+    withContext(Dispatchers.IO) {
+      val context = this@retrieveRelatedEntitySyncLocationState
+      when (multiSelectViewAction) {
+        MultiSelectViewAction.SYNC_DATA -> context.syncLocationIdsProtoStore.data.firstOrNull()
+        MultiSelectViewAction.FILTER_DATA ->
+          context.dataFilterLocationIdsProtoStore.data.firstOrNull()
+      }
     }
   return if (filterToggleableStateOn) {
     selectedLocationStateMap?.values?.filter {

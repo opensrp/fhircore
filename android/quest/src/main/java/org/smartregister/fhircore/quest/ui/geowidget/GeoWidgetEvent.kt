@@ -17,13 +17,13 @@
 package org.smartregister.fhircore.quest.ui.geowidget
 
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
-import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 
 sealed class GeoWidgetEvent {
-  data class SearchFeatures(
-    val searchQuery: SearchQuery = SearchQuery.emptyText,
+  data object ClearMap : GeoWidgetEvent()
+
+  data class RetrieveFeatures(
     val geoWidgetConfig: GeoWidgetConfiguration,
-    val onReceiveData: (List<GeoJsonFeature>) -> Unit,
+    val searchQuery: SearchQuery = SearchQuery.emptyText,
   ) : GeoWidgetEvent()
 }

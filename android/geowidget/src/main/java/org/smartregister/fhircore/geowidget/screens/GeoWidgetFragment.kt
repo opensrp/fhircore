@@ -26,8 +26,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.MultiPoint
 import com.mapbox.geojson.Point
@@ -46,6 +48,7 @@ import io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPlugin
 import io.ona.kujaku.plugin.switcher.layer.StreetsBaseLayer
 import io.ona.kujaku.utils.CoordinateUtils
 import io.ona.kujaku.views.KujakuMapView
+import kotlinx.coroutines.launch
 import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.configuration.geowidget.MapLayer
@@ -68,12 +71,11 @@ class GeoWidgetFragment : Fragment() {
   internal var onClickLocationCallback: (GeoJsonFeature, FragmentManager) -> Unit =
     { _: GeoJsonFeature, _: FragmentManager ->
     }
-  internal var useGpsOnAddingLocation: Boolean = false
-  internal var mapLayers: List<MapLayerConfig> = ArrayList()
-  internal var showCurrentLocationButton: Boolean = true
-  internal var showPlaneSwitcherButton: Boolean = true
-  internal var showAddLocationButton: Boolean = true
-  internal lateinit var geoJsonDataRequester: GeoJsonDataRequester
+  private var useGpsOnAddingLocation: Boolean = false
+  private var mapLayers: List<MapLayerConfig> = ArrayList()
+  private var showCurrentLocationButton: Boolean = true
+  private var showPlaneSwitcherButton: Boolean = true
+  private var showAddLocationButton: Boolean = true
   private var mapView: KujakuMapView? = null
   private lateinit var geoWidgetViewModel: GeoWidgetViewModel
 
@@ -82,7 +84,8 @@ class GeoWidgetFragment : Fragment() {
     container: ViewGroup?,
     savedInstanceState: Bundle?,
   ): View {
-    setUpMapView(savedInstanceState)
+    Mapbox.getInstance(requireActivity(), BuildConfig.MAPBOX_SDK_TOKEN)
+    mapView = setUpMapView()
     return LinearLayout(requireContext()).apply {
       orientation = LinearLayout.VERTICAL
       addView(mapView)
@@ -90,8 +93,8 @@ class GeoWidgetFragment : Fragment() {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    mapView?.onCreate(savedInstanceState)
     geoWidgetViewModel = ViewModelProvider(this)[GeoWidgetViewModel::class.java]
-    geoJsonDataRequester.requestData { data -> handleGeoJsonFeatures(data) }
   }
 
   override fun onStart() {
@@ -115,8 +118,9 @@ class GeoWidgetFragment : Fragment() {
   }
 
   override fun onDestroy() {
-    super.onDestroy()
     mapView?.onDestroy()
+    super.onDestroy()
+    mapView = null
   }
 
   override fun onLowMemory() {
@@ -129,31 +133,27 @@ class GeoWidgetFragment : Fragment() {
     mapView?.onSaveInstanceState(outState)
   }
 
-  private fun setUpMapView(savedInstanceState: Bundle?) {
-    geoWidgetViewModel = viewModels<GeoWidgetViewModel>().value
-    Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
-    mapView =
-      try {
-        KujakuMapView(requireActivity()).apply {
-          id = R.id.kujaku_widget
-          val builder = Style.Builder().fromUri(context.getString(R.string.style_map_fhir_core))
-          getMapAsync { mapboxMap ->
-            mapboxMap.setStyle(builder) { style ->
-              addIconsLayer(style)
-              addMapStyle(style)
-            }
+  private fun setUpMapView(): KujakuMapView? {
+    return try {
+      KujakuMapView(requireContext()).apply {
+        id = R.id.kujaku_widget
+        val builder = Style.Builder().fromUri(MAP_STYLE)
+        getMapAsync { mapboxMap ->
+          mapboxMap.setStyle(builder) { style ->
+            addIconsLayer(style)
+            addMapStyle(style)
           }
-
-          if (showAddLocationButton) {
-            setOnAddLocationListener(this)
-          }
-          setOnClickLocationListener(this)
         }
-      } catch (mapboxConfigurationException: MapboxConfigurationException) {
-        Timber.e(mapboxConfigurationException)
-        null
+
+        if (showAddLocationButton) {
+          setOnAddLocationListener(this)
+        }
+        setOnClickLocationListener(this)
       }
-    mapView?.onCreate(savedInstanceState)
+    } catch (mapboxConfigurationException: MapboxConfigurationException) {
+      Timber.e(mapboxConfigurationException)
+      null
+    }
   }
 
   private fun addIconsLayer(mMapboxMapStyle: Style) {
@@ -188,11 +188,7 @@ class GeoWidgetFragment : Fragment() {
         )
       icon?.let {
         mMapboxMapStyle.addImage(key, icon)
-        val symbolLayer =
-          SymbolLayer(
-            String.format("%s.layer", key),
-            getString(R.string.data_set_quest),
-          )
+        val symbolLayer = SymbolLayer(String.format("%s.layer", key), DATA_SET)
         symbolLayer.setProperties(
           PropertyFactory.iconImage(key),
           PropertyFactory.iconSize(dynamicIconSize),
@@ -232,11 +228,7 @@ class GeoWidgetFragment : Fragment() {
 
       val baseKey = "base-image"
       mMapboxMapStyle.addImage(baseKey, it)
-      val symbolLayer =
-        SymbolLayer(
-          String.format("%s.layer", baseKey),
-          getString(R.string.data_set_quest),
-        )
+      val symbolLayer = SymbolLayer(String.format("%s.layer", baseKey), DATA_SET)
       symbolLayer.setProperties(
         PropertyFactory.iconImage(baseKey),
         PropertyFactory.iconSize(dynamicBaseIconSize),
@@ -244,7 +236,7 @@ class GeoWidgetFragment : Fragment() {
         PropertyFactory.symbolSortKey(1f),
         PropertyFactory.iconOffset(arrayOf(0f, 8.5f)),
       )
-      mMapboxMapStyle.addLayerBelow(symbolLayer, getString(R.string.quest_data_points))
+      mMapboxMapStyle.addLayerBelow(symbolLayer, DATA_POINTS)
     }
   }
 
@@ -306,13 +298,6 @@ class GeoWidgetFragment : Fragment() {
     )
   }
 
-  fun handleGeoJsonFeatures(geoJsonFeatures: List<GeoJsonFeature>) {
-    if (geoJsonFeatures.isNotEmpty()) {
-      geoWidgetViewModel.updateMapFeatures(geoJsonFeatures)
-      zoomMapWithFeatures()
-    }
-  }
-
   private fun zoomMapWithFeatures() {
     mapView?.getMapAsync { mapboxMap ->
       val features = geoWidgetViewModel.mapFeatures.toList()
@@ -325,89 +310,80 @@ class GeoWidgetFragment : Fragment() {
             ?.filter { it.geometry() is Point }
             ?.map { it.geometry() as Point }
             ?.toMutableList() ?: emptyList()
-
+        mapboxMap.getStyle { style ->
+          style.getSourceAs<GeoJsonSource>(DATA_SET)?.setGeoJson(featureCollection)
+        }
         val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(locationPoints))
         val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, PADDING_IN_METRES)
         val bounds = LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0])
         val finalCameraPosition =
           CameraUpdateFactory.newLatLngBounds(bounds, CAMERA_POSITION_PADDING)
+        mapboxMap.easeCamera(finalCameraPosition)
+      }
+    }
+  }
 
-        with(mapboxMap) {
-          (style?.getSourceAs(requireContext().getString(R.string.data_set_quest))
-              as GeoJsonSource?)
-            ?.apply { setGeoJson(featureCollection) }
-          easeCamera(finalCameraPosition)
+  fun setOnAddLocationListener(onAddLocationCallback: (GeoJsonFeature) -> Unit) = apply {
+    this.onAddLocationCallback = onAddLocationCallback
+  }
+
+  fun setOnCancelAddingLocationListener(onCancelAddingLocationCallback: () -> Unit) = apply {
+    this.onCancelAddingLocationCallback = onCancelAddingLocationCallback
+  }
+
+  fun setOnClickLocationListener(
+    onClickLocationCallback: (GeoJsonFeature, FragmentManager) -> Unit,
+  ) = apply { this.onClickLocationCallback = onClickLocationCallback }
+
+  fun setUseGpsOnAddingLocation(value: Boolean) = apply { this.useGpsOnAddingLocation = value }
+
+  fun setMapLayers(list: List<MapLayerConfig>) = apply { this.mapLayers = list }
+
+  fun showCurrentLocationButtonVisibility(show: Boolean) = apply {
+    this.showCurrentLocationButton = show
+  }
+
+  fun setAddLocationButtonVisibility(show: Boolean) = apply { this.showAddLocationButton = show }
+
+  fun setPlaneSwitcherButtonVisibility(show: Boolean) = apply {
+    this.showPlaneSwitcherButton = show
+  }
+
+  fun observerGeoJsonFeatures(mutableLiveData: MutableLiveData<List<GeoJsonFeature>>) {
+    with(viewLifecycleOwner) {
+      lifecycleScope.launch {
+        repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.CREATED) {
+          mutableLiveData.observe(this@with) { geoJsonFeatures ->
+            if (geoJsonFeatures.isNotEmpty()) {
+              geoWidgetViewModel.updateMapFeatures(geoJsonFeatures)
+              zoomMapWithFeatures()
+            }
+          }
         }
       }
     }
   }
 
-  class Builder {
-
-    private lateinit var geoJsonDataRequester: GeoJsonDataRequester
-    private var onAddLocationCallback: (GeoJsonFeature) -> Unit = {}
-    private var onCancelAddingLocationCallback: () -> Unit = {}
-    private var onClickLocationCallback: (GeoJsonFeature, FragmentManager) -> Unit =
-      { _: GeoJsonFeature, _: FragmentManager ->
-      }
-    private var useGpsOnAddingLocation: Boolean = false
-    private var mapLayers: List<MapLayerConfig> = ArrayList()
-    private var showCurrentLocationButton: Boolean = true
-    private var showPlaneSwitcherButton: Boolean = true
-    private var showAddLocationButton: Boolean = true
-
-    fun setOnAddLocationListener(onAddLocationCallback: (GeoJsonFeature) -> Unit) = apply {
-      this.onAddLocationCallback = onAddLocationCallback
-    }
-
-    fun setOnCancelAddingLocationListener(onCancelAddingLocationCallback: () -> Unit) = apply {
-      this.onCancelAddingLocationCallback = onCancelAddingLocationCallback
-    }
-
-    fun setOnClickLocationListener(
-      onClickLocationCallback: (GeoJsonFeature, FragmentManager) -> Unit,
-    ) = apply { this.onClickLocationCallback = onClickLocationCallback }
-
-    fun setUseGpsOnAddingLocation(value: Boolean) = apply { this.useGpsOnAddingLocation = value }
-
-    fun setMapLayers(list: List<MapLayerConfig>) = apply { this.mapLayers = list }
-
-    fun showCurrentLocationButtonVisibility(show: Boolean) = apply {
-      this.showCurrentLocationButton = show
-    }
-
-    fun setAddLocationButtonVisibility(show: Boolean) = apply { this.showAddLocationButton = show }
-
-    fun setPlaneSwitcherButtonVisibility(show: Boolean) = apply {
-      this.showPlaneSwitcherButton = show
-    }
-
-    fun setGeoJsonDataRequester(geoJsonDataRequester: GeoJsonDataRequester) = apply {
-      this.geoJsonDataRequester = geoJsonDataRequester
-    }
-
-    fun build(): GeoWidgetFragment {
-      return GeoWidgetFragment().apply {
-        this.onAddLocationCallback = this@Builder.onAddLocationCallback
-        this.onCancelAddingLocationCallback = this@Builder.onCancelAddingLocationCallback
-        this.onClickLocationCallback = this@Builder.onClickLocationCallback
-        this.useGpsOnAddingLocation = this@Builder.useGpsOnAddingLocation
-        this.mapLayers = this@Builder.mapLayers
-        this.showCurrentLocationButton = this@Builder.showCurrentLocationButton
-        this.showPlaneSwitcherButton = this@Builder.showPlaneSwitcherButton
-        this.showAddLocationButton = this@Builder.showAddLocationButton
-        this.geoJsonDataRequester = this@Builder.geoJsonDataRequester
+  fun observerMapReset(clearMapLiveData: MutableLiveData<Boolean>) {
+    with(viewLifecycleOwner) {
+      lifecycleScope.launch {
+        repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.CREATED) {
+          clearMapLiveData.observe(this@with) { reset ->
+            if (reset) {
+              geoWidgetViewModel.clearMapFeatures()
+            }
+          }
+        }
       }
     }
   }
-
-  fun clearMapFeatures() = geoWidgetViewModel.clearMapFeatures()
 
   companion object {
     const val MAP_FEATURES_LIMIT = 1000
     const val PADDING_IN_METRES = 1000.0
     const val CAMERA_POSITION_PADDING = 50
-
-    fun builder() = Builder()
+    const val MAP_STYLE = "asset://fhircore_style.json"
+    const val DATA_SET = "quest-data-set"
+    const val DATA_POINTS = "quest-data-points"
   }
 }

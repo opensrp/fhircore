@@ -82,6 +82,7 @@ timber = "5.0.1"
 uiautomator = "2.3.0"
 work = "2.9.1"
 xercesImpl = "2.12.2"
+androidFragmentCompose = "1.8.4"
 
 [libraries]
 accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist" }
@@ -196,6 +197,8 @@ work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version
 work-testing = { group = "androidx.work", name = "work-testing", version.ref = "work" }
 workflow = { group = "org.smartregister", name = "workflow", version.ref = "fhir-sdk-workflow" }
 xercesImpl = { group = "xerces", name = "xercesImpl", version.ref = "xercesImpl" }
+androidx-fragment-compose = { group = "androidx.fragment", name = "fragment-compose", version.ref = "androidFragmentCompose" }
+
 
 [plugins]
 android-junit5 = {id="de.mannodermaus.android-junit5", version.ref="androidJunit5"}

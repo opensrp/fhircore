@@ -27,7 +27,6 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -62,6 +61,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.util.extensions.referenceToBitmap
 import timber.log.Timber
+import javax.inject.Inject
 
 @HiltViewModel
 class GeoWidgetLauncherViewModel
@@ -74,6 +74,9 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   @ApplicationContext val context: Context,
 ) : ViewModel() {
+  val clearMapLiveData: MutableLiveData<Boolean> = MutableLiveData()
+  val geoJsonFeatures: MutableLiveData<List<GeoJsonFeature>> = MutableLiveData()
+
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
 
@@ -87,10 +90,17 @@ constructor(
 
   private val decodedImageMap = mutableStateMapOf<String, Bitmap>()
 
-  fun retrieveLocations(
+  fun onEvent(geoWidgetEvent: GeoWidgetEvent) {
+    when (geoWidgetEvent) {
+      is GeoWidgetEvent.RetrieveFeatures ->
+        retrieveLocations(geoWidgetEvent.geoWidgetConfig, geoWidgetEvent.searchQuery.query)
+      GeoWidgetEvent.ClearMap -> clearMapLiveData.postValue(true)
+    }
+  }
+
+  private fun retrieveLocations(
     geoWidgetConfig: GeoWidgetConfiguration,
     searchText: String?,
-    onReceiveData: (List<GeoJsonFeature>) -> Unit,
   ) {
     viewModelScope.launch {
       val totalCount =
@@ -171,7 +181,7 @@ constructor(
               )
             }
             .toList()
-        val geoJsonFeatures =
+        val features =
           if (searchText.isNullOrBlank()) {
             registerData
           } else {
@@ -184,7 +194,7 @@ constructor(
             }
           }
 
-        onReceiveData(geoJsonFeatures)
+        geoJsonFeatures.postValue(features)
 
         Timber.w(
           locationsWithoutCoordinates.joinToString("\n") {
@@ -194,7 +204,7 @@ constructor(
         )
         pageNumber++
         count += DefaultRepository.DEFAULT_BATCH_SIZE
-        registerDataCount += geoJsonFeatures.size
+        registerDataCount += features.size
         locationsWithoutCoordinatesCount += locationsWithoutCoordinates.size
       }
 
@@ -254,17 +264,6 @@ constructor(
           )
         }
       }
-    }
-  }
-
-  fun onEvent(geoWidgetEvent: GeoWidgetEvent) {
-    when (geoWidgetEvent) {
-      is GeoWidgetEvent.SearchFeatures ->
-        retrieveLocations(
-          geoWidgetEvent.geoWidgetConfig,
-          geoWidgetEvent.searchQuery.query,
-          geoWidgetEvent.onReceiveData,
-        )
     }
   }
 
