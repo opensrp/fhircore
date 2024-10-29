@@ -170,6 +170,14 @@ fun TopScreenSection(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(start = 8.dp),
       ) {
+        SetupToolbarIcons(
+          menuIcons = topScreenSection?.menuIcons,
+          isFilterIconEnabled = isFilterIconEnabled,
+          navController = navController,
+          modifier = modifier,
+          onClick = onClick,
+          decodeImage = decodeImage,
+        )
         if (isFilterIconEnabled) {
           BadgedBox(
             modifier = Modifier.padding(end = 8.dp),
@@ -197,14 +205,6 @@ fun TopScreenSection(
             )
           }
         }
-        SetupToolbarIcons(
-          menuIcons = topScreenSection?.menuIcons,
-          isFilterIconEnabled = isFilterIconEnabled,
-          navController = navController,
-          modifier = modifier,
-          onClick = onClick,
-          decodeImage = decodeImage,
-        )
       }
     }
     if (isSearchBarVisible) {
