@@ -173,38 +173,12 @@ fun TopScreenSection(
         SetupToolbarIcons(
           menuIcons = topScreenSection?.menuIcons,
           isFilterIconEnabled = isFilterIconEnabled,
+          filteredRecordsCount = filteredRecordsCount,
           navController = navController,
           modifier = modifier,
           onClick = onClick,
           decodeImage = decodeImage,
         )
-        if (isFilterIconEnabled) {
-          BadgedBox(
-            modifier = Modifier.padding(end = 8.dp),
-            badge = {
-              if (filteredRecordsCount != null && filteredRecordsCount > -1) {
-                Badge {
-                  Text(
-                    text =
-                      if (filteredRecordsCount > 99) "99+" else filteredRecordsCount.toString(),
-                    overflow = TextOverflow.Clip,
-                    maxLines = 1,
-                  )
-                }
-              }
-            },
-          ) {
-            Icon(
-              imageVector = Icons.Outlined.FilterAlt,
-              contentDescription = FILTER,
-              tint = Color.White,
-              modifier =
-                modifier
-                  .clickable { onClick(ToolbarClickEvent.FilterData) }
-                  .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
-            )
-          }
-        }
       }
     }
     if (isSearchBarVisible) {
@@ -310,6 +284,7 @@ fun TopScreenSection(
 fun SetupToolbarIcons(
   menuIcons: List<ImageProperties>?,
   isFilterIconEnabled: Boolean,
+  filteredRecordsCount: Long? = null,
   navController: NavController,
   modifier: Modifier,
   onClick: (ToolbarClickEvent) -> Unit,
@@ -321,6 +296,8 @@ fun SetupToolbarIcons(
     if (menuIcons.size <= iconsCount) {
       RenderMenuIcon(
         menuIcons = menuIcons.subList(0, min(iconsCount, menuIcons.size)),
+        isFilterIconEnabled = isFilterIconEnabled,
+        filteredRecordsCount = filteredRecordsCount,
         navController = navController,
         modifier = modifier,
         onClick = onClick,
@@ -330,6 +307,8 @@ fun SetupToolbarIcons(
       Row(verticalAlignment = Alignment.CenterVertically) {
         RenderMenuIcon(
           menuIcons = menuIcons.subList(0, iconsCount),
+          isFilterIconEnabled = false,
+          filteredRecordsCount = null,
           navController = navController,
           modifier = modifier,
           onClick = onClick,
@@ -376,12 +355,43 @@ fun SetupToolbarIcons(
 @Composable
 private fun RenderMenuIcon(
   menuIcons: List<ImageProperties>,
+  isFilterIconEnabled: Boolean,
+  filteredRecordsCount: Long? = null,
   navController: NavController,
   modifier: Modifier,
   onClick: (ToolbarClickEvent) -> Unit,
   decodeImage: ((String) -> Bitmap?)?,
 ) {
   LazyRow(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+    item {
+      if (isFilterIconEnabled) {
+        BadgedBox(
+          modifier = Modifier.padding(end = 8.dp),
+          badge = {
+            if (filteredRecordsCount != null && filteredRecordsCount > -1) {
+              Badge {
+                Text(
+                  text = if (filteredRecordsCount > 99) "99+" else filteredRecordsCount.toString(),
+                  overflow = TextOverflow.Clip,
+                  maxLines = 1,
+                )
+              }
+            }
+          },
+        ) {
+          Icon(
+            imageVector = Icons.Outlined.FilterAlt,
+            contentDescription = FILTER,
+            tint = Color.White,
+            modifier =
+              modifier
+                .size(22.dp)
+                .clickable { onClick(ToolbarClickEvent.FilterData) }
+                .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
+          )
+        }
+      }
+    }
     items(menuIcons) {
       Image(
         imageProperties = it,
