@@ -351,7 +351,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       ToolBarHomeNavigation.NAVIGATE_BACK,
       slotBundle.captured.getSerializable(NavigationArg.TOOL_BAR_HOME_NAVIGATION),
     )
-    Assert.assertFalse(navOptions.captured.isPopUpToInclusive())
+    Assert.assertTrue(navOptions.captured.isPopUpToInclusive())
     Assert.assertTrue(navOptions.captured.shouldLaunchSingleTop())
   }
 
