@@ -42,7 +42,6 @@ import java.util.TimeZone
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -57,8 +56,8 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.domain.model.LauncherType
+import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.sync.CustomSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
@@ -78,6 +77,7 @@ import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.reformatDate
 import org.smartregister.fhircore.engine.util.extension.refresh
+import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.tryParse
@@ -409,7 +409,9 @@ constructor(
       if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
         if (
           applicationConfiguration.usePractitionerAssignedLocationOnSync ||
-            context.syncLocationIdsProtoStore.data.firstOrNull()?.isNotEmpty() == true
+            context
+              .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA)
+              .isNotEmpty()
         ) {
           schedulePeriodicSync()
         }
