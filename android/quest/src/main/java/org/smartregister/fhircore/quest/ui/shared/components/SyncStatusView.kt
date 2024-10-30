@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.shared.components
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -267,41 +268,53 @@ fun SyncStatusView(
     }
 
     if (currentSyncJobStatus is CurrentSyncJobStatus.Running) {
-      Column(modifier = Modifier.weight(1f)) {
-        if (!minimized) {
-          SyncStatusTitle(
-            text =
-              stringResource(
-                if (isSyncUpload == true) {
-                  org.smartregister.fhircore.engine.R.string.sync_up_inprogress
-                } else {
-                  org.smartregister.fhircore.engine.R.string.sync_down_inprogress
-                },
-                progressPercentage ?: 0,
-              ),
-            minimized = false,
-            color = Color.White,
-            startPadding = 0,
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.weight(1f),
+      ) {
+        Column(modifier = Modifier.weight(1f)) {
+          if (!minimized) {
+            SyncStatusTitle(
+              text =
+                stringResource(
+                  if (isSyncUpload == true) {
+                    org.smartregister.fhircore.engine.R.string.sync_up_inprogress
+                  } else {
+                    org.smartregister.fhircore.engine.R.string.sync_down_inprogress
+                  },
+                  progressPercentage ?: 0,
+                ),
+              minimized = false,
+              color = Color.White,
+              startPadding = 0,
+            )
+          }
+          LinearProgressIndicator(
+            progress = (progressPercentage?.toFloat()?.div(100)) ?: 0f,
+            color = MaterialTheme.colors.primary,
+            backgroundColor = Color.White,
+            modifier =
+              Modifier.testTag(SYNC_PROGRESS_INDICATOR_TEST_TAG)
+                .padding(vertical = 4.dp)
+                .fillMaxWidth(),
           )
+          if (!minimized) {
+            Text(
+              text = stringResource(id = org.smartregister.fhircore.engine.R.string.please_wait),
+              color = SubtitleTextColor,
+              fontSize = 14.sp,
+              textAlign = TextAlign.Start,
+              modifier = Modifier.align(Alignment.Start),
+            )
+          }
         }
-        LinearProgressIndicator(
-          progress = (progressPercentage?.toFloat()?.div(100)) ?: 0f,
-          color = MaterialTheme.colors.primary,
-          backgroundColor = Color.White,
-          modifier =
-            Modifier.testTag(SYNC_PROGRESS_INDICATOR_TEST_TAG)
-              .padding(vertical = 4.dp)
-              .fillMaxWidth(),
+        LineSpinFadeLoaderProgressIndicator(
+          color = Color.White,
+          modifier = Modifier.padding(18.dp),
+          lineLength = 8f,
+          innerRadius = 12f,
         )
-        if (!minimized) {
-          Text(
-            text = stringResource(id = org.smartregister.fhircore.engine.R.string.please_wait),
-            color = SubtitleTextColor,
-            fontSize = 14.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.align(Alignment.Start),
-          )
-        }
       }
     }
 

@@ -146,6 +146,7 @@ dependencies {
   implementation(libs.hilt.work)
   implementation(libs.slf4j.nop)
 
+  // Shared dependencies
   api(libs.bundles.datastore.kt)
   api(libs.bundles.navigation)
   api(libs.bundles.materialicons)
@@ -157,8 +158,6 @@ dependencies {
   api(libs.bundles.okhttp3)
   api(libs.bundles.paging)
   api(libs.ui)
-
-  // Shared dependencies
   api(libs.glide)
   api(libs.knowledge) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   api(libs.p2p.lib)
