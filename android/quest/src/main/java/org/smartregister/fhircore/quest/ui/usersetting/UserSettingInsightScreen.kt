@@ -75,7 +75,6 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.extension.DEFAULT_FORMAT_SDF_DD_MM_YYYY
 import org.smartregister.fhircore.engine.util.extension.formatDate
-import org.smartregister.fhircore.quest.ui.pin.CIRCULAR_PROGRESS_INDICATOR
 
 const val USER_INSIGHT_TOP_APP_BAR = "userInsightToAppBar"
 const val INSIGHT_UNSYNCED_DATA = "insightUnsyncedData"
@@ -142,7 +141,7 @@ fun UserSettingInsightScreen(
             Spacer(modifier = Modifier.width(8.dp))
             CircularProgressIndicator(
               modifier =
-                Modifier.size(24.dp).testTag(CIRCULAR_PROGRESS_INDICATOR).wrapContentWidth(),
+                Modifier.testTag(CIRCULAR_PROGRESS_INDICATOR).size(24.dp).wrapContentWidth(),
               strokeWidth = 1.6.dp,
             )
           }
