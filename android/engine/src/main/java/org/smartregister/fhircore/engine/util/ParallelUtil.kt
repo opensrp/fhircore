@@ -46,6 +46,7 @@ suspend fun <T> Iterable<T>.forEachAsync(action: suspend (T) -> Unit): Unit = co
   forEach { launch(Dispatchers.Default) { action(it) } }
 }
 
-suspend fun <T> Iterable<T>.forEachAsync(dispatcher: CoroutineDispatcher, action: suspend (T) -> Unit): Unit = coroutineScope {
-  forEach { launch(dispatcher) { action(it) } }
-}
+suspend fun <T> Iterable<T>.forEachAsync(
+  dispatcher: CoroutineDispatcher,
+  action: suspend (T) -> Unit,
+): Unit = coroutineScope { forEach { launch(dispatcher) { action(it) } } }
