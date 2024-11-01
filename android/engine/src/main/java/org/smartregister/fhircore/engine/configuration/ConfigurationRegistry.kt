@@ -35,7 +35,6 @@ import java.util.PropertyResourceBundle
 import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -408,10 +407,6 @@ constructor(
    */
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources() {
-
-    Timber.d("============================== fetchNonWorkflowConfigResources Starting")
-    val a = measureTimeMillis {
-
       Timber.d("Triggered fetching application configurations remotely")
       configCacheMap.clear()
       sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
@@ -461,9 +456,6 @@ constructor(
         }
       }
     }
-
-    Timber.d("============================== fetchNonWorkflowConfigResources took a total of $a ms")
-  }
 
   suspend fun fetchRemoteImplementationGuideByAppId(
     appId: String?,
