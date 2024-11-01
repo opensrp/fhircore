@@ -26,7 +26,6 @@ import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.sync.download.ResourceSearchParams
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.net.UnknownHostException
@@ -35,6 +34,9 @@ import java.util.PropertyResourceBundle
 import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -100,6 +102,7 @@ constructor(
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
+  private val mutex = Mutex()
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -407,55 +410,55 @@ constructor(
    */
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources() {
-      Timber.d("Triggered fetching application configurations remotely")
-      configCacheMap.clear()
-      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
-        val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
-        val compositionResource = fetchRemoteCompositionByAppId(parsedAppId)
-        compositionResource?.let { composition ->
-          composition
-            .retrieveCompositionSections()
-            .asSequence()
-            .filter { it.hasFocus() && it.focus.hasReferenceElement() }
-            .groupBy { section ->
-              section.focus.reference.substringBefore(
-                TYPE_REFERENCE_DELIMITER,
-                missingDelimiterValue = "",
-              )
-            }
-            .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
-            .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-              if (entry.key == ResourceType.List.name) {
-                processCompositionListResources(entry)
-              } else {
-                val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+    Timber.d("Triggered fetching application configurations remotely")
+    configCacheMap.clear()
+    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
+      val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
+      val compositionResource = fetchRemoteCompositionByAppId(parsedAppId)
+      compositionResource?.let { composition ->
+        composition
+          .retrieveCompositionSections()
+          .asSequence()
+          .filter { it.hasFocus() && it.focus.hasReferenceElement() }
+          .groupBy { section ->
+            section.focus.reference.substringBefore(
+              TYPE_REFERENCE_DELIMITER,
+              missingDelimiterValue = "",
+            )
+          }
+          .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
+          .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+            if (entry.key == ResourceType.List.name) {
+              processCompositionListResources(entry)
+            } else {
+              val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
-                chunkedResourceIdList.forEachAsync(Dispatchers.IO) { sectionComponents ->
-                  Timber.d(
-                    "Fetching config resource ${entry.key}: with ids ${
-                                            sectionComponents.joinToString(
-                                                ",",
-                                            )
-                                        }",
-                  )
-                  fetchResources(
-                    resourceType = entry.key,
-                    resourceIdList =
-                      sectionComponents.map { sectionComponent ->
-                        sectionComponent.focus.extractId()
-                      },
-                  )
-                }
+              chunkedResourceIdList.forEachAsync(Dispatchers.IO) { sectionComponents ->
+                Timber.d(
+                  "Fetching config resource ${entry.key}: with ids ${
+                                        sectionComponents.joinToString(
+                                            ",",
+                                        )
+                                    }",
+                )
+                fetchResources(
+                  resourceType = entry.key,
+                  resourceIdList =
+                    sectionComponents.map { sectionComponent ->
+                      sectionComponent.focus.extractId()
+                    },
+                )
               }
             }
+          }
 
-          // Save composition after fetching all the referenced section resources
-          addOrUpdate(compositionResource)
+        // Save composition after fetching all the referenced section resources
+        addOrUpdate(compositionResource)
 
-          Timber.d("Done saving composition resource")
-        }
+        Timber.d("Done saving composition resource")
       }
     }
+  }
 
   suspend fun fetchRemoteImplementationGuideByAppId(
     appId: String?,
@@ -604,15 +607,17 @@ constructor(
        */
       try {
         if (resource is MetadataResource) {
-          knowledgeManager.install(
-            KnowledgeManagerUtil.writeToFile(
-              context = context,
-              configService = configService,
-              metadataResource = resource,
-              filePath =
-                "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/${resource.resourceType}/${resource.idElement.idPart}.json",
-            ),
-          )
+          mutex.withLock {
+            knowledgeManager.install(
+              KnowledgeManagerUtil.writeToFile(
+                context = context,
+                configService = configService,
+                metadataResource = resource,
+                filePath =
+                  "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/${resource.resourceType}/${resource.idElement.idPart}.json",
+              ),
+            )
+          }
         }
       } catch (exception: Exception) {
         Timber.e(exception)
