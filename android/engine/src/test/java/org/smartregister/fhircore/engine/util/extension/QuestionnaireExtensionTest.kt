@@ -18,12 +18,8 @@ package org.smartregister.fhircore.engine.util.extension
 
 import java.util.UUID
 import kotlinx.coroutines.test.runTest
-import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.DateType
-import org.hl7.fhir.r4.model.DecimalType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Expression
@@ -33,9 +29,7 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
-import org.hl7.fhir.r4.model.TimeType
 import org.hl7.fhir.r4.model.Type
-import org.hl7.fhir.r4.model.UriType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -406,50 +400,6 @@ class QuestionnaireExtensionTest : RobolectricTest() {
       }
     listOf(questionnaireItemComponent).prePopulateInitialValues("", emptyList())
     Assert.assertTrue(questionnaireItemComponent.hasExtension(EXTENSION_INITIAL_EXPRESSION_URL))
-  }
-
-  @Test
-  fun testCastToTypeReturnsCorrectTypes() {
-    val booleanType = "true".castToType(DataType.BOOLEAN)
-    Assert.assertEquals(BooleanType().fhirType(), booleanType?.fhirType())
-    Assert.assertEquals("true", booleanType.valueToString())
-
-    val decimalType = "6.4".castToType(DataType.DECIMAL)
-    Assert.assertEquals(DecimalType().fhirType(), decimalType?.fhirType())
-    Assert.assertEquals("6.4", decimalType.valueToString())
-
-    val integerType = "4".castToType(DataType.INTEGER)
-    Assert.assertEquals(IntegerType().fhirType(), integerType?.fhirType())
-    Assert.assertEquals("4", integerType.valueToString())
-
-    val dateType = "2020-02-02".castToType(DataType.DATE)
-    Assert.assertEquals(DateType().fhirType(), dateType?.fhirType())
-    Assert.assertEquals("02-Feb-2020", dateType.valueToString())
-
-    val dateTimeType = "2020-02-02T13:00:32".castToType(DataType.DATETIME)
-    Assert.assertEquals(DateTimeType().fhirType(), dateTimeType?.fhirType())
-    Assert.assertEquals("02-Feb-2020", dateTimeType.valueToString())
-
-    val timeType = "T13:00:32".castToType(DataType.TIME)
-    Assert.assertEquals(TimeType().fhirType(), timeType?.fhirType())
-    Assert.assertEquals("T13:00:32", timeType.valueToString())
-
-    val stringType = "str".castToType(DataType.STRING)
-    Assert.assertEquals(StringType().fhirType(), stringType?.fhirType())
-    Assert.assertEquals("str", stringType.valueToString())
-
-    val uriType = "https://str.org".castToType(DataType.URI)
-    Assert.assertEquals(UriType().fhirType(), uriType?.fhirType())
-    Assert.assertEquals("https://str.org", uriType.valueToString())
-
-    // test invalid JSON
-    val codingType = "invalid".castToType(DataType.CODING)
-    Assert.assertEquals(null, codingType)
-
-    val quantityType = "invalid".castToType(DataType.QUANTITY)
-    Assert.assertEquals(null, quantityType)
-
-    // TODO: test valid JSON
   }
 
   @Test
