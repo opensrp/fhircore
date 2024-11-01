@@ -72,6 +72,7 @@ import org.smartregister.fhircore.engine.domain.model.TopScreenSectionConfig
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.ui.shared.models.SearchMode
@@ -105,6 +106,7 @@ fun TopScreenSection(
   showSearchByQrCode: Boolean = false,
   filteredRecordsCount: Long? = null,
   searchPlaceholder: String? = null,
+  placeholderColor: String? = null,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (SearchQuery, Boolean) -> Unit = { _, _ -> },
   performSearchOnValueChanged: Boolean = true,
@@ -217,7 +219,7 @@ fun TopScreenSection(
         singleLine = true,
         placeholder = {
           Text(
-            color = GreyTextColor,
+            color = placeholderColor?.parseColor() ?: GreyTextColor,
             text = searchPlaceholder ?: stringResource(R.string.search_hint),
             modifier = modifier.testTag(SEARCH_FIELD_TEST_TAG),
           )
