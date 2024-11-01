@@ -75,8 +75,9 @@ class ProfileScreenTest {
         ProfileScreen(
           navController = rememberNavController(),
           profileUiState = profileUiState,
-          onEvent = {},
           snackStateFlow = snackBarStateFlow,
+          onEvent = {},
+          decodeImage = null,
         )
       }
     }

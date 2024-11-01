@@ -183,23 +183,33 @@ constructor(
       relatedResourceKey: String,
       referenceFhirPathExpression: String?,
       relatedResourcesMap: Map<String, List<Resource>>? = null,
+      isRevInclude: Boolean = true,
     ): List<Resource> {
       val value: List<Resource> =
         relatedResourcesMap?.get(relatedResourceKey)
           ?: if (facts.getFact(relatedResourceKey) != null) {
-            facts.getFact(relatedResourceKey).value as List<Resource>
+            facts.getFact(relatedResourceKey).value as List<Resource>? ?: emptyList()
           } else {
             emptyList()
           }
 
-      return if (referenceFhirPathExpression.isNullOrEmpty()) {
-        value
+      if (referenceFhirPathExpression.isNullOrEmpty()) {
+        return value
+      }
+
+      // Reverse search; look for related resource that references the provided resource
+      return if (isRevInclude) {
+        value.filter { res ->
+          fhirPathDataExtractor.extractData(res, referenceFhirPathExpression).all {
+            resource.logicalId == it.primitiveValue().extractLogicalIdUuid()
+          }
+        }
       } else {
-        value.filter {
-          resource.logicalId ==
-            fhirPathDataExtractor
-              .extractValue(it, referenceFhirPathExpression)
-              .extractLogicalIdUuid()
+        // Forward search; extract value provided resource, then search resources with matching id
+        value.filter { res ->
+          fhirPathDataExtractor.extractData(resource, referenceFhirPathExpression).all {
+            res.logicalId == it.primitiveValue().extractLogicalIdUuid()
+          }
         }
       }
     }
@@ -425,14 +435,15 @@ constructor(
 
     /**
      * This function filters resources provided the condition extracted from the
-     * [conditionalFhirPathExpression] is met
+     * [conditionalFhirPathExpression] is met. Returns the original source or empty resources list
+     * if FHIR path expression is null.
      */
     fun filterResources(
       resources: List<Resource>?,
-      conditionalFhirPathExpression: String,
+      conditionalFhirPathExpression: String?,
     ): List<Resource> {
-      if (conditionalFhirPathExpression.isEmpty()) {
-        return emptyList()
+      if (conditionalFhirPathExpression.isNullOrBlank()) {
+        return resources ?: emptyList()
       }
       return resources?.filter {
         fhirPathDataExtractor.extractValue(it, conditionalFhirPathExpression).toBoolean()
@@ -546,6 +557,7 @@ constructor(
       return source?.take(limit) ?: emptyList()
     }
 
+    @JvmOverloads
     fun mapResourcesToExtractedValues(
       resources: List<Resource>?,
       fhirPathExpression: String,
@@ -555,6 +567,31 @@ constructor(
       }
       return resources?.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
         ?: emptyList()
+    }
+
+    /**
+     * This function combines all the string values retrieved from the [resources] using the
+     * [fhirPathExpression] to a list separated by the [separator]
+     *
+     * e.g for a provided list of Patients we can extract a string containing the family names using
+     * the [Patient.name.family] as the [fhirpathExpression] and [ | ] as the [separator] the
+     * returned string would be [John | Jane | James]
+     */
+    @JvmOverloads
+    fun mapResourcesToExtractedValues(
+      resources: List<Resource>?,
+      fhirPathExpression: String,
+      separator: String = ",",
+    ): String {
+      if (fhirPathExpression.isEmpty()) {
+        return ""
+      }
+      val results: List<Any> =
+        mapResourcesToExtractedValues(
+          resources = resources,
+          fhirPathExpression = fhirPathExpression,
+        )
+      return results.joinToString(separator)
     }
 
     fun computeTotalCount(relatedResourceCounts: List<RelatedResourceCount>?): Long =

@@ -18,8 +18,6 @@ package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
 import android.database.SQLException
-import android.graphics.Bitmap
-import androidx.compose.runtime.mutableStateMapOf
 import ca.uhn.fhir.context.ConfigurationException
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.DataFormatException
@@ -60,6 +58,7 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.di.NetworkModule
+import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -74,7 +73,7 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
-import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationIds
+import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
@@ -98,7 +97,6 @@ constructor(
 
   val configsJsonMap = mutableMapOf<String, String>()
   val configCacheMap = mutableMapOf<String, Configuration>()
-  val decodedImageMap = mutableStateMapOf<String, Bitmap>()
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
@@ -746,7 +744,10 @@ constructor(
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
     val mandatoryTags = configService.provideResourceTags(sharedPreferencesHelper)
 
-    val locationIds = context.retrieveRelatedEntitySyncLocationIds()
+    val locationIds =
+      context.retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA).map {
+        it.locationId
+      }
 
     syncConfig.parameter
       .map { it.resource as SearchParameter }
