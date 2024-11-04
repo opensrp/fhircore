@@ -93,7 +93,5 @@ class FhirDataTypesUtilKtTest {
     Assert.assertTrue(referenceType is Reference)
     referenceType as Reference
     Assert.assertEquals("Patient/0", referenceType.reference)
-
-    // TODO: test more valid JSON
   }
 }
