@@ -107,6 +107,7 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
       spyk(
         RegisterRepository(
           fhirEngine = fhirEngine,
+          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
@@ -114,7 +115,6 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = ApplicationProvider.getApplicationContext(),
-          dispatcherProvider = dispatcherProvider,
         ),
       )
 

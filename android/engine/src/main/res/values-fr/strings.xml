@@ -1,5 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="manual_sync">Synchronisation manuelle</string>
+    <string name="sync">Synchronisation</string>
     <string name="language">Langue</string>
     <string name="logout_as_user">Se déconnecter en tant que </string>
     <string name="show_overdue">Afficher les retards</string>
@@ -8,12 +9,12 @@
     <string name="sync_data">Synchronisation des données</string>
     <string name="scan_bar_code">Scan du code-barres</string>
     <string name="empty_client_list_message_title">Aucun résultat</string>
-    <string name="data_migration_version">Version de migration de données %1$s</string>
     <string name="empty_client_list_message_details">Désolé, nous n\'avons pas trouvé de client avec le nom ou l\'identifiant donné.</string>
     <string name="register_new_client">Enregistrer un nouveau client</string>
     <string name="app_logo">Logo de l\'application</string>
     <string name="powered_by">Powered By</string>
     <string name="app_version">Version de l\'application%1$d(%2$s)</string>
+    <string name="data_migration_version">Version de la migration des données %1$s</string>
     <string name="last_sync">Dernière synchronisation%1$s</string>
     <string name="login_text">SE CONNECTER</string>
     <string name="login_call_fail_error_message">Échec de la vérification des informations d\'identification du serveur. Vérifiez votre connexion internet</string>
@@ -24,7 +25,7 @@
     <string name="syncing">Synchronisation</string>
     <string name="syncing_up" >Synchronisation</string>
     <string name="syncing_down" >Synchronisation en cours</string>
-    <string name="syncing_initiated">Synchronisation initiée &#8230;</string>
+    <string name="syncing_initiated">Synchronisation initiée&#8230;</string>
     <string name="sync_failed">La synchronisation a échoué. Vérifier la connexion internet ou réessayer plus tard</string>
     <string name="sync_completed_with_errors">La synchronisation s\'est terminée avec des erreurs. Réessayer...</string>
     <string name="sync_unauthorised">La synchronisation a échoué car les informations d\'authentification ne sont pas valides.</string>
@@ -65,9 +66,9 @@
     <string name="questionnaire_alert_back_pressed_message">Êtes-vous sûr de vouloir revenir en arrière ?</string>
     <string name="questionnaire_in_progress_alert_back_pressed_message">Êtes-vous sûr de vouloir annuler les réponses ?</string>
     <string name="questionnaire_alert_back_pressed_title">Annuler les modifications</string>
-    <string name="questionnaire_alert_back_pressed_button_title">Annuler</string>
+    <string name="questionnaire_alert_back_pressed_button_title">Annuler cette action</string>
     <string name="questionnaire_alert_back_pressed_save_draft_button_title">Enregistrer un brouillon partiel</string>
-    <string name="questionnaire_alert_neutral_button_title">Annuler</string>
+    <string name="questionnaire_alert_neutral_button_title">Ne pas annuler cette action</string>
     <string name="questionnaire_alert_confirm_button_title">Oui</string>
     <string name="questionnaire_alert_invalid_message">Des erreurs de validation ont été détectées. Corrigez les erreurs et soumettez à nouveau.</string>
     <string name="questionnaire_alert_invalid_title">Échec de la validation</string>
@@ -77,7 +78,7 @@
     <string name="forgot_password">Mot de passe oublié</string>
     <string name="forgot_password_title">Mot de passe oublié!</string>
     <string name="more">Plus de détails</string>
-    <string name="call_supervisor">Veuillez appeler votre superviseur au %1$s</string>
+    <string name="call_supervisor">Merci de contacter votre administrateur.</string>
     <string name="cancel" tools:ignore="ButtonCase">Annuler</string>
     <string name="dial_number">Composer le numéro</string>
     <string name="register">Enregistrer</string>
@@ -133,6 +134,7 @@
     <string name="weeks">Semaine(s)</string>
     <string name="days">Jour(s)</string>
     <string name="initializing">Initialisation des paramètres &#8230;</string>
+    <string name="initializing_application">Initialisation de l\'application &#8230;</string>
     <string name="error_occurred">Quelque chose a mal tourné...</string>
     <string name="insights">Insights</string>
     <string name="contact_help">Contacter l\'aide</string>
@@ -166,5 +168,15 @@
     <string name="add">AJOUTER</string>
     <string name="data_migration_started">Début de la migration des données à partir de la version %1$d</string>
     <string name="data_migration_completed">Migration des données de l\'application vers la version %1$d</string>
+    <string name="help">Aide</string>
     <string name="no_data">Pas de données</string>
+    <string name="sync_complete">Synchronisation terminée</string>
+    <string name="sync_error">Erreur de synchronisation</string>
+    <string name="minutes_remaining">Calcul des minutes restantes...</string>
+    <string name="sync_up_inprogress">%1$d%% Synchronisation...</string>
+    <string name="sync_down_inprogress">%1$d%%Syncing down…</string>
+    <string name="default_html_title">fichier</string>
+    <string name="retry">REESSAYER</string>
+    <string name="unsynced_data_present">Il y a des données non synchronisées</string>
+    <string name="missing_supervisor_contact">Le contact du superviseur est manquant ou le numéro de téléphone fourni n\'est pas valide</string>
 </resources>

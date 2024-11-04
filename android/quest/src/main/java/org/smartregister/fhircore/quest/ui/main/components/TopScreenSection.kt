@@ -16,21 +16,25 @@
 
 package org.smartregister.fhircore.quest.ui.main.components
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Badge
 import androidx.compose.material.BadgedBox
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -38,11 +42,12 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.FilterAlt
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,20 +62,25 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import kotlin.math.min
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.domain.model.TopScreenSectionConfig
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.ui.shared.models.SearchMode
@@ -105,9 +115,11 @@ fun TopScreenSection(
   filteredRecordsCount: Long? = null,
   searchPlaceholder: String? = null,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
-  onSearchTextChanged: (SearchQuery) -> Unit = {},
+  onSearchTextChanged: (SearchQuery, Boolean) -> Unit = { _, _ -> },
+  performSearchOnValueChanged: Boolean = true,
   isFilterIconEnabled: Boolean = false,
   topScreenSection: TopScreenSectionConfig? = null,
+  decodeImage: ((String) -> Bitmap?)?,
   onClick: (ToolbarClickEvent) -> Unit = {},
 ) {
   val currentContext = LocalContext.current
@@ -115,7 +127,7 @@ fun TopScreenSection(
   // Trigger search automatically on launch if text is not empty
   LaunchedEffect(Unit) {
     if (!searchQuery.isBlank()) {
-      onSearchTextChanged(searchQuery)
+      onSearchTextChanged(searchQuery, true)
     }
   }
 
@@ -131,63 +143,65 @@ fun TopScreenSection(
             TITLE_ROW_TEST_TAG,
           ),
       verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-      Icon(
-        when (toolBarHomeNavigation) {
-          ToolBarHomeNavigation.OPEN_DRAWER -> Icons.Filled.Menu
-          ToolBarHomeNavigation.NAVIGATE_BACK -> Icons.Filled.ArrowBack
-        },
-        contentDescription = DRAWER_MENU,
-        tint = Color.White,
-        modifier =
-          modifier.clickable { onClick(ToolbarClickEvent.Navigate) }.testTag(TOP_ROW_ICON_TEST_TAG),
-      )
-      Text(
-        text = title,
-        fontSize = 20.sp,
-        color = Color.White,
-        modifier = modifier.padding(start = 8.dp).weight(1f).testTag(TOP_ROW_TEXT_TEST_TAG),
-      )
-
-      // if menu icons are more than two then we will add a overflow menu for other menu icons
-      // to support m3 guidelines
-      // https://m3.material.io/components/top-app-bar/guidelines#b1b64842-7d88-4c3f-8ffb-4183fe648c9e
-      SetupToolbarIcons(topScreenSection?.menuIcons, navController, modifier, onClick)
-
-      if (isFilterIconEnabled) Spacer(modifier = Modifier.width(24.dp))
-
-      if (isFilterIconEnabled) {
-        BadgedBox(
-          modifier = Modifier.padding(end = 8.dp),
-          badge = {
-            if (filteredRecordsCount != null && filteredRecordsCount > -1) {
-              Badge {
-                Text(
-                  text = if (filteredRecordsCount > 99) "99+" else filteredRecordsCount.toString(),
-                  overflow = TextOverflow.Clip,
-                  maxLines = 1,
-                )
-              }
-            }
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+          when (toolBarHomeNavigation) {
+            ToolBarHomeNavigation.OPEN_DRAWER -> Icons.Filled.Menu
+            ToolBarHomeNavigation.NAVIGATE_BACK -> Icons.AutoMirrored.Filled.ArrowBack
           },
-        ) {
-          Icon(
-            imageVector = Icons.Default.FilterAlt,
-            contentDescription = FILTER,
-            tint = Color.White,
-            modifier =
-              modifier
-                .clickable { onClick(ToolbarClickEvent.FilterData) }
-                .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
-          )
-        }
+          contentDescription = DRAWER_MENU,
+          tint = Color.White,
+          modifier =
+            modifier
+              .clickable { onClick(ToolbarClickEvent.Navigate) }
+              .testTag(TOP_ROW_ICON_TEST_TAG),
+        )
+        Text(
+          text = title,
+          fontSize = 20.sp,
+          color = Color.White,
+          modifier = modifier.padding(start = 16.dp).testTag(TOP_ROW_TEXT_TEST_TAG),
+        )
+      }
+
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(start = 8.dp),
+      ) {
+        SetupToolbarIcons(
+          menuIcons = topScreenSection?.menuIcons,
+          isFilterIconEnabled = isFilterIconEnabled,
+          filteredRecordsCount = filteredRecordsCount,
+          navController = navController,
+          modifier = modifier,
+          onClick = onClick,
+          decodeImage = decodeImage,
+        )
       }
     }
     if (isSearchBarVisible) {
       OutlinedTextField(
         colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
         value = searchQuery.query,
-        onValueChange = { onSearchTextChanged(SearchQuery(it, mode = SearchMode.KeyboardInput)) },
+        onValueChange = {
+          onSearchTextChanged(
+            SearchQuery(it, mode = SearchMode.KeyboardInput),
+            performSearchOnValueChanged,
+          )
+        },
+        keyboardOptions =
+          KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Search),
+        keyboardActions =
+          KeyboardActions(
+            onSearch = {
+              onSearchTextChanged(
+                SearchQuery(searchQuery.query, mode = SearchMode.KeyboardInput),
+                true,
+              )
+            },
+          ),
         maxLines = 1,
         singleLine = true,
         placeholder = {
@@ -216,12 +230,12 @@ fun TopScreenSection(
             when {
               !searchQuery.isBlank() -> {
                 IconButton(
-                  onClick = { onSearchTextChanged(SearchQuery.emptyText) },
+                  onClick = { onSearchTextChanged(SearchQuery.emptyText, true) },
                   modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
                 ) {
                   Icon(
                     imageVector = Icons.Filled.Clear,
-                    CLEAR,
+                    contentDescription = CLEAR,
                     tint = Color.Gray,
                     modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
                   )
@@ -233,12 +247,19 @@ fun TopScreenSection(
                     currentContext.getActivity()?.let {
                       QrCodeScanUtils.scanQrCode(it) { code ->
                         onSearchTextChanged(
-                          SearchQuery(code ?: "", mode = SearchMode.QrCodeScan),
+                          SearchQuery(
+                            code ?: "",
+                            mode = SearchMode.QrCodeScan,
+                          ),
+                          performSearchOnValueChanged,
                         )
                       }
                     }
                   },
-                  modifier = modifier.testTag(TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG),
+                  modifier =
+                    modifier.testTag(
+                      TRAILING_QR_SCAN_ICON_BUTTON_TEST_TAG,
+                    ),
                 ) {
                   Icon(
                     painter =
@@ -262,51 +283,125 @@ fun TopScreenSection(
 @Composable
 fun SetupToolbarIcons(
   menuIcons: List<ImageProperties>?,
+  isFilterIconEnabled: Boolean,
+  filteredRecordsCount: Long? = null,
   navController: NavController,
   modifier: Modifier,
   onClick: (ToolbarClickEvent) -> Unit,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
-  if (menuIcons?.isNotEmpty() == true && menuIcons.size > 2) {
-    var menuExpanded by remember { mutableStateOf(false) }
-    Row {
-      RenderMenuIcons(
-        menuIcons = menuIcons.take(2),
+  var showOverflowMenu by remember { mutableStateOf(false) }
+  if (!menuIcons.isNullOrEmpty()) {
+    val iconsCount = remember { if (isFilterIconEnabled) 1 else 2 }
+    if (menuIcons.size <= iconsCount) {
+      RenderMenuIcon(
+        menuIcons = menuIcons.subList(0, min(iconsCount, menuIcons.size)),
+        isFilterIconEnabled = isFilterIconEnabled,
+        filteredRecordsCount = filteredRecordsCount,
         navController = navController,
         modifier = modifier,
         onClick = onClick,
+        decodeImage = decodeImage,
       )
-      // FIXME - Do not use material 3 library for now. We have to use dropdown menu to render the
-      // other menu icons
-    }
-  } else {
-    menuIcons?.let {
-      RenderMenuIcons(
-        menuIcons = it,
-        navController = navController,
-        modifier = modifier,
-        onClick = onClick,
-      )
+    } else {
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        RenderMenuIcon(
+          menuIcons = menuIcons.subList(0, iconsCount),
+          isFilterIconEnabled = false,
+          filteredRecordsCount = null,
+          navController = navController,
+          modifier = modifier,
+          onClick = onClick,
+          decodeImage = decodeImage,
+        )
+        Icon(
+          imageVector = Icons.Outlined.MoreVert,
+          contentDescription = null,
+          tint = Color.White,
+          modifier =
+            Modifier.padding(start = 8.dp).size(22.dp).clickable {
+              showOverflowMenu = !showOverflowMenu
+            },
+        )
+        DropdownMenu(
+          expanded = showOverflowMenu,
+          onDismissRequest = { showOverflowMenu = false },
+        ) {
+          menuIcons.subList(iconsCount, menuIcons.size).forEach {
+            DropdownMenuItem(
+              onClick = {
+                onClick(ToolbarClickEvent.Actions(it.actions))
+                showOverflowMenu = !showOverflowMenu
+              },
+            ) {
+              Image(
+                imageProperties = it,
+                navController = navController,
+                tint = it.tint?.parseColor() ?: DefaultColor,
+                modifier =
+                  modifier
+                    .clickable { onClick(ToolbarClickEvent.Actions(it.actions)) }
+                    .testTag(TOP_ROW_TOGGLE_ICON_TEST_tAG),
+                decodeImage = decodeImage,
+              )
+            }
+          }
+        }
+      }
     }
   }
 }
 
 @Composable
-fun RenderMenuIcons(
+private fun RenderMenuIcon(
   menuIcons: List<ImageProperties>,
+  isFilterIconEnabled: Boolean,
+  filteredRecordsCount: Long? = null,
   navController: NavController,
   modifier: Modifier,
   onClick: (ToolbarClickEvent) -> Unit,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
-  LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+  LazyRow(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+    item {
+      if (isFilterIconEnabled) {
+        BadgedBox(
+          modifier = Modifier.padding(end = 8.dp),
+          badge = {
+            if (filteredRecordsCount != null && filteredRecordsCount > -1) {
+              Badge {
+                Text(
+                  text = if (filteredRecordsCount > 99) "99+" else filteredRecordsCount.toString(),
+                  overflow = TextOverflow.Clip,
+                  maxLines = 1,
+                )
+              }
+            }
+          },
+        ) {
+          Icon(
+            imageVector = Icons.Outlined.FilterAlt,
+            contentDescription = FILTER,
+            tint = Color.White,
+            modifier =
+              modifier
+                .size(22.dp)
+                .clickable { onClick(ToolbarClickEvent.FilterData) }
+                .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
+          )
+        }
+      }
+    }
     items(menuIcons) {
       Image(
-        imageProperties = ImageProperties(imageConfig = it.imageConfig),
+        imageProperties = it,
         navController = navController,
         tint = Color.White,
         modifier =
           modifier
             .clickable { onClick(ToolbarClickEvent.Actions(it.actions)) }
             .testTag(TOP_ROW_TOGGLE_ICON_TEST_tAG),
+        decodeImage = decodeImage,
       )
     }
   }
@@ -319,7 +414,7 @@ fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
     title = "All Clients",
     searchQuery = SearchQuery("Eddy"),
     filteredRecordsCount = 120,
-    onSearchTextChanged = {},
+    onSearchTextChanged = { _, _ -> },
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = true,
     onClick = {},
@@ -331,12 +426,13 @@ fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
           listOf(
             ImageProperties(
               imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_toggle_map_view"),
-              backgroundColor = Color.White.toString(),
+              backgroundColor = "#FFFFFF",
               size = 10,
             ),
           ),
       ),
     navController = rememberNavController(),
+    decodeImage = null,
   )
 }
 
@@ -347,12 +443,13 @@ fun TopScreenSectionWithFilterCountNinetyNinePreview() {
     title = "All Clients",
     searchQuery = SearchQuery("Eddy"),
     filteredRecordsCount = 99,
-    onSearchTextChanged = {},
+    onSearchTextChanged = { _, _ -> },
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = true,
     onClick = {},
     isSearchBarVisible = true,
     navController = rememberNavController(),
+    decodeImage = null,
   )
 }
 
@@ -362,7 +459,7 @@ fun TopScreenSectionNoFilterIconPreview() {
   TopScreenSection(
     title = "All Clients",
     searchQuery = SearchQuery("Eddy"),
-    onSearchTextChanged = {},
+    onSearchTextChanged = { _, _ -> },
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = false,
     onClick = {},
@@ -373,10 +470,11 @@ fun TopScreenSectionNoFilterIconPreview() {
         searchBar = null,
         title = "Service Point",
         menuIcons =
-          arrayListOf(
+          listOf(
             ImageProperties(imageConfig = ImageConfig(reference = "ic_service_points")),
           ),
       ),
+    decodeImage = null,
   )
 }
 
@@ -387,7 +485,7 @@ fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
     title = "All Clients",
     searchQuery = SearchQuery("Eddy"),
     filteredRecordsCount = 120,
-    onSearchTextChanged = {},
+    onSearchTextChanged = { _, _ -> },
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = true,
     onClick = {},
@@ -398,25 +496,27 @@ fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
         searchBar = null,
         title = "Service Point",
         menuIcons =
-          arrayListOf(
+          listOf(
             ImageProperties(imageConfig = ImageConfig(reference = "ic_service_points")),
           ),
       ),
+    decodeImage = null,
   )
 }
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
-fun TopScreenSectionWithToggleIconPreview() {
+fun TopScreenSectionWithOpenDrawerIconPreview() {
   TopScreenSection(
     title = "All Clients",
     searchQuery = SearchQuery("Eddy"),
     filteredRecordsCount = 120,
-    onSearchTextChanged = {},
-    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+    onSearchTextChanged = { _, _ -> },
+    toolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
     isFilterIconEnabled = false,
     onClick = {},
     isSearchBarVisible = true,
     navController = rememberNavController(),
+    decodeImage = null,
   )
 }

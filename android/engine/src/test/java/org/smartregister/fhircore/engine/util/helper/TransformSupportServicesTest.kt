@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.helper
 import io.mockk.mockk
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Consent
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Group
@@ -126,6 +127,44 @@ class TransformSupportServicesTest : RobolectricTest() {
     Assert.assertTrue(
       transformSupportServices.createType("", "Observation_Component")
         is Observation.ObservationComponentComponent,
+    )
+  }
+
+  @Test
+  fun `createType() should return ConsentPolicyComponent when given Consent_Policy`() {
+    Assert.assertTrue(
+      transformSupportServices.createType("", "Consent_Policy") is Consent.ConsentPolicyComponent,
+    )
+  }
+
+  @Test
+  fun `createType() should return ConsentVerificationComponent when given Consent_Verification`() {
+    Assert.assertTrue(
+      transformSupportServices.createType("", "Consent_Verification")
+        is Consent.ConsentVerificationComponent,
+    )
+  }
+
+  @Test
+  fun `createType() should return provisionComponent when given Consent_Provision`() {
+    Assert.assertTrue(
+      transformSupportServices.createType("", "Consent_Provision") is Consent.provisionComponent,
+    )
+  }
+
+  @Test
+  fun `createType() should return provisionActorComponent when given Consent_ProvisionActor`() {
+    Assert.assertTrue(
+      transformSupportServices.createType("", "Consent_ProvisionActor")
+        is Consent.provisionActorComponent,
+    )
+  }
+
+  @Test
+  fun `createType() should return provisionDataComponent when given Consent_ProvisionData`() {
+    Assert.assertTrue(
+      transformSupportServices.createType("", "Consent_ProvisionData")
+        is Consent.provisionDataComponent,
     )
   }
 

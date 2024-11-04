@@ -30,6 +30,8 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeUp
 import androidx.navigation.compose.rememberNavController
+import androidx.paging.CombinedLoadStates
+import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -38,6 +40,7 @@ import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
 import io.mockk.mockk
 import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.flowOf
@@ -128,7 +131,7 @@ class RegisterScreenTest {
         pagesCount = 0,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -148,6 +151,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        decodeImage = null,
       )
     }
     composeTestRule.waitUntil(5_000) { true }
@@ -169,7 +173,7 @@ class RegisterScreenTest {
         pagesCount = 1,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -189,6 +193,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        decodeImage = null,
       )
     }
 
@@ -213,7 +218,7 @@ class RegisterScreenTest {
         pagesCount = 1,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -233,6 +238,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        decodeImage = null,
       )
     }
 
@@ -257,11 +263,19 @@ class RegisterScreenTest {
         pagesCount = 1,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
     val pagingItems = mockk<LazyPagingItems<ResourceData>>().apply {}
+    val combinedLoadState: CombinedLoadStates = mockk()
+    val loadState: LoadState = mockk()
+
+    every { pagingItems.itemCount } returns 0
+    every { combinedLoadState.refresh } returns loadState
+    every { combinedLoadState.append } returns loadState
+    every { loadState.endOfPaginationReached } returns true
+    every { pagingItems.loadState } returns combinedLoadState
 
     composeTestRule.setContent {
       RegisterScreen(
@@ -274,6 +288,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        decodeImage = null,
       )
     }
     composeTestRule.onNodeWithTag(FIRST_TIME_SYNC_DIALOG, useUnmergedTree = true)
@@ -294,7 +309,7 @@ class RegisterScreenTest {
         pagesCount = 0,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -314,6 +329,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        decodeImage = null,
       )
     }
     composeTestRule.waitUntil(5_000) { true }
@@ -340,7 +356,7 @@ class RegisterScreenTest {
         pagesCount = 0,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -360,6 +376,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        decodeImage = null,
       )
     }
 
@@ -425,7 +442,7 @@ class RegisterScreenTest {
               ),
             ),
           ),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -452,6 +469,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        decodeImage = null,
       )
     }
 
@@ -477,7 +495,7 @@ class RegisterScreenTest {
         progressPercentage = flowOf(100),
         isSyncUpload = flowOf(false),
         currentSyncJobStatus = flowOf(CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -500,6 +518,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        decodeImage = null,
       )
     }
 
@@ -528,7 +547,7 @@ class RegisterScreenTest {
         progressPercentage = flowOf(100),
         isSyncUpload = flowOf(false),
         currentSyncJobStatus = flowOf(CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())),
-        params = emptyMap(),
+        params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -551,6 +570,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        decodeImage = null,
       )
     }
 

@@ -216,7 +216,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           fhirOperator = fhirOperator,
           fhirPathDataExtractor = fhirPathDataExtractor,
           configurationRegistry = configurationRegistry,
-          knowledgeManager = knowledgeManager,
         ),
       )
 
@@ -676,7 +675,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         fhirValidatorProvider = fhirValidatorProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
         configurationRegistry = configurationRegistry,
-        knowledgeManager = knowledgeManager,
       )
     val patientAgeLinkId = "patient-age"
     val newQuestionnaireConfig =
@@ -1857,7 +1855,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           fhirValidatorProvider = fhirValidatorProvider,
           fhirPathDataExtractor = fhirPathDataExtractor,
           configurationRegistry = configurationRegistry,
-          knowledgeManager = knowledgeManager,
         )
       val questionnaireWithDefaultDate =
         Questionnaire().apply {
@@ -1920,7 +1917,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           fhirValidatorProvider = fhirValidatorProvider,
           fhirPathDataExtractor = fhirPathDataExtractor,
           configurationRegistry = configurationRegistry,
-          knowledgeManager = knowledgeManager,
         )
       val questionnaireWithDefaultDate =
         Questionnaire().apply {
@@ -1996,7 +1992,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         fhirValidatorProvider = fhirValidatorProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
         configurationRegistry = configurationRegistry,
-        knowledgeManager = knowledgeManager,
       )
     val questionnaireConfig1 =
       questionnaireConfig.copy(

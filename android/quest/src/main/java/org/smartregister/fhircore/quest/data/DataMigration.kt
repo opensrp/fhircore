@@ -212,7 +212,7 @@ constructor(
             if (migrationConfig.createLocalChangeEntitiesAfterPurge) {
               defaultRepository.addOrUpdate(resource = updatedResource as Resource)
             } else {
-              defaultRepository.createRemote(resource = *arrayOf(updatedResource as Resource))
+              defaultRepository.createRemote(resource = arrayOf(updatedResource as Resource))
             }
           }
         }

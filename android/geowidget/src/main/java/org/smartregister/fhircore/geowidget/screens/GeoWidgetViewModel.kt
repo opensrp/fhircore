@@ -16,19 +16,23 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import org.smartregister.fhircore.engine.util.DispatcherProvider
+import com.mapbox.geojson.Feature
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.ServicePointType
+import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment.Companion.MAP_FEATURES_LIMIT
 
-@HiltViewModel
-class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherProvider) :
-  ViewModel() {
+class GeoWidgetViewModel : ViewModel() {
 
-  val features = MutableLiveData<List<GeoJsonFeature>>(mutableListOf())
+  val mapFeatures = ArrayDeque<Feature>()
+
+  fun updateMapFeatures(geoJsonFeatures: List<GeoJsonFeature>) {
+    if (mapFeatures.size <= MAP_FEATURES_LIMIT) {
+      mapFeatures.addAll(geoJsonFeatures.map { it.toFeature() })
+    }
+  }
+
+  fun clearMapFeatures() = mapFeatures.clear()
 
   fun getServicePointKeyToType(): Map<String, ServicePointType> {
     val map: MutableMap<String, ServicePointType> = HashMap()

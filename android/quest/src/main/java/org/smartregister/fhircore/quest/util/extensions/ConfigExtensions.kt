@@ -164,7 +164,7 @@ fun ActionConfig.handleClickEvent(
           args = args,
           navOptions =
             navController.currentDestination?.id?.let {
-              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
+              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack != false)
             },
         )
       }
@@ -199,7 +199,7 @@ fun ActionConfig.handleClickEvent(
           args = args,
           navOptions =
             navController.currentDestination?.id?.let {
-              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
+              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack != false)
             },
         )
       }
@@ -231,13 +231,10 @@ fun ActionConfig.handleClickEvent(
       navController.navigate(MainNavigationScreen.LocationSelector.route, args)
     }
     ApplicationWorkflow.LAUNCH_PDF_GENERATION -> {
-      val questionnaireConfig = actionConfig.questionnaire ?: return
-      val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
+      val pdfConfig = actionConfig.pdfConfig ?: return
+      val interpolatedPdfConfig = pdfConfig.interpolate(computedValuesMap)
       val appCompatActivity = (navController.context as AppCompatActivity)
-      PdfLauncherFragment.launch(
-        appCompatActivity,
-        questionnaireConfigInterpolated.encodeJson(),
-      )
+      PdfLauncherFragment.launch(appCompatActivity, interpolatedPdfConfig.encodeJson())
     }
     else -> return
   }
@@ -264,16 +261,18 @@ fun Array<ActionParameter>?.toParamDataMap(): Map<String, String> =
     ?.filter { it.paramType == ActionParameterType.PARAMDATA }
     ?.associate { it.key to it.value } ?: emptyMap()
 
-suspend fun Sequence<String>.resourceReferenceToBitMap(
+suspend fun String.referenceToBitmap(
   fhirEngine: FhirEngine,
   decodedImageMap: SnapshotStateMap<String, Bitmap>,
-) {
-  forEach {
-    val resourceId = it.extractLogicalIdUuid()
+  forceRefresh: Boolean = false,
+): Bitmap? {
+  val resourceId = this.extractLogicalIdUuid()
+  if (!decodedImageMap.containsKey(resourceId) || forceRefresh) {
     fhirEngine.loadResource<Binary>(resourceId)?.let { binary ->
-      decodedImageMap[resourceId] = binary.data.decodeToBitmap()
+      binary.data.decodeToBitmap()?.let { bitmap -> decodedImageMap[resourceId] = bitmap }
     }
   }
+  return decodedImageMap[resourceId]
 }
 
 suspend fun List<ViewProperties>.decodeImageResourcesToBitmap(
@@ -294,7 +293,7 @@ suspend fun List<ViewProperties>.decodeImageResourcesToBitmap(
           ) {
             val resourceId = imageConfig!!.reference!!
             fhirEngine.loadResource<Binary>(resourceId)?.let { binary: Binary ->
-              decodedImageMap[resourceId] = binary.data.decodeToBitmap()
+              binary.data.decodeToBitmap()?.let { bitmap -> decodedImageMap[resourceId] = bitmap }
             }
           }
         }

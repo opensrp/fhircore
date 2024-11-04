@@ -25,9 +25,13 @@ import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.After
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
@@ -54,32 +58,41 @@ class FhirEngineExtensionKtTest {
   }
 
   @Test
-  fun test_search_time() {
-    runBlocking {
-      launch {
-        fhirEngine.search<Patient> {}
-        println("Load patients")
-      }
+  fun test_search_time_searches_sequentially_and_short_running_query_waits() = runTest {
+    val fetchedResources = mutableListOf<Resource>()
 
-      launch {
-        fhirEngine.search<Questionnaire> {}
-        println("Load questionnaires")
-      }
-    }
+    val patients = fhirEngine.search<Patient> {}.map { it.resource }
+    fetchedResources += patients
+
+    val questionnaires = fhirEngine.search<Questionnaire> {}.map { it.resource }
+    fetchedResources += questionnaires
+
+    val indexOfResultOfShortQuery =
+      fetchedResources.indexOfFirst { it.resourceType == ResourceType.Questionnaire }
+    val indexOfResultOfLongQuery =
+      fetchedResources.indexOfFirst { it.resourceType == ResourceType.Patient }
+    Assert.assertTrue(indexOfResultOfShortQuery > indexOfResultOfLongQuery)
   }
 
   @Test
-  fun test_batchedSearch_time() {
+  fun test_batchedSearch_returns_short_running_query_and_long_running_does_not_block() {
+    val fetchedResources = mutableListOf<Resource>()
     runBlocking {
       launch {
-        fhirEngine.batchedSearch<Patient> {}
-        println("Load patients..2")
+        val patients = fhirEngine.batchedSearch<Patient> {}.map { it.resource }
+        fetchedResources += patients
       }
 
       launch {
-        fhirEngine.search<Questionnaire> {}
-        println("Load questionnaires..2")
+        val questionnaires = fhirEngine.search<Questionnaire> {}
+        fetchedResources + questionnaires
       }
     }
+
+    val indexOfResultOfShortQuery =
+      fetchedResources.indexOfFirst { it.resourceType == ResourceType.Questionnaire }
+    val indexOfResultOfLongQuery =
+      fetchedResources.indexOfFirst { it.resourceType == ResourceType.Patient }
+    Assert.assertTrue(indexOfResultOfShortQuery < indexOfResultOfLongQuery)
   }
 }

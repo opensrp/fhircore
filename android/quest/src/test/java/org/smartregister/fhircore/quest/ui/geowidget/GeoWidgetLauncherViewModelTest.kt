@@ -16,12 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.geowidget
 
-import com.google.android.fhir.datacapture.extensions.logicalId
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.slot
-import io.mockk.spyk
-import io.mockk.verify
+import dagger.hilt.android.testing.HiltTestApplication
 import javax.inject.Inject
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -30,11 +29,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.DecimalType
-import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -50,7 +47,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -65,6 +61,8 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+
+  private lateinit var applicationContext: Context
 
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var viewModel: GeoWidgetLauncherViewModel
@@ -96,19 +94,20 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
+    applicationContext = ApplicationProvider.getApplicationContext<HiltTestApplication>()
     viewModel =
       GeoWidgetLauncherViewModel(
         defaultRepository = defaultRepository,
         sharedPreferencesHelper = sharedPreferencesHelper,
         resourceDataRulesExecutor = resourceDataRulesExecutor,
         configurationRegistry = configurationRegistry,
+        context = applicationContext,
       )
-
     runBlocking { defaultRepository.addOrUpdate(resource = location) }
   }
 
   @Test
-  fun testShowNoLocationDialogShouldNotSetLiveDataValueWhenConfigIsNull() {
+  fun testShowNoLocationDialogShouldNotSetLiveDataValueWhenConfigIsNull() = runTest {
     val geoWidgetConfiguration =
       GeoWidgetConfiguration(
         appId = "appId",
@@ -129,53 +128,11 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testShowNoLocationDialogShouldSetLiveDataValueWhenConfigIsPresent() {
+  fun testShowNoLocationDialogShouldSetLiveDataValueWhenConfigIsPresent() = runTest {
     viewModel.showNoLocationDialog(geoWidgetConfiguration)
     val value = viewModel.noLocationFoundDialog.value
     assertNotNull(value)
     assertTrue(value!!)
-  }
-
-  @Test
-  fun testRetrieveLocationsShouldReturnGeoJsonFeatureList() {
-    runTest {
-      val geoJsonFeatures = viewModel.retrieveLocations(geoWidgetConfiguration)
-      assertTrue(geoJsonFeatures.isNotEmpty())
-      assertEquals("loc1", geoJsonFeatures.first().id)
-    }
-  }
-
-  @Test
-  fun testRetrieveResourcesShouldReturnListOfRepositoryResourceData() {
-    runTest {
-      val retrieveResources = viewModel.retrieveResources(geoWidgetConfiguration)
-      assertFalse(retrieveResources.isEmpty())
-      assertEquals("loc1", retrieveResources.first().resource.logicalId)
-    }
-  }
-
-  @Test
-  @Ignore("Investigate why this test is not running")
-  fun testOnQuestionnaireSubmission() = runTest {
-    val emitFeature: (GeoJsonFeature) -> Unit = spyk({})
-    val extractedResourceIds = listOf(IdType(ResourceType.Location.name, location.logicalId))
-
-    viewModel.onQuestionnaireSubmission(
-      extractedResourceIds = extractedResourceIds,
-      emitFeature = emitFeature,
-    )
-    val geoJsonFeatureSlot = slot<GeoJsonFeature>()
-    verify { emitFeature(capture(geoJsonFeatureSlot)) }
-
-    val geoJsonFeature = geoJsonFeatureSlot.captured
-    assertEquals(
-      location.position.longitude.toDouble(),
-      geoJsonFeature.geometry?.coordinates?.first(),
-    )
-    assertEquals(
-      location.position.latitude.toDouble(),
-      geoJsonFeature.geometry?.coordinates?.last(),
-    )
   }
 
   @Test
