@@ -146,7 +146,8 @@ class AppSettingViewModelTest : RobolectricTest() {
         appSettingViewModel.configurationRegistry.loadConfigurations(any(), any(), any())
       } just runs
 
-      coEvery { appSettingViewModel.fhirResourceDataSource.post(any(), any()) } returns Bundle()
+      coEvery { appSettingViewModel.fhirResourceDataSource.post(requestBody = any()) } returns
+        Bundle()
 
       coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
 
