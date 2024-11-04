@@ -46,6 +46,7 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -57,6 +58,8 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @Inject lateinit var defaultRepository: DefaultRepository
+
+  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
@@ -98,6 +101,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
     viewModel =
       GeoWidgetLauncherViewModel(
         defaultRepository = defaultRepository,
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         resourceDataRulesExecutor = resourceDataRulesExecutor,
         configurationRegistry = configurationRegistry,

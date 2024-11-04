@@ -2415,7 +2415,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   private suspend fun installToIgManager(resource: Resource) {
-    knowledgeManager.index(writeToFile(resource))
+    knowledgeManager.install(writeToFile(resource))
   }
 
   private suspend fun loadResource(

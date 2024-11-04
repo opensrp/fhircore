@@ -197,7 +197,7 @@ class CqlContentTest : RobolectricTest() {
   private suspend fun createTestData(dataBundle: Bundle, cqlLibrary: Library) {
     dataBundle.entry.forEach { fhirEngine.create(it.resource) }
 
-    knowledgeManager.index(
+    knowledgeManager.install(
       File.createTempFile(cqlLibrary.name, ".json").apply {
         this.writeText(cqlLibrary.encodeResourceToString())
       },
