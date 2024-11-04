@@ -56,6 +56,7 @@ import org.smartregister.fhircore.engine.configuration.view.ImageShape
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
+import org.smartregister.fhircore.engine.ui.theme.SideMenuTopItemDarkColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.parseColor
@@ -90,7 +91,7 @@ fun Image(
           text = imageProperties.text!!,
           textAlign = TextAlign.Center,
           modifier = Modifier.padding(end = 8.dp),
-          color = imageProperties.textColor?.parseColor() ?: Color.Gray,
+          color = imageProperties.textColor?.parseColor() ?: SideMenuTopItemDarkColor,
         )
         ClickableImageIcon(
           imageProperties = imageProperties,
@@ -140,8 +141,8 @@ fun ClickableImageIcon(
         )
         .conditional(
           imageProperties.size != null,
-          { size(imageProperties.size!!.dp) },
-          { size(24.dp) },
+          { size(if (imageProperties.size!! >= 22) imageProperties.size!!.dp else 16.dp) },
+          { size(20.dp) },
         )
         .conditional(
           !imageProperties.backgroundColor.isNullOrEmpty(),
