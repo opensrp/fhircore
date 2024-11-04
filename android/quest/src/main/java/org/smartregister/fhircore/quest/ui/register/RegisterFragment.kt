@@ -252,7 +252,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
             when (appEvent) {
               is AppEvent.OnSubmitQuestionnaire ->
                 handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
-              is AppEvent.RefreshRegisterData -> {
+              is AppEvent.RefreshData -> {
                 appMainViewModel.countRegisterData()
                 refreshRegisterData()
               }
