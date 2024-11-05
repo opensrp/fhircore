@@ -335,14 +335,6 @@ android {
       manifestPlaceholders["appLabel"] = "EUSM Burundi"
     }
 
-    create("eusmBi") {
-      dimension = "apps"
-      applicationIdSuffix = ".eusmBi"
-      versionNameSuffix = "-eusmBi"
-      manifestPlaceholders["appLabel"] = "EUSM Burundi"
-    }
-
-
     create("demoEir") {
       dimension = "apps"
       applicationIdSuffix = ".demoEir"
