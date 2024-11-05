@@ -1087,12 +1087,10 @@ constructor(
       launchContextResources(resourceType, resourceIdentifier, actionParameters)
 
     // Populate questionnaire with initial default values
-    withContext(dispatcherProvider.default()) {
-      ResourceMapper.populate(
-        questionnaire,
-        launchContexts = launchContextResources.associateBy { it.resourceType.name.lowercase() },
-      )
-    }
+    ResourceMapper.populate(
+      questionnaire,
+      launchContexts = launchContextResources.associateBy { it.resourceType.name.lowercase() },
+    )
 
     questionnaire.prepopulateWithComputedConfigValues(
       questionnaireConfig,
@@ -1198,13 +1196,8 @@ constructor(
           it.resourceType != null &&
           it.value.isNotEmpty()
       }
-      .mapNotNull {
-        try {
-          loadResource(it.resourceType!!, it.value)
-        } catch (resourceNotFoundException: ResourceNotFoundException) {
-          null
-        }
-      }
+      .distinctBy { "${it.resourceType?.name}${it.value}" }
+      .mapNotNull { loadResource(it.resourceType!!, it.value) }
   }
 
   /** Load [Resource] of type [ResourceType] for the provided [resourceIdentifier] */
