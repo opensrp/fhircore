@@ -273,7 +273,7 @@ fun SyncStatusView(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier.weight(1f),
       ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier.fillMaxWidth()) {
           if (!minimized) {
             SyncStatusTitle(
               text =
@@ -309,39 +309,45 @@ fun SyncStatusView(
             )
           }
         }
+      }
+    }
+
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      modifier = Modifier.padding(start = 16.dp)
+    ) {
+      if (currentSyncJobStatus is CurrentSyncJobStatus.Running) {
         LineSpinFadeLoaderProgressIndicator(
           color = Color.White,
-          modifier = Modifier.padding(18.dp),
           lineLength = 8f,
           innerRadius = 12f,
         )
       }
-    }
-
-    if (
-      (currentSyncJobStatus is CurrentSyncJobStatus.Failed ||
-        currentSyncJobStatus is CurrentSyncJobStatus.Running) && !minimized
-    ) {
-      Text(
-        text =
-          stringResource(
-            if (currentSyncJobStatus is CurrentSyncJobStatus.Failed) {
-              org.smartregister.fhircore.engine.R.string.retry
-            } else {
-              org.smartregister.fhircore.engine.R.string.cancel
+      if (
+        (currentSyncJobStatus is CurrentSyncJobStatus.Failed ||
+          currentSyncJobStatus is CurrentSyncJobStatus.Running) && !minimized
+      ) {
+        Text(
+          text =
+            stringResource(
+              if (currentSyncJobStatus is CurrentSyncJobStatus.Failed) {
+                org.smartregister.fhircore.engine.R.string.retry
+              } else {
+                org.smartregister.fhircore.engine.R.string.cancel
+              },
+            ),
+          modifier =
+            Modifier.padding(start = 16.dp).clickable {
+              if (currentSyncJobStatus is CurrentSyncJobStatus.Failed) {
+                onRetry()
+              } else {
+                onCancel()
+              }
             },
-          ),
-        modifier =
-          Modifier.padding(start = 16.dp).clickable {
-            if (currentSyncJobStatus is CurrentSyncJobStatus.Failed) {
-              onRetry()
-            } else {
-              onCancel()
-            }
-          },
-        color = MaterialTheme.colors.primary,
-        fontWeight = FontWeight.SemiBold,
-      )
+          color = MaterialTheme.colors.primary,
+          fontWeight = FontWeight.SemiBold,
+        )
+      }
     }
   }
 }
