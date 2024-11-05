@@ -125,7 +125,7 @@ configurations {
 
 dependencies {
   implementation(libs.play.services.tasks)
-  implementation(libs.play.services.location)
+  implementation(libs.gms.play.services.location)
   coreLibraryDesugaring(libs.core.desugar)
 
   // Library dependencies
@@ -197,7 +197,6 @@ dependencies {
     exclude(group = "com.google.android.fhir", module = "engine")
     exclude(group = "org.smartregister", module = "engine")
     exclude(group = "com.github.ben-manes.caffeine")
-    exclude(group = "org.smartregister", module = "engine")
   }
   api(libs.contrib.barcode) {
     isTransitive = true

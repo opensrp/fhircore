@@ -335,6 +335,13 @@ android {
       manifestPlaceholders["appLabel"] = "EUSM Burundi"
     }
 
+    create("eusmBi") {
+      dimension = "apps"
+      applicationIdSuffix = ".eusmBi"
+      versionNameSuffix = "-eusmBi"
+      manifestPlaceholders["appLabel"] = "EUSM Burundi"
+    }
+
 
     create("demoEir") {
       dimension = "apps"
@@ -433,6 +440,7 @@ tasks.withType<Test> {
 configurations { all { exclude(group = "xpp3") } }
 
 dependencies {
+  implementation(libs.gms.play.services.location)
   coreLibraryDesugaring(libs.core.desugar)
 
   // Application dependencies
@@ -443,9 +451,8 @@ dependencies {
   implementation(libs.material)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
-  implementation(libs.play.services.location)
   implementation(libs.mlkit.barcode.scanning)
-
+  implementation(libs.androidx.fragment.compose)
   implementation(libs.bundles.cameraX)
 
   // Annotation processors

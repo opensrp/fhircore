@@ -18,6 +18,7 @@
 
 package org.smartregister.fhircore.quest.ui.profile.components
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -72,6 +73,7 @@ fun MemberProfileBottomSheetView(
   resourceData: ResourceData,
   navController: NavController = rememberNavController(),
   onViewProfile: () -> Unit,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   Column {
     // Top section displays the name, gender and age for member
@@ -115,6 +117,7 @@ fun MemberProfileBottomSheetView(
           buttonProperties = it,
           resourceData = resourceData,
           navController = navController,
+          decodeImage = decodeImage,
         )
       }
       Spacer(modifier = modifier.height(8.dp))
@@ -147,6 +150,7 @@ private fun MemberProfileBottomSheetViewPreview() {
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+    decodeImage = null,
   )
 }
 
@@ -166,5 +170,6 @@ private fun MemberProfileBottomSheetViewWithFormDataPreview() {
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+    decodeImage = null,
   )
 }

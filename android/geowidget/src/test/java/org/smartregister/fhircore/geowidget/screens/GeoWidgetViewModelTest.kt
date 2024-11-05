@@ -60,6 +60,10 @@ class GeoWidgetViewModelTest {
 
   @Inject lateinit var configService: ConfigService
 
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  @Inject lateinit var parser: IParser
+
   private lateinit var configurationRegistry: ConfigurationRegistry
 
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
@@ -72,9 +76,6 @@ class GeoWidgetViewModelTest {
 
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
 
-  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
-
-  @Inject lateinit var parser: IParser
   private lateinit var viewModel: GeoWidgetViewModel
 
   @Mock private lateinit var dispatcherProvider: DispatcherProvider
@@ -82,7 +83,7 @@ class GeoWidgetViewModelTest {
   @Before
   fun setUp() {
     MockitoAnnotations.initMocks(this)
-    viewModel = GeoWidgetViewModel(dispatcherProvider)
+    viewModel = GeoWidgetViewModel()
     hiltRule.inject()
     sharedPreferencesHelper = mockk()
     configurationRegistry = mockk()
@@ -90,6 +91,7 @@ class GeoWidgetViewModelTest {
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
+          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           configService = configService,
@@ -97,10 +99,9 @@ class GeoWidgetViewModelTest {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = ApplicationProvider.getApplicationContext(),
-          dispatcherProvider = dispatcherProvider,
         ),
       )
-    geoWidgetViewModel = spyk(GeoWidgetViewModel(dispatcherProvider))
+    geoWidgetViewModel = spyk(GeoWidgetViewModel())
 
     coEvery { defaultRepository.create(any()) } returns emptyList()
   }
@@ -142,9 +143,9 @@ class GeoWidgetViewModelTest {
           serverVersion = serverVersion,
         ),
       )
-    geoWidgetViewModel.features.value = geoJsonFeatures
+    geoWidgetViewModel.updateMapFeatures(geoJsonFeatures)
 
-    Assert.assertEquals(geoWidgetViewModel.features.value!!.size, geoJsonFeatures.size)
+    Assert.assertEquals(geoWidgetViewModel.mapFeatures.size, geoJsonFeatures.size)
   }
 
   @Test

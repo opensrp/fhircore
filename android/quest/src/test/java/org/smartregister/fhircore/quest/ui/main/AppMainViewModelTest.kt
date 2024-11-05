@@ -71,13 +71,16 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.reformatDate
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.main.AppMainViewModel.Companion.SYNC_TIMESTAMP_OUTPUT_FORMAT
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 
 @HiltAndroidTest
@@ -185,7 +188,7 @@ class AppMainViewModelTest : RobolectricTest() {
     )
     Assert.assertEquals(
       appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp),
-      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null),
+      appMainViewModel.getSyncTime(),
     )
     coVerify { appMainViewModel.retrieveAppMainUiState() }
   }
@@ -313,6 +316,33 @@ class AppMainViewModelTest : RobolectricTest() {
         fhirCarePlanGenerator.updateTaskDetailsByResourceId("12345", Task.TaskStatus.COMPLETED)
       }
     }
+
+  @Test
+  fun testGetSyncTimeWithMillisTimestamp() {
+    // Mocking a timestamp in milliseconds
+    val mockTimestamp = OffsetDateTime.now().toInstant().toEpochMilli().toString()
+    every { appMainViewModel.retrieveLastSyncTimestamp() } returns mockTimestamp
+    every { appMainViewModel.applicationConfiguration.dateFormat } returns "yyyy-MM-dd HH:mm:ss"
+    val syncTime = appMainViewModel.getSyncTime()
+    val expectedFormattedDate =
+      formatDate(mockTimestamp.toLong(), appMainViewModel.applicationConfiguration.dateFormat)
+    Assert.assertEquals(expectedFormattedDate, syncTime)
+  }
+
+  @Test
+  fun testGetSyncTimeWithFormattedDate() {
+    val mockFormattedDate = "2023-10-10 10:10:10"
+    every { appMainViewModel.retrieveLastSyncTimestamp() } returns mockFormattedDate
+    every { appMainViewModel.applicationConfiguration.dateFormat } returns "yyyy-MM-dd"
+    val syncTime = appMainViewModel.getSyncTime()
+    val expectedReformattedDate =
+      reformatDate(
+        inputDateString = mockFormattedDate,
+        currentFormat = SYNC_TIMESTAMP_OUTPUT_FORMAT,
+        desiredFormat = appMainViewModel.applicationConfiguration.dateFormat,
+      )
+    Assert.assertEquals(expectedReformattedDate, syncTime)
+  }
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi

@@ -16,27 +16,32 @@
 
 package org.smartregister.fhircore.quest.ui.geowidget
 
-import android.view.View
-import android.widget.FrameLayout
+import android.content.Context
+import android.graphics.Bitmap
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.compose.AndroidFragment
+import androidx.fragment.compose.rememberFragmentState
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
+import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
+import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
+import org.smartregister.fhircore.quest.ui.bottomsheet.SummaryBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.shared.components.SyncBottomBar
@@ -50,13 +55,15 @@ fun GeoWidgetLauncherScreen(
   openDrawer: (Boolean) -> Unit,
   navController: NavController,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
-  fragmentManager: FragmentManager,
-  geoWidgetFragment: Fragment,
   geoWidgetConfiguration: GeoWidgetConfiguration,
   searchQuery: MutableState<SearchQuery>,
   search: (String) -> Unit,
   isFirstTimeSync: Boolean,
   appDrawerUIState: AppDrawerUIState,
+  clearMapLiveData: MutableLiveData<Boolean>,
+  geoJsonFeatures: MutableLiveData<List<GeoJsonFeature>>,
+  launchQuestionnaire: (QuestionnaireConfig, GeoJsonFeature, Context) -> Unit,
+  decodeImage: ((String) -> Bitmap?)?,
   onAppMainEvent: (AppMainEvent) -> Unit,
 ) {
   val context = LocalContext.current
@@ -71,18 +78,22 @@ fun GeoWidgetLauncherScreen(
           showSearchByQrCode =
             geoWidgetConfiguration.topScreenSection?.searchBar?.searchByQrCode ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
-          onSearchTextChanged = { searchedQuery: SearchQuery ->
+          performSearchOnValueChanged = false,
+          onSearchTextChanged = { searchedQuery: SearchQuery, performSearchOnValueChanged ->
             searchQuery.value = searchedQuery
-            val computedRules = geoWidgetConfiguration.topScreenSection?.searchBar?.computedRules
-            if (!computedRules.isNullOrEmpty()) {
-              search(searchQuery.value.query)
-            } else {
-              context.showToast(context.getString(R.string.no_search_coonfigs_provided))
+            if (performSearchOnValueChanged) {
+              val computedRules = geoWidgetConfiguration.topScreenSection?.searchBar?.computedRules
+              if (!computedRules.isNullOrEmpty()) {
+                search(searchQuery.value.query)
+              } else {
+                context.showToast(context.getString(R.string.no_search_coonfigs_provided))
+              }
             }
           },
           isFilterIconEnabled = false,
           topScreenSection = geoWidgetConfiguration.topScreenSection,
           navController = navController,
+          decodeImage = decodeImage,
         ) { event ->
           when (event) {
             ToolbarClickEvent.Navigate ->
@@ -106,33 +117,42 @@ fun GeoWidgetLauncherScreen(
       )
     },
   ) { innerPadding ->
+    val fragmentState = rememberFragmentState()
     Box(modifier = modifier.padding(innerPadding)) {
-      GeoWidgetFragmentView(
-        modifier = modifier,
-        fragmentManager = fragmentManager,
-        fragment = geoWidgetFragment,
-      )
-    }
-  }
-}
+      AndroidFragment<GeoWidgetFragment>(fragmentState = fragmentState) { fragment ->
+        fragment
+          .setUseGpsOnAddingLocation(false)
+          .setAddLocationButtonVisibility(geoWidgetConfiguration.showAddLocation)
+          .setOnAddLocationListener { feature: GeoJsonFeature ->
+            if (feature.geometry?.coordinates == null) return@setOnAddLocationListener
+            launchQuestionnaire(geoWidgetConfiguration.registrationQuestionnaire, feature, context)
+          }
+          .setOnCancelAddingLocationListener {
+            context.showToast(context.getString(R.string.on_cancel_adding_location))
+          }
+          .setOnClickLocationListener {
+            feature: GeoJsonFeature,
+            parentFragmentManager: FragmentManager,
+            ->
+            SummaryBottomSheetFragment(
+                geoWidgetConfiguration.summaryBottomSheetConfig!!,
+                ResourceData(
+                  baseResourceId = feature.id,
+                  baseResourceType = ResourceType.Location,
+                  computedValuesMap = feature.properties.mapValues { it.value.content },
+                ),
+              )
+              .run { show(parentFragmentManager, SummaryBottomSheetFragment.TAG) }
+          }
+          .setMapLayers(geoWidgetConfiguration.mapLayers)
+          .showCurrentLocationButtonVisibility(geoWidgetConfiguration.showLocation)
+          .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.showPlaneSwitcher)
 
-@Composable
-fun GeoWidgetFragmentView(
-  modifier: Modifier = Modifier,
-  fragmentManager: FragmentManager,
-  fragment: Fragment,
-) {
-  val viewId = rememberSaveable { View.generateViewId() }
-
-  AndroidView(
-    modifier = modifier,
-    factory = { context -> FrameLayout(context).apply { id = viewId } },
-  )
-  DisposableEffect(fragmentManager, fragment) {
-    fragmentManager.beginTransaction().run {
-      replace(viewId, fragment)
-      commitNow()
+        fragment.apply {
+          observerMapReset(clearMapLiveData)
+          observerGeoJsonFeatures(geoJsonFeatures)
+        }
+      }
     }
-    onDispose { fragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss() }
   }
 }

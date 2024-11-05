@@ -31,9 +31,8 @@ import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.search
+import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
@@ -85,6 +84,7 @@ import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.checkResourceValid
 import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
@@ -118,8 +118,8 @@ constructor(
   val fhirValidatorProvider: Provider<FhirValidator>,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val configurationRegistry: ConfigurationRegistry,
-  val knowledgeManager: KnowledgeManager,
 ) : ViewModel() {
+  private val parser = FhirContext.forR4Cached().newJsonParser()
 
   private val authenticatedOrganizationIds by lazy {
     sharedPreferencesHelper.read<List<String>>(ResourceType.Organization.name)
@@ -183,7 +183,7 @@ constructor(
     context: Context,
     onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit,
   ) {
-    viewModelScope.launch(dispatcherProvider.io() + SupervisorJob()) {
+    viewModelScope.launch(SupervisorJob()) {
       val questionnaireResponseValid =
         validateQuestionnaireResponse(
           questionnaire = questionnaire,
@@ -700,7 +700,7 @@ constructor(
    * has an answer.
    */
   fun saveDraftQuestionnaire(questionnaireResponse: QuestionnaireResponse) {
-    viewModelScope.launch(dispatcherProvider.io()) {
+    viewModelScope.launch {
       val questionnaireHasAnswer =
         questionnaireResponse.item.any {
           it.answer.any { answerComponent -> answerComponent.hasValue() }
@@ -807,60 +807,63 @@ constructor(
       bundle.addEntry(Bundle.BundleEntryComponent().setResource(basicResource))
     }
 
-    questionnaire.cqfLibraryUrls().forEach { libraryUrl ->
-      val librariesList =
-        withContext(dispatcherProvider.io()) {
-          knowledgeManager.loadResources(
-            resourceType = ResourceType.Library.name,
-            url = libraryUrl,
+    val libraryFilters =
+      questionnaire.cqfLibraryUrls().map {
+        val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.extractLogicalIdUuid()) }
+        apply
+      }
+
+    if (libraryFilters.isNotEmpty()) {
+      defaultRepository.fhirEngine
+        .batchedSearch<Library> {
+          filter(
+            Resource.RES_ID,
+            *libraryFilters.toTypedArray(),
           )
         }
+        .forEach { librarySearchResult ->
+          val result: Parameters =
+            fhirOperator.evaluateLibrary(
+              librarySearchResult.resource.url,
+              subject.asReference().reference,
+              null,
+              bundle,
+              null,
+            ) as Parameters
 
-      librariesList.forEach { baseResource ->
-        val result: Parameters =
-          fhirOperator.evaluateLibrary(
-            (baseResource as Library).url,
-            subject.asReference().reference,
-            null,
-            bundle,
-            null,
-          ) as Parameters
+          val resources =
+            result.parameter.mapNotNull { cqlResultParameterComponent ->
+              (cqlResultParameterComponent.value ?: cqlResultParameterComponent.resource)?.let {
+                resultParameterResource ->
+                if (BuildConfig.DEBUG) {
+                  Timber.d(
+                    "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${
+                                            getStringRepresentation(
+                                                resultParameterResource,
+                                            )
+                                        }",
+                  )
+                }
 
-        val resources =
-          result.parameter.mapNotNull { cqlResultParameterComponent ->
-            (cqlResultParameterComponent.value ?: cqlResultParameterComponent.resource)?.let {
-              resultParameterResource ->
-              if (BuildConfig.DEBUG) {
-                Timber.d(
-                  "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${
-                                        getStringRepresentation(
-                                            resultParameterResource,
-                                        )
-                                    }",
-                )
-              }
-
-              if (
-                cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
-                  resultParameterResource.isResource
-              ) {
-                defaultRepository.create(true, resultParameterResource as Resource)
-                resultParameterResource
-              } else {
-                null
+                if (
+                  cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
+                    resultParameterResource.isResource
+                ) {
+                  defaultRepository.create(true, resultParameterResource as Resource)
+                  resultParameterResource
+                } else {
+                  null
+                }
               }
             }
-          }
 
-        validateWithFhirValidator(*resources.toTypedArray())
-      }
+          validateWithFhirValidator(*resources.toTypedArray())
+        }
     }
   }
 
   private fun getStringRepresentation(base: Base): String =
-    if (base.isResource) {
-      FhirContext.forR4Cached().newJsonParser().encodeResourceToString(base as Resource)
-    } else base.toString()
+    if (base.isResource) parser.encodeResourceToString(base as Resource) else base.toString()
 
   /**
    * This function generates CarePlans for the [QuestionnaireResponse.subject] using the configured

@@ -67,6 +67,7 @@ import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -98,6 +99,8 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var parser: IParser
@@ -112,6 +115,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       spyk(
         RegisterRepository(
           fhirEngine = fhirEngine,
+          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
@@ -175,6 +179,50 @@ class RegisterRepositoryTest : RobolectricTest() {
       val recordsCount =
         registerRepository.countRegisterData(registerId = PATIENT_REGISTER, paramsMap = paramsMap)
       Assert.assertEquals(ResourceType.Patient, searchSlot.captured.type)
+      Assert.assertEquals(20, recordsCount)
+    }
+  }
+
+  @Ignore("Refactor this test")
+  @Test
+  fun countRegisterDataWithParamsAndRelatedEntityLocationFilter() {
+    runTest {
+      val paramsList =
+        arrayListOf(
+          ActionParameter(
+            key = "paramsName",
+            paramType = ActionParameterType.PARAMDATA,
+            value = "testing1",
+            dataType = DataType.STRING,
+            linkId = null,
+          ),
+          ActionParameter(
+            key = "paramName2",
+            paramType = ActionParameterType.PARAMDATA,
+            value = "testing2",
+            dataType = DataType.STRING,
+            linkId = null,
+          ),
+        )
+      paramsList
+        .asSequence()
+        .filter { it.paramType == ActionParameterType.PARAMDATA && it.value.isNotEmpty() }
+        .associate { it.key to it.value }
+      val paramsMap = emptyMap<String, String>()
+      val searchSlot = slot<Search>()
+      every {
+        registerRepository.retrieveRegisterConfiguration(PATIENT_REGISTER, emptyMap())
+      } returns
+        RegisterConfiguration(
+          appId = "app",
+          id = PATIENT_REGISTER,
+          fhirResource = fhirResourceConfig(),
+          filterDataByRelatedEntityLocation = true,
+        )
+      coEvery { fhirEngine.count(capture(searchSlot)) } returns 20
+      val recordsCount =
+        registerRepository.countRegisterData(registerId = PATIENT_REGISTER, paramsMap = paramsMap)
+      Assert.assertEquals(ResourceType.Group, searchSlot.captured.type)
       Assert.assertEquals(20, recordsCount)
     }
   }
