@@ -116,7 +116,11 @@ fun List(
                   viewProperty.visible.toBooleanStrict()
                 }
               if (areChildViewsVisible) {
-                Spacer(modifier = modifier.height(6.dp))
+                // Add spacing before each item, except for first item when enableTopBottomSpacing
+                // is false
+                if (index != 0 || viewProperties.enableTopBottomSpacing) {
+                  Spacer(modifier = modifier.height(viewProperties.spacerHeight.dp))
+                }
                 Column(
                   modifier =
                     Modifier.padding(
@@ -143,7 +147,13 @@ fun List(
                     )
                   }
                 }
-                Spacer(modifier = modifier.height(6.dp))
+                // Add spacer after each item except last one when enableTopBottomSpacing is false
+                if (
+                  index != currentListResourceData.lastIndex ||
+                    viewProperties.enableTopBottomSpacing
+                ) {
+                  Spacer(modifier = modifier.height(viewProperties.spacerHeight.dp))
+                }
                 // viewProperties in this case belongs to the List, setting the showDivider will
                 // apply to all child items under the List
                 if (index < currentListResourceData.lastIndex && viewProperties.showDivider) {
