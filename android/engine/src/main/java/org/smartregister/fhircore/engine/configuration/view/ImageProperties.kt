@@ -44,7 +44,7 @@ data class ImageProperties(
   val tint: String? = null,
   val text: String? = null,
   val imageConfig: ImageConfig? = null,
-  val size: Int? = null,
+  val size: Int? = 22,
   val shape: ImageShape? = null,
   val textColor: String? = null,
   val actions: List<ActionConfig> = emptyList(),
