@@ -447,7 +447,7 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.mlkit.barcode.scanning)
-
+  implementation(libs.androidx.fragment.compose)
   implementation(libs.bundles.cameraX)
 
   // Annotation processors
