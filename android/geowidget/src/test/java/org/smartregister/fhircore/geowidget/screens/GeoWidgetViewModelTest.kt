@@ -148,9 +148,9 @@ class GeoWidgetViewModelTest {
           serverVersion = serverVersion,
         ),
       )
-    geoWidgetViewModel.submitFeatures(geoJsonFeatures)
+    geoWidgetViewModel.updateMapFeatures(geoJsonFeatures)
 
-    Assert.assertEquals(geoWidgetViewModel.features.value!!.size, geoJsonFeatures.size)
+    Assert.assertEquals(geoWidgetViewModel.mapFeatures.size, geoJsonFeatures.size)
   }
 
   @Test

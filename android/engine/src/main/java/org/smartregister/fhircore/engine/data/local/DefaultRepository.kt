@@ -76,6 +76,7 @@ import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
@@ -94,7 +95,7 @@ import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
-import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationIds
+import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -940,7 +941,11 @@ constructor(
     configComputedRuleValues: Map<String, Any>,
   ) =
     if (filterByRelatedEntityLocation) {
-      val syncLocationIds = context.retrieveRelatedEntitySyncLocationIds()
+      val syncLocationIds =
+        context.retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.FILTER_DATA).map {
+          it.locationId
+        }
+
       val locationIds =
         syncLocationIds
           .map { retrieveFlattenedSubLocations(it).map { subLocation -> subLocation.logicalId } }
@@ -1023,7 +1028,10 @@ constructor(
       val configComputedRuleValues = configRules.configRulesComputedValues()
 
       if (filterByRelatedEntityLocationMetaTag) {
-        val syncLocationIds = context.retrieveRelatedEntitySyncLocationIds()
+        val syncLocationIds =
+          context.retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.FILTER_DATA).map {
+            it.locationId
+          }
         val locationIds =
           syncLocationIds
             .map { retrieveFlattenedSubLocations(it).map { subLocation -> subLocation.logicalId } }
