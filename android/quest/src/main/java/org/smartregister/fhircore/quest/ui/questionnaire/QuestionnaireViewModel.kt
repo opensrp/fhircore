@@ -676,7 +676,7 @@ constructor(
    */
   fun saveDraftQuestionnaire(
     questionnaireResponse: QuestionnaireResponse,
-    questionnaireConfig: QuestionnaireConfig
+    questionnaireConfig: QuestionnaireConfig,
   ) {
     viewModelScope.launch {
       val questionnaireHasAnswer =
