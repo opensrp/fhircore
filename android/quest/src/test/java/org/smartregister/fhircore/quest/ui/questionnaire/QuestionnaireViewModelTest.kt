@@ -51,7 +51,6 @@ import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Attachment
@@ -246,6 +245,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         extractionQuestionnaire().apply { extension = samplePatientRegisterQuestionnaire.extension }
       val questionnaireResponse = extractionQuestionnaireResponse()
       val actionParameters = emptyList<ActionParameter>()
+      coEvery { defaultRepository.applyDbTransaction(any()) } answers
+        {
+          runBlocking { (firstArg() as suspend () -> Unit).invoke() }
+        }
       val onSuccessfulSubmission =
         spyk({ idsTypes: List<IdType>, _: QuestionnaireResponse -> Timber.i(idsTypes.toString()) })
       coEvery {
@@ -322,7 +325,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   // TODO Write integration test for QuestionnaireActivity to compliment this unit test;
   @Test
-  fun testHandleQuestionnaireSubmission() {
+  fun testHandleQuestionnaireSubmission() = runTest {
     mockkObject(ResourceMapper)
     val questionnaire =
       extractionQuestionnaire().apply {
@@ -356,6 +359,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       ResourceNotFoundException("QuestionnaireResponse", "")
     coEvery { fhirEngine.create(resource = anyVararg()) } returns listOf(patient.logicalId)
     coEvery { fhirEngine.update(resource = anyVararg()) } just runs
+    coEvery { defaultRepository.applyDbTransaction(any()) } answers
+      {
+        runBlocking { (firstArg() as suspend () -> Unit).invoke() }
+      }
 
     // Mock returned bundle after extraction refer to FhirExtractionTest.kt for extraction test
     coEvery {
@@ -677,8 +684,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
       )
     val patientAgeLinkId = "patient-age"
+    val newQuestionnaireId = "new-${questionnaireConfig.id}"
     val newQuestionnaireConfig =
       questionnaireConfig.copy(
+        id = newQuestionnaireId,
         resourceIdentifier = patient.id,
         resourceType = patient.resourceType,
         barcodeLinkId = "patient-barcode",
@@ -700,6 +709,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
     coEvery { fhirEngine.get(ResourceType.Questionnaire, newQuestionnaireConfig.id) } returns
       samplePatientRegisterQuestionnaire.apply {
+        id = newQuestionnaireId
         addItem(
           Questionnaire.QuestionnaireItemComponent().apply {
             linkId = patientAgeLinkId
@@ -1069,58 +1079,57 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
   @Test
-  fun testExecuteCqlShouldInvokeRunCqlLibrary() =
-    runTest(UnconfinedTestDispatcher()) {
-      val bundle =
-        Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
+  fun testExecuteCqlShouldInvokeRunCqlLibrary() = runTest {
+    val bundle =
+      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
 
-      val questionnaire =
-        samplePatientRegisterQuestionnaire.copy().apply {
-          addExtension(
-            Extension().apply {
-              url = "https://sample.cqf-library.url"
-              setValue(StringType("http://smartreg.org/Library/123"))
-            },
-          )
-        }
-
-      coEvery { fhirOperator.evaluateLibrary(any(), any(), any(), any()) } returns Parameters()
-
-      val cqlLibrary =
-        Library().apply {
-          id = "Library/123"
-          url = "http://smartreg.org/Library/123"
-          name = "123"
-          version = "1.0.0"
-          status = Enumerations.PublicationStatus.ACTIVE
-          addContent(
-            Attachment().apply {
-              contentType = "text/cql"
-              data = "someCQL".toByteArray()
-            },
-          )
-        }
-
-      knowledgeManager.install(
-        File.createTempFile(cqlLibrary.name, ".json").apply {
-          this.writeText(cqlLibrary.encodeResourceToString())
-        },
-      )
-
-      fhirEngine.create(patient)
-
-      questionnaireViewModel.executeCql(patient, bundle, questionnaire)
-
-      coVerify {
-        fhirOperator.evaluateLibrary(
-          "http://smartreg.org/Library/123",
-          patient.asReference().reference,
-          null,
-          bundle,
-          null,
+    val questionnaire =
+      samplePatientRegisterQuestionnaire.copy().apply {
+        addExtension(
+          Extension().apply {
+            url = "https://sample.cqf-library.url"
+            setValue(StringType("http://smartreg.org/Library/123"))
+          },
         )
       }
+
+    coEvery { fhirOperator.evaluateLibrary(any(), any(), any(), any()) } returns Parameters()
+
+    val cqlLibrary =
+      Library().apply {
+        id = "Library/123"
+        url = "http://smartreg.org/Library/123"
+        name = "123"
+        version = "1.0.0"
+        status = Enumerations.PublicationStatus.ACTIVE
+        addContent(
+          Attachment().apply {
+            contentType = "text/cql"
+            data = "someCQL".toByteArray()
+          },
+        )
+      }
+
+    knowledgeManager.install(
+      File.createTempFile(cqlLibrary.name, ".json").apply {
+        this.writeText(cqlLibrary.encodeResourceToString())
+      },
+    )
+
+    fhirEngine.create(patient)
+
+    questionnaireViewModel.executeCql(patient, bundle, questionnaire)
+
+    coVerify {
+      fhirOperator.evaluateLibrary(
+        "http://smartreg.org/Library/123",
+        patient.asReference().reference,
+        null,
+        bundle,
+        null,
+      )
     }
+  }
 
   @Test
   fun testGenerateCarePlan() = runTest {
