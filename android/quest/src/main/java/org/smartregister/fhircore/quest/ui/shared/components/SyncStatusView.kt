@@ -60,8 +60,11 @@ import androidx.compose.ui.unit.sp
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
+import java.time.OffsetDateTime
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.ui.components.LineSpinFadeLoaderProgressIndicator
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -72,8 +75,6 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.util.extensions.conditional
-import java.time.OffsetDateTime
-import kotlin.time.Duration.Companion.seconds
 
 const val TRANSPARENCY = 0.2f
 const val SYNC_PROGRESS_INDICATOR_TEST_TAG = "syncProgressIndicatorTestTag"

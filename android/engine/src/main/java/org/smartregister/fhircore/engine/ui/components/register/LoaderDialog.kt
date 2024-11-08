@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -44,6 +45,7 @@ import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.components.LineSpinFadeLoaderProgressIndicator
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
 const val LOADER_DIALOG_PROGRESS_BAR_TAG = "loaderDialogProgressBarTag"
@@ -52,9 +54,14 @@ const val LOADER_DIALOG_PROGRESS_MSG_TAG = "loaderDialogProgressMsgTag"
 @Composable
 fun LoaderDialog(
   modifier: Modifier = Modifier,
-  dialogMessage: String,
+  dialogMessage: String? = null,
   percentageProgressFlow: Flow<Int> = flowOf(0),
   showPercentageProgress: Boolean = false,
+  boxWidth: Dp = 240.dp,
+  boxHeight: Dp = 180.dp,
+  progressBarSize: Dp = 40.dp,
+  shouldShowBackground: Boolean = true,
+  shouldShowLineSpinIndicator: Boolean = false,
 ) {
   val currentPercentage = percentageProgressFlow.collectAsState(0).value
   val openDialog = remember { mutableStateOf(true) }
@@ -63,14 +70,15 @@ fun LoaderDialog(
       onDismissRequest = { openDialog.value = true },
       properties = DialogProperties(dismissOnBackPress = true),
     ) {
-      Box(modifier.size(240.dp, 180.dp)) {
+      Box(modifier.size(boxWidth, boxHeight)) {
         Column(
           modifier = modifier.padding(8.dp),
           verticalArrangement = Arrangement.Center,
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           Surface(
-            color = Color.Black.copy(alpha = 0.56f),
+            color =
+              if (shouldShowBackground) Color.Black.copy(alpha = 0.56f) else Color.Transparent,
             modifier = modifier.fillMaxSize(),
             shape = RoundedCornerShape(8),
           ) {
@@ -78,22 +86,32 @@ fun LoaderDialog(
               verticalArrangement = Arrangement.Center,
               horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-              CircularProgressIndicator(
-                color = Color.White,
-                strokeWidth = 3.dp,
-                modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_BAR_TAG).size(40.dp),
-              )
+              if (shouldShowLineSpinIndicator) {
+                LineSpinFadeLoaderProgressIndicator(
+                  color = Color.White,
+                  lineLength = 8f,
+                  innerRadius = 12f,
+                )
+              } else {
+                CircularProgressIndicator(
+                  color = Color.White,
+                  strokeWidth = 3.dp,
+                  modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_BAR_TAG).size(progressBarSize),
+                )
+              }
               Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
               ) {
-                Text(
-                  fontSize = 16.sp,
-                  color = Color.White,
-                  text = dialogMessage,
-                  modifier =
-                    modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(vertical = 16.dp),
-                )
+                dialogMessage?.let { dialogMessage ->
+                  Text(
+                    fontSize = 16.sp,
+                    color = Color.White,
+                    text = dialogMessage,
+                    modifier =
+                      modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(vertical = 16.dp),
+                  )
+                }
 
                 if (showPercentageProgress) {
                   Text(
@@ -121,4 +139,16 @@ fun LoaderDialog(
 @Composable
 fun LoaderDialogPreview() {
   LoaderDialog(dialogMessage = stringResource(id = R.string.syncing))
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun LoaderDialogPreviewTest() {
+  LoaderDialog(
+    boxWidth = 50.dp,
+    boxHeight = 50.dp,
+    progressBarSize = 25.dp,
+    shouldShowBackground = false,
+    shouldShowLineSpinIndicator = true,
+  )
 }

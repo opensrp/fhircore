@@ -26,16 +26,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.compose.AndroidFragment
 import androidx.fragment.compose.rememberFragmentState
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
+import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
@@ -67,6 +70,22 @@ fun GeoWidgetLauncherScreen(
   onAppMainEvent: (AppMainEvent) -> Unit,
 ) {
   val context = LocalContext.current
+  val currentSyncJobStatus = appDrawerUIState.currentSyncJobStatus
+
+  when (currentSyncJobStatus) {
+    is CurrentSyncJobStatus.Running,
+    CurrentSyncJobStatus.Enqueued -> {
+      LoaderDialog(
+        boxWidth = 50.dp,
+        boxHeight = 50.dp,
+        progressBarSize = 25.dp,
+        shouldShowBackground = false,
+        shouldShowLineSpinIndicator = true,
+      )
+    }
+    else -> {}
+  }
+
   Scaffold(
     topBar = {
       Column {
