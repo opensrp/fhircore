@@ -111,6 +111,7 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isToday
+import org.smartregister.fhircore.engine.util.extension.questionnaireResponseStatus
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.extension.yesterday
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -734,7 +735,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           },
         )
       }
-    questionnaireViewModel.saveDraftQuestionnaire(questionnaireResponse)
+    questionnaireViewModel.saveDraftQuestionnaire(
+      questionnaireResponse,
+      QuestionnaireConfig("qr-id-1")
+    )
     Assert.assertEquals(
       QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS,
       questionnaireResponse.status,
@@ -1445,6 +1449,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           }
         listResource.addEntry(listEntryComponent)
         addContained(listResource)
+        status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
       }
 
     coEvery {
@@ -1453,6 +1458,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         resourceType = ResourceType.Patient,
         questionnaireId = questionnaireConfig.id,
         encounterId = null,
+        questionnaireResponseStatus = questionnaireConfig.questionnaireResponseStatus(),
       )
     } returns previousQuestionnaireResponse
 
