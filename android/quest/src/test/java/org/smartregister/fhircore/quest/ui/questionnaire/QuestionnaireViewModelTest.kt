@@ -737,7 +737,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
     questionnaireViewModel.saveDraftQuestionnaire(
       questionnaireResponse,
-      QuestionnaireConfig("qr-id-1")
+      QuestionnaireConfig("qr-id-1"),
     )
     Assert.assertEquals(
       QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS,

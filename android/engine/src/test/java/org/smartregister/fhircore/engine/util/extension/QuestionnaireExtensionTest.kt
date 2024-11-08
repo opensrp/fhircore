@@ -471,10 +471,11 @@ class QuestionnaireExtensionTest : RobolectricTest() {
       barCodeItemValue?.primitiveValue(),
     )
   }
-  @Test
 
+  @Test
   fun testQuestionnaireResponseStatusReturnsCompletedWhenIsEditableIsTrue() {
-    val questionnaireConfig = QuestionnaireConfig(id = "patient-reg-config", type = QuestionnaireType.EDIT.name)
+    val questionnaireConfig =
+      QuestionnaireConfig(id = "patient-reg-config", type = QuestionnaireType.EDIT.name)
     Assert.assertEquals("completed", questionnaireConfig.questionnaireResponseStatus())
   }
 
@@ -487,5 +488,4 @@ class QuestionnaireExtensionTest : RobolectricTest() {
     val questionnaireConfig = QuestionnaireConfig(id = "patient-reg-config", saveDraft = true)
     Assert.assertEquals("in-progress", questionnaireConfig.questionnaireResponseStatus())
   }
-
 }
