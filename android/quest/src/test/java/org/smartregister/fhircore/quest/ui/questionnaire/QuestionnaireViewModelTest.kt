@@ -764,7 +764,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       QuestionnaireConfig(
         "dc-household-registration",
         resourceIdentifier = "group-id-1",
-        resourceType = ResourceType.Group
+        resourceType = ResourceType.Group,
       ),
     )
     Assert.assertEquals(
