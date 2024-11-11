@@ -58,14 +58,14 @@ fun LoaderDialog(
   boxWidth: Dp = 240.dp,
   boxHeight: Dp = 180.dp,
   progressBarSize: Dp = 40.dp,
-  shouldShowBackground: Boolean = true,
-  shouldShowLineSpinIndicator: Boolean = false,
-  blockUiOnLaunch: Boolean = true,
+  showBackground: Boolean = true,
+  showLineSpinIndicator: Boolean = false,
+  showOverlay: Boolean = true,
   alignment: Alignment = Alignment.Center,
 ) {
   val currentPercentage = percentageProgressFlow.collectAsState(0).value
 
-  if (blockUiOnLaunch) {
+  if (showOverlay) {
     Dialog(onDismissRequest = {}, properties = DialogProperties(dismissOnBackPress = false)) {
       LoaderContent(
         modifier = modifier,
@@ -75,8 +75,8 @@ fun LoaderDialog(
         boxWidth = boxWidth,
         boxHeight = boxHeight,
         progressBarSize = progressBarSize,
-        shouldShowBackground = shouldShowBackground,
-        shouldShowLineSpinIndicator = shouldShowLineSpinIndicator,
+        showBackground = showBackground,
+        showLineSpinIndicator = showLineSpinIndicator,
       )
     }
   } else {
@@ -92,8 +92,8 @@ fun LoaderDialog(
         boxWidth = boxWidth,
         boxHeight = boxHeight,
         progressBarSize = progressBarSize,
-        shouldShowBackground = shouldShowBackground,
-        shouldShowLineSpinIndicator = shouldShowLineSpinIndicator,
+        showBackground = showBackground,
+        showLineSpinIndicator = showLineSpinIndicator,
       )
     }
   }
@@ -108,8 +108,8 @@ private fun LoaderContent(
   boxWidth: Dp,
   boxHeight: Dp,
   progressBarSize: Dp,
-  shouldShowBackground: Boolean,
-  shouldShowLineSpinIndicator: Boolean,
+  showBackground: Boolean,
+  showLineSpinIndicator: Boolean,
 ) {
   val openDialog = remember { mutableStateOf(true) }
   if (openDialog.value) {
@@ -122,14 +122,14 @@ private fun LoaderContent(
         Surface(
           modifier = modifier.size(boxWidth, boxHeight),
           shape = RoundedCornerShape(8.dp),
-          color = if (shouldShowBackground) Color.Black.copy(alpha = 0.56f) else Color.Transparent,
+          color = if (showBackground) Color.Black.copy(alpha = 0.56f) else Color.Transparent,
         ) {
           Column(
             modifier = modifier.padding(8.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
           ) {
-            if (shouldShowLineSpinIndicator) {
+            if (showLineSpinIndicator) {
               LineSpinFadeLoaderProgressIndicator(
                 color = Color.White,
                 lineLength = 8f,
@@ -185,7 +185,8 @@ fun LoaderDialogPreviewTest() {
     boxWidth = 50.dp,
     boxHeight = 50.dp,
     progressBarSize = 25.dp,
-    shouldShowBackground = false,
-    shouldShowLineSpinIndicator = true,
+    showBackground = false,
+    showLineSpinIndicator = true,
+    showOverlay = false,
   )
 }

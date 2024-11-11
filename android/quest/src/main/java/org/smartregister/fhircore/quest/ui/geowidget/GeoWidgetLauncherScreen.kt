@@ -181,9 +181,9 @@ fun GeoWidgetLauncherScreen(
             boxWidth = 50.dp,
             boxHeight = 50.dp,
             progressBarSize = 25.dp,
-            shouldShowBackground = true,
-            shouldShowLineSpinIndicator = true,
-            blockUiOnLaunch = false,
+            showBackground = true,
+            showLineSpinIndicator = true,
+            showOverlay = false,
             modifier = Modifier.align(Alignment.Center),
           )
         }
