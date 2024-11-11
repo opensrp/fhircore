@@ -170,6 +170,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,
                 registerUiState = registerViewModel.registerUiState.value,
+                registerUiCountState = registerViewModel.registerUiCountState.value,
                 appDrawerUIState = appMainViewModel.appDrawerUiState.value,
                 onAppMainEvent = { appMainViewModel.onEvent(it) },
                 searchQuery = searchViewModel.searchQuery,
