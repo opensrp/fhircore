@@ -747,6 +747,38 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testSaveDraftQuestionnaireShouldUpdateSubjectAndQuestionnaireValues() = runTest {
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
+                .setValue(StringType("Sky is the limit")),
+            )
+          },
+        )
+      }
+    questionnaireViewModel.saveDraftQuestionnaire(
+      questionnaireResponse,
+      QuestionnaireConfig(
+        "dc-household-registration",
+        resourceIdentifier = "group-id-1",
+        resourceType = ResourceType.Group
+      ),
+    )
+    Assert.assertEquals(
+      "Questionnaire/dc-household-registration",
+      questionnaireResponse.questionnaire,
+    )
+    Assert.assertEquals(
+      "Group/group-id-1",
+      questionnaireResponse.subject.reference,
+    )
+    coVerify { defaultRepository.addOrUpdate(resource = questionnaireResponse) }
+  }
+
+  @Test
   fun testUpdateResourcesLastUpdatedProperty() = runTest {
     val yesterday = yesterday()
     val thisPatient = Faker.buildPatient(id = "someId").apply { meta.lastUpdated = yesterday }
