@@ -45,9 +45,9 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MMM_DD_HH_MM_SS
 import org.smartregister.fhircore.engine.util.extension.countUnSyncedResources
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
@@ -71,7 +71,6 @@ constructor(
   val syncBroadcaster: SyncBroadcaster,
   val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val workManager: WorkManager,
   val dispatcherProvider: DispatcherProvider,
@@ -95,9 +94,11 @@ constructor(
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
   fun retrieveUserInfo() =
-    sharedPreferencesHelper.read<UserInfo>(
-      key = SharedPreferenceKey.USER_INFO.name,
-    )
+    runBlocking {
+      preferenceDataStore.read<UserInfo>(
+        key = PreferenceDataStore.USER_INFO.name.decodeJson()
+      ).firstOrNull()
+    }
 
   fun practitionerLocation() =
     preferenceDataStore.readOnce(PreferenceDataStore.PRACTITIONER_LOCATION, null)
@@ -112,8 +113,8 @@ constructor(
     (preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).firstOrNull() ?: 0).toString()
   }
 
-  fun retrieveLastSyncTimestamp(): String? =
-    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+  suspend fun retrieveLastSyncTimestamp(): String? =
+    preferenceDataStore.read(PreferenceDataStore.LAST_SYNC_TIMESTAMP).firstOrNull()
 
   fun enableMenuOption(settingOption: SettingsOptions) =
     applicationConfiguration.settingsScreenMenuOptions.contains(settingOption)
@@ -123,11 +124,14 @@ constructor(
 
   // TODO: Reads an object type ---> AppMainEvent
   fun loadSelectedLanguage(): String =
-    Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
+    runBlocking {
+      Locale.forLanguageTag(
+        preferenceDataStore.read(PreferenceDataStore.LANG).firstOrNull()
           ?: Locale.ENGLISH.toLanguageTag(),
       )
-      .displayName
+        .displayName
+    }
+
 
   fun onEvent(event: UserSettingsEvent) {
     when (event) {
@@ -157,7 +161,7 @@ constructor(
       }
       is UserSettingsEvent.SwitchLanguage -> {
         // TODO : Write an object type ---> AppMainEvent
-        sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
+        runBlocking { preferenceDataStore.write(PreferenceDataStore.LANG, event.language.tag) }
         event.context.run {
           configurationRegistry.configCacheMap.clear()
           setAppLocale(event.language.tag)
@@ -200,7 +204,7 @@ constructor(
 
       // TODO: The clear part of datastore should be within the authenticator --->
       accountAuthenticator.invalidateSession {
-        sharedPreferencesHelper.resetSharedPrefs()
+        preferenceDataStore.resetPrefs()
         secureSharedPreference.resetSharedPrefs()
         context.getActivity()?.launchActivityWithNoBackStackHistory<AppSettingActivity>()
       }

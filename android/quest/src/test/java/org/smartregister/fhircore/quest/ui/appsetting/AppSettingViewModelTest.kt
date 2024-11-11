@@ -65,7 +65,6 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -79,8 +78,6 @@ import retrofit2.Response
 class AppSettingViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
@@ -129,7 +126,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     appSettingViewModel.loadConfigurations(context)
     Assert.assertNotNull(appSettingViewModel.showProgressBar.value)
     Assert.assertFalse(appSettingViewModel.showProgressBar.value!!)
-    Assert.assertEquals(appId, sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null))
+    Assert.assertEquals(appId, preferenceDataStore.read(PreferenceDataStore.APP_ID))
   }
 
   @Test

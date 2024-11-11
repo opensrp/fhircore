@@ -18,6 +18,12 @@ package org.smartregister.fhircore.quest.ui.login
 
 import android.content.Context
 import android.widget.Toast
+import androidx.datastore.core.DataStore
+import androidx.datastore.dataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -26,13 +32,19 @@ import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import io.sentry.protocol.User
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -48,11 +60,13 @@ import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore.Keys.CARE_TEAM_ID
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore.Keys.LOCATION_ID
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore.Keys.ORGANIZATION_ID
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore.Keys.PRACTITIONER_DETAILS
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.clearPasswordInMemory
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -72,7 +86,6 @@ class LoginViewModel
 constructor(
   val configurationRegistry: ConfigurationRegistry,
   val accountAuthenticator: AccountAuthenticator,
-  val sharedPreferences: SharedPreferencesHelper,
   val preferenceDataStore: PreferenceDataStore,
   val secureSharedPreference: SecureSharedPreference,
   val defaultRepository: DefaultRepository,
@@ -215,10 +228,11 @@ constructor(
   ) {
     // ToDo : This is an object --->Practitioner Details
     val practitionerDetails =
-      sharedPreferences.read<PractitionerDetails>(
-        key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-        decodeWithGson = true,
+      PreferenceDataStore.readPractitionerDetails(
+        preferenceDataStore.dataStore,
+        PRACTITIONER_DETAILS
       )
+
     if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
       _showProgressBar.postValue(false)
       updateNavigateHome(true)
@@ -411,10 +425,12 @@ constructor(
   private fun writeUserInfo(
     userInfo: UserInfo?,
   ) {
-    sharedPreferences.write(
-      key = SharedPreferenceKey.USER_INFO.name,
-      value = userInfo,
-    )
+    runBlocking {
+      preferenceDataStore.write(
+        key = PreferenceDataStore.USER_INFO,
+        value = userInfo.toString(),
+      )
+    }
   }
 
   fun writePractitionerDetailsToPreference(
@@ -433,17 +449,21 @@ constructor(
         value = fhirPractitionerDetails.fhirPractitionerDetails?.id ?: "",
       )
       // ToDo: This is an object type ----> pratictioner details
-      sharedPreferences.write(
-        SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-        fhirPractitionerDetails,
+      preferenceDataStore.write(
+        key = PRACTITIONER_DETAILS,
+        value = fhirPractitionerDetails.encodeResourceToString()
       )
+//      sharedPreferences.write(
+//        SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+//        fhirPractitionerDetails.encodeResourceToString(), //save as string
+//      )
       preferenceDataStore.write(CARE_TEAM_ID, careTeamId.joinToString(separator = ","))
       preferenceDataStore.write(ORGANIZATION_ID, organizationId.joinToString(separator = ","))
       preferenceDataStore.write(LOCATION_ID, locationId.joinToString(separator = ","))
       // ToDo: This is an object type ----> Location hierarchy
-      sharedPreferences.write(
-        SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
-        locationHierarchies,
+      preferenceDataStore.write(
+        key = PreferenceDataStore.PRACTITIONER_LOCATION_HIERARCHIES,
+        value = locationHierarchies.joinToString(separator = ",")
       )
       preferenceDataStore.write(
         key = PreferenceDataStore.PRACTITIONER_LOCATION_NAME,

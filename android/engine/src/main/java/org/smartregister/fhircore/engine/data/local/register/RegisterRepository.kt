@@ -37,7 +37,6 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
@@ -46,7 +45,6 @@ class RegisterRepository
 constructor(
   override val fhirEngine: FhirEngine,
   override val dispatcherProvider: DispatcherProvider,
-  override val sharedPreferencesHelper: SharedPreferencesHelper,
   override val preferenceDataStore: PreferenceDataStore,
   override val configurationRegistry: ConfigurationRegistry,
   override val configService: ConfigService,
@@ -59,7 +57,6 @@ constructor(
   DefaultRepository(
     fhirEngine = fhirEngine,
     dispatcherProvider = dispatcherProvider,
-    sharedPreferencesHelper = sharedPreferencesHelper,
     configurationRegistry = configurationRegistry,
     configService = configService,
     configRulesExecutor = configRulesExecutor,

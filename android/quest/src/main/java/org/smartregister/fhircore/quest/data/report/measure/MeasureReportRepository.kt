@@ -39,7 +39,6 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
@@ -49,7 +48,6 @@ class MeasureReportRepository
 @Inject
 constructor(
   override val fhirEngine: FhirEngine,
-  override val sharedPreferencesHelper: SharedPreferencesHelper,
   override val preferenceDataStore: PreferenceDataStore,
   override val configurationRegistry: ConfigurationRegistry,
   override val configService: ConfigService,
@@ -63,7 +61,6 @@ constructor(
 ) :
   DefaultRepository(
     fhirEngine = fhirEngine,
-    sharedPreferencesHelper = sharedPreferencesHelper,
     configurationRegistry = configurationRegistry,
     configService = configService,
     configRulesExecutor = configRulesExecutor,

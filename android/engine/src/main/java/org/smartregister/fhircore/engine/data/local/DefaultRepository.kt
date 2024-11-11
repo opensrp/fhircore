@@ -85,7 +85,6 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -107,7 +106,6 @@ open class DefaultRepository
 constructor(
   open val fhirEngine: FhirEngine,
   open val dispatcherProvider: DispatcherProvider,
-  open val sharedPreferencesHelper: SharedPreferencesHelper,
   open val preferenceDataStore: PreferenceDataStore,
   open val configurationRegistry: ConfigurationRegistry,
   open val configService: ConfigService,
@@ -169,7 +167,7 @@ constructor(
     fhirEngine.create(*resource, isLocalOnly = true)
   }
 
-  private fun preProcessResources(addResourceTags: Boolean, vararg resource: Resource) {
+  private suspend fun preProcessResources(addResourceTags: Boolean, vararg resource: Resource) {
     resource.onEach { currentResource ->
       currentResource.apply {
         updateLastUpdated()
@@ -178,8 +176,7 @@ constructor(
       if (addResourceTags) {
         val tags =
           configService.provideResourceTags(
-            preferenceDataStore = preferenceDataStore,
-            sharedPreferencesHelper = sharedPreferencesHelper,
+            preferenceDataStore = preferenceDataStore
           )
         tags.forEach {
           val existingTag = currentResource.meta.getTag(it.system, it.code)

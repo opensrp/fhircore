@@ -16,13 +16,13 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
+import androidx.datastore.preferences.core.stringPreferencesKey
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.sync.ResourceTag
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
 /** An interface that provides the application configurations. */
@@ -38,9 +38,8 @@ interface ConfigService {
    * Provide a list of [Coding] that represents [ResourceTag]. [Coding] can be directly appended to
    * a FHIR resource.
    */
-  fun provideResourceTags(
-    preferenceDataStore: PreferenceDataStore,
-    sharedPreferencesHelper: SharedPreferencesHelper,
+  suspend fun provideResourceTags(
+    preferenceDataStore: PreferenceDataStore
   ): List<Coding> {
     val tags = mutableListOf<Coding>()
     defineResourceTags().forEach { strategy ->
@@ -58,16 +57,31 @@ interface ConfigService {
         APP_VERSION -> tags.add(strategy.tag.copy())
         else -> {
           // ToDO: This is an object type
-          val ids = sharedPreferencesHelper.read<List<String>>(strategy.type)
-          if (ids.isNullOrEmpty()) {
+          val datastoreKey = stringPreferencesKey("key")
+
+          val ids = preferenceDataStore.readOnce(datastoreKey, defaultValue = null)
+          val idList = ids?.split(",")
+
+          if (idList.isNullOrEmpty()) {
             strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
           } else {
-            ids.forEach { id ->
+            idList.forEach { id ->
               strategy.tag.let { tag ->
                 tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
               }
             }
           }
+
+//            //sharedPreferencesHelper.read<List<String>>(strategy.type)
+//          if (ids.isNullOrEmpty()) {
+//            strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+//          } else {
+//            ids.forEach { id ->
+//              strategy.tag.let { tag ->
+//                tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
+//              }
+//            }
+//          }
         }
       }
     }

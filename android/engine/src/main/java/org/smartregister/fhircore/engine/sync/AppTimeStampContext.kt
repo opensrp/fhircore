@@ -17,26 +17,27 @@
 package org.smartregister.fhircore.engine.sync
 
 import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 
 @Singleton
 class AppTimeStampContext
 @Inject
-constructor(private val sharedPreference: SharedPreferencesHelper) :
+constructor(private val preferenceDatastore: PreferenceDataStore) :
   ResourceParamsBasedDownloadWorkManager.TimestampContext {
 
   override suspend fun getLasUpdateTimestamp(resourceType: ResourceType): String? {
-    return sharedPreference.read(timestampKey(resourceType), null)
+    return preferenceDatastore.read(PreferenceDataStore.resourceTimestampKey(resourceType)).firstOrNull()
   }
 
   override suspend fun saveLastUpdatedTimestamp(resourceType: ResourceType, timestamp: String?) {
-    sharedPreference.write(timestampKey(resourceType), timestamp)
+    if (timestamp != null) {
+      preferenceDatastore.write(PreferenceDataStore.resourceTimestampKey(resourceType), timestamp)
+    }
   }
 
-  private fun timestampKey(resourceType: ResourceType) =
-    "${resourceType.name.uppercase()}_${SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name}"
 }

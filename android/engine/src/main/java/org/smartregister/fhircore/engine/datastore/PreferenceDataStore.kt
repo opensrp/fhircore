@@ -18,11 +18,16 @@ package org.smartregister.fhircore.engine.datastore
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import com.google.android.fhir.sync.SyncJobStatus
+import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
 import javax.inject.Inject
@@ -31,9 +36,14 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.extension.lastOffset
+import org.smartregister.model.practitioner.PractitionerDetails
+import java.util.Locale
 
 @Singleton
-class PreferenceDataStore
+open class PreferenceDataStore
 @Inject
 constructor(@ApplicationContext val context: Context, val dataStore: DataStore<Preferences>) {
   fun <T> read(key: Preferences.Key<T>) =
@@ -67,7 +77,15 @@ constructor(@ApplicationContext val context: Context, val dataStore: DataStore<P
     dataStore.edit { it.clear() }
   }
 
+  fun retrieveApplicationId() = read(APP_ID).toString()
+
+
+  fun resetPrefs() {
+
+  }
+
   companion object Keys {
+    val PRACTITIONER_DETAILS by lazy { stringPreferencesKey("practitioner_details") }
     val APP_ID by lazy { stringPreferencesKey("appId") }
     val LANG by lazy { stringPreferencesKey("lang") }
     val MIGRATION_VERSION by lazy { intPreferencesKey("migrationVersion") }
@@ -76,12 +94,49 @@ constructor(@ApplicationContext val context: Context, val dataStore: DataStore<P
     val PRACTITIONER_LOCATION by lazy { stringPreferencesKey("practitionerLocation") }
     val PRACTITIONER_LOCATION_ID by lazy { stringPreferencesKey("practitionerLocationId") }
     val REMOTE_SYNC_RESOURCES by lazy { stringPreferencesKey("remoteSyncResources") }
-    val PREFS_SYNC_PROGRESS_TOTAL by lazy { stringPreferencesKey("prefSyncProgressTotal") }
+    val PREFS_SYNC_PROGRESS_TOTAL by lazy { longPreferencesKey("syncProgressTotal") }
     val CARE_TEAM_ID by lazy { stringPreferencesKey("careTeamId") }
     val ORGANIZATION_ID by lazy { stringPreferencesKey("organizationId") }
     val LOCATION_ID by lazy { stringPreferencesKey("locationId") }
     val PRACTITIONER_LOCATION_NAME by lazy { stringPreferencesKey("practitionerLocationName") }
     val CARE_TEAM_NAME by lazy { stringPreferencesKey("careTeamName") }
     val ORGANIZATION_NAME by lazy { stringPreferencesKey("organizationName") }
+
+    val COMPLETE_CAREPLAN_WORKER_LAST_OFFSET by lazy { intPreferencesKey("completeCarePlanWorkerLastOffset".lastOffset()) }
+
+    val USER_INFO by lazy { stringPreferencesKey("user_info") }
+    fun resourceTimestampKey(resourceType: ResourceType) = stringPreferencesKey(
+      "${resourceType.name.uppercase()}_${SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name}"
+    )
+
+    val PRACTITIONER_LOCATION_HIERARCHIES by lazy { stringPreferencesKey("practitionerLocationHierarchies") }
+
+    fun syncProgress(progressSyncJobStatus: SyncJobStatus.InProgress) = longPreferencesKey(
+      "$PREFS_SYNC_PROGRESS_TOTAL + ${
+            progressSyncJobStatus.syncOperation.name}")
+
+    fun currentLanguage() = stringPreferencesKey(
+      "$LANG, ${Locale.ENGLISH.toLanguageTag()}")
+
+    suspend fun readPractitionerDetails(
+      dataStore: DataStore<Preferences>, key: Preferences.Key<String>)
+    : PractitionerDetails? {
+      val gson = Gson()
+      val practitionerDetailsKey = stringPreferencesKey("$PRACTITIONER_DETAILS")
+      val jsonString: String? = dataStore.data.map {
+        preferences -> preferences[practitionerDetailsKey] }.firstOrNull()
+
+      return jsonString?.let { gson.fromJson(it, PractitionerDetails::class.java) }
+    }
+
+    val PREFS_NAME by lazy { stringPreferencesKey("params")  }
+
+    val Context.dataStore by preferencesDataStore(PREFS_NAME.name)
+
+    fun resetPrefs(context: Context) = runBlocking {
+      context.dataStore.edit { it.clear() }
+    }
+
+
   }
 }

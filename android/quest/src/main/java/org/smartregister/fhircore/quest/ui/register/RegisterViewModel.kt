@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -75,7 +76,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
@@ -89,7 +89,6 @@ class RegisterViewModel
 constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
   val preferenceDataStore: PreferenceDataStore,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
 ) : ViewModel() {
@@ -656,14 +655,12 @@ constructor(
           RegisterUiState(
             screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
             isFirstTimeSync = // TODO: Reads an object type ---> OffsetDateTime
-            sharedPreferencesHelper
-                .read(
-                  SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-                  null,
-                )
-                .isNullOrEmpty() &&
-                _totalRecordsCount.longValue == 0L &&
-                applicationConfiguration.usePractitionerAssignedLocationOnSync,
+            preferenceDataStore.read(
+              PreferenceDataStore.LAST_SYNC_TIMESTAMP
+            ).firstOrNull()
+              .isNullOrEmpty() &&
+              _totalRecordsCount.longValue == 0L &&
+              applicationConfiguration.usePractitionerAssignedLocationOnSync,
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
             totalRecordsCount = _totalRecordsCount.longValue,

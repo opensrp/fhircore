@@ -27,14 +27,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.BuildConfig
@@ -45,7 +48,7 @@ class AppSettingActivity : AppCompatActivity() {
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
@@ -65,34 +68,37 @@ class AppSettingActivity : AppCompatActivity() {
         }
       }
     }
-    val existingAppId =
-      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
+    lifecycleScope.launch {
+      val existingAppId =
+        preferenceDataStore.read(PreferenceDataStore.APP_ID).firstOrNull()
 
-    // If app exists load the configs otherwise fetch from the server
-    if (!existingAppId.isNullOrEmpty()) {
-      appSettingViewModel.run {
-        onApplicationIdChanged(existingAppId)
-        loadConfigurations(appSettingActivity)
-      }
-    } else if (!BuildConfig.OPENSRP_APP_ID.isNullOrEmpty()) {
-      appSettingViewModel.onApplicationIdChanged(BuildConfig.OPENSRP_APP_ID)
-      appSettingViewModel.fetchConfigurations(appSettingActivity)
-    } else {
-      setContent {
-        AppTheme {
-          val appId by appSettingViewModel.appId.observeAsState("")
-          val showProgressBar by appSettingViewModel.showProgressBar.observeAsState(false)
-          val error by appSettingViewModel.error.observeAsState("")
+      // If app exists load the configs otherwise fetch from the server
+      if (!existingAppId.isNullOrEmpty()) {
+        appSettingViewModel.run {
+          onApplicationIdChanged(existingAppId)
+          loadConfigurations(appSettingActivity)
+        }
+      } else if (!BuildConfig.OPENSRP_APP_ID.isNullOrBlank()) {
+        appSettingViewModel.onApplicationIdChanged(BuildConfig.OPENSRP_APP_ID)
+        appSettingViewModel.fetchConfigurations(appSettingActivity)
+      } else {
+        setContent {
+          AppTheme {
+            val appId by appSettingViewModel.appId.observeAsState("")
+            val showProgressBar by appSettingViewModel.showProgressBar.observeAsState(false)
+            val error by appSettingViewModel.error.observeAsState("")
 
-          AppSettingScreen(
-            appId = appId,
-            onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
-            fetchConfiguration = appSettingViewModel::fetchConfigurations,
-            showProgressBar = showProgressBar,
-            error = error,
-          )
+            AppSettingScreen(
+              appId = appId,
+              onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
+              fetchConfiguration = appSettingViewModel::fetchConfigurations,
+              showProgressBar = showProgressBar,
+              error = error,
+            )
+          }
         }
       }
     }
+
   }
 }

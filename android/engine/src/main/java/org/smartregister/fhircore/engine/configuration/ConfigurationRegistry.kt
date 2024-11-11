@@ -61,7 +61,6 @@ import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -86,7 +85,6 @@ class ConfigurationRegistry
 constructor(
   val fhirEngine: FhirEngine,
   val fhirResourceDataSource: FhirResourceDataSource,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
   val preferenceDataStore: PreferenceDataStore,
   val dispatcherProvider: DispatcherProvider,
   val configService: ConfigService,
@@ -745,9 +743,8 @@ constructor(
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
     val mandatoryTags =
       configService.provideResourceTags(
-        preferenceDataStore,
-        sharedPreferencesHelper,
-      ) // ToDo: Replace with Datastore - has an object
+        preferenceDataStore
+      )
 
     val locationIds =
       context.retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA).map {

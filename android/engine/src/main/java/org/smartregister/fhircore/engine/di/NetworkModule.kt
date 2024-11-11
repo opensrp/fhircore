@@ -45,7 +45,7 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.TimeZoneTypeAdapter
 import org.smartregister.fhircore.engine.util.extension.getCustomJsonParser
 import retrofit2.Retrofit
@@ -82,7 +82,7 @@ class NetworkModule {
   @WithAuthorizationOkHttpClientQualifier
   fun provideOkHttpClient(
     tokenAuthenticator: TokenAuthenticator,
-    sharedPreferencesHelper: SharedPreferencesHelper,
+    preferenceDataStore: PreferenceDataStore,
     configService: ConfigService,
   ) =
     OkHttpClient.Builder()
@@ -121,7 +121,7 @@ class NetworkModule {
             val request = chain.request().newBuilder()
             if (accessToken.isNotEmpty()) {
               request.addHeader(AUTHORIZATION, "Bearer $accessToken")
-              sharedPreferencesHelper.retrieveApplicationId()?.let {
+              preferenceDataStore.retrieveApplicationId().let {
                 request.addHeader(APPLICATION_ID, it)
               }
             }

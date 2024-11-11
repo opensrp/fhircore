@@ -204,11 +204,13 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testSuccessfulOnlineLoginWithActiveSessionWithSavedPractitionerDetails() {
     updateCredentials()
 
+
     // TODO: THIS IS AN OBJECT TYPE ---->?PRACTITIONER DETAILS
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-      PractitionerDetails(),
-    )
+
+//    sharedPreferencesHelper.write(
+//      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+//      PractitionerDetails(),
+//    )
     every { tokenAuthenticator.sessionActive() } returns true
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)

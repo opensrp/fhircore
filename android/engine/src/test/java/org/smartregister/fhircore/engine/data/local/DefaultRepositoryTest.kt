@@ -314,7 +314,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertEquals(system, firstTag.system)
 
     coEvery { fhirEngine.create(any()) } returns listOf(resource.id)
-    every { configService.provideResourceTags(preferenceDataStore, sharedPreferenceHelper) } returns
+    coEvery { configService.provideResourceTags(preferenceDataStore) } returns
       listOf(coding, anotherCoding)
     runBlocking { defaultRepository.create(true, resource) }
 

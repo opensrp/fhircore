@@ -53,9 +53,9 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_D_MMM_YYYY_WITH_COMA
 import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
@@ -95,7 +95,7 @@ class MeasureReportViewModel
 constructor(
   val fhirEngine: FhirEngine,
   val fhirOperator: FhirOperator,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val dispatcherProvider: DefaultDispatcherProvider,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
