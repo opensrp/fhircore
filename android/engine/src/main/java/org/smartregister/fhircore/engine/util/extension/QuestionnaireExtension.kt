@@ -294,6 +294,12 @@ suspend fun Questionnaire.prepopulateUniqueIdAssignment(
   }
 }
 
+/**
+ * Determines the [QuestionnaireResponse.Status] depending on the [saveDraft] and [isEditable]
+ * values contained in the [QuestionnaireConfig]
+ *
+ * returns [COMPLETED] when [isEditable] is [true] returns [INPROGRESS] when [saveDraft] is [true]
+ */
 fun QuestionnaireConfig.questionnaireResponseStatus(): String? {
   return if (this.isEditable()) {
     QuestionnaireResponseStatus.COMPLETED.toCode()
