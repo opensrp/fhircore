@@ -315,7 +315,7 @@ fun SyncStatusView(
 
     Row(
       verticalAlignment = Alignment.CenterVertically,
-      modifier = Modifier.padding(start = 16.dp)
+      modifier = Modifier.padding(start = 16.dp),
     ) {
       if (currentSyncJobStatus is CurrentSyncJobStatus.Running) {
         LineSpinFadeLoaderProgressIndicator(

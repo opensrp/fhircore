@@ -19,10 +19,9 @@ package org.smartregister.fhircore.engine.ui.components.register
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Surface
@@ -35,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -62,66 +60,105 @@ fun LoaderDialog(
   progressBarSize: Dp = 40.dp,
   shouldShowBackground: Boolean = true,
   shouldShowLineSpinIndicator: Boolean = false,
+  blockUiOnLaunch: Boolean = true,
+  alignment: Alignment = Alignment.Center,
 ) {
   val currentPercentage = percentageProgressFlow.collectAsState(0).value
+
+  if (blockUiOnLaunch) {
+    Dialog(onDismissRequest = {}, properties = DialogProperties(dismissOnBackPress = false)) {
+      LoaderContent(
+        modifier = modifier,
+        dialogMessage = dialogMessage,
+        currentPercentage = currentPercentage,
+        showPercentageProgress = showPercentageProgress,
+        boxWidth = boxWidth,
+        boxHeight = boxHeight,
+        progressBarSize = progressBarSize,
+        shouldShowBackground = shouldShowBackground,
+        shouldShowLineSpinIndicator = shouldShowLineSpinIndicator,
+      )
+    }
+  } else {
+    Box(
+      modifier = modifier.wrapContentSize(),
+      contentAlignment = alignment,
+    ) {
+      LoaderContent(
+        modifier = modifier,
+        dialogMessage = dialogMessage,
+        currentPercentage = currentPercentage,
+        showPercentageProgress = showPercentageProgress,
+        boxWidth = boxWidth,
+        boxHeight = boxHeight,
+        progressBarSize = progressBarSize,
+        shouldShowBackground = shouldShowBackground,
+        shouldShowLineSpinIndicator = shouldShowLineSpinIndicator,
+      )
+    }
+  }
+}
+
+@Composable
+private fun LoaderContent(
+  modifier: Modifier,
+  dialogMessage: String?,
+  currentPercentage: Int,
+  showPercentageProgress: Boolean,
+  boxWidth: Dp,
+  boxHeight: Dp,
+  progressBarSize: Dp,
+  shouldShowBackground: Boolean,
+  shouldShowLineSpinIndicator: Boolean,
+) {
   val openDialog = remember { mutableStateOf(true) }
   if (openDialog.value) {
-    Dialog(
-      onDismissRequest = { openDialog.value = true },
-      properties = DialogProperties(dismissOnBackPress = true),
-    ) {
-      Box(modifier.size(boxWidth, boxHeight)) {
-        Column(
-          modifier = modifier.padding(8.dp),
-          verticalArrangement = Arrangement.Center,
-          horizontalAlignment = Alignment.CenterHorizontally,
+    Box(modifier.size(boxWidth, boxHeight)) {
+      Column(
+        modifier = modifier.padding(8.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        Surface(
+          modifier = modifier.size(boxWidth, boxHeight),
+          shape = RoundedCornerShape(8.dp),
+          color = if (shouldShowBackground) Color.Black.copy(alpha = 0.56f) else Color.Transparent,
         ) {
-          Surface(
-            color =
-              if (shouldShowBackground) Color.Black.copy(alpha = 0.56f) else Color.Transparent,
-            modifier = modifier.fillMaxSize(),
-            shape = RoundedCornerShape(8),
+          Column(
+            modifier = modifier.padding(8.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
           ) {
-            Column(
-              verticalArrangement = Arrangement.Center,
-              horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-              if (shouldShowLineSpinIndicator) {
-                LineSpinFadeLoaderProgressIndicator(
-                  color = Color.White,
-                  lineLength = 8f,
-                  innerRadius = 12f,
-                )
-              } else {
-                CircularProgressIndicator(
-                  color = Color.White,
-                  strokeWidth = 3.dp,
-                  modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_BAR_TAG).size(progressBarSize),
-                )
-              }
-              Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-              ) {
-                dialogMessage?.let { dialogMessage ->
-                  Text(
-                    fontSize = 16.sp,
-                    color = Color.White,
-                    text = dialogMessage,
-                    modifier =
-                      modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(vertical = 16.dp),
-                  )
-                }
+            if (shouldShowLineSpinIndicator) {
+              LineSpinFadeLoaderProgressIndicator(
+                color = Color.White,
+                lineLength = 8f,
+                innerRadius = 12f,
+              )
+            } else {
+              CircularProgressIndicator(
+                color = Color.White,
+                strokeWidth = 3.dp,
+                modifier = modifier.size(progressBarSize),
+              )
+            }
 
-                if (showPercentageProgress) {
-                  Text(
-                    fontSize = 15.sp,
-                    color = Color.White,
-                    text = stringResource(id = R.string.percentage_progress, currentPercentage),
-                    modifier = modifier.padding(horizontal = 3.dp, vertical = 16.dp),
-                  )
-                }
-              }
+            dialogMessage?.let {
+              Text(
+                text = it,
+                color = Color.White,
+                fontSize = 14.sp,
+                modifier = modifier.padding(top = 8.dp),
+              )
+            }
+
+            if (showPercentageProgress) {
+              Text(
+                fontSize = 15.sp,
+                color = Color.White,
+                text = "$currentPercentage%",
+                modifier = modifier.padding(top = 4.dp),
+              )
             }
           }
         }
