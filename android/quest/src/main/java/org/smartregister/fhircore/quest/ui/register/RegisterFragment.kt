@@ -88,16 +88,12 @@ class RegisterFragment : Fragment(), OnSyncListener {
     savedInstanceState: Bundle?,
   ): View {
     with(registerFragmentArgs) {
-      viewLifecycleOwner.lifecycleScope.launch {
-        viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
-          registerViewModel.retrieveRegisterUiState(
-            registerId = registerId,
-            screenTitle = screenTitle,
-            params = params,
-            clearCache = false,
-          )
-        }
-      }
+      registerViewModel.retrieveRegisterUiState(
+        registerId = registerId,
+        screenTitle = screenTitle,
+        params = params,
+        clearCache = false,
+      )
     }
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -174,6 +170,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,
                 registerUiState = registerViewModel.registerUiState.value,
+                registerUiCountState = registerViewModel.registerUiCountState.value,
                 appDrawerUIState = appMainViewModel.appDrawerUiState.value,
                 onAppMainEvent = { appMainViewModel.onEvent(it) },
                 searchQuery = searchViewModel.searchQuery,
