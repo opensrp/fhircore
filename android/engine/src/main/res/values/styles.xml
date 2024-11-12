@@ -84,7 +84,6 @@
         <item name="indicatorColor">@color/colorPrimary</item>
     </style>
 
-
     <style name="AppTheme.QuestionnaireSubmitButtonStyle" parent="Widget.MaterialComponents.Button">
         <item name="android:text">@string/str_save</item>
         <item name="android:textAllCaps">true</item>
