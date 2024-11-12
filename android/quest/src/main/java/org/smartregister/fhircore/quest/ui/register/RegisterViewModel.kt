@@ -73,6 +73,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -90,11 +91,13 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
 
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
   val registerUiState = mutableStateOf(RegisterUiState())
+  val registerUiCountState = mutableStateOf(RegisterUiCountState())
   val currentPage: MutableState<Int> = mutableIntStateOf(0)
   val registerData: MutableStateFlow<Flow<PagingData<ResourceData>>> = MutableStateFlow(emptyFlow())
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
@@ -622,12 +625,18 @@ constructor(
   ) {
     if (registerId.isNotEmpty()) {
       val paramsMap: Map<String, String> = params.toParamDataMap()
-      viewModelScope.launch {
-        val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
-        if (currentRegisterConfiguration.infiniteScroll) {
-          registerData.value =
-            retrieveCompleteRegisterData(currentRegisterConfiguration.id, clearCache)
-        } else {
+
+      val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
+      if (currentRegisterConfiguration.infiniteScroll) {
+        registerData.value =
+          retrieveCompleteRegisterData(currentRegisterConfiguration.id, clearCache)
+      } else {
+        paginateRegisterData(
+          registerId = registerId,
+          loadAll = false,
+          clearCache = clearCache,
+        )
+        viewModelScope.launch(dispatcherProvider.io()) {
           _totalRecordsCount.longValue =
             registerRepository.countRegisterData(
               registerId = registerId,
@@ -643,48 +652,49 @@ constructor(
                 fhirResourceConfig = registerFilterState.value.fhirResourceConfig,
               )
           }
-          paginateRegisterData(
-            registerId = registerId,
-            loadAll = false,
-            clearCache = clearCache,
-          )
-        }
 
-        registerUiState.value =
-          RegisterUiState(
-            screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
-            isFirstTimeSync =
-              sharedPreferencesHelper
-                .read(
-                  SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-                  null,
-                )
-                .isNullOrEmpty() &&
-                _totalRecordsCount.longValue == 0L &&
-                applicationConfiguration.usePractitionerAssignedLocationOnSync,
-            registerConfiguration = currentRegisterConfiguration,
-            registerId = registerId,
-            totalRecordsCount = _totalRecordsCount.longValue,
-            filteredRecordsCount = _filteredRecordsCount.longValue,
-            pagesCount =
-              ceil(
-                  (if (registerFilterState.value.fhirResourceConfig != null) {
-                      _filteredRecordsCount.longValue
-                    } else {
-                      _totalRecordsCount.longValue
-                    })
-                    .toDouble()
-                    .div(currentRegisterConfiguration.pageSize.toLong()),
-                )
-                .toInt(),
-            progressPercentage = _percentageProgress,
-            isSyncUpload = _isUploadSync,
-            currentSyncJobStatus = _currentSyncJobStatusFlow,
-            params = params?.toList() ?: emptyList(),
-          )
+          registerUiCountState.value =
+            RegisterUiCountState(
+              totalRecordsCount = _totalRecordsCount.longValue,
+              filteredRecordsCount = _filteredRecordsCount.longValue,
+              pagesCount =
+                ceil(
+                    (if (registerFilterState.value.fhirResourceConfig != null) {
+                        _filteredRecordsCount.longValue
+                      } else {
+                        _totalRecordsCount.longValue
+                      })
+                      .toDouble()
+                      .div(currentRegisterConfiguration.pageSize.toLong()),
+                  )
+                  .toInt(),
+            )
+        }
       }
+
+      registerUiState.value =
+        RegisterUiState(
+          screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
+          isFirstTimeSync = isFirstTimeSync(),
+          registerConfiguration = currentRegisterConfiguration,
+          registerId = registerId,
+          progressPercentage = _percentageProgress,
+          isSyncUpload = _isUploadSync,
+          currentSyncJobStatus = _currentSyncJobStatusFlow,
+          params = params?.toList() ?: emptyList(),
+        )
     }
   }
+
+  private fun isFirstTimeSync() =
+    sharedPreferencesHelper
+      .read(
+        SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+        null,
+      )
+      .isNullOrEmpty() &&
+      applicationConfiguration.usePractitionerAssignedLocationOnSync &&
+      _totalRecordsCount.longValue == 0L
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
