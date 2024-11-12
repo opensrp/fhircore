@@ -77,6 +77,7 @@ import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseStatus
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -779,6 +780,37 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testSaveDraftQuestionnaireCallsAddOrUpdateForPaginatedForms() = runTest {
+    val pageItem =
+      QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
+                .setValue(StringType("Sky is the limit")),
+            )
+          },
+        )
+      }
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        addItem(
+          pageItem,
+        )
+      }
+    questionnaireViewModel.saveDraftQuestionnaire(
+      questionnaireResponse,
+      QuestionnaireConfig(
+        "dc-household-registration",
+        resourceIdentifier = "group-id-1",
+        resourceType = ResourceType.Group,
+      ),
+    )
+
+    coVerify { defaultRepository.addOrUpdate(resource = questionnaireResponse) }
+  }
+
+  @Test
   fun testUpdateResourcesLastUpdatedProperty() = runTest {
     val yesterday = yesterday()
     val thisPatient = Faker.buildPatient(id = "someId").apply { meta.lastUpdated = yesterday }
@@ -1323,6 +1355,56 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           resourceType = ResourceType.Patient,
           questionnaireId = questionnaireConfig.id,
           encounterId = null,
+        )
+      Assert.assertNotNull(latestQuestionnaireResponse)
+      Assert.assertEquals("QuestionnaireResponse/qr1", latestQuestionnaireResponse?.id)
+    }
+
+  @Test
+  fun testSearchLatestQuestionnaireResponseWhenSaveDraftIsTueShouldReturnLatestQuestionnaireResponse() =
+    runTest(timeout = 90.seconds) {
+      Assert.assertNull(
+        questionnaireViewModel.searchQuestionnaireResponse(
+          resourceId = patient.logicalId,
+          resourceType = ResourceType.Patient,
+          questionnaireId = questionnaireConfig.id,
+          encounterId = null,
+          questionnaireResponseStatus = QuestionnaireResponseStatus.INPROGRESS.toCode(),
+        ),
+      )
+
+      val questionnaireResponses =
+        listOf(
+          QuestionnaireResponse().apply {
+            id = "qr1"
+            meta.lastUpdated = Date()
+            subject = patient.asReference()
+            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+            status = QuestionnaireResponseStatus.INPROGRESS
+          },
+          QuestionnaireResponse().apply {
+            id = "qr2"
+            meta.lastUpdated = yesterday()
+            subject = patient.asReference()
+            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+            status = QuestionnaireResponseStatus.COMPLETED
+          },
+        )
+
+      // Add QuestionnaireResponse to database
+      fhirEngine.create(
+        patient,
+        samplePatientRegisterQuestionnaire,
+        *questionnaireResponses.toTypedArray(),
+      )
+
+      val latestQuestionnaireResponse =
+        questionnaireViewModel.searchQuestionnaireResponse(
+          resourceId = patient.logicalId,
+          resourceType = ResourceType.Patient,
+          questionnaireId = questionnaireConfig.id,
+          encounterId = null,
+          questionnaireResponseStatus = QuestionnaireResponseStatus.INPROGRESS.toCode(),
         )
       Assert.assertNotNull(latestQuestionnaireResponse)
       Assert.assertEquals("QuestionnaireResponse/qr1", latestQuestionnaireResponse?.id)
