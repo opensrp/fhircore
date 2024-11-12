@@ -367,6 +367,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           lifecycleScope.launch {
             retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
               viewModel.saveDraftQuestionnaire(questionnaireResponse, questionnaireConfig)
+              finish()
             }
           }
         },

@@ -679,9 +679,18 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ) {
     viewModelScope.launch {
+      val hasPages = questionnaireResponse.item.any { it.hasItem() }
       val questionnaireHasAnswer =
         questionnaireResponse.item.any {
-          it.answer.any { answerComponent -> answerComponent.hasValue() }
+          if (!hasPages) {
+            it.answer.any { answerComponent -> answerComponent.hasValue() }
+          } else {
+            questionnaireResponse.item.any { page ->
+              page.item.any { pageItem ->
+                pageItem.answer.any { answerComponent -> answerComponent.hasValue() }
+              }
+            }
+          }
         }
       questionnaireResponse.questionnaire =
         questionnaireConfig.id.asReference(ResourceType.Questionnaire).reference
