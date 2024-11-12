@@ -611,7 +611,7 @@ constructor(
                 context = context,
                 configService = configService,
                 metadataResource = resource,
-                filePath =
+                subFilePath =
                   "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/${resource.resourceType}/${resource.idElement.idPart}.json",
               ),
             )
