@@ -28,14 +28,26 @@ object KnowledgeManagerUtil {
   const val KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER = "km"
   private val fhirContext = FhirContext.forR4Cached()
 
+  /**
+   * Util method that creates a physical file and writes the Metadata FHIR resource content to it.
+   * Note the filepath provided is appended to the apps private directory as returned by
+   * Context.filesDir
+   *
+   * @param subFilePath the path of the file but within the apps private directory
+   *   {Context.filesDir}
+   * @param metadataResource the actual FHIR Resource of type MetadataResource
+   * @param configService the configuration service
+   * @param context the application context
+   * @return File the file object after creating and writing
+   */
   fun writeToFile(
-    filePath: String,
+    subFilePath: String,
     metadataResource: MetadataResource,
     configService: ConfigService,
     context: Context,
   ): File =
     context
-      .createFileInPrivateDirectory(filePath)
+      .createFileInPrivateDirectory(subFilePath)
       .also { it.parentFile?.mkdirs() }
       .apply {
         writeText(

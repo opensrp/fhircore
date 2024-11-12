@@ -1028,7 +1028,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         configService = configService,
         metadataResource = resource,
         context = context,
-        filePath =
+        subFilePath =
           "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/${resource.resourceType}/${resource.idElement.idPart}.json",
       )
     assertNotNull(resultFile)
