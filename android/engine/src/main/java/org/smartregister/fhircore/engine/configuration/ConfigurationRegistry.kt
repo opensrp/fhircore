@@ -34,7 +34,6 @@ import java.util.PropertyResourceBundle
 import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -77,7 +76,6 @@ import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSecti
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
-import org.smartregister.fhircore.engine.util.forEachAsync
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import retrofit2.HttpException
 import timber.log.Timber
@@ -433,7 +431,7 @@ constructor(
             } else {
               val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
-              chunkedResourceIdList.forEachAsync(Dispatchers.IO) { sectionComponents ->
+              chunkedResourceIdList.forEach { sectionComponents ->
                 Timber.d(
                   "Fetching config resource ${entry.key}: with ids ${
                                         sectionComponents.joinToString(
@@ -560,7 +558,7 @@ constructor(
   private suspend fun processResultBundleEntries(
     resultBundleEntries: List<Bundle.BundleEntryComponent>,
   ) {
-    resultBundleEntries.forEachAsync(Dispatchers.IO) { bundleEntryComponent ->
+    resultBundleEntries.forEach { bundleEntryComponent ->
       when (bundleEntryComponent.resource) {
         is Bundle -> {
           val bundle = bundleEntryComponent.resource as Bundle
@@ -713,7 +711,7 @@ constructor(
           }
       }
     } else {
-      sectionComponentEntry.value.forEachAsync(Dispatchers.IO) {
+      sectionComponentEntry.value.forEach {
         fetchResources(
           gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE,
           url =
