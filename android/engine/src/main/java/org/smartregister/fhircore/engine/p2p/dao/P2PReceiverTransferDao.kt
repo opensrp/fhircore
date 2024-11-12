@@ -27,7 +27,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
-import org.smartregister.fhircore.engine.util.forEachAsync
 import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.sync.DataType
 import timber.log.Timber
@@ -46,8 +45,8 @@ constructor(
   override fun receiveJson(type: DataType, jsonArray: JSONArray): Long {
     var maxLastUpdated = 0L
     Timber.i("saving resources from base dai ${type.name} -> ${jsonArray.length()}")
-    runBlocking {
-      (0 until jsonArray.length()).forEachAsync {
+    (0 until jsonArray.length()).forEach {
+      runBlocking {
         val resource =
           FhirContext.forR4Cached()
             .newJsonParser()
