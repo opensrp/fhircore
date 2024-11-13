@@ -95,6 +95,7 @@ import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.logErrorMessages
 import org.smartregister.fhircore.engine.util.extension.packRepeatedGroups
 import org.smartregister.fhircore.engine.util.extension.prepopulateWithComputedConfigValues
+import org.smartregister.fhircore.engine.util.extension.questionnaireResponseStatus
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -544,6 +545,7 @@ constructor(
           resourceType = questionnaireConfig.resourceType ?: subjectType,
           questionnaireId = questionnaire.logicalId,
           encounterId = questionnaireConfig.encounterId,
+          questionnaireResponseStatus = questionnaireConfig.questionnaireResponseStatus(),
         )
         ?.contained
         ?.asSequence()
@@ -672,12 +674,35 @@ constructor(
    * This function saves [QuestionnaireResponse] as draft if any of the [QuestionnaireResponse.item]
    * has an answer.
    */
-  fun saveDraftQuestionnaire(questionnaireResponse: QuestionnaireResponse) {
+  fun saveDraftQuestionnaire(
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaireConfig: QuestionnaireConfig,
+  ) {
     viewModelScope.launch {
+      val hasPages = questionnaireResponse.item.any { it.hasItem() }
       val questionnaireHasAnswer =
         questionnaireResponse.item.any {
-          it.answer.any { answerComponent -> answerComponent.hasValue() }
+          if (!hasPages) {
+            it.answer.any { answerComponent -> answerComponent.hasValue() }
+          } else {
+            questionnaireResponse.item.any { page ->
+              page.item.any { pageItem ->
+                pageItem.answer.any { answerComponent -> answerComponent.hasValue() }
+              }
+            }
+          }
         }
+      questionnaireResponse.questionnaire =
+        questionnaireConfig.id.asReference(ResourceType.Questionnaire).reference
+      if (
+        !questionnaireConfig.resourceIdentifier.isNullOrBlank() &&
+          questionnaireConfig.resourceType != null
+      ) {
+        questionnaireResponse.subject =
+          questionnaireConfig.resourceIdentifier!!.asReference(
+            questionnaireConfig.resourceType!!,
+          )
+      }
       if (questionnaireHasAnswer) {
         questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
         defaultRepository.addOrUpdate(
@@ -1011,6 +1036,7 @@ constructor(
     resourceType: ResourceType,
     questionnaireId: String,
     encounterId: String?,
+    questionnaireResponseStatus: String? = null,
   ): QuestionnaireResponse? {
     val search =
       Search(ResourceType.QuestionnaireResponse).apply {
@@ -1029,6 +1055,12 @@ constructor(
               value =
                 encounterId.extractLogicalIdUuid().asReference(ResourceType.Encounter).reference
             },
+          )
+        }
+        if (!questionnaireResponseStatus.isNullOrBlank()) {
+          filter(
+            QuestionnaireResponse.STATUS,
+            { value = of(questionnaireResponseStatus) },
           )
         }
       }
@@ -1100,13 +1132,16 @@ constructor(
       if (
         resourceType != null &&
           !resourceIdentifier.isNullOrEmpty() &&
-          (questionnaireConfig.isEditable() || questionnaireConfig.isReadOnly())
+          (questionnaireConfig.isEditable() ||
+            questionnaireConfig.isReadOnly() ||
+            questionnaireConfig.saveDraft)
       ) {
         searchQuestionnaireResponse(
             resourceId = resourceIdentifier,
             resourceType = resourceType,
             questionnaireId = questionnaire.logicalId,
             encounterId = questionnaireConfig.encounterId,
+            questionnaireResponseStatus = questionnaireConfig.questionnaireResponseStatus(),
           )
           ?.let {
             QuestionnaireResponse().apply {
