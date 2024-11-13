@@ -25,7 +25,7 @@
     <string name="syncing">Synchronisation</string>
     <string name="syncing_up" >Synchronisation</string>
     <string name="syncing_down" >Synchronisation en cours</string>
-    <string name="syncing_initiated">Synchronisation initiée&#8230;</string>
+    <string name="syncing_initiated">Synchronisation initiée&#8230 ;</string>
     <string name="sync_failed">La synchronisation a échoué. Vérifier la connexion internet ou réessayer plus tard</string>
     <string name="sync_completed_with_errors">La synchronisation s\'est terminée avec des erreurs. Réessayer...</string>
     <string name="sync_unauthorised">La synchronisation a échoué car les informations d\'authentification ne sont pas valides.</string>
@@ -134,7 +134,7 @@
     <string name="weeks">Semaine(s)</string>
     <string name="days">Jour(s)</string>
     <string name="initializing">Initialisation des paramètres &#8230;</string>
-    <string name="initializing_application">Initialisation de l\'application &#8230;</string>
+    <string name="initializing_application">Initialisation de l\'application &#8230 ;</string>
     <string name="error_occurred">Quelque chose a mal tourné...</string>
     <string name="insights">Insights</string>
     <string name="contact_help">Contacter l\'aide</string>
@@ -179,4 +179,4 @@
     <string name="retry">REESSAYER</string>
     <string name="unsynced_data_present">Il y a des données non synchronisées</string>
     <string name="missing_supervisor_contact">Le contact du superviseur est manquant ou le numéro de téléphone fourni n\'est pas valide</string>
-</resources>
+    </resources>
