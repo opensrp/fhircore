@@ -1,27 +1,33 @@
 {
-  "appId": "app",
+  "appId": "opensrp",
   "configType": "register",
   "id": "childRegister",
-  "pageSize": 20,
   "configRules": [
     {
-      "name": "under5",
+      "name": "under18",
       "condition": "true",
       "actions": [
-        "data.put('under5', dateService.addOrSubtractTimeUnitFromCurrentDate(5,'-','YEAR'))"
+        "data.put('under18', dateService.addOrSubtractTimeUnitFromCurrentDate(18,'-','YEAR'))"
       ]
+    }
+  ],
+  "activeResourceFilters": [
+    {
+      "resourceType": "Patient",
+      "active": "false"
     }
   ],
   "fhirResource": {
     "baseResource": {
       "resource": "Patient",
+      "filterId": "filterPatientByDob",
       "dataQueries": [
         {
           "paramName": "birthdate",
           "filterCriteria": [
             {
               "dataType": "DATE",
-              "computedRule": "under5",
+              "computedRule": "under18",
               "prefix": "GREATERTHAN_OR_EQUALS"
             }
           ]
@@ -37,29 +43,64 @@
     },
     "relatedResources": [
       {
-        "resource": "Condition",
-        "searchParameter": "subject"
-      },
-      {
+        "id": "availableCarePlans",
         "resource": "CarePlan",
         "searchParameter": "subject"
       },
       {
+        "id": "availableTasks",
         "resource": "Task",
-        "searchParameter": "subject"
+        "searchParameter": "subject",
+        "sortConfigs": [
+          {
+            "paramName": "period",
+            "dataType": "DATE"
+          }
+        ]
+      },
+      {
+        "id": "availableObservations",
+        "resource": "Observation",
+        "searchParameter": "subject",
+        "sortConfigs": [
+          {
+            "paramName": "period",
+            "dataType": "DATE"
+          }
+        ]
       }
-    ]
-  },
-  "searchBar": {
-    "visible": true,
-    "display": "{{ search.by.name }}",
-    "computedRules": [
-      "patientName",
-      "patientId"
     ]
   },
   "registerCard": {
     "rules": [
+      {
+        "name": "patientId",
+        "condition": "true",
+        "actions": [
+          "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
+        ]
+      },
+      {
+        "name": "patientAge",
+        "condition": "true",
+        "actions": [
+          "data.put('patientAge', service.extractAge(Patient))"
+        ]
+      },
+      {
+        "name": "patientGender",
+        "condition": "true",
+        "actions": [
+          "data.put('patientGender', service.extractGender(Patient))"
+        ]
+      },
+      {
+        "name": "patientIdentifier",
+        "condition": "true",
+        "actions": [
+          "data.put('patientIdentifier', fhirPath.extractValue(Patient, \"Patient.identifier[0].value\"))"
+        ]
+      },
       {
         "name": "patientFirstName",
         "condition": "true",
@@ -97,58 +138,199 @@
       },
       {
         "name": "patientName",
+        "priority": 1,
         "condition": "true",
         "actions": [
-          "data.put('patientName', (data.get('patientFirstName') + ' ' + data.get('patientMiddleName') + ' ' + data.get('patientLastName')).trim() + ' , ' + (data.get('patientGender') == 'Female'? 'F': data.get('patientGender') == 'Male'? 'M': data.get('patientGender')) + ' , ' + data.get('patientAge'))"
+          "data.put('patientName', (fhirPath.extractValue(Patient, \"Patient.name.where(use='official').text\")).trim() + ' , ' + (data.get('patientGender') == 'Female'? 'F': data.get('patientGender') == 'Male'? 'M': data.get('patientGender')) + ' , ' + data.get('patientAge'))"
         ]
       },
       {
-        "name": "patientId",
+        "name": "formattedPatientInfo",
         "condition": "true",
+        "priority": 2,
         "actions": [
-          "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
+          "data.put('formattedPatientInfo', (data.get('patientFirstName') + ' ' + data.get('patientLastName')).trim() + ', ' + (data.get('patientGender') == 'Female'? 'F' : data.get('patientGender') == 'Male'? 'M' : data.get('patientGender')) + ', ' + data.get('patientAge'))"
+        ]
+      },
+      {
+        "name": "activeTasks",
+        "condition": "true",
+        "priority": 1,
+        "actions": [
+          "data.put('activeTasks', service.filterResources(Task, 'Task.status = \"ready\"'))"
+        ]
+      },
+      {
+        "name": "sortedTasks",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('sortedTasks', service.sortResources(data.get('activeTasks'), 'Task.executionPeriod.start', 'DATETIME', 'ASCENDING'))"
         ]
       },
       {
         "name": "showMemberTasks",
         "condition": "true",
+        "priority": 3,
         "actions": [
-          "data.put('showMemberTasks', size(Task) > 0)"
+          "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(data.get('sortedTasks')) > 0)"
+        ]
+      },
+      {
+        "name": "taskStatus",
+        "condition": "true",
+        "priority": 3,
+        "actions": [
+          "data.put('taskStatus', fhirPath.extractValue(size(data.get('sortedTasks')) > 0 ? data.get('sortedTasks').get(0) : null, 'Task.status'))"
         ]
       },
       {
         "name": "serviceStatus",
         "condition": "true",
+        "priority": 4,
         "actions": [
-          "data.put('serviceStatus', service.generateTaskServiceStatus(Task.get(0)) )"
+          "data.put('serviceStatus', service.generateTaskServiceStatus(size(data.get('sortedTasks')) > 0 ? data.get('sortedTasks').get(0) : null))"
         ]
       },
       {
         "name": "taskDescription",
         "condition": "true",
+        "priority": 3,
         "actions": [
-          "data.put('taskDescription', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.description'))"
+          "data.put('taskDescription', fhirPath.extractValue(size(data.get('sortedTasks')) > 0 ? data.get('sortedTasks').get(0) : null, 'Task.description'))"
         ]
       },
       {
         "name": "taskId",
         "condition": "true",
+        "priority": 3,
         "actions": [
-          "data.put('taskId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.id'))"
+          "data.put('taskId', fhirPath.extractValue(size(data.get('sortedTasks')) > 0 ? data.get('sortedTasks').get(0) : null, 'Task.id'))"
         ]
       },
       {
         "name": "taskFor",
         "condition": "true",
+        "priority": 3,
         "actions": [
-          "data.put('taskFor', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.for.reference'))"
+          "data.put('taskFor', fhirPath.extractValue(size(data.get('sortedTasks')) > 0 ? data.get('sortedTasks').get(0) : null, 'Task.for.reference'))"
         ]
       },
       {
         "name": "taskQuestionnaireId",
         "condition": "true",
+        "priority": 3,
         "actions": [
-          "data.put('taskQuestionnaireId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.reasonReference.reference'))"
+          "data.put('taskQuestionnaireId', fhirPath.extractValue(size(data.get('sortedTasks')) > 0 ? data.get('sortedTasks').get(0) : null, 'Task.reasonReference.reference'))"
+        ]
+      },
+      {
+        "name": "taskName",
+        "condition": "true",
+        "priority": 4,
+        "actions": [
+          "data.put('taskName', fhirPath.extractValue(size(data.get('sortedTasks')) > 0 ? data.get('sortedTasks').get(0) : null, 'Task.reasonCode.coding.display'))"
+        ]
+      },
+      {
+        "name": "taskCode",
+        "condition": "true",
+        "priority": 4,
+        "actions": [
+          "data.put('taskCode', fhirPath.extractValue(size(data.get('sortedTasks')) > 0 ? data.get('sortedTasks').get(0) : null, 'Task.reasonCode.coding.code'))"
+        ]
+      },
+      {
+        "name": "logicalTaskId",
+        "condition": "true",
+        "actions": [
+          "data.put('logicalTaskId', fhirPath.extractValue(size(data.get('sortedTasks')) > 0 ? data.get('sortedTasks').get(0) : null, 'Task.id').replace(\"Task/\",\"\").split(\"/\").get(0))"
+        ]
+      },
+      {
+        "name": "patientActive",
+        "condition": "true",
+        "actions": [
+          "data.put('patientActive', fhirPath.extractValue(Patient, 'Patient.active'))"
+        ]
+      },
+      {
+        "name": "patientDod",
+        "condition": "true",
+        "priority": 1,
+        "actions": [
+          "data.put('patientDod', fhirPath.extractValue(Patient, 'Patient.deceased'))"
+        ]
+      },
+      {
+        "name": "patientDodFormatted",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('patientDodFormatted', service.formatDate(data.get('patientDod'), \"yyyy-MM-dd'T'HH:mm:ss\", \"dd MMM, yyyy\"))"
+        ]
+      },
+      {
+        "name": "patientDeceased",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('patientDeceased', data.get('patientDod').empty().not())"
+        ]
+      },
+      {
+        "name": "patientMuted",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('patientMuted', !data.get('patientActive') && data.get('patientDod').empty())"
+        ]
+      },
+      {
+        "name": "patientTextColor",
+        "condition": "true",
+        "priority": 3,
+        "actions": [
+          "data.put('patientTextColor', data.get('patientMuted') == 'true' || data.get('patientDeceased') == 'true' ? '#6F7274' : '#000000')"
+        ]
+      },
+      {
+        "name": "muteEncounters",
+        "condition": "true",
+        "actions": [
+          "data.put('muteEncounters', service.filterResources(availableEncounters, \"(Encounter.type.coding.code = 'remove_patient')\"))"
+        ]
+      },
+      {
+        "name": "sortedMuteEncounters",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('sortedMuteEncounters', service.sortResources(data.get('muteEncounters'), 'Encounter.period.start', 'DATETIME', 'DESCENDING'))"
+        ]
+      },
+      {
+        "name": "patientMuteReason",
+        "condition": "true",
+        "priority": 3,
+        "actions": [
+          "data.put('patientMuteReason', data.get('patientMuted') ? (size(data.get('sortedMuteEncounters')) > 0 ? data.get('sortedMuteEncounters').get(0).reasonCode[0].coding[0].display : '') : '')"
+        ]
+      },
+      {
+        "name": "patientMuteDate",
+        "condition": "true",
+        "priority": 3,
+        "actions": [
+          "data.put('patientMuteDate', data.get('patientMuted') ? (size(data.get('sortedMuteEncounters')) > 0 ? data.get('sortedMuteEncounters').get(0).period.start : '') : '')"
+        ]
+      },
+      {
+        "name": "patientMuteDateFormatted",
+        "condition": "true",
+        "priority": 4,
+        "actions": [
+          "data.put('patientMuteDateFormatted', data.get('patientMuted') ? service.formatDate(data.get('patientMuteDate'), \"dd MMM, yyyy\") : '')"
         ]
       }
     ],
@@ -161,14 +343,28 @@
             "details": [
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "@{patientName}",
-                "primaryTextColor": "#000000"
+                "primaryText": "{{ a83679a4c87d5f9d857e5b8de79442c2 }}",
+                "primaryTextColor": "@{patientTextColor}"
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "ID: @{patientId}",
+                "primaryText": "{{ 7657dce8c8be22ea8d5201d8f66f8717 }}",
                 "fontSize": 14.0,
-                "primaryTextColor": "#000000"
+                "primaryTextColor": "@{patientTextColor}"
+              },
+              {
+                "visible": "@{patientMuted}",
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "{{ 5ecb3e81bd22d48ee9441d34364128a9 }}",
+                "fontSize": 10.0,
+                "primaryTextColor": "#FF0000"
+              },
+              {
+                "visible": "@{patientDeceased}",
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "{{ aad3eb3340de1ab995026fe615a33bfe }}",
+                "fontSize": 10.0,
+                "primaryTextColor": "#FF0000"
               }
             ],
             "showVerticalDivider": false,
@@ -176,18 +372,62 @@
               "visible": "@{showMemberTasks}",
               "text": "@{taskDescription}",
               "status": "@{serviceStatus}",
-              "buttonType": "TINY",
+              "buttonType": "MEDIUM",
               "actions": [
                 {
                   "trigger": "ON_CLICK",
                   "workflow": "LAUNCH_QUESTIONNAIRE",
                   "questionnaire": {
                     "id": "@{taskQuestionnaireId}",
-                    "title": "@{taskDescription}",
-                    "saveButtonText": "Save",
+                    "title": "{{ b5b2dad2eda089b9695c3fa8f648beeb }}",
+                    "saveButtonText": "{{ a4d3b161ce1309df1c4e25df28694b7b }}",
                     "taskId": "@{taskId}",
                     "resourceIdentifier": "@{taskFor}"
-                  }
+                  },
+                  "params": [
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "patient-dob",
+                      "dataType": "STRING",
+                      "key": "patientDateOfBirth",
+                      "value": "@{patientDateOfBirth}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "task-name",
+                      "dataType": "STRING",
+                      "key": "taskName",
+                      "value": "@{taskName}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "task-code",
+                      "dataType": "STRING",
+                      "key": "taskCode",
+                      "value": "@{taskCode}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "patient-id",
+                      "dataType": "STRING",
+                      "key": "patientId",
+                      "value": "@{patientId}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "task-description",
+                      "dataType": "STRING",
+                      "key": "taskDesc",
+                      "value": "@{taskDescription}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "logical-task-id",
+                      "dataType": "STRING",
+                      "key": "logicalTaskId",
+                      "value": "@{logicalTaskId}"
+                    }
+                  ]
                 }
               ]
             },
@@ -195,7 +435,57 @@
               {
                 "trigger": "ON_CLICK",
                 "workflow": "LAUNCH_PROFILE",
-                "id": "defaultProfile"
+                "id": "childProfile"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "{{ search.name.or.id }}",
+    "computedRules": [
+      "patientIdentifier",
+      "patientFirstName",
+      "patientLastName",
+      "patientMiddleName"
+    ]
+  },
+  "registerFilter": {
+    "dataFilterActions": [
+      {
+        "trigger": "ON_CLICK",
+        "workflow": "LAUNCH_QUESTIONNAIRE",
+        "questionnaire": {
+          "id": "13066257",
+          "title": "{{ search.filters }}",
+          "saveButtonText": "{{ apply.filters }}",
+          "saveQuestionnaireResponse": false,
+          "showClearAll": true
+        }
+      }
+    ],
+    "dataFilterFields": [
+      {
+        "filterId": "filterPatientByDob",
+        "dataQueries": [
+          {
+            "paramName": "birthdate",
+            "operation": "AND",
+            "filterCriteria": [
+              {
+                "dataFilterLinkId": "859f0b8e-80b6-4a15-f6a5-b1bec78d928c",
+                "dataType": "DATE",
+                "prefix": "GREATERTHAN_OR_EQUALS",
+                "valueAsDateTime": false
+              },
+              {
+                "dataFilterLinkId": "85f8f0df-9bcb-411c-bac6-2d38161953e4",
+                "dataType": "DATE",
+                "prefix": "LESSTHAN_OR_EQUALS",
+                "valueAsDateTime": false
               }
             ]
           }
