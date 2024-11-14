@@ -44,5 +44,6 @@ class ContentCache @Inject constructor(private val dispatcherProvider: Dispatche
 
   fun getResource(type: ResourceType, id: String) = cache["$type/$id"]?.copy()
 
-  suspend fun invalidate() = withContext(dispatcherProvider.io()) { cache.evictAll() }
+  suspend fun invalidate() =
+    withContext(dispatcherProvider.io()) { mutex.withLock { cache.evictAll() } }
 }
