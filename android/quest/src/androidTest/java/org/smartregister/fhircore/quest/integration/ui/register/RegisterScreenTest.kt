@@ -67,6 +67,7 @@ import org.smartregister.fhircore.quest.ui.register.NO_REGISTER_VIEW_COLUMN_TEST
 import org.smartregister.fhircore.quest.ui.register.NoRegisterDataView
 import org.smartregister.fhircore.quest.ui.register.REGISTER_CARD_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.RegisterScreen
+import org.smartregister.fhircore.quest.ui.register.RegisterUiCountState
 import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import org.smartregister.fhircore.quest.ui.register.TOP_REGISTER_SCREEN_TEST_TAG
 import org.smartregister.fhircore.quest.ui.shared.components.SYNC_PROGRESS_INDICATOR_TEST_TAG
@@ -126,9 +127,6 @@ class RegisterScreenTest {
         registerConfiguration =
           configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
         registerId = "register101",
-        totalRecordsCount = 1,
-        filteredRecordsCount = 0,
-        pagesCount = 0,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
         params = emptyList(),
@@ -146,6 +144,12 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
+        registerUiCountState =
+          RegisterUiCountState(
+            totalRecordsCount = 1,
+            filteredRecordsCount = 0,
+            pagesCount = 0,
+          ),
         onAppMainEvent = {},
         searchQuery = searchText,
         currentPage = currentPage,
@@ -168,9 +172,6 @@ class RegisterScreenTest {
         registerConfiguration =
           configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
         registerId = "register101",
-        totalRecordsCount = 1,
-        filteredRecordsCount = 0,
-        pagesCount = 1,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
         params = emptyList(),
@@ -188,6 +189,12 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
+        registerUiCountState =
+          RegisterUiCountState(
+            totalRecordsCount = 1,
+            filteredRecordsCount = 0,
+            pagesCount = 1,
+          ),
         onAppMainEvent = {},
         searchQuery = searchText,
         currentPage = currentPage,
@@ -213,12 +220,16 @@ class RegisterScreenTest {
         registerConfiguration =
           configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
         registerId = "register101",
-        totalRecordsCount = 1,
-        filteredRecordsCount = 0,
-        pagesCount = 1,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
         params = emptyList(),
+      )
+
+    val registerUiCountState =
+      RegisterUiCountState(
+        totalRecordsCount = 1,
+        filteredRecordsCount = 0,
+        pagesCount = 1,
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
@@ -233,6 +244,7 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
+        registerUiCountState = registerUiCountState,
         onAppMainEvent = {},
         searchQuery = searchText,
         currentPage = currentPage,
@@ -258,9 +270,6 @@ class RegisterScreenTest {
         registerConfiguration =
           configurationRegistry.retrieveConfiguration(ConfigType.Register, "childRegister"),
         registerId = "register101",
-        totalRecordsCount = 0,
-        filteredRecordsCount = 0,
-        pagesCount = 1,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
         params = emptyList(),
@@ -283,6 +292,12 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
+        registerUiCountState =
+          RegisterUiCountState(
+            totalRecordsCount = 0,
+            filteredRecordsCount = 0,
+            pagesCount = 1,
+          ),
         onAppMainEvent = {},
         searchQuery = searchText,
         currentPage = currentPage,
@@ -304,9 +319,6 @@ class RegisterScreenTest {
         registerConfiguration =
           configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
         registerId = "register101",
-        totalRecordsCount = 1,
-        filteredRecordsCount = 0,
-        pagesCount = 0,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
         params = emptyList(),
@@ -324,6 +336,12 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
+        registerUiCountState =
+          RegisterUiCountState(
+            totalRecordsCount = 1,
+            filteredRecordsCount = 0,
+            pagesCount = 0,
+          ),
         onAppMainEvent = {},
         searchQuery = searchText,
         currentPage = currentPage,
@@ -351,9 +369,6 @@ class RegisterScreenTest {
                 listOf(ActionConfig(trigger = ActionTrigger.ON_SEARCH_SINGLE_RESULT)),
             ),
         registerId = "register101",
-        totalRecordsCount = 1,
-        filteredRecordsCount = 0,
-        pagesCount = 0,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
         params = emptyList(),
@@ -371,6 +386,12 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
+        registerUiCountState =
+          RegisterUiCountState(
+            totalRecordsCount = 1,
+            filteredRecordsCount = 0,
+            pagesCount = 0,
+          ),
         onAppMainEvent = {},
         searchQuery = searchText,
         currentPage = currentPage,
@@ -429,9 +450,6 @@ class RegisterScreenTest {
         registerConfiguration =
           configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
         registerId = "register101",
-        totalRecordsCount = 1,
-        filteredRecordsCount = 0,
-        pagesCount = 0,
         progressPercentage = flowOf(50),
         isSyncUpload = flowOf(true),
         currentSyncJobStatus =
@@ -455,6 +473,12 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
+        registerUiCountState =
+          RegisterUiCountState(
+            totalRecordsCount = 1,
+            filteredRecordsCount = 0,
+            pagesCount = 0,
+          ),
         appDrawerUIState =
           AppDrawerUIState(
             currentSyncJobStatus =
@@ -489,9 +513,6 @@ class RegisterScreenTest {
         registerConfiguration =
           configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
         registerId = "register101",
-        totalRecordsCount = 1,
-        filteredRecordsCount = 0,
-        pagesCount = 0,
         progressPercentage = flowOf(100),
         isSyncUpload = flowOf(false),
         currentSyncJobStatus = flowOf(CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())),
@@ -509,6 +530,12 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
+        registerUiCountState =
+          RegisterUiCountState(
+            totalRecordsCount = 1,
+            filteredRecordsCount = 0,
+            pagesCount = 0,
+          ),
         appDrawerUIState =
           AppDrawerUIState(
             currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
@@ -541,9 +568,6 @@ class RegisterScreenTest {
         registerConfiguration =
           configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
         registerId = "register101",
-        totalRecordsCount = 1,
-        filteredRecordsCount = 0,
-        pagesCount = 0,
         progressPercentage = flowOf(100),
         isSyncUpload = flowOf(false),
         currentSyncJobStatus = flowOf(CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())),
@@ -561,6 +585,12 @@ class RegisterScreenTest {
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
+        registerUiCountState =
+          RegisterUiCountState(
+            totalRecordsCount = 1,
+            filteredRecordsCount = 0,
+            pagesCount = 0,
+          ),
         appDrawerUIState =
           AppDrawerUIState(
             currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),

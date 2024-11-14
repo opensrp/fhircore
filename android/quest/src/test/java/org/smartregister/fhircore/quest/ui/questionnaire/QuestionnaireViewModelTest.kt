@@ -77,6 +77,7 @@ import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseStatus
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -111,6 +112,7 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isToday
+import org.smartregister.fhircore.engine.util.extension.questionnaireResponseStatus
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.extension.yesterday
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -734,11 +736,77 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           },
         )
       }
-    questionnaireViewModel.saveDraftQuestionnaire(questionnaireResponse)
+    questionnaireViewModel.saveDraftQuestionnaire(
+      questionnaireResponse,
+      QuestionnaireConfig("qr-id-1"),
+    )
     Assert.assertEquals(
       QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS,
       questionnaireResponse.status,
     )
+    coVerify { defaultRepository.addOrUpdate(resource = questionnaireResponse) }
+  }
+
+  @Test
+  fun testSaveDraftQuestionnaireShouldUpdateSubjectAndQuestionnaireValues() = runTest {
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
+                .setValue(StringType("Sky is the limit")),
+            )
+          },
+        )
+      }
+    questionnaireViewModel.saveDraftQuestionnaire(
+      questionnaireResponse,
+      QuestionnaireConfig(
+        "dc-household-registration",
+        resourceIdentifier = "group-id-1",
+        resourceType = ResourceType.Group,
+      ),
+    )
+    Assert.assertEquals(
+      "Questionnaire/dc-household-registration",
+      questionnaireResponse.questionnaire,
+    )
+    Assert.assertEquals(
+      "Group/group-id-1",
+      questionnaireResponse.subject.reference,
+    )
+    coVerify { defaultRepository.addOrUpdate(resource = questionnaireResponse) }
+  }
+
+  @Test
+  fun testSaveDraftQuestionnaireCallsAddOrUpdateForPaginatedForms() = runTest {
+    val pageItem =
+      QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
+                .setValue(StringType("Sky is the limit")),
+            )
+          },
+        )
+      }
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        addItem(
+          pageItem,
+        )
+      }
+    questionnaireViewModel.saveDraftQuestionnaire(
+      questionnaireResponse,
+      QuestionnaireConfig(
+        "dc-household-registration",
+        resourceIdentifier = "group-id-1",
+        resourceType = ResourceType.Group,
+      ),
+    )
+
     coVerify { defaultRepository.addOrUpdate(resource = questionnaireResponse) }
   }
 
@@ -1293,6 +1361,56 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
   @Test
+  fun testSearchLatestQuestionnaireResponseWhenSaveDraftIsTueShouldReturnLatestQuestionnaireResponse() =
+    runTest(timeout = 90.seconds) {
+      Assert.assertNull(
+        questionnaireViewModel.searchQuestionnaireResponse(
+          resourceId = patient.logicalId,
+          resourceType = ResourceType.Patient,
+          questionnaireId = questionnaireConfig.id,
+          encounterId = null,
+          questionnaireResponseStatus = QuestionnaireResponseStatus.INPROGRESS.toCode(),
+        ),
+      )
+
+      val questionnaireResponses =
+        listOf(
+          QuestionnaireResponse().apply {
+            id = "qr1"
+            meta.lastUpdated = Date()
+            subject = patient.asReference()
+            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+            status = QuestionnaireResponseStatus.INPROGRESS
+          },
+          QuestionnaireResponse().apply {
+            id = "qr2"
+            meta.lastUpdated = yesterday()
+            subject = patient.asReference()
+            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+            status = QuestionnaireResponseStatus.COMPLETED
+          },
+        )
+
+      // Add QuestionnaireResponse to database
+      fhirEngine.create(
+        patient,
+        samplePatientRegisterQuestionnaire,
+        *questionnaireResponses.toTypedArray(),
+      )
+
+      val latestQuestionnaireResponse =
+        questionnaireViewModel.searchQuestionnaireResponse(
+          resourceId = patient.logicalId,
+          resourceType = ResourceType.Patient,
+          questionnaireId = questionnaireConfig.id,
+          encounterId = null,
+          questionnaireResponseStatus = QuestionnaireResponseStatus.INPROGRESS.toCode(),
+        )
+      Assert.assertNotNull(latestQuestionnaireResponse)
+      Assert.assertEquals("QuestionnaireResponse/qr1", latestQuestionnaireResponse?.id)
+    }
+
+  @Test
   fun testRetrievePopulationResourcesReturnsListOfResourcesOrEmptyList() = runTest {
     val specimenId = "specimenId"
     val actionParameters =
@@ -1445,6 +1563,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           }
         listResource.addEntry(listEntryComponent)
         addContained(listResource)
+        status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
       }
 
     coEvery {
@@ -1453,6 +1572,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         resourceType = ResourceType.Patient,
         questionnaireId = questionnaireConfig.id,
         encounterId = null,
+        questionnaireResponseStatus = questionnaireConfig.questionnaireResponseStatus(),
       )
     } returns previousQuestionnaireResponse
 
