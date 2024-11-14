@@ -321,11 +321,18 @@ android {
       manifestPlaceholders["appLabel"] = "PSI WFA"
     }
 
-    create("eusm") {
+    create("eusmMg") {
       dimension = "apps"
-      applicationIdSuffix = ".eusm"
-      versionNameSuffix = "-eusm"
-      manifestPlaceholders["appLabel"] = "EUSM"
+      applicationIdSuffix = ".eusmMg"
+      versionNameSuffix = "-eusmMg"
+      manifestPlaceholders["appLabel"] = "EUSM Madagascar"
+    }
+
+    create("eusmBi") {
+      dimension = "apps"
+      applicationIdSuffix = ".eusmBi"
+      versionNameSuffix = "-eusmBi"
+      manifestPlaceholders["appLabel"] = "EUSM Burundi"
     }
 
     create("demoEir") {
@@ -437,7 +444,7 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.mlkit.barcode.scanning)
-
+  implementation(libs.androidx.fragment.compose)
   implementation(libs.bundles.cameraX)
 
   // Annotation processors

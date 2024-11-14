@@ -20,17 +20,15 @@ import com.google.android.fhir.sync.CurrentSyncJobStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
 
 data class RegisterUiState(
   val screenTitle: String = "",
   val isFirstTimeSync: Boolean = false,
   val registerConfiguration: RegisterConfiguration? = null,
   val registerId: String = "",
-  val totalRecordsCount: Long = 0,
-  val filteredRecordsCount: Long = 0,
-  val pagesCount: Int = 1,
   val progressPercentage: Flow<Int> = flowOf(0),
   val isSyncUpload: Flow<Boolean> = flowOf(false),
   val currentSyncJobStatus: Flow<CurrentSyncJobStatus?> = flowOf(null),
-  val params: Map<String, String> = emptyMap(),
+  val params: List<ActionParameter> = emptyList(),
 )

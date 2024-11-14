@@ -284,6 +284,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       .showAsterisk(this.questionnaireConfig.showRequiredTextAsterisk)
       .showRequiredText(this.questionnaireConfig.showRequiredText)
       .setIsReadOnly(questionnaireConfig.isSummary())
+      .setShowSubmitAnywayButton(questionnaireConfig.showSubmitAnywayButton.toBooleanStrict())
       .apply {
         if (questionnaireResponse != null) {
           questionnaireResponse
@@ -365,16 +366,20 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         confirmButtonListener = {
           lifecycleScope.launch {
             retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
-              viewModel.saveDraftQuestionnaire(questionnaireResponse)
+              viewModel.saveDraftQuestionnaire(questionnaireResponse, questionnaireConfig)
+              finish()
             }
           }
         },
         confirmButtonText =
           org.smartregister.fhircore.engine.R.string
             .questionnaire_alert_back_pressed_save_draft_button_title,
-        neutralButtonListener = { finish() },
+        neutralButtonListener = {},
         neutralButtonText =
-          org.smartregister.fhircore.engine.R.string.questionnaire_alert_back_pressed_button_title,
+          org.smartregister.fhircore.engine.R.string.questionnaire_alert_neutral_button_title,
+        negativeButtonListener = { finish() },
+        negativeButtonText =
+          org.smartregister.fhircore.engine.R.string.questionnaire_alert_negative_button_title,
       )
     } else {
       AlertDialogue.showConfirmAlert(

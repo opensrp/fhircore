@@ -87,17 +87,13 @@ class RegisterFragment : Fragment(), OnSyncListener {
     container: ViewGroup?,
     savedInstanceState: Bundle?,
   ): View {
-    appMainViewModel.retrieveIconsAsBitmap()
-
     with(registerFragmentArgs) {
-      lifecycleScope.launchWhenCreated {
-        registerViewModel.retrieveRegisterUiState(
-          registerId = registerId,
-          screenTitle = screenTitle,
-          params = params,
-          clearCache = false,
-        )
-      }
+      registerViewModel.retrieveRegisterUiState(
+        registerId = registerId,
+        screenTitle = screenTitle,
+        params = params,
+        clearCache = false,
+      )
     }
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -150,6 +146,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 navController = findNavController(),
                 unSyncedResourceCount = appMainViewModel.unSyncedResourcesCount,
                 onCountUnSyncedResources = appMainViewModel::updateUnSyncedResourcesCount,
+                decodeImage = { registerViewModel.getImageBitmap(it) },
               )
             },
             bottomBar = {
@@ -173,6 +170,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,
                 registerUiState = registerViewModel.registerUiState.value,
+                registerUiCountState = registerViewModel.registerUiCountState.value,
                 appDrawerUIState = appMainViewModel.appDrawerUiState.value,
                 onAppMainEvent = { appMainViewModel.onEvent(it) },
                 searchQuery = searchViewModel.searchQuery,
@@ -180,6 +178,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 pagingItems = pagingItems,
                 navController = findNavController(),
                 toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
+                decodeImage = { registerViewModel.getImageBitmap(it) },
               )
             }
           }
@@ -250,7 +249,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
             when (appEvent) {
               is AppEvent.OnSubmitQuestionnaire ->
                 handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
-              is AppEvent.RefreshRegisterData -> {
+              is AppEvent.RefreshData -> {
                 appMainViewModel.countRegisterData()
                 refreshRegisterData()
               }

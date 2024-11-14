@@ -54,7 +54,7 @@ sealed class MainNavigationScreen(
       route = org.smartregister.fhircore.quest.R.id.profileFragment,
     )
 
-  object GeoWidgetLauncher :
+  data object GeoWidgetLauncher :
     MainNavigationScreen(route = org.smartregister.fhircore.quest.R.id.geoWidgetLauncherFragment)
 
   data object Insight :

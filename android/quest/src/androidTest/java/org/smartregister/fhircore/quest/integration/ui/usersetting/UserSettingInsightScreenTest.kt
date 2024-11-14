@@ -29,6 +29,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.util.extension.DEFAULT_FORMAT_SDF_DD_MM_YYYY
 import org.smartregister.fhircore.quest.ui.usersetting.INSIGHT_UNSYNCED_DATA
 import org.smartregister.fhircore.quest.ui.usersetting.UserSettingInsightScreen
 
@@ -118,6 +119,7 @@ class UserSettingInsightScreenTest {
           unsyncedResourcesFlow = unsyncedResourcesFlow,
           navController = rememberNavController(),
           onRefreshRequest = {},
+          dateFormat = DEFAULT_FORMAT_SDF_DD_MM_YYYY,
         )
       }
       this.activity = activity

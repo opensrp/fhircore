@@ -164,7 +164,7 @@ fun ActionConfig.handleClickEvent(
           args = args,
           navOptions =
             navController.currentDestination?.id?.let {
-              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
+              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack != false)
             },
         )
       }
@@ -199,7 +199,7 @@ fun ActionConfig.handleClickEvent(
           args = args,
           navOptions =
             navController.currentDestination?.id?.let {
-              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
+              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack != false)
             },
         )
       }
@@ -261,16 +261,18 @@ fun Array<ActionParameter>?.toParamDataMap(): Map<String, String> =
     ?.filter { it.paramType == ActionParameterType.PARAMDATA }
     ?.associate { it.key to it.value } ?: emptyMap()
 
-suspend fun Sequence<String>.resourceReferenceToBitMap(
+suspend fun String.referenceToBitmap(
   fhirEngine: FhirEngine,
   decodedImageMap: SnapshotStateMap<String, Bitmap>,
-) {
-  forEach {
-    val resourceId = it.extractLogicalIdUuid()
+  forceRefresh: Boolean = false,
+): Bitmap? {
+  val resourceId = this.extractLogicalIdUuid()
+  if (!decodedImageMap.containsKey(resourceId) || forceRefresh) {
     fhirEngine.loadResource<Binary>(resourceId)?.let { binary ->
       binary.data.decodeToBitmap()?.let { bitmap -> decodedImageMap[resourceId] = bitmap }
     }
   }
+  return decodedImageMap[resourceId]
 }
 
 suspend fun List<ViewProperties>.decodeImageResourcesToBitmap(

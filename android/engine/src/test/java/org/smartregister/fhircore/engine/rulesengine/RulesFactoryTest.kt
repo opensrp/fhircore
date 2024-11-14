@@ -72,6 +72,8 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
@@ -298,6 +300,29 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun retrieveRelatedResourcesReturnsCorrectResourceWithForwardInclude() {
+    val patient = Faker.buildPatient()
+    val group =
+      Group().apply {
+        id = "grp1"
+        addMember(
+          Group.GroupMemberComponent().apply { entity = patient.asReference() },
+        )
+      }
+    populateFactsWithResources(group)
+    val result =
+      rulesEngineService.retrieveRelatedResources(
+        resource = group,
+        relatedResourceKey = ResourceType.Patient.name,
+        referenceFhirPathExpression = "Group.member.entity.reference",
+        isRevInclude = false,
+      )
+    Assert.assertEquals(1, result.size)
+    Assert.assertEquals("Patient", result[0].resourceType.name)
+    Assert.assertEquals(patient.logicalId, result[0].logicalId)
+  }
+
+  @Test
   fun retrieveRelatedResourcesWithoutReferenceReturnsResources() {
     populateFactsWithResources()
     val result =
@@ -424,7 +449,7 @@ class RulesFactoryTest : RobolectricTest() {
   @Test
   fun mapResourceToLabeledCSVReturnsCorrectLabels() {
     val fhirPathExpression = "Patient.active and (Patient.birthDate >= today() - 5 'years')"
-    val resource = Patient().setActive(true).setBirthDate(LocalDate.parse("2019-10-03").toDate())
+    val resource = Patient().setActive(true).setBirthDate(Date().plusYears(-5))
 
     val result = rulesEngineService.mapResourceToLabeledCSV(resource, fhirPathExpression, "CHILD")
     Assert.assertEquals("CHILD", result)
@@ -886,13 +911,16 @@ class RulesFactoryTest : RobolectricTest() {
     Assert.assertTrue(result.isEmpty())
   }
 
-  private fun populateFactsWithResources() {
+  private fun populateFactsWithResources(vararg resource: Resource = emptyArray()) {
     val carePlanRelatedResource = mutableListOf(Faker.buildCarePlan())
-    val patientRelatedResource = mutableListOf(Faker.buildPatient())
+    val patient = Faker.buildPatient()
+    val patientRelatedResource = mutableListOf(patient)
+
     val facts = ReflectionHelpers.getField<Facts>(rulesFactory, "facts")
     facts.apply {
       put(carePlanRelatedResource[0].resourceType.name, carePlanRelatedResource)
       put(patientRelatedResource[0].resourceType.name, patientRelatedResource)
+      resource.forEach { put(it.resourceType.name, it) }
     }
     ReflectionHelpers.setField(rulesFactory, "facts", facts)
   }
@@ -1276,6 +1304,51 @@ class RulesFactoryTest : RobolectricTest() {
       Assert.assertEquals("group-id-1", id)
       Assert.assertEquals("Group", resourceType.name)
     }
+  }
+
+  @Test
+  fun mapResourcesToExtractedValuesReturnsCorrectlyFormattedString() {
+    val patientsList =
+      listOf(
+        Patient().apply {
+          birthDate = LocalDate.parse("2015-10-03").toDate()
+          addName().apply { family = "alpha" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2017-10-03").toDate()
+          addName().apply { family = "beta" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2018-10-03").toDate()
+          addName().apply { family = "gamma" }
+        },
+      )
+
+    val names =
+      rulesEngineService.mapResourcesToExtractedValues(patientsList, "Patient.name.family", " | ")
+    Assert.assertEquals("alpha | beta | gamma", names)
+  }
+
+  @Test
+  fun mapResourcesToExtractedValuesReturnsEmptyStringWhenFhirPathExpressionIsEmpty() {
+    val patientsList =
+      listOf(
+        Patient().apply {
+          birthDate = LocalDate.parse("2015-10-03").toDate()
+          addName().apply { family = "alpha" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2017-10-03").toDate()
+          addName().apply { family = "beta" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2018-10-03").toDate()
+          addName().apply { family = "gamma" }
+        },
+      )
+
+    val names = rulesEngineService.mapResourcesToExtractedValues(patientsList, "", " | ")
+    Assert.assertEquals("", names)
   }
 
   private fun getListOfResource(): List<Resource> {
