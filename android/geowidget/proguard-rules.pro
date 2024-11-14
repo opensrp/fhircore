@@ -24,8 +24,10 @@
 #-dontobfuscate
 #-dontoptimize
 #-printmapping
+-verbose
 
--keepattributes Signature, RuntimeVisibleAnnotations
+-keepattributes Signature, InnerClasses, EnclosingMethod
+-keepattributes RuntimeVisibleAnnotations
 -keepattributes SourceFile,LineNumberTable
 -keepattributes Exceptions
 -keepattributes *Annotation*
@@ -45,7 +47,7 @@
 -keep,allowobfuscation,allowshrinking class retrofit2.Response
 -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
 
-# Glide uses annotations
+## Glide uses annotations
 -keep public class * implements com.bumptech.glide.module.GlideModule
 -keep public enum com.bumptech.glide.load.ResourceDecoder { *; }
 
@@ -136,15 +138,24 @@
 
 -keep class com.google.gson.** { *; }
 
+-keep class org.apache.logging.log4j.** { *; }
+
+-keep class org.apache.commons.** { *; }
 -keep class org.apache.commons.logging.** { *; }
 -keep interface org.apache.commons.logging.Log
 -keep class org.apache.commons.logging.impl.** { *; }
--keep class org.apache.commons.logging.LogFactory { *; }
 -keep class org.apache.commons.logging.impl.LogFactoryImpl { *; }
--keep class org.apache.commons.logging.impl.SimpleLog { *; }
 -keep class org.apache.commons.logging.impl.Log4JLogger { *; }
--keep class org.apache.commons.logging.impl.Jdk13LumberjackLogger { *; }
+-keep class org.apache.commons.logging.impl.Jdk14Logger { *; }
+#-keep class org.apache.commons.logging.impl.Jdk13LumberjackLogger { *; }
+-keep class org.apache.commons.logging.impl.SimpleLog { *; }
+-keep class org.apache.commons.logging.LogFactory.** { *; }
 -keep class org.apache.commons.logging.LogConfigurationException
+-keep class java.lang.ExceptionInInitializerError
+
+-keepclassmembers class ** {
+    static java.lang.ClassLoader getClassLoader();
+}
 
 # Keep all classes with references to reflection (necessary for LogFactory)
 -keepclassmembers class * {
@@ -158,14 +169,6 @@
 -keep class org.apache.log4j.** { *; }
 -keep class org.slf4j.** { *; }
 
--keep class org.smartregister.fhircore.engine.domain.model.** { *; }
--keep class org.smartregister.fhircore.engine.configuration.** { *; }
--keep class org.smartregister.fhircore.engine.data.remote.model.response.** { *; }
--keep class org.smartregister.fhircore.engine.data.** { *; }
--keep class org.smartregister.fhircore.engine.** { *; }
--keep class org.smartregister.fhircore.geowidget.** { *; }
--keep class org.smartregister.fhircore.quest.** { *; }
-
 -keep enum * { *; }
 
 -keepclassmembers class * {
@@ -178,7 +181,6 @@
 }
 
 # Keep all class members that could be accessed via reflection
--keepattributes Signature, InnerClasses, EnclosingMethod
 -keep class * extends java.lang.reflect.** { *; }
 -keepclassmembers class * {
     *;
@@ -189,13 +191,13 @@
 -keep class org.jeasy.rules.core.** { *; }
 
 -keep class org.apache.commons.jexl3.** { *; }
+-dontwarn org.apache.commons.jexl3.**
 -keep class org.apache.commons.jexl3.JexlBuilder { *; }
 -keep class org.apache.commons.jexl3.internal.** { *; }
 -keep class org.apache.commons.jexl3.internal.Engine { *; }
 -keep class org.apache.commons.jexl3.introspection.** { *; }
 -keep class org.apache.commons.jexl3.introspection.JexlSandbox { *; }
 -keep class org.apache.commons.jexl3.JexlEngine { *; }
--keep class org.apache.commons.logging.impl.Jdk14Logger { *; }
 -keep class org.apache.commons.jexl3.internal.introspection.Uberspect { *; }
 -keep interface org.apache.commons.jexl3.introspection.JexlUberspect
 -keep class org.apache.commons.jexl3.introspection.JexlUberspect$** { *; }
