@@ -70,7 +70,6 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.CodingSystemUsage
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.datastore.ContentCache
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.isEditable
@@ -148,18 +147,7 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
-    var result = ContentCache.getResource(ResourceType.Questionnaire, questionnaireConfig.id)
-    if (result == null) {
-      result =
-        defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also { questionnaire,
-          ->
-          ContentCache.saveResource(
-            questionnaire,
-          )
-        }
-    }
-
-    return result as Questionnaire
+    return defaultRepository.loadResourceFromCache<Questionnaire>(questionnaireConfig.id)
   }
 
   /**
@@ -651,18 +639,7 @@ constructor(
                 transformSupportServices = transformSupportServices,
                 structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
                   structureMapUrl?.substringAfterLast("/")?.let { structureMapId ->
-                    ContentCache.getResource(
-                        ResourceType.StructureMap,
-                        structureMapId,
-                      )
-                      ?.let { it as StructureMap }
-                      ?: run {
-                        defaultRepository
-                          .loadResource<StructureMap>(
-                            structureMapId,
-                          )
-                          ?.also { ContentCache.saveResource(it) }
-                      }
+                    defaultRepository.loadResourceFromCache<StructureMap>(structureMapId)
                   }
                 },
               ),

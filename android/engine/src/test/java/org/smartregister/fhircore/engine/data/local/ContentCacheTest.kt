@@ -14,76 +14,71 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest
+package org.smartregister.fhircore.engine.data.local
 
-import kotlinx.coroutines.Dispatchers
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Resource
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.datastore.ContentCache
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class ContentCacheTest {
+@HiltAndroidTest
+class ContentCacheTest : RobolectricTest() {
 
-  private val testDispatcher = StandardTestDispatcher()
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
+
+  @Inject lateinit var contentCache: ContentCache
+
   private val resourceId = "123"
   private val mockResource: Resource = Questionnaire().apply { id = resourceId }
 
   @Before
   fun setUp() {
-    Dispatchers.setMain(testDispatcher)
-  }
-
-  @After
-  fun tearDown() {
-    Dispatchers.resetMain()
+    hiltRule.inject()
   }
 
   @Test
   fun `saveResource should store resource in cache`() = runTest {
-    ContentCache.saveResource(mockResource)
-    advanceUntilIdle() // Ensure coroutine has finished
+    contentCache.saveResource(mockResource)
 
-    val cachedResource = ContentCache.getResource(mockResource.resourceType, mockResource.idPart)
+    val cachedResource = contentCache.getResource(mockResource.resourceType, mockResource.idPart)
     assertNotNull(cachedResource)
     assertEquals(mockResource.idPart, cachedResource?.idPart)
   }
 
   @Test
   fun `getResource should return the correct resource from cache`() = runTest {
-    ContentCache.saveResource(mockResource)
-    advanceUntilIdle() // Ensure coroutine has finished
+    contentCache.saveResource(mockResource)
 
-    val result = ContentCache.getResource(mockResource.resourceType, mockResource.idPart)
+    val result = contentCache.getResource(mockResource.resourceType, mockResource.idPart)
     assertEquals(mockResource.idPart, result?.idPart)
   }
 
   @Test
   fun `getResource should return null if resource does not exist`() = runTest {
-    val result = ContentCache.getResource(mockResource.resourceType, "non_existing_id")
+    val result = contentCache.getResource(mockResource.resourceType, "non_existing_id")
     assertNull(result)
   }
 
   @Test
   fun `invalidate should clear all resources from cache`() = runTest {
-    ContentCache.saveResource(mockResource)
-    advanceUntilIdle() // Ensure coroutine has finished
+    contentCache.saveResource(mockResource)
+    contentCache.invalidate()
 
-    ContentCache.invalidate()
-    advanceUntilIdle() // Ensure coroutine has finished
-
-    val result = ContentCache.getResource(mockResource.resourceType, mockResource.idPart)
+    val result = contentCache.getResource(mockResource.resourceType, mockResource.idPart)
     assertNull(result)
   }
 }

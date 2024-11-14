@@ -14,26 +14,35 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.datastore
+package org.smartregister.fhircore.engine.data.local
 
 import androidx.collection.LruCache
-import kotlinx.coroutines.Dispatchers
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-object ContentCache {
+@Singleton
+class ContentCache @Inject constructor(private val dispatcherProvider: DispatcherProvider) {
   private val maxMemory: Int = (Runtime.getRuntime().maxMemory() / 1024).toInt()
   private val cacheSize: Int = maxMemory / 8
   private val cache = LruCache<String, Resource>(cacheSize)
+  private val mutex = Mutex()
 
-  @JvmStatic
-  suspend fun saveResource(resource: Resource) =
-    withContext(Dispatchers.IO) {
-      cache.put("${resource.resourceType.name}/${resource.idPart}", resource.copy())
+  suspend fun <T : Resource> saveResource(resource: T): T {
+    val key = "${resource.resourceType.name}/${resource.idPart}"
+    return withContext(dispatcherProvider.io()) {
+      mutex.withLock { cache.put(key, resource.copy()) }
+      @Suppress("UNCHECKED_CAST")
+      getResource(resource.resourceType, resource.idPart)!! as T
     }
+  }
 
-  @JvmStatic fun getResource(type: ResourceType, id: String) = cache["$type/$id"]?.copy()
+  fun getResource(type: ResourceType, id: String) = cache["$type/$id"]?.copy()
 
-  suspend fun invalidate() = withContext(Dispatchers.IO) { cache.evictAll() }
+  suspend fun invalidate() = withContext(dispatcherProvider.io()) { cache.evictAll() }
 }

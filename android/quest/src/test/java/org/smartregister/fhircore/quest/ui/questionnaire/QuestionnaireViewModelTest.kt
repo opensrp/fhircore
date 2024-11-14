@@ -94,8 +94,8 @@ import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.datastore.ContentCache
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
@@ -147,6 +147,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Inject lateinit var parser: IParser
 
   @Inject lateinit var knowledgeManager: KnowledgeManager
+
+  @Inject lateinit var contentCache: ContentCache
 
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
   private lateinit var questionnaireConfig: QuestionnaireConfig
@@ -650,14 +652,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id) } returns
       samplePatientRegisterQuestionnaire
 
-    ContentCache.saveResource(samplePatientRegisterQuestionnaire)
+    contentCache.saveResource(samplePatientRegisterQuestionnaire)
     val questionnaire =
       questionnaireViewModel.retrieveQuestionnaire(
         questionnaireConfig = questionnaireConfig,
       )
     Assert.assertEquals(
       samplePatientRegisterQuestionnaire.idPart,
-      ContentCache.getResource(ResourceType.Questionnaire, questionnaireConfig.id)?.idPart,
+      contentCache.getResource(ResourceType.Questionnaire, questionnaireConfig.id)?.idPart,
     )
     Assert.assertNotNull(questionnaire)
     Assert.assertEquals(questionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
