@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.navigation
+package org.smartregister.fhircore.engine.configuration.migration
 
-object NavigationArg {
+import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.Enumerations.ResourceType
 
-  const val REGISTER_ID = "registerId"
-  const val PROFILE_ID = "profileId"
-  const val SCREEN_TITLE = "screenTitle"
-  const val RESOURCE_ID = "resourceId"
-  const val RESOURCE_CONFIG = "resourceConfig"
-  const val MULTI_SELECT_VIEW_CONFIG = "multiSelectViewConfig"
-  const val GEO_WIDGET_ID = "geoWidgetId"
-  const val REPORT_ID = "reportId"
-  const val PARAMS = "params"
-  const val TOOL_BAR_HOME_NAVIGATION = "toolBarHomeNavigation"
-  const val QUESTIONNAIRE_CONFIG = "questionnaireConfig"
+@Serializable
+data class CustomSearchParameterConfig(
+  val url: String,
+  val resourceType: ResourceType,
+  val name: String,
+  val code: String,
+  val type: SearchParameterType,
+  val expression: String,
+  val description: String,
+) : java.io.Serializable
+
+enum class SearchParameterType {
+  STRING,
 }

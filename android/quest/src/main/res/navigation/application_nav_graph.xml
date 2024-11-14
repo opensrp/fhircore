@@ -110,4 +110,12 @@
         android:name="org.smartregister.fhircore.quest.ui.bottomsheet.SummaryBottomSheetFragment" >
 
     </dialog>
+    <dialog
+        android:id="@+id/alertDialogFragment"
+        android:name="org.smartregister.fhircore.quest.ui.dialog.AlertDialogFragment" >
+        <argument
+            android:name="questionnaireConfig"
+            app:argType="org.smartregister.fhircore.engine.configuration.QuestionnaireConfig"
+            app:nullable="true" />
+    </dialog>
 </navigation>
