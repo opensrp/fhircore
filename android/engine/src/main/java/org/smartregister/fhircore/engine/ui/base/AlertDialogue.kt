@@ -55,6 +55,8 @@ object AlertDialogue {
     @StringRes confirmButtonText: Int = R.string.questionnaire_alert_confirm_button_title,
     neutralButtonListener: ((d: DialogInterface) -> Unit)? = null,
     @StringRes neutralButtonText: Int = R.string.questionnaire_alert_neutral_button_title,
+    negativeButtonListener: ((d: DialogInterface) -> Unit)? = null,
+    @StringRes negativeButtonText: Int = R.string.questionnaire_alert_negative_button_title,
     cancellable: Boolean = false,
     options: Array<AlertDialogListItem>? = null,
   ): AlertDialog {
@@ -70,6 +72,9 @@ object AlertDialogue {
           }
           confirmButtonListener?.let {
             setPositiveButton(confirmButtonText) { d, _ -> confirmButtonListener.invoke(d) }
+          }
+          negativeButtonListener?.let {
+            setNegativeButton(negativeButtonText) { d, _ -> negativeButtonListener.invoke(d) }
           }
           options?.run { setSingleChoiceItems(options.map { it.value }.toTypedArray(), -1, null) }
         }
@@ -172,6 +177,8 @@ object AlertDialogue {
     @StringRes confirmButtonText: Int,
     neutralButtonListener: ((d: DialogInterface) -> Unit),
     @StringRes neutralButtonText: Int,
+    negativeButtonListener: ((d: DialogInterface) -> Unit),
+    @StringRes negativeButtonText: Int,
     cancellable: Boolean = true,
     options: List<AlertDialogListItem>? = null,
   ): AlertDialog {
@@ -184,6 +191,8 @@ object AlertDialogue {
       confirmButtonText = confirmButtonText,
       neutralButtonListener = neutralButtonListener,
       neutralButtonText = neutralButtonText,
+      negativeButtonListener = negativeButtonListener,
+      negativeButtonText = negativeButtonText,
       cancellable = cancellable,
       options = options?.toTypedArray(),
     )
