@@ -93,6 +93,7 @@ fun RegisterScreen(
   openDrawer: (Boolean) -> Unit,
   onEvent: (RegisterEvent) -> Unit,
   registerUiState: RegisterUiState,
+  registerUiCountState: RegisterUiCountState,
   appDrawerUIState: AppDrawerUIState = AppDrawerUIState(),
   onAppMainEvent: (AppMainEvent) -> Unit,
   searchQuery: MutableState<SearchQuery>,
@@ -114,7 +115,7 @@ fun RegisterScreen(
               registerUiState.registerConfiguration?.topScreenSection?.title ?: ""
             },
           searchQuery = searchQuery.value,
-          filteredRecordsCount = registerUiState.filteredRecordsCount,
+          filteredRecordsCount = registerUiCountState.filteredRecordsCount,
           isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           showSearchByQrCode = registerUiState.registerConfiguration?.showSearchByQrCode ?: false,
@@ -198,6 +199,7 @@ fun RegisterScreen(
               lazyListState = lazyListState,
               onEvent = onEvent,
               registerUiState = registerUiState,
+              registerUiCountState = registerUiCountState,
               currentPage = currentPage,
               showPagination =
                 !registerUiState.registerConfiguration.infiniteScroll &&
@@ -292,12 +294,16 @@ fun RegisterScreenWithDataPreview() {
             FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Patient)),
         ),
       registerId = "register101",
-      totalRecordsCount = 1,
-      filteredRecordsCount = 0,
-      pagesCount = 1,
       progressPercentage = flowOf(0),
       isSyncUpload = flowOf(false),
       params = emptyList(),
+    )
+
+  val registerUiCountState =
+    RegisterUiCountState(
+      totalRecordsCount = 1,
+      filteredRecordsCount = 0,
+      pagesCount = 1,
     )
   val searchText = remember { mutableStateOf(SearchQuery.emptyText) }
   val currentPage = remember { mutableIntStateOf(0) }
@@ -310,6 +316,7 @@ fun RegisterScreenWithDataPreview() {
       openDrawer = {},
       onEvent = {},
       registerUiState = registerUiState,
+      registerUiCountState = registerUiCountState,
       onAppMainEvent = {},
       searchQuery = searchText,
       currentPage = currentPage,

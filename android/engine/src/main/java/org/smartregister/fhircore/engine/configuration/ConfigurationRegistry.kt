@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.configuration
 import android.content.Context
 import android.database.SQLException
 import ca.uhn.fhir.context.ConfigurationException
-import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.DataFormatException
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
@@ -27,7 +26,6 @@ import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.sync.download.ResourceSearchParams
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.net.UnknownHostException
@@ -36,6 +34,8 @@ import java.util.PropertyResourceBundle
 import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -61,6 +61,9 @@ import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.KnowledgeManagerUtil
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -70,7 +73,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fileExtension
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.interpolate
-import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
@@ -99,8 +101,7 @@ constructor(
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
-  private val fhirContext = FhirContext.forR4Cached()
-  private val authConfiguration = configService.provideAuthConfiguration()
+  private val mutex = Mutex()
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -408,6 +409,7 @@ constructor(
    */
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources() {
+    Timber.d("Triggered fetching application configurations remotely")
     configCacheMap.clear()
     preferenceDataStore.readOnce(PreferenceDataStore.APP_ID, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
@@ -432,7 +434,11 @@ constructor(
 
               chunkedResourceIdList.forEach { sectionComponents ->
                 Timber.d(
-                  "Fetching config resource ${entry.key}: with ids ${sectionComponents.joinToString(",")}",
+                  "Fetching config resource ${entry.key}: with ids ${
+                                        sectionComponents.joinToString(
+                                            ",",
+                                        )
+                                    }",
                 )
                 fetchResources(
                   resourceType = entry.key,
@@ -448,7 +454,7 @@ constructor(
         // Save composition after fetching all the referenced section resources
         addOrUpdate(compositionResource)
 
-        Timber.d("Done fetching application configurations remotely")
+        Timber.d("Done saving composition resource")
       }
     }
   }
@@ -572,7 +578,7 @@ constructor(
           if (bundleEntryComponent.resource != null) {
             addOrUpdate(bundleEntryComponent.resource)
             Timber.d(
-              "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.id}",
+              "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.idPart}",
             )
           }
         }
@@ -595,44 +601,27 @@ constructor(
       }
 
       /**
-       * Knowledge manager [MetadataResource]s install Here we install all resources types of
+       * Knowledge manager [MetadataResource]s install. Here we install all resources types of
        * [MetadataResource] as per FHIR Spec.This supports future use cases as well
        */
       try {
-        if (resource is MetadataResource && resource.name != null) {
-          knowledgeManager.install(
-            writeToFile(resource.overwriteCanonicalURL()),
-          )
+        if (resource is MetadataResource) {
+          mutex.withLock {
+            knowledgeManager.install(
+              KnowledgeManagerUtil.writeToFile(
+                context = context,
+                configService = configService,
+                metadataResource = resource,
+                subFilePath =
+                  "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/${resource.resourceType}/${resource.idElement.idPart}.json",
+              ),
+            )
+          }
         }
       } catch (exception: Exception) {
         Timber.e(exception)
       }
     }
-  }
-
-  private fun MetadataResource.overwriteCanonicalURL() =
-    this.apply {
-      url =
-        url
-          ?: """${authConfiguration.fhirServerBaseUrl.trimEnd { it == '/' }}/${this.referenceValue()}"""
-    }
-
-  fun writeToFile(resource: Resource): File {
-    val fileName =
-      if (resource is MetadataResource && resource.name != null) {
-        resource.name
-      } else {
-        resource.idElement.idPart
-      }
-
-    return File(
-        context.filesDir,
-        "$KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER/${resource.resourceType}/$fileName.json",
-      )
-      .apply {
-        this.parentFile?.mkdirs()
-        writeText(fhirContext.newJsonParser().encodeResourceToString(resource))
-      }
   }
 
   /**
@@ -820,7 +809,6 @@ constructor(
     const val PAGINATION_NEXT = "next"
     const val RESOURCES_PATH = "resources/"
     const val SYNC_LOCATION_IDS = "_syncLocations"
-    const val KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER = "km"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.

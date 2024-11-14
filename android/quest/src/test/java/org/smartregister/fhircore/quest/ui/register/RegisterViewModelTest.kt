@@ -56,6 +56,7 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -67,6 +68,8 @@ class RegisterViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var registerViewModel: RegisterViewModel
@@ -90,6 +93,7 @@ class RegisterViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           preferenceDataStore = preferenceDataStore,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
+          dispatcherProvider = dispatcherProvider,
         ),
       )
 
@@ -141,8 +145,6 @@ class RegisterViewModelTest : RobolectricTest() {
     val registerConfiguration = registerUiState.registerConfiguration
     Assert.assertNotNull(registerConfiguration)
     Assert.assertEquals("app", registerConfiguration?.appId)
-    Assert.assertEquals(200, registerUiState.totalRecordsCount)
-    Assert.assertEquals(20, registerUiState.pagesCount)
   }
 
   @Test

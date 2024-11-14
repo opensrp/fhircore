@@ -45,10 +45,10 @@ import org.hl7.fhir.r4.model.Composition.SectionComponent
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -71,6 +71,8 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.KnowledgeManagerUtil
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
@@ -1024,12 +1026,19 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun writeToFileWithMetadataResourceWithNameShouldCreateFileWithResourceName() {
     val parser = fhirContext.newJsonParser()
-    val resource = Faker.buildPatient()
-    val resultFile = configRegistry.writeToFile(resource)
+    val resource = StructureMap().apply { id = "structuremap-id-1" }
+    val resultFile =
+      KnowledgeManagerUtil.writeToFile(
+        configService = configService,
+        metadataResource = resource,
+        context = context,
+        subFilePath =
+          "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/${resource.resourceType}/${resource.idElement.idPart}.json",
+      )
     assertNotNull(resultFile)
     assertEquals(
       resource.logicalId,
-      (parser.parseResource(resultFile.readText()) as Patient).logicalId,
+      (parser.parseResource(resultFile.readText()) as StructureMap).logicalId,
     )
   }
 
