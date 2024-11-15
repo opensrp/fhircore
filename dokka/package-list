@@ -48,6 +48,7 @@ org.smartregister.fhircore.engine.util.helper
 org.smartregister.fhircore.engine.util.location
 org.smartregister.fhircore.engine.util.serializers
 org.smartregister.fhircore.engine.util.test
+org.smartregister.fhircore.engine.util.validation
 module:geowidget
 org.smartregister.fhircore.geowidget.baselayers
 org.smartregister.fhircore.geowidget.model
