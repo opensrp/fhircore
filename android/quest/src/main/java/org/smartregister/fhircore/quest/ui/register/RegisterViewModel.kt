@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.register
 
 import android.graphics.Bitmap
+import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -33,10 +34,13 @@ import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.math.ceil
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -79,10 +83,12 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.util.extensions.referenceToBitmap
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class RegisterViewModel
 @Inject
@@ -114,6 +120,29 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
   }
   private val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+
+  private val _searchQueryFlow: MutableSharedFlow<SearchQuery> = MutableSharedFlow()
+
+  @VisibleForTesting
+  val debouncedSearchQueryFlow =
+    _searchQueryFlow.debounce {
+      val searchText = it.query
+      when (searchText.length) {
+        0 -> 2.milliseconds // when search is cleared
+        1,
+        2, -> 1000.milliseconds
+        else -> 500.milliseconds
+      }
+    }
+
+  init {
+    viewModelScope.launch {
+      debouncedSearchQueryFlow.collect {
+        val registerId = registerUiState.value.registerId
+        performSearch(registerId, it)
+      }
+    }
+  }
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -194,26 +223,7 @@ constructor(
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
-        if (event.searchQuery.isBlank()) {
-          val regConfig = retrieveRegisterConfiguration(registerId)
-          val searchByDynamicQueries = !regConfig.searchBar?.dataFilterFields.isNullOrEmpty()
-          if (searchByDynamicQueries) {
-            registerFilterState.value = RegisterFilterState() // Reset queries
-          }
-          when {
-            regConfig.infiniteScroll ->
-              registerData.value = retrieveCompleteRegisterData(registerId, searchByDynamicQueries)
-            else ->
-              retrieveRegisterUiState(
-                registerId = registerId,
-                screenTitle = registerUiState.value.screenTitle,
-                params = registerUiState.value.params.toTypedArray(),
-                clearCache = searchByDynamicQueries,
-              )
-          }
-        } else {
-          filterRegisterData(event.searchQuery.query)
-        }
+        viewModelScope.launch { _searchQueryFlow.emit(event.searchQuery) }
       }
       is RegisterEvent.MoveToNextPage -> {
         currentPage.value = currentPage.value.plus(1)
@@ -224,6 +234,30 @@ constructor(
         paginateRegisterData(registerId)
       }
       RegisterEvent.ResetFilterRecordsCount -> _filteredRecordsCount.longValue = -1
+    }
+  }
+
+  @VisibleForTesting
+  fun performSearch(registerId: String, searchQuery: SearchQuery) {
+    if (searchQuery.isBlank()) {
+      val regConfig = retrieveRegisterConfiguration(registerId)
+      val searchByDynamicQueries = !regConfig.searchBar?.dataFilterFields.isNullOrEmpty()
+      if (searchByDynamicQueries) {
+        registerFilterState.value = RegisterFilterState() // Reset queries
+      }
+      when {
+        regConfig.infiniteScroll ->
+          registerData.value = retrieveCompleteRegisterData(registerId, searchByDynamicQueries)
+        else ->
+          retrieveRegisterUiState(
+            registerId = registerId,
+            screenTitle = registerUiState.value.screenTitle,
+            params = registerUiState.value.params.toTypedArray(),
+            clearCache = searchByDynamicQueries,
+          )
+      }
+    } else {
+      filterRegisterData(searchQuery.query)
     }
   }
 
