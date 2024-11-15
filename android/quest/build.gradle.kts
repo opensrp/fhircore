@@ -425,6 +425,22 @@ tasks.withType<Test> {
   testLogging { events = setOf(TestLogEvent.FAILED) }
   minHeapSize = "4608m"
   maxHeapSize = "4608m"
+  addTestListener(
+    object : TestListener {
+      override fun beforeSuite(p0: TestDescriptor?) {}
+
+      override fun afterSuite(p0: TestDescriptor?, p1: TestResult?) {}
+
+      override fun beforeTest(p0: TestDescriptor?) {
+        logger.lifecycle("Running test: $p0")
+      }
+
+      override fun afterTest(p0: TestDescriptor?, p1: TestResult?) {
+        logger.lifecycle("Done executing: $p0")
+      }
+    },
+  )
+
   // maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
   configure<JacocoTaskExtension> { isIncludeNoLocationClasses = true }
 }

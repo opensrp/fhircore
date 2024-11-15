@@ -26,6 +26,7 @@ import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseStatus
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -290,5 +291,21 @@ suspend fun Questionnaire.prepopulateUniqueIdAssignment(
       }
       readOnly = extractedId.isNotEmpty() && uniqueIdAssignmentConfig.readOnly
     }
+  }
+}
+
+/**
+ * Determines the [QuestionnaireResponse.Status] depending on the [saveDraft] and [isEditable]
+ * values contained in the [QuestionnaireConfig]
+ *
+ * returns [COMPLETED] when [isEditable] is [true] returns [INPROGRESS] when [saveDraft] is [true]
+ */
+fun QuestionnaireConfig.questionnaireResponseStatus(): String? {
+  return if (this.isEditable()) {
+    QuestionnaireResponseStatus.COMPLETED.toCode()
+  } else if (this.saveDraft) {
+    QuestionnaireResponseStatus.INPROGRESS.toCode()
+  } else {
+    null
   }
 }
