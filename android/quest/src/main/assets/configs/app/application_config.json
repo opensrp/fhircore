@@ -1,90 +1,28 @@
 {
-  "appId": "app",
+  "appId": "opensrp",
   "configType": "application",
   "theme": "DEFAULT",
-  "appTitle": "Quest",
-  "registerDate": "2020-10-27",
-  "reportRepeatTime": "23:22",
-  "remoteSyncPageSize": 100,
+  "appTitle": "OpenSRP",
+  "remoteSyncPageSize": 250,
   "languages": [
     "en",
-    "sw",
+    "es",
     "fr"
   ],
   "useDarkTheme": false,
   "syncInterval": 30,
   "syncStrategy": [
-    "Location",
-    "Organization",
-    "CareTeam",
-    "Practitioner"
+    "CareTeam"
   ],
   "loginConfig": {
     "showLogo": true,
     "enablePin": true,
-    "supervisorContactNumber": "1234567890"
+    "pinLength": 4
   },
-  "deviceToDeviceSync": {
-    "resourcesToSync": [
-      "Group",
-      "Patient",
-      "CarePlan",
-      "Task",
-      "Encounter",
-      "Observation",
-      "Condition",
-      "Questionnaire",
-      "QuestionnaireResponse",
-      "RelatedPerson",
-      "List",
-      "Flag"
-    ]
-  },
-  "eventWorkflows": [
-    {
-      "eventType": "RESOURCE_CLOSURE",
-      "eventResources": [
-        {
-          "id": "sickChildConditionToBeClosed",
-          "resource": "Condition",
-          "configRules": [
-            {
-              "name": "patientId",
-              "condition": "true",
-              "actions": [
-                "data.put('patientId', fhirPath.extractValue(CarePlan, 'CarePlan.subject.reference'))"
-              ]
-            }
-          ],
-          "dataQueries": [
-            {
-              "paramName": "code",
-              "filterCriteria": [
-                {
-                  "dataType": "CODEABLECONCEPT",
-                  "value": {
-                    "system": "http://snomed.info/sct",
-                    "code": "275142008"
-                  }
-                }
-              ]
-            },
-            {
-              "paramName": "subject",
-              "filterCriteria": [
-                {
-                  "dataType": "REFERENCE",
-                  "computedRule": "patientId"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "logGpsLocation": [
-    "QUESTIONNAIRE"
-  ],
-  "dateFormat": "MMM d, hh:mm aa"
+  "settingsScreenMenuOptions": [
+    "MANUAL_SYNC",
+    "SWITCH_LANGUAGES",
+    "RESET_DATA",
+    "INSIGHTS"
+  ]
 }

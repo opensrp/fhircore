@@ -366,7 +366,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         confirmButtonListener = {
           lifecycleScope.launch {
             retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
-              viewModel.saveDraftQuestionnaire(questionnaireResponse, questionnaireConfig)
+              viewModel.saveDraftQuestionnaire(questionnaireResponse)
               finish()
             }
           }
