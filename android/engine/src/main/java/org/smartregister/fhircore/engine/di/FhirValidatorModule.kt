@@ -20,6 +20,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.support.DefaultProfileValidationSupport
 import ca.uhn.fhir.context.support.IValidationSupport
 import ca.uhn.fhir.validation.FhirValidator
+import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,6 +31,8 @@ import org.hl7.fhir.common.hapi.validation.support.InMemoryTerminologyServerVali
 import org.hl7.fhir.common.hapi.validation.support.UnknownCodeSystemWarningValidationSupport
 import org.hl7.fhir.common.hapi.validation.support.ValidationSupportChain
 import org.hl7.fhir.common.hapi.validation.validator.FhirInstanceValidator
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequestHandler
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -51,5 +54,14 @@ class FhirValidatorModule {
     instanceValidator.isAssumeValidRestReferences = true
     instanceValidator.invalidateCaches()
     return fhirContext.newValidator().apply { registerValidatorModule(instanceValidator) }
+  }
+
+  @Provides
+  @Singleton
+  fun provideResourceValidationRequestHandler(
+    fhirValidatorProvider: Lazy<FhirValidator>,
+    dispatcherProvider: DispatcherProvider,
+  ): ResourceValidationRequestHandler {
+    return ResourceValidationRequestHandler(fhirValidatorProvider.get(), dispatcherProvider)
   }
 }
