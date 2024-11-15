@@ -7,7 +7,7 @@ sidebar_label: Admin Dashboard Features
 
 This guide outlines the steps to follow to manage Users, Care Team, Organization and Locations on OpenSRP. The platform is named FHIR Web and interacts with the Keycloak and HAPI FHIR servers.
 
-### Prerequisites
+## Prerequisites
 To navigate through this user guide, you are required to have admin access to the admin portal. In addition, you will need to understand how the different entities tie to each other. Below is a summary.
 
 A user represents anyone who will interact with the FHIR SDK-based App or FHIR Web. A user is assigned permission through roles defined in Keycloak which maintains all user authentication. Keycloak defines permissions in the form of roles that can be assigned to a user based on the activities they are expected to carry out. Due to the long list of roles, FHIR Web presents the option to create user groups, which represent a collection of roles that can be assigned to a user.
@@ -22,7 +22,7 @@ The steps laid out below ensure a user is able to interact with the
 6. Assign the created careteam to the respective Organization
 7. Assign Users to the careteam
 
-### Access to Admin portal (OpenSRP 2 web portal)
+### Access to Admin portal
 
 1. Access the OpenSRP 2 web portal through the url:
     a. Production - https://web.ProjectName-production.smartregister.org/
@@ -44,7 +44,7 @@ The steps laid out below ensure a user is able to interact with the
 6. Patients Management: helps the users to view the patient registered on App and synced to the server.
 7. Main landing page: has shortcuts to the side menu items.
 
-### User Management
+## User Management
 The OpenSRP web provides the ability to create users, user groups and assign users to user groups. User groups allows categorization of users with common user roles, by default there are two user groups; Provider user group which refers to clinicians whose main role is to collect immunization data on the mobile application while the Super User group refers to users who have all the privileges such as managing  users, teams and locations.
 
 ![user-management](/img/admin_dashboard_features/2.jpg)
@@ -107,7 +107,7 @@ Fields with Asterisks are a must to fill.
 
 10. Click ‘set password’
 
-### How to update User’s detail
+### How to update user’s detail
 
 1. Click on the ‘User management’ menu item or on the main landing page
 2. This will load a page with a list of existing Users.
@@ -122,7 +122,7 @@ Fields with Asterisks are a must to fill.
 
 5. Click ‘Save.
 
-### Location Management
+## Location Management
 This piece of functionality helps the users create locations and add any parent locations for each location. This package is based on the location resource in FHIR. A location hierarchy is defined by assigning parent locations. If a parent is not selected then the location is taken as a root location in the hierarchy.
 
 ### How to create a Location unit
@@ -146,14 +146,14 @@ You can access this page by clicking on the location management menu on the side
 
 3. Click ‘Save.
 
-### Care Team Management
+## Care Team Management
 
 This piece of functionality helps the users create CareTeam to be used to administer the different services in the FHIR Core apps.
     1. This package also allows the different practitioners  to be added to the CareTeam
     2. This package also allows the different groups to be added to the CareTeam
 
-### How to update a Location unit
-You can access this page by clicking on the CareTeam management menu on the sidebar. This will load a page with a list of existing CareTeam. Below is a sample of how the page would look like.
+### How to update a Care Team unit
+You can access this page by clicking on the Care Team management menu on the sidebar. This will load a page with a list of existing CareTeam. Below is a sample of how the page would look like.
 
 ![fhir-care-team](/img/admin_dashboard_features/16.jpg)
 
@@ -166,7 +166,7 @@ You can access this page by clicking on the CareTeam management menu on the side
 4. To assign a Group to that particular CareTeam, click on the ‘Subject’ field and select the groups.
 5. Click ‘Save'.
 
-### How to update CareTeam’s detail
+### How to update Care Team’s detail
 You can access this page by clicking on the CareTeam management menu on the sidebar. This will load a page with a list of existing CareTeam. Below is a sample of how the page would look like.
 
 ![update-care-team](/img/admin_dashboard_features/18.jpg)
@@ -178,7 +178,7 @@ You can access this page by clicking on the CareTeam management menu on the side
 2. This will load a form that allows you to update the CareTeam’s details. Fields with Asterisks are a must to fill.
 3. Click ‘Save.
 
-### Team Management
+## Team Management
 The FHIR web team(organization) management package provides the ability to perform the following functions.
 1. Creating teams (organization).
     a. Assign users to teams (organization).

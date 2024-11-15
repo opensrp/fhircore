@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.parser.IParser
-import ca.uhn.fhir.validation.FhirValidator
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
 import com.google.android.fhir.datacapture.extensions.logicalId
@@ -29,6 +28,7 @@ import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
+import dagger.Lazy
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -46,7 +46,6 @@ import java.io.File
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
-import javax.inject.Provider
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -57,6 +56,7 @@ import org.hl7.fhir.r4.model.Attachment
 import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Consent
@@ -77,6 +77,7 @@ import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseStatus
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -111,9 +112,11 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isToday
+import org.smartregister.fhircore.engine.util.extension.questionnaireResponseStatus
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.extension.yesterday
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequestHandler
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.assertResourceEquals
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -129,7 +132,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
-  @Inject lateinit var fhirValidatorProvider: Provider<FhirValidator>
+  @Inject lateinit var fhirValidatorRequestHandlerProvider: Lazy<ResourceValidationRequestHandler>
 
   @Inject lateinit var configService: ConfigService
 
@@ -210,7 +213,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           resourceDataRulesExecutor = resourceDataRulesExecutor,
           transformSupportServices = mockk(),
           sharedPreferencesHelper = sharedPreferencesHelper,
-          fhirValidatorProvider = fhirValidatorProvider,
+          fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
           fhirOperator = fhirOperator,
           fhirPathDataExtractor = fhirPathDataExtractor,
           configurationRegistry = configurationRegistry,
@@ -650,7 +653,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         transformSupportServices = mockk(),
         sharedPreferencesHelper = sharedPreferencesHelper,
         fhirOperator = fhirOperator,
-        fhirValidatorProvider = fhirValidatorProvider,
+        fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
         configurationRegistry = configurationRegistry,
       )
@@ -734,11 +737,77 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           },
         )
       }
-    questionnaireViewModel.saveDraftQuestionnaire(questionnaireResponse)
+    questionnaireViewModel.saveDraftQuestionnaire(
+      questionnaireResponse,
+      QuestionnaireConfig("qr-id-1"),
+    )
     Assert.assertEquals(
       QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS,
       questionnaireResponse.status,
     )
+    coVerify { defaultRepository.addOrUpdate(resource = questionnaireResponse) }
+  }
+
+  @Test
+  fun testSaveDraftQuestionnaireShouldUpdateSubjectAndQuestionnaireValues() = runTest {
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
+                .setValue(StringType("Sky is the limit")),
+            )
+          },
+        )
+      }
+    questionnaireViewModel.saveDraftQuestionnaire(
+      questionnaireResponse,
+      QuestionnaireConfig(
+        "dc-household-registration",
+        resourceIdentifier = "group-id-1",
+        resourceType = ResourceType.Group,
+      ),
+    )
+    Assert.assertEquals(
+      "Questionnaire/dc-household-registration",
+      questionnaireResponse.questionnaire,
+    )
+    Assert.assertEquals(
+      "Group/group-id-1",
+      questionnaireResponse.subject.reference,
+    )
+    coVerify { defaultRepository.addOrUpdate(resource = questionnaireResponse) }
+  }
+
+  @Test
+  fun testSaveDraftQuestionnaireCallsAddOrUpdateForPaginatedForms() = runTest {
+    val pageItem =
+      QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
+                .setValue(StringType("Sky is the limit")),
+            )
+          },
+        )
+      }
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        addItem(
+          pageItem,
+        )
+      }
+    questionnaireViewModel.saveDraftQuestionnaire(
+      questionnaireResponse,
+      QuestionnaireConfig(
+        "dc-household-registration",
+        resourceIdentifier = "group-id-1",
+        resourceType = ResourceType.Group,
+      ),
+    )
+
     coVerify { defaultRepository.addOrUpdate(resource = questionnaireResponse) }
   }
 
@@ -1103,6 +1172,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testGenerateCarePlan() = runTest {
     val bundle =
       Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
+    coEvery {
+      fhirCarePlanGenerator.generateOrUpdateCarePlan(any<String>(), any(), any(), any())
+    } returns CarePlan()
 
     val questionnaireConfig = questionnaireConfig.copy(planDefinitions = listOf("planDefId"))
     questionnaireViewModel.generateCarePlan(patient, bundle, questionnaireConfig)
@@ -1293,6 +1365,56 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
   @Test
+  fun testSearchLatestQuestionnaireResponseWhenSaveDraftIsTueShouldReturnLatestQuestionnaireResponse() =
+    runTest(timeout = 90.seconds) {
+      Assert.assertNull(
+        questionnaireViewModel.searchQuestionnaireResponse(
+          resourceId = patient.logicalId,
+          resourceType = ResourceType.Patient,
+          questionnaireId = questionnaireConfig.id,
+          encounterId = null,
+          questionnaireResponseStatus = QuestionnaireResponseStatus.INPROGRESS.toCode(),
+        ),
+      )
+
+      val questionnaireResponses =
+        listOf(
+          QuestionnaireResponse().apply {
+            id = "qr1"
+            meta.lastUpdated = Date()
+            subject = patient.asReference()
+            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+            status = QuestionnaireResponseStatus.INPROGRESS
+          },
+          QuestionnaireResponse().apply {
+            id = "qr2"
+            meta.lastUpdated = yesterday()
+            subject = patient.asReference()
+            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+            status = QuestionnaireResponseStatus.COMPLETED
+          },
+        )
+
+      // Add QuestionnaireResponse to database
+      fhirEngine.create(
+        patient,
+        samplePatientRegisterQuestionnaire,
+        *questionnaireResponses.toTypedArray(),
+      )
+
+      val latestQuestionnaireResponse =
+        questionnaireViewModel.searchQuestionnaireResponse(
+          resourceId = patient.logicalId,
+          resourceType = ResourceType.Patient,
+          questionnaireId = questionnaireConfig.id,
+          encounterId = null,
+          questionnaireResponseStatus = QuestionnaireResponseStatus.INPROGRESS.toCode(),
+        )
+      Assert.assertNotNull(latestQuestionnaireResponse)
+      Assert.assertEquals("QuestionnaireResponse/qr1", latestQuestionnaireResponse?.id)
+    }
+
+  @Test
   fun testRetrievePopulationResourcesReturnsListOfResourcesOrEmptyList() = runTest {
     val specimenId = "specimenId"
     val actionParameters =
@@ -1445,6 +1567,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           }
         listResource.addEntry(listEntryComponent)
         addContained(listResource)
+        status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
       }
 
     coEvery {
@@ -1453,6 +1576,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         resourceType = ResourceType.Patient,
         questionnaireId = questionnaireConfig.id,
         encounterId = null,
+        questionnaireResponseStatus = questionnaireConfig.questionnaireResponseStatus(),
       )
     } returns previousQuestionnaireResponse
 
@@ -1829,7 +1953,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           transformSupportServices = mockk(),
           sharedPreferencesHelper = sharedPreferencesHelper,
           fhirOperator = fhirOperator,
-          fhirValidatorProvider = fhirValidatorProvider,
+          fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
           fhirPathDataExtractor = fhirPathDataExtractor,
           configurationRegistry = configurationRegistry,
         )
@@ -1891,7 +2015,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           transformSupportServices = mockk(),
           sharedPreferencesHelper = sharedPreferencesHelper,
           fhirOperator = fhirOperator,
-          fhirValidatorProvider = fhirValidatorProvider,
+          fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
           fhirPathDataExtractor = fhirPathDataExtractor,
           configurationRegistry = configurationRegistry,
         )
@@ -1966,7 +2090,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         transformSupportServices = mockk(),
         sharedPreferencesHelper = sharedPreferencesHelper,
         fhirOperator = fhirOperator,
-        fhirValidatorProvider = fhirValidatorProvider,
+        fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
         configurationRegistry = configurationRegistry,
       )

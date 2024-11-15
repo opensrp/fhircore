@@ -97,6 +97,7 @@ fun CompoundText(
           navController = navController,
           overflow = compoundTextProperties.overflow,
           letterSpacing = compoundTextProperties.letterSpacing,
+          textInnerPadding = compoundTextProperties.textInnerPadding,
         )
       }
       // Separate the primary and secondary text
@@ -128,6 +129,7 @@ fun CompoundText(
           resourceData = resourceData,
           overflow = compoundTextProperties.overflow,
           letterSpacing = compoundTextProperties.letterSpacing,
+          textInnerPadding = compoundTextProperties.textInnerPadding,
         )
       }
     }
@@ -153,6 +155,7 @@ private fun CompoundTextPart(
   resourceData: ResourceData,
   overflow: TextOverFlow?,
   letterSpacing: Int = 0,
+  textInnerPadding: Int = 0,
 ) {
   Text(
     text =
@@ -175,7 +178,7 @@ private fun CompoundTextPart(
         )
         .clip(RoundedCornerShape(borderRadius.dp))
         .background(backgroundColor.parseColor())
-        .padding(0.dp),
+        .padding(textInnerPadding.dp),
     fontSize = fontSize.sp,
     fontWeight = textFontWeight.fontWeight,
     textAlign =
