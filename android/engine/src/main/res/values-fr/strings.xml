@@ -135,7 +135,7 @@
     <string name="weeks">Semaine(s)</string>
     <string name="days">Jour(s)</string>
     <string name="initializing">Initialisation des paramètres &#8230;</string>
-    <string name="initializing_application">Initialisation de l\'application &#8230 ;</string>
+    <string name="initializing_application">Initialisation de l\'application &#8230;</string>
     <string name="error_occurred">Quelque chose a mal tourné...</string>
     <string name="insights">Insights</string>
     <string name="contact_help">Contacter l\'aide</string>
