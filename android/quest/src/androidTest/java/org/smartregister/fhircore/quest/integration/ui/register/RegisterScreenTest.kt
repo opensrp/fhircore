@@ -182,9 +182,6 @@ class RegisterScreenTest {
                 ),
             ),
         registerId = "register101",
-        totalRecordsCount = 1,
-        filteredRecordsCount = 0,
-        pagesCount = 0,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
         params = emptyList(),
@@ -207,6 +204,7 @@ class RegisterScreenTest {
         pagingItems = pagingItems,
         navController = rememberNavController(),
         decodeImage = null,
+        registerUiCountState = RegisterUiCountState(0, 0, 0),
       )
     }
 
