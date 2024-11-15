@@ -272,7 +272,7 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew clean  -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
+          script: ./gradlew clean  -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --info -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
 
       - name: Run Quest module unit and instrumentation tests and generate aggregated coverage report (Disabled)
         if: false
