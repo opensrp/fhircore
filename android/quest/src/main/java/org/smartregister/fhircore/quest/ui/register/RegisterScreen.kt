@@ -118,6 +118,7 @@ fun RegisterScreen(
           filteredRecordsCount = registerUiCountState.filteredRecordsCount,
           isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
+          placeholderColor = registerUiState.registerConfiguration?.searchBar?.placeholderColor,
           showSearchByQrCode = registerUiState.registerConfiguration?.showSearchByQrCode ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { uiSearchQuery, performSearchOnValueChanged ->
