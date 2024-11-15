@@ -2,11 +2,16 @@
 title: Sync Strategies
 ---
 
-The OpenSRP 2.0 uses **five** key data elements in determining how data is synced down from the server. These elements are used to [**tag**](/engineering/app/datastore/tagging) every resource created by the OpenSRP mobile application, enabling precise synchronization.
-The five elements are leveraged to define the OpenSRP sync strategies, ensuring that data is appropriately filtered and delivered to the correct users.
+OpenSRP 2 uses five key data elements in determining how data is synced down from the server. These elements are [added](/engineering/app/datastore/tagging) to every resource created by the OpenSRP mobile app, enabling precise synchronization. These elements are:
 
-### Sync By Practitioner CareTeam
-This strategy syncs data based on the Practitioner CareTeam, ensuring that all relevant resources tagged with a specific care team are synced down for the practitioners assigned to that CareTeam. A sample tag is provided below
+- `care-team-tag-id`
+- `practitioner-tag-id`
+- `location-tag-id`
+- `organisation-tag-id`
+- `related-entity-location-tag-id`
+
+### Sync by Practitioner CareTeam
+This strategy syncs data based on the CareTeam that the logged in user (which maps 1-to-1 to a FHIR Practitioner Resource) is assigned to. All resources tagged with the same CareTeam via the `care-team-tag-id` are synced down to the device if the FHIR Practitioner mapping to the logged-in user is assigned to that CareTeam. A sample tag is provided below
 
 ```json
     {
@@ -16,8 +21,9 @@ This strategy syncs data based on the Practitioner CareTeam, ensuring that all r
     }
 ```
 
-### Sync By Practitioner Team (Organization)
-This sync strategy is based on the Team (Organization), syncing resources related to the specific team (organization) associated with the practitioner. 
+### Sync by Practitioner Team (FHIR Organization)
+This sync strategy is based on the team (FHIR Organization) and syncs resources tied to the specific team (FHIR Organization) associated with the logged user's FHIR Practitioner. 
+
 - This sync strategy also includes data from any CareTeams that have the Organization as a [managing organization](https://hl7.org/fhir/R4B/careteam-definitions.html#CareTeam.managingOrganization). A sample tag is provided below
 
 ```json
@@ -27,9 +33,9 @@ This sync strategy is based on the Team (Organization), syncing resources relate
       "display": "Practitioner Organization"
     }
 ```
-### Sync By Practitioner Location
-Syncs data based on the Location, delivering resources tagged with the Location ID of the Location that the practitioner is assigned to. 
-- This sync strategy also includes data from all the child locations for the Location the Practitioner is assigned to. A sample tag is provided below
+### Sync by Practitioner Location
+This sync strategy is based on the FHIR Location and delivers resources tagged with the Location ID of the Location that the logged in user's FHIR Practitioner is assigned to. 
+- This sync strategy also includes data from all the subordinant locations of the Location that the Practitioner is assigned to (ie if `Location B.partOf = Location A` and we are syncing data from `Location A`, any data assigned to `Location B` is also included). A sample tag is provided below
 
 ```json
      {
@@ -38,8 +44,8 @@ Syncs data based on the Location, delivering resources tagged with the Location 
       "display": "Practitioner Location"
     }
 ```
-### Sync By Related Entity Location
-This strategy uses location information related to other entities (e.g Patient Location, Family (Group) Location, Service point), ensuring that data linked to specific locations associated with those entities is synced. 
+### Sync by Related Entity Location
+This strategy uses location information related to other entities (e.g Patient, Family / Group, Service Point), ensuring that data linked to specific locations associated with those entities is synced. 
 - This sync strategy also includes data from all the child locations linked to the Related Entity Location. A sample tag is provided below
 
 ```json
