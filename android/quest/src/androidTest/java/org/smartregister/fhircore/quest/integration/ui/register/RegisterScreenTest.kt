@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationConf
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.configuration.register.RegisterContentConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.Language
@@ -160,6 +161,71 @@ class RegisterScreenTest {
     }
     composeTestRule.waitUntil(5_000) { true }
     composeTestRule.onAllNodesWithTag(FAB_BUTTON_REGISTER_TEST_TAG, useUnmergedTree = true)
+  }
+
+  @Test
+  fun testRegisterScreenWithPlaceholderColor() {
+    val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+    val registerUiState =
+      RegisterUiState(
+        screenTitle = "Register101",
+        isFirstTimeSync = false,
+        registerConfiguration =
+          configurationRegistry
+            .retrieveConfiguration<RegisterConfiguration>(ConfigType.Register, "householdRegister")
+            .copy(
+              searchBar =
+                RegisterContentConfig(
+                  visible = true,
+                  display = "Search",
+                  placeholderColor = "#FF0000",
+                ),
+            ),
+        registerId = "register101",
+        totalRecordsCount = 1,
+        filteredRecordsCount = 0,
+        pagesCount = 0,
+        progressPercentage = flowOf(0),
+        isSyncUpload = flowOf(false),
+        params = emptyList(),
+      )
+    val searchText = mutableStateOf(SearchQuery.emptyText)
+    val currentPage = mutableStateOf(0)
+
+    composeTestRule.setContent {
+      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
+      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
+
+      RegisterScreen(
+        modifier = Modifier,
+        openDrawer = {},
+        onEvent = {},
+        registerUiState = registerUiState,
+        onAppMainEvent = {},
+        searchQuery = searchText,
+        currentPage = currentPage,
+        pagingItems = pagingItems,
+        navController = rememberNavController(),
+        decodeImage = null,
+      )
+    }
+
+    // Verify that all nodes with the TOP_REGISTER_SCREEN_TEST_TAG exist
+    composeTestRule
+      .onAllNodesWithTag(TOP_REGISTER_SCREEN_TEST_TAG, useUnmergedTree = true)
+      .assertCountEquals(7)
+
+    // Verify that the search text exists with correct placeholder
+    composeTestRule
+      .onNodeWithText("Search", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+
+    // Verify that the screen title is displayed
+    composeTestRule
+      .onNodeWithText("Register101", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test
