@@ -1,0 +1,55 @@
+---
+title: Save form as draft
+---
+
+This is support for saving a form, that is in progress, as a draft.
+
+This functionality is only relevant to forms that are unique and only expected to be filled out once.
+This excludes forms such as "register client" or "register household".
+
+## Sample use cases
+
+- A counseling session cannot be completed in one sitting, so the counselor would like to save the incomplete session and continue it in the next session
+- A health care worker does not have the answer to a mandatory question (e.g. lab results) and cannot submit the form until it is answered; they also do not want to discard the data they have already entered
+- A patient meets with multiple providers during a clinic visit. They would like the ability for the form to be started by one worker and completed by another worker
+- A health care worker is doing a child visit and the mother goes to get the child's health card to update the immunization history. Meanwhile, the health care worker wants to proceed to measure the child's MUAC (which is collected in a different form)
+- A health care worker is doing a household visit and providing care to multiple household members. They want the ability to start a workflow and switch to another workflow without losing their data
+- A health care worker is required to collect data in both the app and on paper. They start a form in the app, but are under time pressure, so they fill out the paper form and plan to enter the data in the app later
+
+
+The configuration is done on the `QuestionnaireConfig`.
+The sample below demonstrates the configs that are required in order to save a form as a draft
+
+```json
+{
+  "questionnaire": {
+    "id": "add-family-member",
+    "title": "Add Family Member",
+    "resourceIdentifier": "sample-house-id",
+    "resourceType": "Group",
+    "saveDraft": true
+  }
+}
+```
+## Config properties
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+id | Questionnaire Unique ID String | yes             |          |
+title | Display text shown when the form is loaded | no |              |
+resourceIdentifier | Unique ID String for the subject of the form             |     |              |
+resourceType | The String representation of the resource type for the subject of the form | yes             |          |
+saveDraft | Flag that determines whether the form can be saved as a draft | yes             |    false      |
+
+## UI/UX workflow
+When the form is opened, with the configurations in place, the save as draft functionality is triggered when the user clicks on the close button (X) at the top left of the screen.
+A dialog appears with 3 buttons i.e `Save as draft`, `Discard changes` and `Cancel`.
+
+The table below details what each of the buttons does.
+
+### Alert dialog buttons descriptions
+|Button | Description |
+|--|--|:--:|:--:|
+Save as draft | Saves user input as a draft |
+Discard changes | Dismisses user input, and closes the form without saving the draft. |
+Cancel | Dismisses the dialog so that the user can continue interacting with the form |

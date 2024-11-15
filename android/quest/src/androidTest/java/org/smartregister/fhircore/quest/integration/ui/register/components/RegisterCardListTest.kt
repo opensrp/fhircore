@@ -37,6 +37,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.quest.ui.register.RegisterUiCountState
 import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import org.smartregister.fhircore.quest.ui.register.components.REGISTER_CARD_LIST_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
@@ -58,6 +59,7 @@ class RegisterCardListTest {
         lazyListState = rememberLazyListState(),
         onEvent = {},
         registerUiState = RegisterUiState(),
+        registerUiCountState = RegisterUiCountState(),
         currentPage = mutableStateOf(1),
         onSearchByQrSingleResultAction = {},
         decodeImage = null,
@@ -84,6 +86,7 @@ class RegisterCardListTest {
         lazyListState = rememberLazyListState(),
         onEvent = {},
         registerUiState = RegisterUiState(),
+        registerUiCountState = RegisterUiCountState(),
         currentPage = mutableStateOf(1),
         onSearchByQrSingleResultAction = {},
         decodeImage = null,
@@ -116,6 +119,7 @@ class RegisterCardListTest {
         lazyListState = rememberLazyListState(),
         onEvent = {},
         registerUiState = RegisterUiState(),
+        registerUiCountState = RegisterUiCountState(),
         currentPage = mutableStateOf(1),
         showPagination = true,
         onSearchByQrSingleResultAction = {},
@@ -144,6 +148,7 @@ class RegisterCardListTest {
         lazyListState = rememberLazyListState(),
         onEvent = {},
         registerUiState = RegisterUiState(),
+        registerUiCountState = RegisterUiCountState(),
         currentPage = mutableStateOf(1),
         onSearchByQrSingleResultAction = {},
         decodeImage = null,

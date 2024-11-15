@@ -66,11 +66,12 @@
     <string name="error_saving_form">Error encountered cannot save form</string>
     <string name="form_progress_message">Processing data. Please wait</string>
     <string name="questionnaire_alert_back_pressed_message">Are you sure you want to go back?</string>
-    <string name="questionnaire_in_progress_alert_back_pressed_message">Are you sure you want to discard the answers?</string>
-    <string name="questionnaire_alert_back_pressed_title">Discard changes</string>
-    <string name="questionnaire_alert_back_pressed_button_title">Discard</string>
-    <string name="questionnaire_alert_back_pressed_save_draft_button_title">Save partial draft</string>
+    <string name="questionnaire_in_progress_alert_back_pressed_message">If you leave without saving, all your changes will not be saved</string>
+    <string name="questionnaire_alert_back_pressed_title">You have unsaved changes</string>
+    <string name="questionnaire_alert_back_pressed_button_title">Discard changes</string>
+    <string name="questionnaire_alert_back_pressed_save_draft_button_title">Save as draft</string>
     <string name="questionnaire_alert_neutral_button_title">Cancel</string>
+    <string name="questionnaire_alert_negative_button_title">Discard Changes</string>
     <string name="questionnaire_alert_confirm_button_title">Yes</string>
     <string name="questionnaire_alert_invalid_message">Given details have validation errors. Resolve errors and submit again</string>
     <string name="questionnaire_alert_invalid_title">Validation Failed</string>
@@ -199,4 +200,6 @@
     <string name="unsynced_data_present">There\'s some un-synced data</string>
     <string name="missing_supervisor_contact">Supervisor contact missing or the provided phone number is invalid</string>
     <string name="apply_filter">APPLY FILTER</string>
+    <string name="questionnaire_save_draft_title">Save draft changes</string>
+    <string name="questionnaire_save_draft_message">Do you want to save draft changes?</string>
 </resources>
