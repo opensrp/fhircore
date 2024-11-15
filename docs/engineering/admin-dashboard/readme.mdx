@@ -6,14 +6,14 @@ We use [fhir-web](https://github.com/onaio/fhir-web) as the admin dashboard for 
 
 OpenSRP2 manages user accounts through an integrated identity and authentication management (IAM) system. Each `user` created in the IAM system has a 1-to-1 link with FHIR `Practitioner` resource in the FHIR health data store.
 
-## User Assignments
+## User Assignment
 
-The current user assignment consists of 4 main elements
+User assignment consists of 4 main elements
 - **User (FHIR Practitioner)** - This is the person using the application to collect data and execute workflows
-- **CareTeam** - Caregiving users would be assigned here.
-- **Team (FHIR Organization)** - Teams would be added to CareTeams as managing organizations.
-- **Location** - Teams would be assigned to locations and by doing so, users would be assigned to their workstations.
+- **CareTeam** - This is used to define a group of users that provide care as a team.
+- **Team (FHIR Organization)** - Teams are added to CareTeams as the `.managingOrganization`.
+- **Location** - Teams are assigned to Locations to define where they work.
 
-Every user who is _“correctly”_ assigned as per the current implementation must have at least 1 of each of the 4 elements. These assignment information has an associated effect to how data is [synced down](/engineering/backend/info-gateway/data-sync) to the mobile applications.
+Every user must have at least 1 of the 4 elements above. These assignments affect how data is [synced down](/engineering/backend/info-gateway/data-sync) to the app.
 
-These elements are then downloaded to the OpenSRP 2.0 mobile application via the **PractitionerDetail** endpoint.  This is a custom endpoint built by the OpenSRP team, it aggregates all the data related to a user and returns as one response.
+These elements are then downloaded to the app via the **PractitionerDetail** endpoint. This is a custom endpoint that aggregates data related to a user and returns as a single response.
