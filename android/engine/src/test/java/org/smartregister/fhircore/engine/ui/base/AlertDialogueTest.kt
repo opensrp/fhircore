@@ -151,6 +151,8 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       confirmButtonText = R.string.questionnaire_alert_back_pressed_save_draft_button_title,
       neutralButtonListener = {},
       neutralButtonText = R.string.questionnaire_alert_back_pressed_button_title,
+      negativeButtonListener = {},
+      negativeButtonText = R.string.questionnaire_alert_negative_button_title,
     )
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 
