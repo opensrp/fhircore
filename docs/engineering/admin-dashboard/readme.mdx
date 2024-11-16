@@ -1,3 +1,19 @@
 # Admin Dashboard
 
-We use [fhir-web](https://github.com/onaio/fhir-web) as the administrative dashboard for OpenSRP 2 projects.
+We use [fhir-web](https://github.com/onaio/fhir-web) as the admin dashboard for OpenSRP 2 projects. This allows you to manage users, teams and view data. See more details on the [admin dashboard features](/features/admin-dashboard-features).
+
+## Users and the FHIR Practitioner resource
+
+OpenSRP2 manages user accounts through an integrated identity and authentication management (IAM) system. Each `user` created in the IAM system has a 1-to-1 link with FHIR `Practitioner` resource in the FHIR health data store.
+
+## User Assignment
+
+User assignment consists of 4 main elements
+- **User (FHIR Practitioner)** - This is the person using the application to collect data and execute workflows
+- **CareTeam** - This is used to define a group of users that provide care as a team.
+- **Team (FHIR Organization)** - Teams are added to CareTeams as the `.managingOrganization`.
+- **Location** - Teams are assigned to Locations to define where they work.
+
+Every user must have at least 1 of the 4 elements above. These assignments affect how data is [synced down](/engineering/backend/info-gateway/data-sync) to the app.
+
+These elements are then downloaded to the app via the **PractitionerDetail** endpoint. This is a custom endpoint that aggregates data related to a user and returns as a single response.

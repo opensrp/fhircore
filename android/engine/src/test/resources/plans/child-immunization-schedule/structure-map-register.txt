@@ -123,7 +123,7 @@ group extractTaskRestriction(source subject: Patient, target task: Task, source 
                         startDateTime.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "rule_period_start";
 
                     subject -> taskRestrictionPeriod.end = create('dateTime') as endDateTime,
-                        endDateTime.value = evaluate(start, (($this + (((restrictionEndDate).toString() + ' \'days\'')).toQuantity()).value.substring(0,10)) + 'T00:00:00.00Z') "rule_period_end";
+                        endDateTime.value = evaluate(start, (($this + (((restrictionEndDate).toString() + ' days')).toQuantity()).value.substring(0,10)) + 'T00:00:00.00Z') "rule_period_end";
 
                     subject -> task.restriction = taskRestriction "rule_restriction_period";
                 } "rule_task_restriction_period";

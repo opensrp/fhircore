@@ -29,6 +29,10 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateType
@@ -118,7 +122,7 @@ class RegisterViewModelTest : RobolectricTest() {
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testRetrieveRegisterUiState() = runTest {
-    every { registerViewModel.retrieveRegisterConfiguration(any()) } returns
+    val registerConfig =
       RegisterConfiguration(
         appId = "app",
         id = registerId,
@@ -126,6 +130,10 @@ class RegisterViewModelTest : RobolectricTest() {
           FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Patient)),
         pageSize = 10,
       )
+    configurationRegistry.configCacheMap[registerId] = registerConfig
+    registerViewModel.registerUiState.value =
+      registerViewModel.registerUiState.value.copy(registerId = registerId)
+
     every { registerViewModel.paginateRegisterData(any(), any()) } just runs
     coEvery { registerRepository.countRegisterData(any()) } returns 200
     registerViewModel.retrieveRegisterUiState(
@@ -145,8 +153,9 @@ class RegisterViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnEventSearchRegister() {
-    every { registerViewModel.retrieveRegisterConfiguration(any()) } returns
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testDebounceSearchQueryFlow() = runTest {
+    val registerConfig =
       RegisterConfiguration(
         appId = "app",
         id = registerId,
@@ -154,14 +163,68 @@ class RegisterViewModelTest : RobolectricTest() {
           FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Patient)),
         pageSize = 10,
       )
-    every { registerViewModel.registerUiState } returns
-      mutableStateOf(RegisterUiState(registerId = registerId))
+    configurationRegistry.configCacheMap[registerId] = registerConfig
+    registerViewModel.registerUiState.value =
+      registerViewModel.registerUiState.value.copy(registerId = registerId)
+    coEvery { registerRepository.countRegisterData(any()) } returns 0L
+
+    val results = mutableListOf<String>()
+    val debounceJob = launch {
+      registerViewModel.debouncedSearchQueryFlow.collect { results.add(it.query) }
+    }
+    advanceUntilIdle()
+
     // Search with empty string should paginate the data
     registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery.emptyText))
+
+    advanceTimeBy(3.milliseconds)
+    Assert.assertTrue(results.isNotEmpty())
+    Assert.assertTrue(results.last().isBlank())
+
+    registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery("K")))
+    registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery("Kh")))
+    registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery("Kha")))
+    registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery("Khan")))
+
+    advanceTimeBy(1010.milliseconds)
+    Assert.assertEquals(2, results.size)
+    Assert.assertEquals("Khan", results.last())
+    debounceJob.cancel()
+  }
+
+  @Test
+  fun testPerformSearchWithEmptyQuery() = runTest {
+    val registerConfig =
+      RegisterConfiguration(
+        appId = "app",
+        id = registerId,
+        fhirResource =
+          FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Patient)),
+        pageSize = 10,
+      )
+    configurationRegistry.configCacheMap[registerId] = registerConfig
+    coEvery { registerRepository.countRegisterData(any()) } returns 0L
+
+    // Search with empty string should paginate the data
+    registerViewModel.performSearch(registerId, SearchQuery.emptyText)
     verify { registerViewModel.retrieveRegisterUiState(any(), any(), any(), any()) }
+  }
+
+  @Test
+  fun testPerformSearchWithNonEmptyQuery() = runTest {
+    val registerConfig =
+      RegisterConfiguration(
+        appId = "app",
+        id = registerId,
+        fhirResource =
+          FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Patient)),
+        pageSize = 10,
+      )
+    configurationRegistry.configCacheMap[registerId] = registerConfig
+    coEvery { registerRepository.countRegisterData(any()) } returns 0L
 
     // Search for the word 'Khan' should call the filterRegisterData function
-    registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery("Khan")))
+    registerViewModel.performSearch(registerId, SearchQuery("Khan"))
     verify { registerViewModel.filterRegisterData(any()) }
   }
 
