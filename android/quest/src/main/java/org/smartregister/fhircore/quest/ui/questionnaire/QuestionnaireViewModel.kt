@@ -69,7 +69,6 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.CodingSystemUsage
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.helper.CacheHelper
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.isEditable
@@ -98,6 +97,7 @@ import org.smartregister.fhircore.engine.util.extension.questionnaireResponseSta
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.engine.util.helper.CacheHelper
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequest
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequestHandler
@@ -148,14 +148,16 @@ constructor(
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
     return (CacheHelper.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id)
-        ?.copy() ?:
-        defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also { questionnaire,
-          ->
-          CacheHelper.saveResource(
-            questionnaireConfig.id,
-            questionnaire.copy(),
-          )
-        }) as Questionnaire
+      ?.copy()
+      ?: defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also {
+        questionnaire,
+        ->
+        CacheHelper.saveResource(
+          questionnaireConfig.id,
+          questionnaire.copy(),
+        )
+      })
+      as Questionnaire
   }
 
   /**
@@ -681,9 +683,8 @@ constructor(
                   transformSupportServices = transformSupportServices,
                   structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
                     structureMapUrl?.substringAfterLast("/")?.let { structureMapId ->
-                      CacheHelper.getResource(ResourceType.StructureMap.name + "/" + structureMapId)?.let {
-                        it as StructureMap
-                      }
+                      CacheHelper.getResource(ResourceType.StructureMap.name + "/" + structureMapId)
+                        ?.let { it as StructureMap }
                         ?: run {
                           defaultRepository.loadResource<StructureMap>(structureMapId)?.also {
                             CacheHelper.saveResource(structureMapId, it)
