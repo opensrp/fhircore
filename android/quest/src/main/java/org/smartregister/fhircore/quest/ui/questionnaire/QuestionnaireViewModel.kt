@@ -147,21 +147,15 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
-    var result =
-      CacheHelper.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id)
-        ?.copy()
-    if (result == null) {
-      result =
+    return (CacheHelper.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id)
+        ?.copy() ?:
         defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also { questionnaire,
           ->
           CacheHelper.saveResource(
             questionnaireConfig.id,
             questionnaire.copy(),
           )
-        }
-    }
-
-    return result as Questionnaire
+        }) as Questionnaire
   }
 
   /**
