@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.local
+package org.smartregister.fhircore.engine.util.helper
 
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Questionnaire
@@ -40,8 +39,6 @@ class CacheHelperTest : RobolectricTest() {
 
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
 
-  @Inject lateinit var contentCache: ContentCache
-
   private val resourceId = "123"
   private val mockResource: Resource = Questionnaire().apply { id = resourceId }
 
@@ -52,33 +49,25 @@ class CacheHelperTest : RobolectricTest() {
 
   @Test
   fun `saveResource should store resource in cache`() = runTest {
-    contentCache.saveResource(mockResource)
+    CacheHelper.saveResource(mockResource.idPart, mockResource)
 
-    val cachedResource = contentCache.getResource(mockResource.resourceType, mockResource.idPart)
+    val cachedResource = CacheHelper.getResource(mockResource.idPart)
     assertNotNull(cachedResource)
     assertEquals(mockResource.idPart, cachedResource?.idPart)
   }
 
   @Test
-  fun `getResource should return the correct resource from cache`() = runTest {
-    contentCache.saveResource(mockResource)
-
-    val result = contentCache.getResource(mockResource.resourceType, mockResource.idPart)
-    assertEquals(mockResource.idPart, result?.idPart)
-  }
-
-  @Test
   fun `getResource should return null if resource does not exist`() = runTest {
-    val result = contentCache.getResource(mockResource.resourceType, "non_existing_id")
+    val result = CacheHelper.getResource("non_existing_id")
     assertNull(result)
   }
 
   @Test
   fun `invalidate should clear all resources from cache`() = runTest {
-    contentCache.saveResource(mockResource)
-    contentCache.invalidate()
+    CacheHelper.saveResource(mockResource.idPart, mockResource)
+    CacheHelper.invalidate()
 
-    val result = contentCache.getResource(mockResource.resourceType, mockResource.idPart)
+    val result = CacheHelper.getResource(mockResource.idPart)
     assertNull(result)
   }
 }

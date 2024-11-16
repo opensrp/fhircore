@@ -30,7 +30,6 @@ import com.google.android.fhir.SearchResult
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.google.android.fhir.getResourceType
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
@@ -99,6 +98,7 @@ import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyn
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.engine.util.helper.CacheHelper
 import org.smartregister.fhircore.engine.util.pmap
 import timber.log.Timber
 
@@ -115,8 +115,6 @@ constructor(
   open val parser: IParser,
   @ApplicationContext open val context: Context,
 ) {
-
-  @Inject lateinit var contentCache: ContentCache
 
   init {
     DaggerDefaultRepositoryComponent.create().inject(this)
@@ -136,10 +134,9 @@ constructor(
     }
 
   suspend inline fun <reified T : Resource> loadResourceFromCache(resourceId: String): T? {
-    val resourceType = getResourceType(T::class.java)
     val resource =
-      contentCache.getResource(resourceType, resourceId)
-        ?: fhirEngine.loadResource<T>(resourceId)?.let { contentCache.saveResource(it) }
+      CacheHelper.getResource(resourceId)
+        ?: fhirEngine.loadResource<T>(resourceId)?.let { CacheHelper.saveResource(resourceId, it) }
     return resource as? T
   }
 
