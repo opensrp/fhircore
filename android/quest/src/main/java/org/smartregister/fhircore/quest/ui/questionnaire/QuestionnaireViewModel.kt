@@ -292,13 +292,13 @@ constructor(
           val characteristic = this.characteristic[this.quantity]
           if (
             characteristic.hasValueCodeableConcept() &&
-              characteristic.valueCodeableConcept.text == submittedUniqueId
+            characteristic.valueCodeableConcept.text == submittedUniqueId
           ) {
             characteristic.exclude = true
             this.quantity++
             this.active =
               this.quantity <
-                this.characteristic.size // Mark Group as inactive when all IDs are retired
+                      this.characteristic.size // Mark Group as inactive when all IDs are retired
             defaultRepository.addOrUpdate(resource = this)
           }
         }
@@ -347,9 +347,9 @@ constructor(
         applyResourceMetadata(questionnaireConfig, questionnaireResponse, context)
         if (
           questionnaireResponse.subject.reference.isNullOrEmpty() &&
-            subjectType != null &&
-            resourceType == subjectType &&
-            logicalId.isNotEmpty()
+          subjectType != null &&
+          resourceType == subjectType &&
+          logicalId.isNotEmpty()
         ) {
           questionnaireResponse.subject = this.logicalId.asReference(subjectType)
         }
@@ -359,9 +359,9 @@ constructor(
             this.id = questionnaireResponse.subject.extractId()
           } else if (
             extractedResourceUniquePropertyExpressionsMap.containsKey(resourceType) &&
-              previouslyExtractedResources.containsKey(
-                resourceType,
-              )
+            previouslyExtractedResources.containsKey(
+              resourceType,
+            )
           ) {
             val fhirPathExpression =
               extractedResourceUniquePropertyExpressionsMap
@@ -387,7 +387,7 @@ constructor(
                     )
                   }
                 extractedValue.isNotEmpty() &&
-                  extractedValue.equals(currentResourceIdentifier, true)
+                        extractedValue.equals(currentResourceIdentifier, true)
               }
 
             // Found match use the id on current resource; override identifiers for RelatedPerson
@@ -437,7 +437,7 @@ constructor(
 
     if (
       !questionnaireResponse.subject.reference.isNullOrEmpty() &&
-        questionnaireConfig.saveQuestionnaireResponse
+      questionnaireConfig.saveQuestionnaireResponse
     ) {
       // Set the Group's Related Entity Location meta tag on QuestionnaireResponse then save.
       questionnaireResponse.applyRelatedEntityLocationMetaTag(
@@ -460,8 +460,8 @@ constructor(
           Pair(subjectType, questionnaireConfig.resourceIdentifier!!)
         }
         !questionnaireConfig.groupResource?.groupIdentifier.isNullOrEmpty() &&
-          questionnaireConfig.groupResource?.removeGroup != true &&
-          questionnaireConfig.groupResource?.removeMember != true -> {
+                questionnaireConfig.groupResource?.removeGroup != true &&
+                questionnaireConfig.groupResource?.removeMember != true -> {
           Pair(ResourceType.Group, questionnaireConfig.groupResource!!.groupIdentifier)
         }
         else -> null
@@ -472,10 +472,10 @@ constructor(
       var relatedEntityLocationTags =
         resource?.meta?.tag?.filter { coding ->
           coding.system ==
-            context.getString(
-              org.smartregister.fhircore.engine.R.string
-                .sync_strategy_related_entity_location_system,
-            )
+                  context.getString(
+                    org.smartregister.fhircore.engine.R.string
+                      .sync_strategy_related_entity_location_system,
+                  )
         }
 
       if (relatedEntityLocationTags.isNullOrEmpty()) {
@@ -548,16 +548,16 @@ constructor(
     val referencedResources = mutableMapOf<ResourceType, MutableList<Resource>>()
     if (
       questionnaireConfig.isEditable() &&
-        !questionnaireConfig.resourceIdentifier.isNullOrEmpty() &&
-        subjectType != null
+      !questionnaireConfig.resourceIdentifier.isNullOrEmpty() &&
+      subjectType != null
     ) {
       searchQuestionnaireResponse(
-          resourceId = questionnaireConfig.resourceIdentifier!!,
-          resourceType = questionnaireConfig.resourceType ?: subjectType,
-          questionnaireId = questionnaire.logicalId,
-          encounterId = questionnaireConfig.encounterId,
-          questionnaireResponseStatus = questionnaireConfig.questionnaireResponseStatus(),
-        )
+        resourceId = questionnaireConfig.resourceIdentifier!!,
+        resourceType = questionnaireConfig.resourceType ?: subjectType,
+        questionnaireId = questionnaire.logicalId,
+        encounterId = questionnaireConfig.encounterId,
+        questionnaireResponseStatus = questionnaireConfig.questionnaireResponseStatus(),
+      )
         ?.contained
         ?.asSequence()
         ?.filterIsInstance<ListResource>()
@@ -709,7 +709,7 @@ constructor(
         questionnaireConfig.id.asReference(ResourceType.Questionnaire).reference
       if (
         !questionnaireConfig.resourceIdentifier.isNullOrBlank() &&
-          questionnaireConfig.resourceType != null
+        questionnaireConfig.resourceType != null
       ) {
         questionnaireResponse.subject =
           questionnaireConfig.resourceIdentifier!!.asReference(
@@ -761,10 +761,10 @@ constructor(
       } catch (illegalArgumentException: IllegalArgumentException) {
         Timber.e(
           "No enum constant org.hl7.fhir.r4.model.ResourceType.${
-                        param.value.substringBefore(
-                            "/",
-                        )
-                    }",
+            param.value.substringBefore(
+              "/",
+            )
+          }",
         )
       }
     }
@@ -795,14 +795,14 @@ constructor(
 
     return withContext(dispatcherProvider.default()) {
       QuestionnaireResponseValidator.validateQuestionnaireResponse(
-          questionnaire = Questionnaire().apply { item = validQuestionnaireItems },
-          questionnaireResponse =
-            QuestionnaireResponse().apply {
-              item = validQuestionnaireResponseItems
-              packRepeatedGroups()
-            },
-          context = context,
-        )
+        questionnaire = Questionnaire().apply { item = validQuestionnaireItems },
+        questionnaireResponse =
+          QuestionnaireResponse().apply {
+            item = validQuestionnaireResponseItems
+            packRepeatedGroups()
+          },
+        context = context,
+      )
         .values
         .flatten()
         .all { it is Valid || it is NotValidated }
@@ -847,22 +847,25 @@ constructor(
           val resources =
             result.parameter.mapNotNull { cqlResultParameterComponent ->
               (cqlResultParameterComponent.value ?: cqlResultParameterComponent.resource)?.let {
-                resultParameterResource ->
+                  resultParameterResource ->
                 if (BuildConfig.DEBUG) {
                   Timber.d(
                     "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${
-                                            getStringRepresentation(
-                                                resultParameterResource,
-                                            )
-                                        }",
+                      getStringRepresentation(
+                        resultParameterResource,
+                      )
+                    }",
                   )
                 }
 
                 if (
                   cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
-                    resultParameterResource.isResource
+                  resultParameterResource.isResource
                 ) {
-                  defaultRepository.create(true, resultParameterResource as Resource)
+                  defaultRepository.create(
+                    true,
+                    resultParameterResource as Resource,
+                  )
                   resultParameterResource
                 } else {
                   null
@@ -917,13 +920,13 @@ constructor(
     // Load the group from the database to get the updated Resource always.
     val group =
       groupIdentifier?.extractLogicalIdUuid()?.let { loadResource(ResourceType.Group, it) }
-        as Group?
+              as Group?
 
     if (
       group != null &&
-        resource is RelatedPerson &&
-        !resource.relationshipFirstRep.codingFirstRep.code.isNullOrEmpty() &&
-        resource.relationshipFirstRep.codingFirstRep.code == managingEntityRelationshipCode
+      resource is RelatedPerson &&
+      !resource.relationshipFirstRep.codingFirstRep.code.isNullOrEmpty() &&
+      resource.relationshipFirstRep.codingFirstRep.code == managingEntityRelationshipCode
     ) {
       defaultRepository.addOrUpdate(
         resource = group.apply { managingEntity = resource.asReference() },
@@ -944,7 +947,7 @@ constructor(
     // Load the Group resource from the database to get the updated one
     val group =
       groupIdentifier?.extractLogicalIdUuid()?.let { loadResource(ResourceType.Group, it) }
-        as Group? ?: return
+              as Group? ?: return
 
     val reference = resource.asReference()
     val member = group.member.find { it.entity.reference.equals(reference.reference, true) }
@@ -992,8 +995,8 @@ constructor(
 
     if (
       questionnaireConfig.removeResource == true &&
-        questionnaireConfig.resourceType != null &&
-        !questionnaireConfig.resourceIdentifier.isNullOrEmpty()
+      questionnaireConfig.resourceType != null &&
+      !questionnaireConfig.resourceIdentifier.isNullOrEmpty()
     ) {
       viewModelScope.launch {
         defaultRepository.delete(
@@ -1073,7 +1076,6 @@ constructor(
                 encounterId.extractLogicalIdUuid().asReference(ResourceType.Encounter).reference
             },
           )
-<<<<<<< HEAD
         }
         if (!questionnaireResponseStatus.isNullOrBlank()) {
           filter(
@@ -1098,8 +1100,8 @@ constructor(
           val actionParametersExcludingSubject =
             actionParameters.filterNot {
               it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE &&
-                subjectResourceType == it.resourceType &&
-                subjectResourceIdentifier.equals(it.value, ignoreCase = true)
+                      subjectResourceType == it.resourceType &&
+                      subjectResourceIdentifier.equals(it.value, ignoreCase = true)
             }
           addAll(retrievePopulationResources(actionParametersExcludingSubject))
         }
@@ -1151,20 +1153,21 @@ constructor(
     val questionnaireResponse =
       if (
         resourceType != null &&
-          !resourceIdentifier.isNullOrEmpty() &&
-          (questionnaireConfig.isEditable() ||
-            questionnaireConfig.isReadOnly() ||
-            questionnaireConfig.saveDraft)
+        !resourceIdentifier.isNullOrEmpty() &&
+        (questionnaireConfig.isEditable() ||
+                questionnaireConfig.isReadOnly() ||
+                questionnaireConfig.saveDraft)
       ) {
         searchQuestionnaireResponse(
-            resourceId = resourceIdentifier,
-            resourceType = resourceType,
-            questionnaireId = questionnaire.logicalId,
-            encounterId = questionnaireConfig.encounterId,
-            questionnaireResponseStatus = questionnaireConfig.questionnaireResponseStatus(),
-          )
+          resourceId = resourceIdentifier,
+          resourceType = resourceType,
+          questionnaireId = questionnaire.logicalId,
+          encounterId = questionnaireConfig.encounterId,
+          questionnaireResponseStatus = questionnaireConfig.questionnaireResponseStatus(),
+        )
           ?.let {
             QuestionnaireResponse().apply {
+              id = it.id
               item = it.item.removeUnAnsweredItems()
               // Clearing the text prompts the SDK to re-process the content, which includes HTML
               clearText()
@@ -1214,7 +1217,7 @@ constructor(
   }
 
   private fun List<QuestionnaireResponseItemComponent>.removeUnAnsweredItems():
-    List<QuestionnaireResponseItemComponent> {
+          List<QuestionnaireResponseItemComponent> {
     return this.asSequence()
       .filter { it.hasAnswer() || it.item.isNotEmpty() }
       .onEach { it.item = it.item.removeUnAnsweredItems() }
@@ -1233,8 +1236,8 @@ constructor(
     return actionParameters
       .filter {
         it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE &&
-          it.resourceType != null &&
-          it.value.isNotEmpty()
+                it.resourceType != null &&
+                it.value.isNotEmpty()
       }
       .distinctBy { "${it.resourceType?.name}${it.value}" }
       .mapNotNull { loadResource(it.resourceType!!, it.value) }
@@ -1253,184 +1256,6 @@ constructor(
     _questionnaireProgressStateLiveData.postValue(questionnaireState)
   }
 
-=======
-        }
-        if (!questionnaireResponseStatus.isNullOrBlank()) {
-          filter(
-            QuestionnaireResponse.STATUS,
-            { value = of(questionnaireResponseStatus) },
-          )
-        }
-      }
-    val questionnaireResponses: List<QuestionnaireResponse> = defaultRepository.search(search)
-    return questionnaireResponses.maxByOrNull { it.meta.lastUpdated }
-  }
-
-  private suspend fun launchContextResources(
-    subjectResourceType: ResourceType?,
-    subjectResourceIdentifier: String?,
-    actionParameters: List<ActionParameter>,
-  ): List<Resource> {
-    return when {
-      subjectResourceType != null && subjectResourceIdentifier != null ->
-        mutableListOf<Resource>().apply {
-          loadResource(subjectResourceType, subjectResourceIdentifier)?.let { add(it) }
-          val actionParametersExcludingSubject =
-            actionParameters.filterNot {
-              it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE &&
-                subjectResourceType == it.resourceType &&
-                subjectResourceIdentifier.equals(it.value, ignoreCase = true)
-            }
-          addAll(retrievePopulationResources(actionParametersExcludingSubject))
-        }
-      else -> retrievePopulationResources(actionParameters)
-    }
-  }
-
-  suspend fun populateQuestionnaire(
-    questionnaire: Questionnaire,
-    questionnaireConfig: QuestionnaireConfig,
-    actionParameters: List<ActionParameter>,
-  ): Pair<QuestionnaireResponse?, List<Resource>> {
-    val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
-    val resourceType =
-      questionnaireConfig.resourceType ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
-    val resourceIdentifier = questionnaireConfig.resourceIdentifier
-
-    val launchContextResources =
-      launchContextResources(resourceType, resourceIdentifier, actionParameters)
-
-    // Populate questionnaire with initial default values
-    ResourceMapper.populate(
-      questionnaire,
-      launchContexts = launchContextResources.associateBy { it.resourceType.name.lowercase() },
-    )
-
-    questionnaire.prepopulateWithComputedConfigValues(
-      questionnaireConfig,
-      actionParameters,
-      { resourceDataRulesExecutor.computeResourceDataRules(it, null, emptyMap()) },
-      { uniqueIdAssignmentConfig, computedValues ->
-        // Extract ID from a Group, should be modified in future to support other resources
-        uniqueIdResource =
-          defaultRepository.retrieveUniqueIdAssignmentResource(
-            uniqueIdAssignmentConfig,
-            computedValues,
-          )
-
-        withContext(dispatcherProvider.default()) {
-          fhirPathDataExtractor.extractValue(
-            base = uniqueIdResource,
-            expression = uniqueIdAssignmentConfig.idFhirPathExpression,
-          )
-        }
-      },
-    )
-
-    // Populate questionnaire with latest QuestionnaireResponse
-    val questionnaireResponse =
-      if (
-        resourceType != null &&
-          !resourceIdentifier.isNullOrEmpty() &&
-          (questionnaireConfig.isEditable() ||
-            questionnaireConfig.isReadOnly() ||
-            questionnaireConfig.saveDraft)
-      ) {
-        searchQuestionnaireResponse(
-            resourceId = resourceIdentifier,
-            resourceType = resourceType,
-            questionnaireId = questionnaire.logicalId,
-            encounterId = questionnaireConfig.encounterId,
-            questionnaireResponseStatus = questionnaireConfig.questionnaireResponseStatus(),
-          )
-          ?.let {
-            QuestionnaireResponse().apply {
-              item = it.item.removeUnAnsweredItems()
-              // Clearing the text prompts the SDK to re-process the content, which includes HTML
-              clearText()
-            }
-          }
-      } else {
-        null
-      }
-
-    // Exclude the configured fields from QR
-    if (questionnaireResponse != null) {
-      val exclusionLinkIdsMap: Map<String, Boolean> =
-        questionnaireConfig.linkIds
-          ?.asSequence()
-          ?.filter { it.type == LinkIdType.PREPOPULATION_EXCLUSION }
-          ?.associateBy { it.linkId }
-          ?.mapValues { it.value.type == LinkIdType.PREPOPULATION_EXCLUSION } ?: emptyMap()
-
-      questionnaireResponse.item =
-        excludePrepopulationFields(questionnaireResponse.item.toMutableList(), exclusionLinkIdsMap)
-    }
-    return Pair(questionnaireResponse, launchContextResources)
-  }
-
-  fun excludePrepopulationFields(
-    items: MutableList<QuestionnaireResponseItemComponent>,
-    exclusionMap: Map<String, Boolean>,
-  ): MutableList<QuestionnaireResponseItemComponent> {
-    val stack = LinkedList<MutableList<QuestionnaireResponseItemComponent>>()
-    stack.push(items)
-    while (stack.isNotEmpty()) {
-      val currentItems = stack.pop()
-      val iterator = currentItems.iterator()
-      while (iterator.hasNext()) {
-        val item = iterator.next()
-        if (exclusionMap.containsKey(item.linkId)) {
-          iterator.remove()
-        } else if (item.item.isNotEmpty()) {
-          stack.push(item.item)
-        }
-      }
-    }
-    return items
-  }
-
-  private fun List<QuestionnaireResponseItemComponent>.removeUnAnsweredItems():
-    List<QuestionnaireResponseItemComponent> {
-    return this.asSequence()
-      .filter { it.hasAnswer() || it.item.isNotEmpty() }
-      .onEach { it.item = it.item.removeUnAnsweredItems() }
-      .filter { it.hasAnswer() || it.item.isNotEmpty() }
-      .toList()
-  }
-
-  /**
-   * Return [Resource]s to be used in the launch context of the questionnaire. Launch context allows
-   * information to be passed into questionnaire based on the context in which the questionnaire is
-   * being evaluated. For example, what patient, what encounter, what user, etc. is "in context" at
-   * the time the questionnaire response is being completed:
-   * https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-launchContext.html
-   */
-  suspend fun retrievePopulationResources(actionParameters: List<ActionParameter>): List<Resource> {
-    return actionParameters
-      .filter {
-        it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE &&
-          it.resourceType != null &&
-          it.value.isNotEmpty()
-      }
-      .distinctBy { "${it.resourceType?.name}${it.value}" }
-      .mapNotNull { loadResource(it.resourceType!!, it.value) }
-  }
-
-  /** Load [Resource] of type [ResourceType] for the provided [resourceIdentifier] */
-  suspend fun loadResource(resourceType: ResourceType, resourceIdentifier: String): Resource? =
-    try {
-      defaultRepository.loadResource(resourceIdentifier, resourceType)
-    } catch (resourceNotFoundException: ResourceNotFoundException) {
-      null
-    }
-
-  /** Update the current progress state of the questionnaire. */
-  fun setProgressState(questionnaireState: QuestionnaireProgressState) {
-    _questionnaireProgressStateLiveData.postValue(questionnaireState)
-  }
-
->>>>>>> c08e6e1348a64dc3aff5974ce387108284aa39f3
   companion object {
     const val CONTAINED_LIST_TITLE = "GeneratedResourcesList"
     const val OUTPUT_PARAMETER_KEY = "OUTPUT"

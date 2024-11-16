@@ -2231,6 +2231,87 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testThatPopulateQuestionnaireReturnsQuestionnaireResponseWithIdValue() = runTest {
+    val questionnaireViewModelInstance =
+      QuestionnaireViewModel(
+        defaultRepository = defaultRepository,
+        dispatcherProvider = dispatcherProvider,
+        fhirCarePlanGenerator = fhirCarePlanGenerator,
+        resourceDataRulesExecutor = resourceDataRulesExecutor,
+        transformSupportServices = mockk(),
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        fhirOperator = fhirOperator,
+        fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
+        fhirPathDataExtractor = fhirPathDataExtractor,
+        configurationRegistry = configurationRegistry,
+      )
+    val questionnaireConfig1 =
+      questionnaireConfig.copy(
+        resourceType = ResourceType.Patient,
+        resourceIdentifier = patient.logicalId,
+        type = QuestionnaireType.EDIT.name,
+      )
+
+    val questionnaireWithInitialValue =
+      Questionnaire().apply {
+        id = questionnaireConfig1.id
+        addItem(
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = "group-1"
+            type = Questionnaire.QuestionnaireItemType.GROUP
+            addItem(
+              Questionnaire.QuestionnaireItemComponent().apply {
+                linkId = "linkid-1"
+                type = Questionnaire.QuestionnaireItemType.STRING
+                addInitial(Questionnaire.QuestionnaireItemInitialComponent(StringType("---")))
+              },
+            )
+          },
+        )
+
+        addItem(
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = "linkid-2"
+            type = Questionnaire.QuestionnaireItemType.STRING
+          },
+        )
+      }
+    val qrId = "qr-id-1"
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        id = qrId
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            linkId = "group-1"
+            addItem(
+              QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+                linkId = "linkid-1"
+              },
+            )
+          },
+        )
+      }
+    coEvery {
+      fhirEngine.get(questionnaireConfig1.resourceType!!, questionnaireConfig1.resourceIdentifier!!)
+    } returns patient
+
+    coEvery { fhirEngine.search<QuestionnaireResponse>(any<Search>()) } returns
+      listOf(
+        SearchResult(questionnaireResponse, included = null, revIncluded = null),
+      )
+
+    Assert.assertNotNull(questionnaireResponse.find("linkid-1"))
+    val result =
+      questionnaireViewModelInstance.populateQuestionnaire(
+        questionnaireWithInitialValue,
+        questionnaireConfig1,
+        emptyList(),
+      )
+    Assert.assertNotNull(result.first)
+    Assert.assertEquals(qrId, result.first!!.id)
+  }
+
+  @Test
   fun testExcludeNestedItemFromQuestionnairePrepopulation() {
     val item1 = QuestionnaireResponse.QuestionnaireResponseItemComponent().apply { linkId = "1" }
     val item2 = QuestionnaireResponse.QuestionnaireResponseItemComponent().apply { linkId = "2" }
