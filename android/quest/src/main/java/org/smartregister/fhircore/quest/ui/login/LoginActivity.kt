@@ -30,7 +30,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
-import org.smartregister.fhircore.engine.datastore.ContentCache
+import org.smartregister.fhircore.engine.util.helper.CacheHelper
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
 import org.smartregister.fhircore.engine.sync.AppSyncWorker
@@ -50,7 +50,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var p2pReceiverTransferDao: P2PReceiverTransferDao
 
-  @Inject lateinit var contentCache: ContentCache
+  @Inject lateinit var contentCache: CacheHelper
 
   @Inject lateinit var workManager: WorkManager
   val loginViewModel by viewModels<LoginViewModel>()
@@ -89,7 +89,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
           navigateToPinLogin(launchSetup = false)
         }
       }
-      viewModelScope.launch { ContentCache.invalidate() }
+      viewModelScope.launch { CacheHelper.invalidate() }
       navigateToHome.observe(loginActivity) { launchHomeScreen ->
         if (launchHomeScreen) {
           downloadNowWorkflowConfigs()

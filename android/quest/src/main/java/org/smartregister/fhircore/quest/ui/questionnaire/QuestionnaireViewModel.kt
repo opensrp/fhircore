@@ -69,7 +69,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.CodingSystemUsage
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.datastore.ContentCache
+import org.smartregister.fhircore.engine.util.helper.CacheHelper
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.isEditable
@@ -148,13 +148,13 @@ constructor(
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
     var result =
-      ContentCache.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id)
+      CacheHelper.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id)
         ?.copy()
     if (result == null) {
       result =
         defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also { questionnaire,
           ->
-          ContentCache.saveResource(
+          CacheHelper.saveResource(
             questionnaireConfig.id,
             questionnaire.copy(),
           )
@@ -687,12 +687,12 @@ constructor(
                   transformSupportServices = transformSupportServices,
                   structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
                     structureMapUrl?.substringAfterLast("/")?.let { structureMapId ->
-                      ContentCache.getResource(ResourceType.StructureMap.name + "/" + structureMapId)?.let {
+                      CacheHelper.getResource(ResourceType.StructureMap.name + "/" + structureMapId)?.let {
                         it as StructureMap
                       }
                         ?: run {
                           defaultRepository.loadResource<StructureMap>(structureMapId)?.also {
-                            ContentCache.saveResource(structureMapId, it)
+                            CacheHelper.saveResource(structureMapId, it)
                           }
                         }
                     }

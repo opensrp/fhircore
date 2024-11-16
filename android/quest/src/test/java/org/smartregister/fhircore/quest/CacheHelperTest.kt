@@ -31,10 +31,10 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
-import org.smartregister.fhircore.engine.datastore.ContentCache
+import org.smartregister.fhircore.engine.util.helper.CacheHelper
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class ContentCacheTest {
+class CacheHelperTest {
 
   private val testDispatcher = StandardTestDispatcher()
   private val resourceId = "123"
@@ -52,38 +52,38 @@ class ContentCacheTest {
 
   @Test
   fun `saveResource should store resource in cache`() = runTest {
-    ContentCache.saveResource(resourceId, mockResource)
+    CacheHelper.saveResource(resourceId, mockResource)
     advanceUntilIdle() // Ensure coroutine has finished
 
-    val cachedResource = ContentCache.getResource("${mockResource::class.simpleName}/$resourceId")
+    val cachedResource = CacheHelper.getResource("${mockResource::class.simpleName}/$resourceId")
     assertNotNull(cachedResource)
     assertEquals(mockResource, cachedResource)
   }
 
   @Test
   fun `getResource should return the correct resource from cache`() = runTest {
-    ContentCache.saveResource(resourceId, mockResource)
+    CacheHelper.saveResource(resourceId, mockResource)
     advanceUntilIdle() // Ensure coroutine has finished
 
-    val result = ContentCache.getResource("${mockResource::class.simpleName}/$resourceId")
+    val result = CacheHelper.getResource("${mockResource::class.simpleName}/$resourceId")
     assertEquals(mockResource, result)
   }
 
   @Test
   fun `getResource should return null if resource does not exist`() = runTest {
-    val result = ContentCache.getResource("non_existing_id")
+    val result = CacheHelper.getResource("non_existing_id")
     assertNull(result)
   }
 
   @Test
   fun `invalidate should clear all resources from cache`() = runTest {
-    ContentCache.saveResource(resourceId, mockResource)
+    CacheHelper.saveResource(resourceId, mockResource)
     advanceUntilIdle() // Ensure coroutine has finished
 
-    ContentCache.invalidate()
+    CacheHelper.invalidate()
     advanceUntilIdle() // Ensure coroutine has finished
 
-    val result = ContentCache.getResource("${mockResource::class.simpleName}/$resourceId")
+    val result = CacheHelper.getResource("${mockResource::class.simpleName}/$resourceId")
     assertNull(result)
   }
 }

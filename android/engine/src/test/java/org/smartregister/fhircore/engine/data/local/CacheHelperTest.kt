@@ -34,7 +34,7 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
-class ContentCacheTest : RobolectricTest() {
+class CacheHelperTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 

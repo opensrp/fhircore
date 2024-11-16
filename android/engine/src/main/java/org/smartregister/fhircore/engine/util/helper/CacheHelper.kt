@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.datastore
+package org.smartregister.fhircore.engine.util.helper
 
 import androidx.collection.LruCache
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +22,7 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Resource
 import timber.log.Timber
 
-object ContentCache {
+object CacheHelper {
   private val maxMemory: Int = (Runtime.getRuntime().maxMemory() / 1024).toInt()
   private val cacheSize: Int = maxMemory / 8
   private val cache = LruCache<String, Resource>(cacheSize)

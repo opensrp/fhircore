@@ -57,7 +57,6 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.event.EventType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.datastore.ContentCache
 import org.smartregister.fhircore.engine.util.extension.addResourceParameter
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.batchedSearch
@@ -68,6 +67,7 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
+import org.smartregister.fhircore.engine.util.helper.CacheHelper
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import timber.log.Timber
 
@@ -217,12 +217,12 @@ constructor(
             source.setParameter(ActivityDefinition.SP_VERSION, IntegerType(index))
             val structureMapId = IdType(action.transform).idPart
             val structureMap =
-              ContentCache.getResource(ResourceType.StructureMap.name + "/" + structureMapId)?.let {
+              CacheHelper.getResource(ResourceType.StructureMap.name + "/" + structureMapId)?.let {
                 it as StructureMap
               }
                 ?: run {
                   fhirEngine.get<StructureMap>(structureMapId).also {
-                    ContentCache.saveResource(structureMapId, it)
+                    CacheHelper.saveResource(structureMapId, it)
                   }
                 }
             structureMapUtilities.transform(
