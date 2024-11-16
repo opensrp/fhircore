@@ -862,10 +862,7 @@ constructor(
                   cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
                     resultParameterResource.isResource
                 ) {
-                  defaultRepository.create(
-                    true,
-                    resultParameterResource as Resource,
-                  )
+                  defaultRepository.create(true, resultParameterResource as Resource)
                   resultParameterResource
                 } else {
                   null
@@ -1076,6 +1073,7 @@ constructor(
                 encounterId.extractLogicalIdUuid().asReference(ResourceType.Encounter).reference
             },
           )
+<<<<<<< HEAD
         }
         if (!questionnaireResponseStatus.isNullOrBlank()) {
           filter(
@@ -1255,6 +1253,184 @@ constructor(
     _questionnaireProgressStateLiveData.postValue(questionnaireState)
   }
 
+=======
+        }
+        if (!questionnaireResponseStatus.isNullOrBlank()) {
+          filter(
+            QuestionnaireResponse.STATUS,
+            { value = of(questionnaireResponseStatus) },
+          )
+        }
+      }
+    val questionnaireResponses: List<QuestionnaireResponse> = defaultRepository.search(search)
+    return questionnaireResponses.maxByOrNull { it.meta.lastUpdated }
+  }
+
+  private suspend fun launchContextResources(
+    subjectResourceType: ResourceType?,
+    subjectResourceIdentifier: String?,
+    actionParameters: List<ActionParameter>,
+  ): List<Resource> {
+    return when {
+      subjectResourceType != null && subjectResourceIdentifier != null ->
+        mutableListOf<Resource>().apply {
+          loadResource(subjectResourceType, subjectResourceIdentifier)?.let { add(it) }
+          val actionParametersExcludingSubject =
+            actionParameters.filterNot {
+              it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE &&
+                subjectResourceType == it.resourceType &&
+                subjectResourceIdentifier.equals(it.value, ignoreCase = true)
+            }
+          addAll(retrievePopulationResources(actionParametersExcludingSubject))
+        }
+      else -> retrievePopulationResources(actionParameters)
+    }
+  }
+
+  suspend fun populateQuestionnaire(
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
+    actionParameters: List<ActionParameter>,
+  ): Pair<QuestionnaireResponse?, List<Resource>> {
+    val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
+    val resourceType =
+      questionnaireConfig.resourceType ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
+    val resourceIdentifier = questionnaireConfig.resourceIdentifier
+
+    val launchContextResources =
+      launchContextResources(resourceType, resourceIdentifier, actionParameters)
+
+    // Populate questionnaire with initial default values
+    ResourceMapper.populate(
+      questionnaire,
+      launchContexts = launchContextResources.associateBy { it.resourceType.name.lowercase() },
+    )
+
+    questionnaire.prepopulateWithComputedConfigValues(
+      questionnaireConfig,
+      actionParameters,
+      { resourceDataRulesExecutor.computeResourceDataRules(it, null, emptyMap()) },
+      { uniqueIdAssignmentConfig, computedValues ->
+        // Extract ID from a Group, should be modified in future to support other resources
+        uniqueIdResource =
+          defaultRepository.retrieveUniqueIdAssignmentResource(
+            uniqueIdAssignmentConfig,
+            computedValues,
+          )
+
+        withContext(dispatcherProvider.default()) {
+          fhirPathDataExtractor.extractValue(
+            base = uniqueIdResource,
+            expression = uniqueIdAssignmentConfig.idFhirPathExpression,
+          )
+        }
+      },
+    )
+
+    // Populate questionnaire with latest QuestionnaireResponse
+    val questionnaireResponse =
+      if (
+        resourceType != null &&
+          !resourceIdentifier.isNullOrEmpty() &&
+          (questionnaireConfig.isEditable() ||
+            questionnaireConfig.isReadOnly() ||
+            questionnaireConfig.saveDraft)
+      ) {
+        searchQuestionnaireResponse(
+            resourceId = resourceIdentifier,
+            resourceType = resourceType,
+            questionnaireId = questionnaire.logicalId,
+            encounterId = questionnaireConfig.encounterId,
+            questionnaireResponseStatus = questionnaireConfig.questionnaireResponseStatus(),
+          )
+          ?.let {
+            QuestionnaireResponse().apply {
+              item = it.item.removeUnAnsweredItems()
+              // Clearing the text prompts the SDK to re-process the content, which includes HTML
+              clearText()
+            }
+          }
+      } else {
+        null
+      }
+
+    // Exclude the configured fields from QR
+    if (questionnaireResponse != null) {
+      val exclusionLinkIdsMap: Map<String, Boolean> =
+        questionnaireConfig.linkIds
+          ?.asSequence()
+          ?.filter { it.type == LinkIdType.PREPOPULATION_EXCLUSION }
+          ?.associateBy { it.linkId }
+          ?.mapValues { it.value.type == LinkIdType.PREPOPULATION_EXCLUSION } ?: emptyMap()
+
+      questionnaireResponse.item =
+        excludePrepopulationFields(questionnaireResponse.item.toMutableList(), exclusionLinkIdsMap)
+    }
+    return Pair(questionnaireResponse, launchContextResources)
+  }
+
+  fun excludePrepopulationFields(
+    items: MutableList<QuestionnaireResponseItemComponent>,
+    exclusionMap: Map<String, Boolean>,
+  ): MutableList<QuestionnaireResponseItemComponent> {
+    val stack = LinkedList<MutableList<QuestionnaireResponseItemComponent>>()
+    stack.push(items)
+    while (stack.isNotEmpty()) {
+      val currentItems = stack.pop()
+      val iterator = currentItems.iterator()
+      while (iterator.hasNext()) {
+        val item = iterator.next()
+        if (exclusionMap.containsKey(item.linkId)) {
+          iterator.remove()
+        } else if (item.item.isNotEmpty()) {
+          stack.push(item.item)
+        }
+      }
+    }
+    return items
+  }
+
+  private fun List<QuestionnaireResponseItemComponent>.removeUnAnsweredItems():
+    List<QuestionnaireResponseItemComponent> {
+    return this.asSequence()
+      .filter { it.hasAnswer() || it.item.isNotEmpty() }
+      .onEach { it.item = it.item.removeUnAnsweredItems() }
+      .filter { it.hasAnswer() || it.item.isNotEmpty() }
+      .toList()
+  }
+
+  /**
+   * Return [Resource]s to be used in the launch context of the questionnaire. Launch context allows
+   * information to be passed into questionnaire based on the context in which the questionnaire is
+   * being evaluated. For example, what patient, what encounter, what user, etc. is "in context" at
+   * the time the questionnaire response is being completed:
+   * https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-launchContext.html
+   */
+  suspend fun retrievePopulationResources(actionParameters: List<ActionParameter>): List<Resource> {
+    return actionParameters
+      .filter {
+        it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE &&
+          it.resourceType != null &&
+          it.value.isNotEmpty()
+      }
+      .distinctBy { "${it.resourceType?.name}${it.value}" }
+      .mapNotNull { loadResource(it.resourceType!!, it.value) }
+  }
+
+  /** Load [Resource] of type [ResourceType] for the provided [resourceIdentifier] */
+  suspend fun loadResource(resourceType: ResourceType, resourceIdentifier: String): Resource? =
+    try {
+      defaultRepository.loadResource(resourceIdentifier, resourceType)
+    } catch (resourceNotFoundException: ResourceNotFoundException) {
+      null
+    }
+
+  /** Update the current progress state of the questionnaire. */
+  fun setProgressState(questionnaireState: QuestionnaireProgressState) {
+    _questionnaireProgressStateLiveData.postValue(questionnaireState)
+  }
+
+>>>>>>> c08e6e1348a64dc3aff5974ce387108284aa39f3
   companion object {
     const val CONTAINED_LIST_TITLE = "GeneratedResourcesList"
     const val OUTPUT_PARAMETER_KEY = "OUTPUT"
