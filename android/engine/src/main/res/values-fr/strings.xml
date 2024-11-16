@@ -64,11 +64,12 @@
     <string name="error_saving_form">Erreur rencontrée, formulaire non enregistré</string>
     <string name="form_progress_message">Traitement des données. Veuillez patienter</string>
     <string name="questionnaire_alert_back_pressed_message">Êtes-vous sûr de vouloir revenir en arrière ?</string>
-    <string name="questionnaire_in_progress_alert_back_pressed_message">Êtes-vous sûr de vouloir annuler les réponses ?</string>
-    <string name="questionnaire_alert_back_pressed_title">Annuler les modifications</string>
-    <string name="questionnaire_alert_back_pressed_button_title">Annuler cette action</string>
-    <string name="questionnaire_alert_back_pressed_save_draft_button_title">Enregistrer un brouillon partiel</string>
+    <string name="questionnaire_in_progress_alert_back_pressed_message">Si vous partez sans sauvegarder, toutes vos modifications ne seront pas enregistrées.</string>
+    <string name="questionnaire_alert_back_pressed_title">Vous avez des modifications non enregistrées.</string>
+    <string name="questionnaire_alert_back_pressed_button_title">Annuler les modifications</string>
+    <string name="questionnaire_alert_back_pressed_save_draft_button_title">Enregistrer comme brouillon</string>
     <string name="questionnaire_alert_neutral_button_title">Ne pas annuler cette action</string>
+    <string name="questionnaire_alert_negative_button_title">Abandonner les modifications</string>
     <string name="questionnaire_alert_confirm_button_title">Oui</string>
     <string name="questionnaire_alert_invalid_message">Des erreurs de validation ont été détectées. Corrigez les erreurs et soumettez à nouveau.</string>
     <string name="questionnaire_alert_invalid_title">Échec de la validation</string>
@@ -179,4 +180,7 @@
     <string name="retry">REESSAYER</string>
     <string name="unsynced_data_present">Il y a des données non synchronisées</string>
     <string name="missing_supervisor_contact">Le contact du superviseur est manquant ou le numéro de téléphone fourni n\'est pas valide</string>
+    <string name="apply_filter">APPLIQUER LE FILLTRE</string>
+    <string name="questionnaire_save_draft_title">Enregistrer les modifications du brouillon</string>
+    <string name="questionnaire_save_draft_message">Voulez-vous enregistrer les modifications du brouillon ?</string>
 </resources>
