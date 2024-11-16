@@ -18,10 +18,10 @@ package org.smartregister.fhircore.quest.integration
 
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.android.fhir.CrudFhirEngine
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.LocalChange
 import com.google.android.fhir.SearchResult
+import com.google.android.fhir.db.LocalChangeResourceReference
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.sync.ConflictResolver
 import com.google.android.fhir.sync.upload.SyncUploadProgress
@@ -104,14 +104,17 @@ object Faker {
 
         override suspend fun syncUpload(
           uploadStrategy: UploadStrategy,
-          upload: suspend (List<LocalChange>) -> Flow<UploadRequestResult>,
+          upload:
+            suspend (List<LocalChange>, List<LocalChangeResourceReference>) -> Flow<
+                UploadRequestResult,
+              >,
         ): Flow<SyncUploadProgress> {
           return flowOf()
         }
 
         override suspend fun update(vararg resource: Resource) {}
 
-        override suspend fun withTransaction(block: suspend CrudFhirEngine.() -> Unit) {
+        override suspend fun withTransaction(block: suspend FhirEngine.() -> Unit) {
           TODO("Not yet implemented")
         }
       }

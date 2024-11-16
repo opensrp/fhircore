@@ -26,13 +26,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -53,21 +51,18 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
-import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
-import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
-import org.smartregister.fhircore.quest.ui.bottomsheet.SummaryBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
@@ -92,7 +87,6 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  private lateinit var geoWidgetFragment: GeoWidgetFragment
   private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
   private val navArgs by navArgs<GeoWidgetLauncherFragmentArgs>()
   private val geoWidgetLauncherViewModel by viewModels<GeoWidgetLauncherViewModel>()
@@ -104,11 +98,18 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
     container: ViewGroup?,
     savedInstanceState: Bundle?,
   ): View {
-    buildGeoWidgetFragment()
-    geoWidgetLauncherViewModel.retrieveLocations(
-      geoWidgetConfig = geoWidgetConfiguration,
-      searchText = searchViewModel.searchQuery.value.query,
-    )
+    geoWidgetConfiguration =
+      configurationRegistry.retrieveConfiguration<GeoWidgetConfiguration>(
+        configType = ConfigType.GeoWidget,
+        configId = navArgs.geoWidgetId,
+      )
+    if (geoWidgetConfiguration.resourceConfig.baseResource.resource != ResourceType.Location) {
+      val message = getString(R.string.invalid_base_resource)
+      requireContext().showToast(message)
+      Timber.e(message, geoWidgetConfiguration.toString())
+      requireContext().getActivity()?.finish()
+    }
+
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
@@ -168,29 +169,31 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
             },
           ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
-              val geoWidgetFragment = remember { geoWidgetFragment }
               GeoWidgetLauncherScreen(
                 modifier = Modifier.fillMaxSize(),
                 openDrawer = openDrawer,
                 navController = findNavController(),
                 toolBarHomeNavigation = navArgs.toolBarHomeNavigation,
-                fragmentManager = childFragmentManager,
-                geoWidgetFragment = geoWidgetFragment,
                 geoWidgetConfiguration = geoWidgetConfiguration,
                 searchQuery = searchViewModel.searchQuery,
                 search = { searchText ->
-                  geoWidgetFragment.clearMapFeatures()
-                  geoWidgetLauncherViewModel.onEvent(
-                    GeoWidgetEvent.SearchFeatures(
-                      searchQuery = SearchQuery(searchText, SearchMode.KeyboardInput),
-                      geoWidgetConfig = geoWidgetConfiguration,
-                    ),
-                  )
+                  geoWidgetLauncherViewModel.run {
+                    onEvent(GeoWidgetEvent.ClearMap)
+                    onEvent(
+                      GeoWidgetEvent.RetrieveFeatures(
+                        searchQuery = SearchQuery(searchText, SearchMode.KeyboardInput),
+                        geoWidgetConfig = geoWidgetConfiguration,
+                      ),
+                    )
+                  }
                 },
                 isFirstTimeSync = geoWidgetLauncherViewModel.isFirstTime(),
                 appDrawerUIState = appDrawerUIState,
+                clearMapLiveData = geoWidgetLauncherViewModel.clearMapLiveData,
+                geoJsonFeatures = geoWidgetLauncherViewModel.geoJsonFeatures,
+                launchQuestionnaire = geoWidgetLauncherViewModel::launchQuestionnaire,
+                decodeImage = geoWidgetLauncherViewModel::getImageBitmap,
                 onAppMainEvent = appMainViewModel::onEvent,
-                decodeImage = { TODO("Return bitmap") },
               )
             }
           }
@@ -220,14 +223,16 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
       }
       is CurrentSyncJobStatus.Succeeded,
       is CurrentSyncJobStatus.Failed, -> {
-        if (syncJobStatus is CurrentSyncJobStatus.Succeeded) {
-          geoWidgetFragment.clearMapFeatures()
-        }
-        geoWidgetLauncherViewModel.retrieveLocations(
-          geoWidgetConfig = geoWidgetConfiguration,
-          searchText = searchViewModel.searchQuery.value.query,
-        )
         appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+        if (syncJobStatus is CurrentSyncJobStatus.Succeeded) {
+          geoWidgetLauncherViewModel.onEvent(GeoWidgetEvent.ClearMap)
+        }
+        geoWidgetLauncherViewModel.onEvent(
+          GeoWidgetEvent.RetrieveFeatures(
+            geoWidgetConfig = geoWidgetConfiguration,
+            searchQuery = searchViewModel.searchQuery.value,
+          ),
+        )
       }
       else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
     }
@@ -235,6 +240,30 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
+    viewLifecycleOwner.lifecycleScope.launch {
+      viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+        eventBus.events
+          .getFor(MainNavigationScreen.GeoWidgetLauncher.eventId(navArgs.geoWidgetId))
+          .onEach { appEvent ->
+            when (appEvent) {
+              is AppEvent.RefreshData,
+              is AppEvent.OnSubmitQuestionnaire, -> {
+                appMainViewModel.countRegisterData()
+                geoWidgetLauncherViewModel.run {
+                  onEvent(GeoWidgetEvent.ClearMap)
+                  onEvent(
+                    GeoWidgetEvent.RetrieveFeatures(
+                      geoWidgetConfig = geoWidgetConfiguration,
+                      searchQuery = searchViewModel.searchQuery.value,
+                    ),
+                  )
+                }
+              }
+            }
+          }
+          .launchIn(lifecycleScope)
+      }
+    }
     geoWidgetLauncherViewModel.noLocationFoundDialog.observe(viewLifecycleOwner) { show ->
       if (show) {
         AlertDialogue.showAlert(
@@ -254,8 +283,12 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         )
       }
     }
-
-    setOnQuestionnaireSubmissionListener { geoWidgetFragment.submitFeatures(listOf(it)) }
+    geoWidgetLauncherViewModel.onEvent(
+      GeoWidgetEvent.RetrieveFeatures(
+        geoWidgetConfig = geoWidgetConfiguration,
+        searchQuery = searchViewModel.searchQuery.value,
+      ),
+    )
   }
 
   override fun onPause() {
@@ -266,76 +299,5 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
   override fun onDestroy() {
     super.onDestroy()
     appMainViewModel.updateAppDrawerUIState(false, null, 0)
-  }
-
-  private fun buildGeoWidgetFragment() {
-    geoWidgetConfiguration =
-      configurationRegistry.retrieveConfiguration<GeoWidgetConfiguration>(
-        configType = ConfigType.GeoWidget,
-        configId = navArgs.geoWidgetId,
-      )
-
-    if (geoWidgetConfiguration.resourceConfig.baseResource.resource != ResourceType.Location) {
-      val message = getString(R.string.invalid_base_resource)
-      requireContext().showToast(message)
-      Timber.e(message, geoWidgetConfiguration.toString())
-    }
-
-    geoWidgetFragment =
-      GeoWidgetFragment.builder()
-        .setUseGpsOnAddingLocation(false)
-        .setAddLocationButtonVisibility(geoWidgetConfiguration.showAddLocation)
-        .setOnAddLocationListener { feature: GeoJsonFeature ->
-          if (feature.geometry?.coordinates == null) return@setOnAddLocationListener
-          geoWidgetLauncherViewModel.launchQuestionnaire(
-            geoWidgetConfiguration.registrationQuestionnaire,
-            feature,
-            requireContext(),
-          )
-        }
-        .setOnCancelAddingLocationListener {
-          requireContext().showToast("on cancel adding location")
-        }
-        .setOnClickLocationListener {
-          feature: GeoJsonFeature,
-          parentFragmentManager: FragmentManager,
-          ->
-          SummaryBottomSheetFragment(
-              geoWidgetConfiguration.summaryBottomSheetConfig!!,
-              ResourceData(
-                baseResourceId = feature.id,
-                baseResourceType = ResourceType.Location,
-                computedValuesMap = feature.properties.mapValues { it.value.content },
-              ),
-            )
-            .run { show(parentFragmentManager, SummaryBottomSheetFragment.TAG) }
-        }
-        .setMapLayers(geoWidgetConfiguration.mapLayers)
-        .showCurrentLocationButtonVisibility(geoWidgetConfiguration.showLocation)
-        .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.showPlaneSwitcher)
-        .build()
-
-    lifecycleScope.launch {
-      geoWidgetLauncherViewModel.geoJsonFeatures.collect { geoWidgetFragment.submitFeatures(it) }
-    }
-  }
-
-  private fun setOnQuestionnaireSubmissionListener(emitFeature: (GeoJsonFeature) -> Unit) {
-    viewLifecycleOwner.lifecycleScope.launch {
-      repeatOnLifecycle(Lifecycle.State.STARTED) {
-        eventBus.events
-          .getFor(MainNavigationScreen.GeoWidgetLauncher.eventId(geoWidgetConfiguration.id))
-          .onEach { appEvent ->
-            if (appEvent is AppEvent.OnSubmitQuestionnaire) {
-              val extractedResourceIds = appEvent.questionnaireSubmission.extractedResourceIds
-              geoWidgetLauncherViewModel.onQuestionnaireSubmission(
-                extractedResourceIds = extractedResourceIds,
-                emitFeature = emitFeature,
-              )
-            }
-          }
-          .launchIn(lifecycleScope)
-      }
-    }
   }
 }

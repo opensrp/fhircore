@@ -20,23 +20,14 @@ import com.google.android.fhir.datacapture.extensions.asStringValue
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.datacapture.extensions.targetStructureMap
 import java.util.Locale
-import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.DateType
-import org.hl7.fhir.r4.model.DecimalType
-import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.IdType
-import org.hl7.fhir.r4.model.IntegerType
-import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseStatus
 import org.hl7.fhir.r4.model.StringType
-import org.hl7.fhir.r4.model.TimeType
-import org.hl7.fhir.r4.model.Type
-import org.hl7.fhir.r4.model.UriType
 import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
@@ -45,6 +36,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.isEditable
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
+import org.smartregister.fhircore.engine.util.castToType
 
 fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
   if (this.linkId != null) {
@@ -302,19 +294,18 @@ suspend fun Questionnaire.prepopulateUniqueIdAssignment(
   }
 }
 
-/** Cast string value (including json string) to the FHIR {@link org.hl7.fhir.r4.model.Type} */
-fun String.castToType(type: DataType): Type? {
-  return when (type) {
-    DataType.BOOLEAN -> BooleanType(this)
-    DataType.DECIMAL -> DecimalType(this)
-    DataType.INTEGER -> IntegerType(this)
-    DataType.DATE -> DateType(this)
-    DataType.DATETIME -> DateTimeType(this)
-    DataType.TIME -> TimeType(this)
-    DataType.STRING -> StringType(this)
-    DataType.URI -> UriType(this)
-    DataType.CODING -> this.tryDecodeJson<Coding>()
-    DataType.QUANTITY -> this.tryDecodeJson<Quantity>()
-    else -> null // TODO cast the (several) remaining Enumeration.DataTypes
+/**
+ * Determines the [QuestionnaireResponse.Status] depending on the [saveDraft] and [isEditable]
+ * values contained in the [QuestionnaireConfig]
+ *
+ * returns [COMPLETED] when [isEditable] is [true] returns [INPROGRESS] when [saveDraft] is [true]
+ */
+fun QuestionnaireConfig.questionnaireResponseStatus(): String? {
+  return if (this.isEditable()) {
+    QuestionnaireResponseStatus.COMPLETED.toCode()
+  } else if (this.saveDraft) {
+    QuestionnaireResponseStatus.INPROGRESS.toCode()
+  } else {
+    null
   }
 }

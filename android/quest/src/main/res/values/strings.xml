@@ -87,7 +87,8 @@
     <string name="record_as_anc">Record as ANC</string>
     <string name="pregnancy_outcome">Pregnancy Outcome</string>
     <string name="registers">Registers</string>
-    <string name="title_no_location_set">No Location Set</string>
+    <string name="title_no_location_set">No location Set</string>
+    <string name="no_locations_to_render">No locations to render on map</string>
     <string name="message_location_set">Set location to sync data and load service points</string>
     <string name="positive_button_location_set">Set location</string>
 
@@ -135,4 +136,9 @@
     <string name="space_asterisk" translatable="false">\u0020\u002a</string>
     <string name="exit_app">Exit App</string>
     <string name="exit_app_message">Are you sure you want to exit from the app?</string>
+    <string name="missing_multi_select_view_configs">Missing required multi select view configs. Please provide the configurations for the view to render.</string>
+    <string name="locations_without_coordinates"><b>"%1$d</b> out of <b>%2$d </b>Location(s) have no coordinates"</string>
+    <string name="all_locations_rendered"><b>All</b> the locations rendered successfully"</string>
+    <string name="all_matching_locations_rendered"><b>%1$d </b> matching location(s) rendered successfully"</string>
+    <string name="on_cancel_adding_location">Cancel adding location</string>
 </resources>

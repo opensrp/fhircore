@@ -30,6 +30,7 @@ import com.google.android.fhir.SearchResult
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
+import com.google.android.fhir.getResourceType
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
@@ -75,6 +76,7 @@ import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFi
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
@@ -93,7 +95,7 @@ import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
-import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationIds
+import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -114,16 +116,32 @@ constructor(
   @ApplicationContext open val context: Context,
 ) {
 
+  @Inject lateinit var contentCache: ContentCache
+
+  init {
+    DaggerDefaultRepositoryComponent.create().inject(this)
+  }
+
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? =
     fhirEngine.loadResource(resourceId)
 
+  @Throws(ResourceNotFoundException::class)
   suspend fun loadResource(resourceId: String, resourceType: ResourceType): Resource =
     fhirEngine.get(resourceType, resourceId)
 
+  @Throws(ResourceNotFoundException::class)
   suspend fun loadResource(reference: Reference) =
     IdType(reference.reference).let {
       fhirEngine.get(ResourceType.fromCode(it.resourceType), it.idPart)
     }
+
+  suspend inline fun <reified T : Resource> loadResourceFromCache(resourceId: String): T? {
+    val resourceType = getResourceType(T::class.java)
+    val resource =
+      contentCache.getResource(resourceType, resourceId)
+        ?: fhirEngine.loadResource<T>(resourceId)?.let { contentCache.saveResource(it) }
+    return resource as? T
+  }
 
   suspend inline fun <reified T : Resource> searchResourceFor(
     token: TokenClientParam,
@@ -934,7 +952,11 @@ constructor(
     configComputedRuleValues: Map<String, Any>,
   ) =
     if (filterByRelatedEntityLocation) {
-      val syncLocationIds = context.retrieveRelatedEntitySyncLocationIds()
+      val syncLocationIds =
+        context.retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.FILTER_DATA).map {
+          it.locationId
+        }
+
       val locationIds =
         syncLocationIds
           .map { retrieveFlattenedSubLocations(it).map { subLocation -> subLocation.logicalId } }
@@ -1017,7 +1039,10 @@ constructor(
       val configComputedRuleValues = configRules.configRulesComputedValues()
 
       if (filterByRelatedEntityLocationMetaTag) {
-        val syncLocationIds = context.retrieveRelatedEntitySyncLocationIds()
+        val syncLocationIds =
+          context.retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.FILTER_DATA).map {
+            it.locationId
+          }
         val locationIds =
           syncLocationIds
             .map { retrieveFlattenedSubLocations(it).map { subLocation -> subLocation.logicalId } }
