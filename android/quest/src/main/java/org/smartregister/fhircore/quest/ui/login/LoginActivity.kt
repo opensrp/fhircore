@@ -50,8 +50,6 @@ open class LoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var p2pReceiverTransferDao: P2PReceiverTransferDao
 
-  @Inject lateinit var contentCache: CacheHelper
-
   @Inject lateinit var workManager: WorkManager
   val loginViewModel by viewModels<LoginViewModel>()
 
