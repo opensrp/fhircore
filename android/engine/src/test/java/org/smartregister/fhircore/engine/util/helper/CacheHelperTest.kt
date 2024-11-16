@@ -51,14 +51,23 @@ class CacheHelperTest : RobolectricTest() {
   fun `saveResource should store resource in cache`() = runTest {
     CacheHelper.saveResource(mockResource.idPart, mockResource)
 
-    val cachedResource = CacheHelper.getResource(mockResource.idPart)
+    val cachedResource =
+      CacheHelper.getResource(mockResource::class.simpleName ?: "", mockResource.idPart)
     assertNotNull(cachedResource)
     assertEquals(mockResource.idPart, cachedResource?.idPart)
   }
 
   @Test
+  fun `getResource should return null if resource type does not match`() = runTest {
+    CacheHelper.saveResource(mockResource.idPart, mockResource)
+
+    val result = CacheHelper.getResource("DifferentType", mockResource.idPart)
+    assertNull(result)
+  }
+
+  @Test
   fun `getResource should return null if resource does not exist`() = runTest {
-    val result = CacheHelper.getResource("non_existing_id")
+    val result = CacheHelper.getResource(mockResource::class.simpleName ?: "", "non_existing_id")
     assertNull(result)
   }
 
@@ -67,7 +76,7 @@ class CacheHelperTest : RobolectricTest() {
     CacheHelper.saveResource(mockResource.idPart, mockResource)
     CacheHelper.invalidate()
 
-    val result = CacheHelper.getResource(mockResource.idPart)
+    val result = CacheHelper.getResource(mockResource::class.simpleName ?: "", mockResource.idPart)
     assertNull(result)
   }
 }

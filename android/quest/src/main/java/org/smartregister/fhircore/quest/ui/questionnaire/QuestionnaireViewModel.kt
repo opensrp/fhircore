@@ -147,8 +147,7 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
-    return (CacheHelper.getResource(ResourceType.Questionnaire.name + "/" + questionnaireConfig.id)
-      ?.copy()
+    return (CacheHelper.getResource(ResourceType.Questionnaire.name, questionnaireConfig.id)?.copy()
       ?: defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also {
         questionnaire,
         ->
@@ -683,8 +682,9 @@ constructor(
                   transformSupportServices = transformSupportServices,
                   structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
                     structureMapUrl?.substringAfterLast("/")?.let { structureMapId ->
-                      CacheHelper.getResource(ResourceType.StructureMap.name + "/" + structureMapId)
-                        ?.let { it as StructureMap }
+                      CacheHelper.getResource(ResourceType.StructureMap.name, structureMapId)?.let {
+                        it as StructureMap
+                      }
                         ?: run {
                           defaultRepository.loadResource<StructureMap>(structureMapId)?.also {
                             CacheHelper.saveResource(structureMapId, it)

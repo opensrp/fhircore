@@ -98,7 +98,6 @@ import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyn
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.engine.util.helper.CacheHelper
 import org.smartregister.fhircore.engine.util.pmap
 import timber.log.Timber
 
@@ -132,13 +131,6 @@ constructor(
     IdType(reference.reference).let {
       fhirEngine.get(ResourceType.fromCode(it.resourceType), it.idPart)
     }
-
-  suspend inline fun <reified T : Resource> loadResourceFromCache(resourceId: String): T? {
-    val resource =
-      CacheHelper.getResource(resourceId)
-        ?: fhirEngine.loadResource<T>(resourceId)?.let { CacheHelper.saveResource(resourceId, it) }
-    return resource as? T
-  }
 
   suspend inline fun <reified T : Resource> searchResourceFor(
     token: TokenClientParam,

@@ -35,8 +35,9 @@ object CacheHelper {
     }
 
   @JvmStatic
-  fun getResource(resourceId: String): Resource? {
-    return cache[resourceId]?.also { Timber.i("ContentCache:getResource: $resourceId") }
+  fun getResource(resourceType: String, resourceId: String): Resource? {
+    val cacheKey = "$resourceType/$resourceId"
+    return cache[cacheKey]?.also { Timber.i("ContentCache:getResource: $cacheKey") }
   }
 
   suspend fun invalidate() =
