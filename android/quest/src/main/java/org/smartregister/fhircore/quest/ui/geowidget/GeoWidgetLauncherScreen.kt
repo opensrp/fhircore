@@ -18,24 +18,33 @@ package org.smartregister.fhircore.quest.ui.geowidget
 
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.compose.AndroidFragment
 import androidx.fragment.compose.rememberFragmentState
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
+import kotlinx.coroutines.flow.StateFlow
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
+import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
@@ -65,8 +74,11 @@ fun GeoWidgetLauncherScreen(
   launchQuestionnaire: (QuestionnaireConfig, GeoJsonFeature, Context) -> Unit,
   decodeImage: ((String) -> Bitmap?)?,
   onAppMainEvent: (AppMainEvent) -> Unit,
+  isSyncing: StateFlow<Boolean>,
 ) {
   val context = LocalContext.current
+  val syncing by isSyncing.collectAsState()
+
   Scaffold(
     topBar = {
       Column {
@@ -118,14 +130,20 @@ fun GeoWidgetLauncherScreen(
     },
   ) { innerPadding ->
     val fragmentState = rememberFragmentState()
-    Box(modifier = modifier.padding(innerPadding)) {
+    Box(
+      modifier = modifier.padding(innerPadding).fillMaxSize(),
+    ) {
       AndroidFragment<GeoWidgetFragment>(fragmentState = fragmentState) { fragment ->
         fragment
           .setUseGpsOnAddingLocation(false)
           .setAddLocationButtonVisibility(geoWidgetConfiguration.showAddLocation)
           .setOnAddLocationListener { feature: GeoJsonFeature ->
             if (feature.geometry?.coordinates == null) return@setOnAddLocationListener
-            launchQuestionnaire(geoWidgetConfiguration.registrationQuestionnaire, feature, context)
+            launchQuestionnaire(
+              geoWidgetConfiguration.registrationQuestionnaire,
+              feature,
+              context,
+            )
           }
           .setOnCancelAddingLocationListener {
             context.showToast(context.getString(R.string.on_cancel_adding_location))
@@ -151,6 +169,23 @@ fun GeoWidgetLauncherScreen(
         fragment.apply {
           observerMapReset(clearMapLiveData)
           observerGeoJsonFeatures(geoJsonFeatures)
+        }
+      }
+      if (syncing) {
+        Box(
+          modifier =
+            Modifier.fillMaxSize().padding(16.dp).pointerInput(Unit) { detectTapGestures {} },
+          contentAlignment = Alignment.Center,
+        ) {
+          LoaderDialog(
+            boxWidth = 50.dp,
+            boxHeight = 50.dp,
+            progressBarSize = 25.dp,
+            showBackground = true,
+            showLineSpinIndicator = true,
+            showOverlay = false,
+            modifier = Modifier.align(Alignment.Center),
+          )
         }
       }
     }
