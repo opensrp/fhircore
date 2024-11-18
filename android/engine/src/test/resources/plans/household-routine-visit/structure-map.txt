@@ -84,7 +84,9 @@ group ExtractTimingCode(source subject : Group, target concept: CodeableConcept)
 
 group ExtractPeriod_1m(source offset : DateType, target period: Period){
     offset -> offset as start,
-              evaluate(offset, $this + 1 'month') as end then
+              evaluate(offset, "1 month".toQuantity()) as duration1month,
+              duration1month.code = 'month',
+              evaluate(offset, $this + duration1month) as end then
               ExtractPeriod(start, end, period) "r_period";
 }
 

@@ -59,6 +59,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComp
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -145,7 +146,7 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
-    return defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)
+    return defaultRepository.loadResourceFromCache<Questionnaire>(questionnaireConfig.id)
   }
 
   /**
@@ -650,8 +651,8 @@ constructor(
                 StructureMapExtractionContext(
                   transformSupportServices = transformSupportServices,
                   structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
-                    structureMapUrl?.substringAfterLast("/")?.let {
-                      defaultRepository.loadResource(it)
+                    structureMapUrl?.substringAfterLast("/")?.let { structureMapId ->
+                      defaultRepository.loadResourceFromCache<StructureMap>(structureMapId)
                     }
                   },
                 ),
@@ -861,7 +862,10 @@ constructor(
                   cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
                     resultParameterResource.isResource
                 ) {
-                  defaultRepository.create(true, resultParameterResource as Resource)
+                  defaultRepository.create(
+                    true,
+                    resultParameterResource as Resource,
+                  )
                   resultParameterResource
                 } else {
                   null
@@ -1163,6 +1167,7 @@ constructor(
           )
           ?.let {
             QuestionnaireResponse().apply {
+              id = it.id
               item = it.item.removeUnAnsweredItems()
               // Clearing the text prompts the SDK to re-process the content, which includes HTML
               clearText()
@@ -1182,7 +1187,10 @@ constructor(
           ?.mapValues { it.value.type == LinkIdType.PREPOPULATION_EXCLUSION } ?: emptyMap()
 
       questionnaireResponse.item =
-        excludePrepopulationFields(questionnaireResponse.item.toMutableList(), exclusionLinkIdsMap)
+        excludePrepopulationFields(
+          questionnaireResponse.item.toMutableList(),
+          exclusionLinkIdsMap,
+        )
     }
     return Pair(questionnaireResponse, launchContextResources)
   }

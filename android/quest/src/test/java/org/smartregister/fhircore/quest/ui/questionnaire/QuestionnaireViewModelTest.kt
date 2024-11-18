@@ -94,6 +94,7 @@ import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -147,6 +148,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Inject lateinit var parser: IParser
 
   @Inject lateinit var knowledgeManager: KnowledgeManager
+
+  @Inject lateinit var contentCache: ContentCache
 
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
   private lateinit var questionnaireConfig: QuestionnaireConfig
@@ -640,6 +643,46 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     Assert.assertNotNull(questionnaire)
     Assert.assertEquals(questionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
+  }
+
+  @Test
+  fun testRetrieveQuestionnaireShouldReturnValidQuestionnaireFromCache() = runTest {
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
+      samplePatientRegisterQuestionnaire
+
+    coEvery { defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id) } returns
+      samplePatientRegisterQuestionnaire
+
+    contentCache.saveResource(samplePatientRegisterQuestionnaire)
+    val questionnaire =
+      questionnaireViewModel.retrieveQuestionnaire(
+        questionnaireConfig = questionnaireConfig,
+      )
+    Assert.assertEquals(
+      samplePatientRegisterQuestionnaire.idPart,
+      contentCache.getResource(ResourceType.Questionnaire, questionnaireConfig.id)?.idPart,
+    )
+    Assert.assertNotNull(questionnaire)
+    Assert.assertEquals(questionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
+  }
+
+  @Test
+  fun testRetrieveQuestionnaireShouldReturnValidQuestionnaireFromDatabase() = runTest {
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
+      samplePatientRegisterQuestionnaire
+
+    coEvery { defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id) } returns
+      samplePatientRegisterQuestionnaire
+
+    val questionnaire =
+      questionnaireViewModel.retrieveQuestionnaire(
+        questionnaireConfig = questionnaireConfig,
+      )
+
+    Assert.assertNotNull(questionnaire)
+    Assert.assertEquals(questionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
+
+    coVerify(exactly = 1) { defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id) }
   }
 
   @Test
@@ -2185,6 +2228,87 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
     Assert.assertNotNull(result.first)
     Assert.assertTrue(result.first!!.find("linkid-1") == null)
+  }
+
+  @Test
+  fun testThatPopulateQuestionnaireReturnsQuestionnaireResponseWithIdValue() = runTest {
+    val questionnaireViewModelInstance =
+      QuestionnaireViewModel(
+        defaultRepository = defaultRepository,
+        dispatcherProvider = dispatcherProvider,
+        fhirCarePlanGenerator = fhirCarePlanGenerator,
+        resourceDataRulesExecutor = resourceDataRulesExecutor,
+        transformSupportServices = mockk(),
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        fhirOperator = fhirOperator,
+        fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
+        fhirPathDataExtractor = fhirPathDataExtractor,
+        configurationRegistry = configurationRegistry,
+      )
+    val questionnaireConfig1 =
+      questionnaireConfig.copy(
+        resourceType = ResourceType.Patient,
+        resourceIdentifier = patient.logicalId,
+        type = QuestionnaireType.EDIT.name,
+      )
+
+    val questionnaireWithInitialValue =
+      Questionnaire().apply {
+        id = questionnaireConfig1.id
+        addItem(
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = "group-1"
+            type = Questionnaire.QuestionnaireItemType.GROUP
+            addItem(
+              Questionnaire.QuestionnaireItemComponent().apply {
+                linkId = "linkid-1"
+                type = Questionnaire.QuestionnaireItemType.STRING
+                addInitial(Questionnaire.QuestionnaireItemInitialComponent(StringType("---")))
+              },
+            )
+          },
+        )
+
+        addItem(
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = "linkid-2"
+            type = Questionnaire.QuestionnaireItemType.STRING
+          },
+        )
+      }
+    val qrId = "qr-id-1"
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        id = qrId
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            linkId = "group-1"
+            addItem(
+              QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+                linkId = "linkid-1"
+              },
+            )
+          },
+        )
+      }
+    coEvery {
+      fhirEngine.get(questionnaireConfig1.resourceType!!, questionnaireConfig1.resourceIdentifier!!)
+    } returns patient
+
+    coEvery { fhirEngine.search<QuestionnaireResponse>(any<Search>()) } returns
+      listOf(
+        SearchResult(questionnaireResponse, included = null, revIncluded = null),
+      )
+
+    Assert.assertNotNull(questionnaireResponse.find("linkid-1"))
+    val result =
+      questionnaireViewModelInstance.populateQuestionnaire(
+        questionnaireWithInitialValue,
+        questionnaireConfig1,
+        emptyList(),
+      )
+    Assert.assertNotNull(result.first)
+    Assert.assertEquals(qrId, result.first!!.id)
   }
 
   @Test
