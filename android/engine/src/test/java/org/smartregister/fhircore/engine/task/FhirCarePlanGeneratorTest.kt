@@ -34,7 +34,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
@@ -106,12 +105,15 @@ import org.mockito.ArgumentMatchers.anyBoolean
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.event.EventTriggerCondition
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.REFERENCE
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -130,6 +132,7 @@ import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
 import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -146,12 +149,21 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Inject lateinit var fhirEngine: FhirEngine
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var configService: ConfigService
+
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   private val context: Context = ApplicationProvider.getApplicationContext()
   private val knowledgeManager = KnowledgeManager.create(context)
   private val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
 
+  private lateinit var defaultRepository: DefaultRepository
   private lateinit var fhirResourceUtil: FhirResourceUtil
   private lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
   private lateinit var structureMapUtilities: StructureMapUtilities
@@ -159,7 +171,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   private lateinit var encounter: Encounter
   private lateinit var opv0: Task
   private lateinit var opv1: Task
-  private val defaultRepository: DefaultRepository = mockk(relaxed = true)
+
   private val iParser: IParser = fhirContext.newJsonParser()
   private val jsonParser = fhirContext.getCustomJsonParser()
   private val xmlParser = fhirContext.newXmlParser()
@@ -168,7 +180,21 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   fun setup() {
     hiltRule.inject()
     structureMapUtilities = StructureMapUtilities(transformSupportServices.simpleWorkerContext)
-    every { defaultRepository.fhirEngine } returns fhirEngine
+    defaultRepository =
+      spyk(
+        DefaultRepository(
+          fhirEngine = fhirEngine,
+          dispatcherProvider = dispatcherProvider,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          configurationRegistry = mockk(),
+          configService = configService,
+          configRulesExecutor = mockk(),
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          parser = iParser,
+          context = context,
+        ),
+      )
+
     coEvery { defaultRepository.create(anyBoolean(), any()) } returns listOf()
 
     fhirResourceUtil =
@@ -898,6 +924,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
     coEvery { fhirEngine.get<StructureMap>("528a8603-2e43-4a2e-a33d-1ec2563ffd3e") } returns
       structureMapReferral
+        .encodeResourceToString()
+        .decodeResourceFromString() // Ensure 'months' Duration code is correctly escaped
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns
       listOf(
         SearchResult(
@@ -981,6 +1009,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       runs
     coEvery { fhirEngine.get<StructureMap>("528a8603-2e43-4a2e-a33d-1ec2563ffd3e") } returns
       structureMap
+        .encodeResourceToString()
+        .decodeResourceFromString() // Ensure 'months' Duration code is correctly escaped
 
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
@@ -2529,8 +2559,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     coEvery { fhirEngine.get<StructureMap>(structureMapRegister.logicalId) } returns
       structureMapRegister
+        .encodeResourceToString()
+        .decodeResourceFromString() // Ensure 'months' Duration code is correctly escaped
     coEvery { fhirEngine.get<StructureMap>("528a8603-2e43-4a2e-a33d-1ec2563ffd3e") } returns
       structureMapReferral
+        .encodeResourceToString()
+        .decodeResourceFromString() // Ensure 'months' Duration code is correctly escaped
 
     return PlanDefinitionResources(
       planDefinition,

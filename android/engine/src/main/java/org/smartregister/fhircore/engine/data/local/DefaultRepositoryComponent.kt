@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.register
+package org.smartregister.fhircore.engine.data.local
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import dagger.Component
+import javax.inject.Singleton
+import org.smartregister.fhircore.engine.di.DispatcherModule
 
-@Serializable
-@Parcelize
-data class NoResultsConfig(
-  val title: String = "",
-  val message: String = "",
-  val textColor: String? = null,
-  val actionButton: NavigationMenuConfig? = null,
-) : Parcelable, java.io.Serializable
+@Singleton
+@Component(modules = [DispatcherModule::class])
+interface DefaultRepositoryComponent {
+  fun inject(defaultRepository: DefaultRepository)
+}

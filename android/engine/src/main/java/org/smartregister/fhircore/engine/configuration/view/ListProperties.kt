@@ -46,6 +46,8 @@ data class ListProperties(
   val emptyList: NoResultsConfig? = null,
   val orientation: ListOrientation = ListOrientation.VERTICAL,
   val resources: List<ListResourceConfig> = emptyList(),
+  val spacerHeight: Int = 6,
+  val enableTopBottomSpacing: Boolean = true,
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): ListProperties {
     return this.copy(
