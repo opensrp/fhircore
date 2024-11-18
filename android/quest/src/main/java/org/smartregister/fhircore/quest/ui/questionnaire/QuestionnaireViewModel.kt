@@ -96,7 +96,6 @@ import org.smartregister.fhircore.engine.util.extension.questionnaireResponseSta
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.engine.util.helper.CacheHelper
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequest
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequestHandler

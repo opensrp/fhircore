@@ -24,11 +24,9 @@ import androidx.activity.viewModels
 import androidx.annotation.VisibleForTesting
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
-import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
@@ -38,7 +36,6 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
-import org.smartregister.fhircore.engine.util.helper.CacheHelper
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.fhircore.quest.ui.pin.PinLoginActivity
 import org.smartregister.p2p.P2PLibrary
@@ -87,7 +84,6 @@ open class LoginActivity : BaseMultiLanguageActivity() {
           navigateToPinLogin(launchSetup = false)
         }
       }
-      viewModelScope.launch { CacheHelper.invalidate() }
       navigateToHome.observe(loginActivity) { launchHomeScreen ->
         if (launchHomeScreen) {
           downloadNowWorkflowConfigs()
