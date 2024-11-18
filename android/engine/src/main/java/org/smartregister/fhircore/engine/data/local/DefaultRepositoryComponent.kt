@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.register
+package org.smartregister.fhircore.engine.data.local
 
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import dagger.Component
+import javax.inject.Singleton
+import org.smartregister.fhircore.engine.di.DispatcherModule
 
-@Serializable
-data class RegisterContentConfig(
-  val separator: String? = null,
-  val display: String? = null,
-  val placeholderColor: String? = null,
-  val rules: List<RuleConfig>? = null,
-  val visible: Boolean? = null,
-  val computedRules: List<String>? = null,
-  val searchByQrCode: Boolean? = null,
-  val dataFilterFields: List<RegisterFilterField> = emptyList(),
-)
+@Singleton
+@Component(modules = [DispatcherModule::class])
+interface DefaultRepositoryComponent {
+  fun inject(defaultRepository: DefaultRepository)
+}

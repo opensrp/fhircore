@@ -1,0 +1,57 @@
+---
+title: Sync Strategies
+---
+
+OpenSRP 2 uses five key data elements in determining how data is synced down from the server. These elements are [added](/engineering/app/datastore/tagging) to every resource created by the OpenSRP mobile app, enabling precise synchronization. These elements are:
+
+- `care-team-tag-id`
+- `practitioner-tag-id`
+- `location-tag-id`
+- `organisation-tag-id`
+- `related-entity-location-tag-id`
+
+### Sync by Practitioner CareTeam
+This strategy syncs data based on the CareTeam that the logged in user (which maps 1-to-1 to a FHIR Practitioner Resource) is assigned to. All resources tagged with the same CareTeam via the `care-team-tag-id` are synced down to the device if the FHIR Practitioner mapping to the logged-in user is assigned to that CareTeam. A sample tag is provided below
+
+```json
+    {
+      "system": "https://smartregister.org/care-team-tag-id",
+      "code": "47d68cac-306f-4b75-9704-b4ed48b24f76",
+      "display": "Practitioner CareTeam"
+    }
+```
+
+### Sync by Practitioner Team (FHIR Organization)
+This sync strategy is based on the team (FHIR Organization) and syncs resources tied to the specific team (FHIR Organization) associated with the logged user's FHIR Practitioner. 
+
+- This sync strategy also includes data from any CareTeams that have the Organization as a [managing organization](https://hl7.org/fhir/R4B/careteam-definitions.html#CareTeam.managingOrganization). A sample tag is provided below
+
+```json
+    {
+      "system": "https://smartregister.org/organisation-tag-id",
+      "code": "ca7d3362-8048-4fa0-8fdd-6da33423cc6b",
+      "display": "Practitioner Organization"
+    }
+```
+### Sync by Practitioner Location
+This sync strategy is based on the FHIR Location and delivers resources tagged with the Location ID of the Location that the logged in user's FHIR Practitioner is assigned to. 
+- This sync strategy also includes data from all the subordinant locations of the Location that the Practitioner is assigned to (ie if `Location B.partOf = Location A` and we are syncing data from `Location A`, any data assigned to `Location B` is also included). A sample tag is provided below
+
+```json
+     {
+      "system": "https://smartregister.org/location-tag-id",
+      "code": "ca7d3362-8048-4fa0-8fdd-6da33423cc6b",
+      "display": "Practitioner Location"
+    }
+```
+### Sync by Related Entity Location
+This strategy uses location information related to other entities (e.g Patient, Family / Group, Service Point), ensuring that data linked to specific locations associated with those entities is synced. 
+- This sync strategy also includes data from all the child locations linked to the Related Entity Location. A sample tag is provided below
+
+```json
+    {
+      "system": "https://smartregister.org/related-entity-location-tag-id",
+      "code": "33f45e09-f96e-41d3-9916-fb96455a4cb2",
+      "display": "Related Entity Location"
+    }
+```
