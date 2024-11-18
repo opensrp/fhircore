@@ -153,6 +153,18 @@ android {
         "META-INF/INDEX.LIST",
       ),
     )
+
+    resources.excludes.addAll(
+      listOf(
+        "META-INF/*.kotlin_module",
+      ),
+    )
+    resources.pickFirsts.addAll(
+      listOf(
+        "META-INF/services/org.apache.commons.logging.LogFactory",
+        "org/apache/commons/logging/commons-logging.properties",
+      ),
+    )
   }
 
   compileOptions {
@@ -465,6 +477,7 @@ dependencies {
   implementation(libs.mlkit.barcode.scanning)
   implementation(libs.androidx.fragment.compose)
   implementation(libs.bundles.cameraX)
+  implementation(libs.log4j)
 
   // Annotation processors
   kapt(libs.hilt.compiler)
@@ -604,9 +617,9 @@ sentry {
   // variable and read it into this property.
   authToken.set("""${project.extra["auth.token"]}""")
 
-//  // The url of your Sentry instance. If you're using SAAS (not self hosting) you do not have to
-//  // set this. If you are self hosting you can set your URL here
-//  url = null
+  // The url of your Sentry instance. If you're using SAAS (not self hosting) you do not have to
+  // set this. If you are self hosting you can set your URL here
+  // url = null
 
   // Disables or enables the handling of Proguard mapping for Sentry.
   // If enabled the plugin will generate a UUID and will take care of
@@ -621,10 +634,12 @@ sentry {
   // Default is enabled.
   autoUploadProguardMapping.set(false)
 
-//  // Experimental flag to turn on support for GuardSquare's tools integration (Dexguard and External Proguard).
-//  // If enabled, the plugin will try to consume and upload the mapping file produced by Dexguard and External Proguard.
-//  // Default is disabled.
-//  dexguardEnabled.set(false)
+  // Experimental flag to turn on support for GuardSquare's tools integration (Dexguard and
+  // External Proguard).
+  // If enabled, the plugin will try to consume and upload the mapping file produced by Dexguard
+  // and External Proguard.
+  // Default is disabled.
+  // dexguardEnabled.set(false)
 
   // Disables or enables the automatic configuration of Native Symbols
   // for Sentry. This executes sentry-cli automatically so
@@ -662,7 +677,14 @@ sentry {
 
     // Specifies a set of instrumentation features that are eligible for bytecode manipulation.
     // Defaults to all available values of InstrumentationFeature enum class.
-    features.set(setOf(InstrumentationFeature.DATABASE, InstrumentationFeature.FILE_IO, InstrumentationFeature.OKHTTP, InstrumentationFeature.COMPOSE))
+    features.set(
+      setOf(
+        InstrumentationFeature.DATABASE,
+        InstrumentationFeature.FILE_IO,
+        InstrumentationFeature.OKHTTP,
+        InstrumentationFeature.COMPOSE,
+      ),
+    )
 
     // Enable or disable logcat instrumentation through bytecode manipulation.
     // Default is enabled.
@@ -674,23 +696,24 @@ sentry {
       minLevel.set(LogcatLevel.WARNING)
     }
 
-//    // The set of glob patterns to exclude from instrumentation. Classes matching any of these
-//    // patterns in the project's sources and dependencies JARs won't be instrumented by the Sentry
-//    // Gradle plugin.
-//    //
-//    // Don't include the file extension. Filtering is done on compiled classes and
-//    // the .class suffix isn't included in the pattern matching.
-//    //
-//    // Example usage:
-//    // ```
-//    // excludes.set(setOf("com/example/donotinstrument/**", "**/*Test"))
-//    // ```
-//    //
-//    // Only supported when using Android Gradle plugin (AGP) version 7.4.0 and above.
-//    excludes.set(emptySet())
+    // The set of glob patterns to exclude from instrumentation. Classes matching any of these
+    // patterns in the project's sources and dependencies JARs won't be instrumented by the
+    // Sentry Gradle plugin.
+    //
+    // Don't include the file extension. Filtering is done on compiled classes and
+    // the .class suffix isn't included in the pattern matching.
+    //
+    // Example usage:
+    // ```
+    // excludes.set(setOf("com/example/donotinstrument/**", "**/*Test"))
+    // ```
+    //
+    // Only supported when using Android Gradle plugin (AGP) version 7.4.0 and above.
+    // excludes.set(emptySet())
   }
 
-  // Enable auto-installation of Sentry components (sentry-android SDK and okhttp, timber, fragment and compose integrations).
+  // Enable auto-installation of Sentry components (sentry-android SDK and okhttp, timber, fragment
+  // and compose integrations).
   // Default is enabled.
   // Only available v3.1.0 and above.
   autoInstallation {
@@ -698,10 +721,13 @@ sentry {
 
     // Specifies a version of the sentry-android SDK and fragment, timber and okhttp integrations.
     //
-    // This is also useful, when you have the sentry-android SDK already included into a transitive dependency/module and want to
-    // align integration versions with it (if it's a direct dependency, the version will be inferred).
+    // This is also useful, when you have the sentry-android SDK already included into a transitive
+    // dependency/module and want to
+    // align integration versions with it (if it's a direct dependency, the version will be
+    // inferred).
     //
-    // NOTE: if you have a higher version of the sentry-android SDK or integrations on the classpath, this setting will have no effect
+    // NOTE: if you have a higher version of the sentry-android SDK or integrations on the
+    // classpath, this setting will have no effect
     // as Gradle will resolve it to the latest version.
     //
     // Defaults to the latest published Sentry version.
@@ -716,11 +742,11 @@ sentry {
   // Default is enabled.
   includeDependenciesReport.set(true)
 
-//  // Whether the plugin should send telemetry data to Sentry.
-//  // If disabled the plugin won't send telemetry data.
-//  // This is auto disabled if running against a self hosted instance of Sentry.
-//  // Default is enabled.
-//  telemetry.set(true)
+  // Whether the plugin should send telemetry data to Sentry.
+  // If disabled the plugin won't send telemetry data.
+  // This is auto disabled if running against a self hosted instance of Sentry.
+  // Default is enabled.
+  //  telemetry.set(true)
 }
 
 fun JSONObject.getTestName(): String {

@@ -14,23 +14,24 @@
 
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+-keepattributes SourceFile,LineNumberTable
 
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
-#-renamesourcefileattribute SourceFile
+-renamesourcefileattribute SourceFile
 
 #-dontshrink
 #-dontobfuscate
 #-dontoptimize
-#-printmapping
-#-verbose
+-printmapping
+-verbose
 
 -keepattributes Signature, InnerClasses, EnclosingMethod
 -keepattributes RuntimeVisibleAnnotations
--keepattributes SourceFile, LineNumberTable
 -keepattributes Exceptions
 -keepattributes *Annotation*
+
+-keep class org.smartregister.fhircore.quest.** { *; }
 
 # Keep Gson's data model classes
 -keep class sun.misc.Unsafe { *; }
@@ -236,7 +237,20 @@
 
 -keep class timber.log.Timber { *; }
 
+-keep class org.apache.log4j.** { *; }
+-keep class org.apache.commons.logging.** { *; }
+-dontwarn java.beans.**
+-dontwarn org.apache.log4j.**
 
--keep class org.smartregister.fhircore.quest.ui..YourActivity {
-    void dismissProgressDialog();
+-assumenosideeffects class org.apache.log4j.Logger {
+    public static *;
+    public *;
+}
+
+# Keep Logback classes
+-keep class ch.qos.logback.** { *; }
+
+# Keep the logback.xml configuration file
+-keep class * {
+    public static final java.lang.String LOGBACK_CONFIG_FILE;
 }

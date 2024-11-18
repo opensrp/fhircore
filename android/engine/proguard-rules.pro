@@ -14,23 +14,24 @@
 
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+-keepattributes SourceFile,LineNumberTable
 
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
-#-renamesourcefileattribute SourceFile
+-renamesourcefileattribute SourceFile
 
 #-dontshrink
 #-dontobfuscate
 #-dontoptimize
-#-printmapping
-#-verbose
+-printmapping
+-verbose
 
 -keepattributes Signature, InnerClasses, EnclosingMethod
 -keepattributes RuntimeVisibleAnnotations
--keepattributes SourceFile,LineNumberTable
 -keepattributes Exceptions
 -keepattributes *Annotation*
+
+-keep class org.smartregister.fhircore.engine.** { *; }
 
 # Keep Gson's data model classes
 -keep class sun.misc.Unsafe { *; }
@@ -57,15 +58,15 @@
 # Keep all classes that implement Serializable
 -keep class * implements java.io.Serializable { *; }
 
-# Remove all Android log calls (Log.e, Log.d, Log.w, etc.)
--assumenosideeffects class android.util.Log {
-    public static int d(...);
-    public static int e(...);
-    public static int i(...);
-    public static int v(...);
-    public static int w(...);
-    public static int wtf(...);
-}
+## Remove all Android log calls (Log.e, Log.d, Log.w, etc.)
+#-assumenosideeffects class android.util.Log {
+#    public static int d(...);
+#    public static int e(...);
+#    public static int i(...);
+#    public static int v(...);
+#    public static int w(...);
+#    public static int wtf(...);
+#}
 
 # This is generated automatically by the Android Gradle plugin.
 -dontwarn androidx.test.platform.app.AppComponentFactoryRegistry
@@ -235,3 +236,21 @@
 -keep class kotlin.Metadata
 
 -keep class timber.log.Timber { *; }
+
+-keep class org.apache.log4j.** { *; }
+-keep class org.apache.commons.logging.** { *; }
+-dontwarn java.beans.**
+-dontwarn org.apache.log4j.**
+
+-assumenosideeffects class org.apache.log4j.Logger {
+    public static *;
+    public *;
+}
+
+# Keep Logback classes
+-keep class ch.qos.logback.** { *; }
+
+# Keep the logback.xml configuration file
+-keep class * {
+    public static final java.lang.String LOGBACK_CONFIG_FILE;
+}
