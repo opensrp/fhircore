@@ -195,63 +195,16 @@ constructor(
           context = context,
         )
 
-      saveExtractedResources(
-        bundle = bundle,
-        questionnaire = questionnaire,
-        questionnaireConfig = questionnaireConfig,
-        questionnaireResponse = currentQuestionnaireResponse,
-        context = context,
-      )
-
-      updateResourcesLastUpdatedProperty(actionParameters)
-
-      // Important to load subject resource to retrieve ID (as reference) correctly
-      val subjectIdType: IdType? =
-        if (currentQuestionnaireResponse.subject.reference.isNullOrEmpty()) {
-          null
-        } else {
-          IdType(currentQuestionnaireResponse.subject.reference)
-        }
-
-      if (subjectIdType != null) {
-        val subject =
-          loadResource(
-            ResourceType.valueOf(subjectIdType.resourceType),
-            subjectIdType.idPart,
-          )
-
-        if (subject != null && !questionnaireConfig.isReadOnly()) {
-          val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
-
-          val extractedResources = newBundle.entry.map { it.resource }
-          validateWithFhirValidator(*extractedResources.toTypedArray())
-
-          generateCarePlan(
-            subject = subject,
-            bundle = newBundle,
-            questionnaireConfig = questionnaireConfig,
-          )
-
-          withContext(dispatcherProvider.io()) {
-            executeCql(
-              subject = subject,
-              bundle = newBundle,
-              questionnaire = questionnaire,
-              questionnaireConfig = questionnaireConfig,
-            )
-          }
-
-          fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
-            questionnaireConfig = questionnaireConfig,
-            subject = subject,
-            bundle = newBundle,
-          )
-        }
+      defaultRepository.applyDbTransaction {
+        performSave(
+          bundle,
+          questionnaire,
+          questionnaireConfig,
+          currentQuestionnaireResponse,
+          context,
+          actionParameters,
+        )
       }
-
-      softDeleteResources(questionnaireConfig)
-
-      retireUsedQuestionnaireUniqueId(questionnaireConfig, currentQuestionnaireResponse)
 
       val idTypes =
         bundle.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
@@ -262,6 +215,73 @@ constructor(
         currentQuestionnaireResponse,
       )
     }
+  }
+
+  private suspend fun performSave(
+    bundle: Bundle,
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
+    currentQuestionnaireResponse: QuestionnaireResponse,
+    context: Context,
+    actionParameters: List<ActionParameter>,
+  ) {
+    saveExtractedResources(
+      bundle = bundle,
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig,
+      questionnaireResponse = currentQuestionnaireResponse,
+      context = context,
+    )
+
+    updateResourcesLastUpdatedProperty(actionParameters)
+
+    // Important to load subject resource to retrieve ID (as reference) correctly
+    val subjectIdType: IdType? =
+      if (currentQuestionnaireResponse.subject.reference.isNullOrEmpty()) {
+        null
+      } else {
+        IdType(currentQuestionnaireResponse.subject.reference)
+      }
+
+    if (subjectIdType != null) {
+      val subject =
+        loadResource(
+          ResourceType.valueOf(subjectIdType.resourceType),
+          subjectIdType.idPart,
+        )
+
+      if (subject != null && !questionnaireConfig.isReadOnly()) {
+        val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
+
+        val extractedResources = newBundle.entry.map { it.resource }
+        validateWithFhirValidator(*extractedResources.toTypedArray())
+
+        generateCarePlan(
+          subject = subject,
+          bundle = newBundle,
+          questionnaireConfig = questionnaireConfig,
+        )
+
+        withContext(dispatcherProvider.io()) {
+          executeCql(
+            subject = subject,
+            bundle = newBundle,
+            questionnaire = questionnaire,
+            questionnaireConfig = questionnaireConfig,
+          )
+        }
+
+        fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
+          questionnaireConfig = questionnaireConfig,
+          subject = subject,
+          bundle = newBundle,
+        )
+      }
+    }
+
+    softDeleteResources(questionnaireConfig)
+
+    retireUsedQuestionnaireUniqueId(questionnaireConfig, currentQuestionnaireResponse)
   }
 
   fun validateWithFhirValidator(vararg resource: Resource) {
@@ -642,27 +662,25 @@ constructor(
   ): Bundle =
     kotlin
       .runCatching {
-        withContext(dispatcherProvider.default()) {
-          if (extractByStructureMap) {
-            ResourceMapper.extract(
-              questionnaire = questionnaire,
-              questionnaireResponse = questionnaireResponse,
-              structureMapExtractionContext =
-                StructureMapExtractionContext(
-                  transformSupportServices = transformSupportServices,
-                  structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
-                    structureMapUrl?.substringAfterLast("/")?.let { structureMapId ->
-                      defaultRepository.loadResourceFromCache<StructureMap>(structureMapId)
-                    }
-                  },
-                ),
-            )
-          } else {
-            ResourceMapper.extract(
-              questionnaire = questionnaire,
-              questionnaireResponse = questionnaireResponse,
-            )
-          }
+        if (extractByStructureMap) {
+          ResourceMapper.extract(
+            questionnaire = questionnaire,
+            questionnaireResponse = questionnaireResponse,
+            structureMapExtractionContext =
+              StructureMapExtractionContext(
+                transformSupportServices = transformSupportServices,
+                structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
+                  structureMapUrl?.substringAfterLast("/")?.let { structureMapId ->
+                    defaultRepository.loadResourceFromCache<StructureMap>(structureMapId)
+                  }
+                },
+              ),
+          )
+        } else {
+          ResourceMapper.extract(
+            questionnaire = questionnaire,
+            questionnaireResponse = questionnaireResponse,
+          )
         }
       }
       .onFailure { exception ->
