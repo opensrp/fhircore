@@ -90,6 +90,7 @@ constructor(
   @SuppressLint("StringFormatInvalid")
   fun setPinUiState(setupPin: Boolean = false, context: Context) {
     val username = secureSharedPreference.retrieveSessionUsername()
+    val loggedInUsers = secureSharedPreference.retrieveLoggedInUsernames()
     pinUiState.value =
       PinUiState(
         appName = applicationConfiguration.appTitle,
@@ -103,6 +104,22 @@ constructor(
           },
         pinLength = applicationConfiguration.loginConfig.pinLength,
         showLogo = applicationConfiguration.showLogo,
+        selectedUser = username,
+        loggedInUsers = loggedInUsers,
+      )
+  }
+
+  fun selectUser(username: String, context: Context) {
+    pinUiState.value =
+      pinUiState.value.copy(
+        selectedUser = username,
+        message =
+          if (pinUiState.value.setupPin) {
+            applicationConfiguration.loginConfig.pinLoginMessage
+              ?: context.getString(R.string.set_pin_message)
+          } else {
+            context.getString(R.string.enter_pin_for_user, username)
+          },
       )
   }
 
@@ -110,6 +127,13 @@ constructor(
     if (validPin) {
       showProgressBar(false)
       _navigateToHome.postValue(true)
+    }
+  }
+
+  fun onPinVerified(username: String, validPin: Boolean) {
+    viewModelScope.launch(dispatcherProvider.io()) {
+      secureSharedPreference.saveSessionUsername(username)
+      onPinVerified(validPin)
     }
   }
 
@@ -121,7 +145,10 @@ constructor(
   fun onSetPin(newPin: CharArray) {
     viewModelScope.launch {
       showProgressBar(true)
-      secureSharedPreference.saveSessionPin(newPin) {
+      val username = secureSharedPreference.retrieveSessionUsername()
+      username!!
+      secureSharedPreference.saveSessionPin(username, newPin) {
+        secureSharedPreference.saveSessionUsername(username)
         showProgressBar(false)
         _navigateToHome.postValue(true)
       }
@@ -155,10 +182,15 @@ constructor(
   }
 
   fun pinLogin(enteredPin: CharArray, callback: (Boolean) -> Unit) {
+    val username = pinUiState.value.selectedUser!!
+    pinLogin(username, enteredPin, callback)
+  }
+
+  fun pinLogin(username: String, enteredPin: CharArray, callback: (Boolean) -> Unit) {
     viewModelScope.launch {
       showProgressBar(true)
-      val storedPinHash = secureSharedPreference.retrieveSessionPin()
-      val salt = secureSharedPreference.retrievePinSalt()
+      val storedPinHash = secureSharedPreference.retrieveSessionUserPin(username)
+      val salt = secureSharedPreference.retrieveSessionUserSalt(username)
       val generatedHash =
         async(dispatcherProvider.io()) {
             enteredPin.toPasswordHash(Base64.getDecoder().decode(salt))
@@ -167,7 +199,7 @@ constructor(
       val validPin = generatedHash == storedPinHash
       if (validPin) clearPasswordInMemory(enteredPin)
       callback.invoke(validPin)
-      onPinVerified(validPin)
+      onPinVerified(username, validPin)
       showProgressBar(false)
     }
   }

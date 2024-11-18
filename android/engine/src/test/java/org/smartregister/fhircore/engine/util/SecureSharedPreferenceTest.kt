@@ -78,57 +78,80 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
 
   @Test
   fun testSaveCredentialsAndRetrieveSessionToken() {
-    secureSharedPreference.saveCredentials(username = "userName", password = "!@#$".toCharArray())
-    Assert.assertEquals("userName", secureSharedPreference.retrieveSessionUsername()!!)
+    val username = "userName"
+    secureSharedPreference.saveMultiCredentials(
+      username = username,
+      password = "!@#$".toCharArray(),
+    )
+    secureSharedPreference.saveSessionUsername(username)
+    Assert.assertEquals(username, secureSharedPreference.retrieveSessionUsername()!!)
   }
 
   @Test
   fun testRetrieveCredentials() {
     every { secureSharedPreference.get256RandomBytes() } returns byteArrayOf(-100, 0, 100, 101)
 
-    secureSharedPreference.saveCredentials(username = "userName", password = "!@#$".toCharArray())
+    secureSharedPreference.saveMultiCredentials(
+      username = "userName",
+      password = "!@#$".toCharArray(),
+    )
 
-    Assert.assertEquals("userName", secureSharedPreference.retrieveCredentials()!!.username)
+    Assert.assertEquals(
+      "userName",
+      secureSharedPreference.retrieveCredentials("userName")!!.username,
+    )
     Assert.assertEquals(
       "!@#$".toCharArray().toPasswordHash(byteArrayOf(-100, 0, 100, 101)),
-      secureSharedPreference.retrieveCredentials()!!.passwordHash,
+      secureSharedPreference.retrieveCredentials("userName")!!.passwordHash,
     )
   }
 
   @Test
   fun testDeleteCredentialReturnsNull() {
-    secureSharedPreference.saveCredentials(username = "userName", password = "!@#$".toCharArray())
-    Assert.assertNotNull(secureSharedPreference.retrieveCredentials())
-    secureSharedPreference.deleteCredentials()
-    Assert.assertNull(secureSharedPreference.retrieveCredentials())
+    secureSharedPreference.saveMultiCredentials(
+      username = "userName",
+      password = "!@#$".toCharArray(),
+    )
+    Assert.assertNotNull(secureSharedPreference.retrieveCredentials("userName"))
+    secureSharedPreference.deleteCredentials("userName")
+    Assert.assertNull(secureSharedPreference.retrieveCredentials("userName"))
   }
 
   @Test
   fun testSaveAndRetrievePin() = runBlocking {
     every { secureSharedPreference.get256RandomBytes() } returns byteArrayOf(-100, 0, 100, 101)
-
+    secureSharedPreference.saveSessionUsername("userName")
+    val username = secureSharedPreference.retrieveSessionUsername()!!
     val onSavedPinMock = mockk<() -> Unit>(relaxed = true)
-    secureSharedPreference.saveSessionPin(pin = "1234".toCharArray(), onSavedPin = onSavedPinMock)
+    secureSharedPreference.saveSessionPin(
+      username,
+      pin = "1234".toCharArray(),
+      onSavedPin = onSavedPinMock,
+    )
 
     verify { onSavedPinMock.invoke() }
     Assert.assertEquals(
       "1234".toCharArray().toPasswordHash(byteArrayOf(-100, 0, 100, 101)),
-      secureSharedPreference.retrieveSessionPin(),
+      secureSharedPreference.retrieveSessionUserPin(username),
     )
-    secureSharedPreference.deleteSessionPin()
-    Assert.assertNull(secureSharedPreference.retrieveSessionPin())
+    secureSharedPreference.deleteSessionPin(username)
+    Assert.assertNull(secureSharedPreference.retrieveSessionUserPin(username))
   }
 
   @Test
   fun testResetSharedPrefsClearsData() = runBlocking {
     every { secureSharedPreference.get256RandomBytes() } returns byteArrayOf(-128, 100, 112, 127)
-
+    secureSharedPreference.saveSessionUsername("userName")
+    val username = secureSharedPreference.retrieveSessionUsername()!!
     val onSavedPinMock = mockk<() -> Unit>(relaxed = true)
-    secureSharedPreference.saveSessionPin(pin = "6699".toCharArray(), onSavedPin = onSavedPinMock)
+    secureSharedPreference.saveSessionPin(
+      username,
+      pin = "6699".toCharArray(),
+      onSavedPin = onSavedPinMock,
+    )
 
     verify { onSavedPinMock.invoke() }
-
-    val retrievedSessionPin = secureSharedPreference.retrieveSessionPin()
+    val retrievedSessionPin = secureSharedPreference.retrieveSessionUserPin(username)
 
     Assert.assertEquals(
       "6699".toCharArray().toPasswordHash(byteArrayOf(-128, 100, 112, 127)),
@@ -137,6 +160,6 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
 
     secureSharedPreference.resetSharedPrefs()
 
-    Assert.assertNull(secureSharedPreference.retrieveSessionPin())
+    Assert.assertNull(secureSharedPreference.retrieveSessionUserPin(username))
   }
 }

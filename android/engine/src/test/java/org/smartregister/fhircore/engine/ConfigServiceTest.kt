@@ -30,8 +30,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.practitionerIdKey
 
 @HiltAndroidTest
 class ConfigServiceTest : RobolectricTest() {
@@ -39,6 +40,8 @@ class ConfigServiceTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var gson: Gson
+
+  @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
@@ -49,13 +52,15 @@ class ConfigServiceTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
+    sharedPreferencesHelper = SharedPreferencesHelper(application, gson, secureSharedPreference)
   }
 
   @Test
   fun testProvideSyncTagsShouldHaveOrganizationId() {
+    val currentUsername = "testUser"
+    secureSharedPreference.saveSessionUsername(currentUsername)
     val practitionerId = "practitioner-id"
-    sharedPreferencesHelper.write(SharedPreferenceKey.PRACTITIONER_ID.name, practitionerId)
+    sharedPreferencesHelper.write(practitionerIdKey(currentUsername), practitionerId)
 
     val resourceTags = configService.provideResourceTags(sharedPreferencesHelper)
     val practitionerTag =

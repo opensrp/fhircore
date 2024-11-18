@@ -32,7 +32,11 @@ import timber.log.Timber
 @Singleton
 class SharedPreferencesHelper
 @Inject
-constructor(@ApplicationContext val context: Context, val gson: Gson) {
+constructor(
+  @ApplicationContext val context: Context,
+  val gson: Gson,
+  val secureSharedPreference: SecureSharedPreference,
+) {
 
   val prefs: SharedPreferences by lazy {
     context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -93,7 +97,10 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   /** Write any object by saving it as JSON */
   inline fun <reified T> write(key: String, value: T?, encodeWithGson: Boolean = true) {
     with(prefs.edit()) {
-      putString(key, if (encodeWithGson) gson.toJson(value) else value.encodeJson())
+      putString(
+        key,
+        (if (encodeWithGson) gson.toJson(value) else value.encodeJson()),
+      )
       commit()
     }
   }
@@ -120,6 +127,9 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   }
 
   fun retrieveApplicationId() = read(SharedPreferenceKey.APP_ID.name, null)
+
+  fun retrieveSessionPractitionerId() =
+    secureSharedPreference.retrieveSessionUsername()?.let { read(practitionerIdKey(it), null) }
 
   companion object {
     const val PREFS_NAME = "params"

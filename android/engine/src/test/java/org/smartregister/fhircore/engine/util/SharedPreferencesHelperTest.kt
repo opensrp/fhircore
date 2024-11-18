@@ -40,10 +40,12 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
 
   @Inject lateinit var gson: Gson
 
+  @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
   @Before
   fun setUp() {
     hiltRule.inject()
-    sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
+    sharedPreferencesHelper = SharedPreferencesHelper(application, gson, secureSharedPreference)
   }
 
   @Test

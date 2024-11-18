@@ -65,6 +65,7 @@ class LoginActivityTest : RobolectricTest() {
   private val loginActivityController =
     Robolectric.buildActivity(Faker.TestLoginActivity::class.java)
   private lateinit var loginActivity: LoginActivity
+  private val currentUserName: String = Faker.authCredentials.username
   val context = InstrumentationRegistry.getInstrumentation().targetContext!!
 
   @Before
@@ -72,8 +73,8 @@ class LoginActivityTest : RobolectricTest() {
     hiltRule.inject()
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     every { secureSharedPreference.retrieveSessionPin() } returns null
-    every { secureSharedPreference.retrieveSessionUsername() } returns
-      Faker.authCredentials.username
+    every { secureSharedPreference.retrieveSessionUserPin(any()) } returns null
+    every { secureSharedPreference.retrieveSessionUsername() } returns currentUserName
     loginActivity = loginActivityController.create().resume().get()
   }
 
@@ -152,11 +153,13 @@ class LoginActivityTest : RobolectricTest() {
   fun testNavigateToScreenShouldLaunchPinLoginWithoutSetup() = runBlocking {
     // Return a session pin, login with pin is enabled by default
     val onSavedPinMock = mockk<() -> Unit>(relaxed = true)
-    secureSharedPreference.saveSessionPin(pin = "1234".toCharArray(), onSavedPin = onSavedPinMock)
-
+    secureSharedPreference.saveSessionPin(
+      currentUserName,
+      "1234".toCharArray(),
+      onSavedPin = onSavedPinMock,
+    )
     verify { onSavedPinMock.invoke() }
-
-    every { secureSharedPreference.retrieveSessionPin() } returns "1234"
+    every { secureSharedPreference.retrieveSessionUserPin(currentUserName) } returns "1234"
 
     loginActivity.loginViewModel.updateNavigateHome(true)
 

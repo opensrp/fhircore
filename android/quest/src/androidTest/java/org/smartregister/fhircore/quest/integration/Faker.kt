@@ -50,6 +50,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.sync.ResourceTag
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 object Faker {
@@ -197,13 +198,19 @@ object Faker {
       isLenient = true
       useAlternativeNames = true
     }
+    val securedSharedPreference =
+      SecureSharedPreference(ApplicationProvider.getApplicationContext())
 
     val configurationRegistry =
       ConfigurationRegistry(
         fhirEngine = fhirEngine,
         fhirResourceDataSource = FhirResourceDataSource(fhirResourceService),
         sharedPreferencesHelper =
-          SharedPreferencesHelper(ApplicationProvider.getApplicationContext(), gson = Gson()),
+          SharedPreferencesHelper(
+            context = ApplicationProvider.getApplicationContext(),
+            gson = Gson(),
+            secureSharedPreference = securedSharedPreference,
+          ),
         configService = configService,
         dispatcherProvider = DefaultDispatcherProvider(),
         json = json,

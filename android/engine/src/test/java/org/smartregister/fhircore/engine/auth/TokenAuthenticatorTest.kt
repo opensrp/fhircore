@@ -116,7 +116,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
   @Test
   fun testGetAccessTokenShouldReturnValidAccessToken() {
     val account = Account(sampleUsername, PROVIDER)
-    every { tokenAuthenticator.findAccount() } returns account
+    every { tokenAuthenticator.findCurrentLoggedInAccount() } returns account
     every { tokenAuthenticator.isTokenActive(any()) } returns true
     val accessToken = "gibberishaccesstoken"
     every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns accessToken
@@ -128,7 +128,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
     val account = Account(sampleUsername, PROVIDER)
     val accessToken = "gibberishaccesstoken"
     val accountManagerFuture = mockk<AccountManagerFuture<Bundle>>()
-    every { tokenAuthenticator.findAccount() } returns account
+    every { tokenAuthenticator.findCurrentLoggedInAccount() } returns account
     every { tokenAuthenticator.isTokenActive(any()) } returns false
     every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns accessToken
     every { accountManager.invalidateAuthToken(account.type, accessToken) } just runs
@@ -147,7 +147,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testGetAccessTokenShouldReturnEmptyStringIfAccountNull() {
-    every { tokenAuthenticator.findAccount() } returns null
+    every { tokenAuthenticator.findCurrentLoggedInAccount() } returns null
     Assert.assertEquals("", tokenAuthenticator.getAccessToken())
   }
 
@@ -155,7 +155,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
   fun testGetAccessTokenShouldCatchOperationCanceledAndIOAndAuthenticatorExceptions() {
     val account = Account(sampleUsername, PROVIDER)
     val accountManagerFutureBundle = mockk<AccountManagerFuture<Bundle>>()
-    every { tokenAuthenticator.findAccount() } returns account
+    every { tokenAuthenticator.findCurrentLoggedInAccount() } returns account
     every { tokenAuthenticator.isTokenActive(any()) } returns false
     val accessToken = "gibberishaccesstoken"
     every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns accessToken
@@ -304,7 +304,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
   fun testLogout() {
     val account = Account(sampleUsername, PROVIDER)
     val refreshToken = "gibberishaccesstoken"
-    every { tokenAuthenticator.findAccount() } returns account
+    every { tokenAuthenticator.findCurrentLoggedInAccount() } returns account
     every { accountManager.getPassword(account) } returns refreshToken
 
     coEvery { oAuthService.logout(any(), any()) } returns
@@ -320,7 +320,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
   fun testLogoutShouldShouldCatchHttpAndUnknownHostExceptions() {
     val account = Account(sampleUsername, PROVIDER)
     val refreshToken = "gibberishaccesstoken"
-    every { tokenAuthenticator.findAccount() } returns account
+    every { tokenAuthenticator.findCurrentLoggedInAccount() } returns account
     every { accountManager.getPassword(account) } returns refreshToken
 
     val httpException = HttpException(Response.success(null))
@@ -368,7 +368,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
     val secureSharedPreference = spyk(secureSharedPreference)
     every { secureSharedPreference.get256RandomBytes() } returns passwordSalt
-    secureSharedPreference.saveCredentials(sampleUsername, passwd.toCharArray())
+    secureSharedPreference.saveMultiCredentials(sampleUsername, passwd.toCharArray())
     val tokenAuthenticator =
       spyk(
         TokenAuthenticator(
@@ -388,10 +388,11 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testFindAccountShouldReturnAnAccount() {
-    secureSharedPreference.saveCredentials(sampleUsername, "sirikali".toCharArray())
+    secureSharedPreference.saveMultiCredentials(sampleUsername, "sirikali".toCharArray())
+    secureSharedPreference.saveSessionUsername(sampleUsername)
     val account = Account(sampleUsername, PROVIDER)
     every { accountManager.getAccountsByType(any()) } returns arrayOf(account)
-    val resultAccount = tokenAuthenticator.findAccount()
+    val resultAccount = tokenAuthenticator.findCurrentLoggedInAccount()
     Assert.assertNotNull(resultAccount)
     Assert.assertEquals(account.name, resultAccount?.name)
     Assert.assertEquals(account.type, resultAccount?.type)
@@ -401,7 +402,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
   fun testSessionActiveWithActiveToken() {
     val account = Account(sampleUsername, PROVIDER)
     val token = "anotherToken"
-    every { tokenAuthenticator.findAccount() } returns account
+    every { tokenAuthenticator.findCurrentLoggedInAccount() } returns account
     every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns token
     every { tokenAuthenticator.isTokenActive(any()) } returns true
 
@@ -412,7 +413,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
   fun testSessionActiveWithInActiveToken() {
     val account = Account(sampleUsername, PROVIDER)
     val token = "anotherToken"
-    every { tokenAuthenticator.findAccount() } returns account
+    every { tokenAuthenticator.findCurrentLoggedInAccount() } returns account
     every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns token
     every { tokenAuthenticator.isTokenActive(any()) } returns false
 
@@ -422,7 +423,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
   @Test
   fun testInvalidateSessionShouldInvalidateToken() {
     val account = Account(sampleUsername, PROVIDER)
-    every { tokenAuthenticator.findAccount() } returns account
+    every { tokenAuthenticator.findCurrentLoggedInAccount() } returns account
     every { accountManager.invalidateAuthToken(account.type, AUTH_TOKEN_TYPE) } just runs
     every { accountManager.removeAccountExplicitly(account) } returns true
 
@@ -441,7 +442,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
     val account = Account(sampleUsername, PROVIDER)
     val token =
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ik1hcnRpbiBOZGVnd2EiLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MzMyNDI4OTMyMzF9.sYnHKVkXrku7X4X92zsidrZeKyd6nbOvsM5qgck3kiA"
-    every { tokenAuthenticator.findAccount() } returns account
+    every { tokenAuthenticator.findCurrentLoggedInAccount() } returns account
     every { accountManager.getPassword(account) } returns token
 
     Assert.assertTrue(tokenAuthenticator.isCurrentRefreshTokenActive())

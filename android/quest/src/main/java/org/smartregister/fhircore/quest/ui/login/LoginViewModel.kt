@@ -57,6 +57,8 @@ import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.engine.util.practitionerIdKey
+import org.smartregister.fhircore.engine.util.practitionerNameKey
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.PractitionerDetails
@@ -139,22 +141,79 @@ constructor(
               }
             },
             onFetchPractitioner = { bundleResult, userInfo ->
-              if (bundleResult.isSuccess) {
-                val bundle = bundleResult.getOrDefault(FhirR4ModelBundle())
-                savePractitionerDetails(bundle, userInfo) {
-                  _showProgressBar.postValue(false)
-                  updateNavigateHome(true)
-                }
-              } else {
+              if (bundleResult.isFailure) {
                 _showProgressBar.postValue(false)
                 Timber.e(bundleResult.exceptionOrNull())
                 Timber.e(bundleResult.getOrNull().valueToString())
                 _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
+                return@fetchToken
               }
+
+              val bundle = bundleResult.getOrDefault(FhirR4ModelBundle())
+              bundle.entry
+                .map { it.resource }
+                .filterIsInstance<PractitionerDetails>()
+                .forEach {
+                  val existingLogins = secureSharedPreference.retrieveLoggedInUsernames()
+                  if (
+                    existingLogins.isEmpty() ||
+                      (existingLogins.size == 1 && existingLogins.first() == trimmedUsername)
+                  ) {
+                    savePractitionerDetails(it, userInfo) {
+                      _showProgressBar.postValue(false)
+                      updateNavigateHome(true)
+                    }
+                    return@forEach
+                  }
+
+                  val existingLocations =
+                    sharedPreferences.read<List<String>>(key = ResourceType.Location.name)
+                      ?: emptyList()
+                  val userLocations =
+                    it.fhirPractitionerDetails.locations.map { location ->
+                      location.id.extractLogicalIdUuid()
+                    }
+                  val locationsMatching =
+                    existingLocations.isNotEmpty() &&
+                      existingLocations.all { location -> userLocations.contains(location) }
+
+                  val existingCareTeams =
+                    sharedPreferences.read<List<String>>(key = ResourceType.CareTeam.name)
+                      ?: emptyList()
+                  val userCareTeams =
+                    it.fhirPractitionerDetails.careTeams.map { careTeam ->
+                      careTeam.id.extractLogicalIdUuid()
+                    }
+                  val careTeamsMatching =
+                    existingCareTeams.isNotEmpty() &&
+                      existingCareTeams.all { careTeam -> userCareTeams.contains(careTeam) }
+
+                  val existingOrganizations =
+                    sharedPreferences.read<List<String>>(key = ResourceType.Organization.name)
+                      ?: emptyList()
+                  val userOrganizations =
+                    it.fhirPractitionerDetails.organizations.map { org ->
+                      org.id.extractLogicalIdUuid()
+                    }
+                  val organizationsMatching =
+                    existingOrganizations.isNotEmpty() &&
+                      existingOrganizations.all { org -> userOrganizations.contains(org) }
+
+                  if (locationsMatching && careTeamsMatching && organizationsMatching) {
+                    savePractitionerDetails(it, userInfo) {
+                      _showProgressBar.postValue(false)
+                      updateNavigateHome(true)
+                    }
+                  } else {
+                    _showProgressBar.postValue(false)
+                    _loginErrorState.postValue(LoginErrorState.ERROR_MATCHING_SYNC_STRATEGY)
+                  }
+                }
             },
           )
         } else {
-          if (secureSharedPreference.retrieveSessionUsername() == null) {
+          if (secureSharedPreference.retrieveSessionUsername(trimmedUsername) == null) {
+            secureSharedPreference.saveSessionUsername(trimmedUsername)
             _showProgressBar.postValue(false)
             _loginErrorState.postValue(LoginErrorState.INVALID_OFFLINE_STATE)
           } else if (
@@ -209,47 +268,50 @@ constructor(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
-    val practitionerDetails =
-      sharedPreferences.read<PractitionerDetails>(
-        key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-        decodeWithGson = true,
+    val practitionerID =
+      sharedPreferences.read(
+        key = practitionerIdKey(username),
+        defaultValue = null,
       )
-    if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
+    // Get credentials for username
+    val currentCredentials = secureSharedPreference.retrieveCredentials(username)
+    if (
+      currentCredentials != null &&
+        practitionerID.isNullOrBlank().not() &&
+        username.equals(currentCredentials.username, ignoreCase = true) &&
+        tokenAuthenticator.sessionActive(username)
+    ) {
+      // Allow login access
+      secureSharedPreference.saveSessionUsername(username)
       _showProgressBar.postValue(false)
       updateNavigateHome(true)
-    } else {
-      // Prevent user from logging in with different credentials
-      val existingCredentials = secureSharedPreference.retrieveCredentials()
-      if (
-        existingCredentials != null &&
-          !username.equals(
-            existingCredentials.username,
-            true,
-          )
-      ) {
-        _showProgressBar.postValue(false)
-        _loginErrorState.postValue(LoginErrorState.MULTI_USER_LOGIN_ATTEMPT)
-      } else {
-        tokenAuthenticator
-          .fetchAccessToken(username, password)
-          .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
-          .onFailure {
-            _showProgressBar.postValue(false)
-            var errorState = LoginErrorState.ERROR_FETCHING_USER
-
-            if (it is HttpException) {
-              when (it.code()) {
-                401 -> errorState = LoginErrorState.INVALID_CREDENTIALS
-              }
-            } else if (it is UnknownHostException) {
-              errorState = LoginErrorState.UNKNOWN_HOST
-            }
-
-            _loginErrorState.postValue(errorState)
-            Timber.e(it)
-          }
-      }
+      return
     }
+
+    tokenAuthenticator
+      .fetchAccessToken(username, password)
+      .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
+      .onFailure {
+        _showProgressBar.postValue(false)
+        var errorState = LoginErrorState.ERROR_FETCHING_USER
+
+        when (it) {
+          is HttpException -> {
+            when (it.code()) {
+              401 -> errorState = LoginErrorState.INVALID_CREDENTIALS
+            }
+          }
+          is UnknownHostException -> {
+            errorState = LoginErrorState.UNKNOWN_HOST
+          }
+          is IllegalAccessException -> {
+            errorState = LoginErrorState.UNAUTHORISED_PERMISSIONS
+          }
+        }
+
+        _loginErrorState.postValue(errorState)
+        Timber.e(it)
+      }
   }
 
   suspend fun fetchPractitioner(
@@ -305,96 +367,92 @@ constructor(
   }
 
   fun savePractitionerDetails(
-    bundle: FhirR4ModelBundle,
+    practitionerDetails: PractitionerDetails,
     userInfo: UserInfo?,
     postProcess: () -> Unit,
   ) {
-    if (bundle.entry.isNullOrEmpty()) return
     viewModelScope.launch {
-      bundle.entry.forEach { entry ->
-        val practitionerDetails = entry.resource as PractitionerDetails
-        val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
-        val organizations = practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()
-        val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
-        val practitioners = practitionerDetails.fhirPractitionerDetails?.practitioners ?: listOf()
-        val practitionerId =
-          practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString()
-        val locationHierarchies =
-          practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
+      val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
+      val organizations = practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()
+      val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
+      val practitioners = practitionerDetails.fhirPractitionerDetails?.practitioners ?: listOf()
+      val practitionerId =
+        practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString()
+      val locationHierarchies =
+        practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
 
-        val careTeamIds =
-          defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
-            careTeams.map { it.id.extractLogicalIdUuid() }
-          }
-
-        val organizationIds =
-          defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
-            organizations.map { it.id.extractLogicalIdUuid() }
-          }
-
-        val locationIds =
-          defaultRepository.createRemote(false, *locations.toTypedArray()).run {
-            locations.map { it.id.extractLogicalIdUuid() }
-          }
-
-        val location =
-          defaultRepository.createRemote(false, *locations.toTypedArray()).run {
-            locations.map { it.name }
-          }
-
-        val careTeam =
-          defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
-            careTeams.map { it.name }
-          }
-
-        val organization =
-          defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
-            organizations.map { it.name }
-          }
-
-        defaultRepository.createRemote(false, *practitioners.toTypedArray())
-        practitionerDetails.fhirPractitionerDetails?.groups?.toTypedArray()?.let {
-          defaultRepository.createRemote(false, *it)
-        }
-        practitionerDetails.fhirPractitionerDetails?.practitionerRoles?.toTypedArray()?.let {
-          defaultRepository.createRemote(false, *it)
-        }
-        practitionerDetails.fhirPractitionerDetails?.organizationAffiliations?.toTypedArray()?.let {
-          defaultRepository.createRemote(false, *it)
+      val careTeamIds =
+        defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
+          careTeams.map { it.id.extractLogicalIdUuid() }
         }
 
-        if (practitionerId.isNotEmpty()) {
-          writePractitionerDetailsToShredPref(
-            careTeam = careTeam,
-            organization = organization,
-            location = location,
-            fhirPractitionerDetails = practitionerDetails,
-            careTeams = careTeamIds,
-            organizations = organizationIds,
-            locations = locationIds,
-            locationHierarchies = locationHierarchies,
-          )
-        } else {
-          // The assumption here is that only 1 practitioner is returned from the server in the
-          // practitioner details
-          practitioners.firstOrNull()?.identifier?.forEach { identifier ->
-            if (
-              identifier.hasUse() &&
-                identifier.use == org.hl7.fhir.r4.model.Identifier.IdentifierUse.SECONDARY &&
-                identifier.hasValue() &&
-                identifier.value == userInfo!!.keycloakUuid
-            ) {
-              writePractitionerDetailsToShredPref(
-                careTeam = careTeam,
-                organization = organization,
-                location = location,
-                fhirPractitionerDetails = practitionerDetails,
-                careTeams = careTeamIds,
-                organizations = organizationIds,
-                locations = locationIds,
-                locationHierarchies = locationHierarchies,
-              )
-            }
+      val organizationIds =
+        defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
+          organizations.map { it.id.extractLogicalIdUuid() }
+        }
+
+      val locationIds =
+        defaultRepository.createRemote(false, *locations.toTypedArray()).run {
+          locations.map { it.id.extractLogicalIdUuid() }
+        }
+
+      val location =
+        defaultRepository.createRemote(false, *locations.toTypedArray()).run {
+          locations.map { it.name }
+        }
+
+      val careTeam =
+        defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
+          careTeams.map { it.name }
+        }
+
+      val organization =
+        defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
+          organizations.map { it.name }
+        }
+
+      defaultRepository.createRemote(false, *practitioners.toTypedArray())
+      practitionerDetails.fhirPractitionerDetails?.groups?.toTypedArray()?.let {
+        defaultRepository.createRemote(false, *it)
+      }
+      practitionerDetails.fhirPractitionerDetails?.practitionerRoles?.toTypedArray()?.let {
+        defaultRepository.createRemote(false, *it)
+      }
+      practitionerDetails.fhirPractitionerDetails?.organizationAffiliations?.toTypedArray()?.let {
+        defaultRepository.createRemote(false, *it)
+      }
+
+      if (practitionerId.isNotEmpty()) {
+        writePractitionerDetailsToShredPref(
+          careTeam = careTeam,
+          organization = organization,
+          location = location,
+          fhirPractitionerDetails = practitionerDetails,
+          careTeams = careTeamIds,
+          organizations = organizationIds,
+          locations = locationIds,
+          locationHierarchies = locationHierarchies,
+        )
+      } else {
+        // The assumption here is that only 1 practitioner is returned from the server in the
+        // practitioner details
+        practitioners.firstOrNull()?.identifier?.forEach { identifier ->
+          if (
+            identifier.hasUse() &&
+              identifier.use == org.hl7.fhir.r4.model.Identifier.IdentifierUse.SECONDARY &&
+              identifier.hasValue() &&
+              identifier.value == userInfo!!.keycloakUuid
+          ) {
+            writePractitionerDetailsToShredPref(
+              careTeam = careTeam,
+              organization = organization,
+              location = location,
+              fhirPractitionerDetails = practitionerDetails,
+              careTeams = careTeamIds,
+              organizations = organizationIds,
+              locations = locationIds,
+              locationHierarchies = locationHierarchies,
+            )
           }
         }
       }
@@ -421,12 +479,14 @@ constructor(
     locations: List<String>,
     locationHierarchies: List<LocationHierarchy>,
   ) {
+    val trimmedUsername = username.value!!.trim()
+
     sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_ID.name,
+      key = practitionerIdKey(trimmedUsername),
       value = fhirPractitionerDetails.fhirPractitionerDetails?.id,
     )
     sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+      practitionerNameKey(trimmedUsername),
       fhirPractitionerDetails,
     )
     sharedPreferences.write(ResourceType.CareTeam.name, careTeams)
