@@ -64,7 +64,13 @@ val requiredSentryProperties =
     "url"
   )
 
-val sentryProperties = readProperties((project.properties["sentryPropertiesFile"] ?: "${rootProject.projectDir}/sentry.properties").toString())
+val sentryProperties = try {
+  readProperties((project.properties["sentryPropertiesFile"] ?: "${rootProject.projectDir}/sentry.properties").toString())
+} catch (e: FileNotFoundException) {
+  if (project.properties["sentryPropertiesFile"] != null) {
+    throw e
+  } else Properties()
+}
 
 requiredSentryProperties.forEach { property ->
   project.extra.set(property, sentryProperties.getProperty(property, "sentry_$property"))
