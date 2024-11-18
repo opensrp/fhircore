@@ -59,7 +59,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComp
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -147,16 +146,7 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
-    return (CacheHelper.getResource(ResourceType.Questionnaire.name, questionnaireConfig.id)?.copy()
-      ?: defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.also {
-        questionnaire,
-        ->
-        CacheHelper.saveResource(
-          questionnaireConfig.id,
-          questionnaire.copy(),
-        )
-      })
-      as Questionnaire
+    return defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)
   }
 
   /**
@@ -672,34 +662,25 @@ constructor(
   ): Bundle =
     kotlin
       .runCatching {
-        withContext(dispatcherProvider.default()) {
-          if (extractByStructureMap) {
-            ResourceMapper.extract(
-              questionnaire = questionnaire,
-              questionnaireResponse = questionnaireResponse,
-              structureMapExtractionContext =
-                StructureMapExtractionContext(
-                  transformSupportServices = transformSupportServices,
-                  structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
-                    structureMapUrl?.substringAfterLast("/")?.let { structureMapId ->
-                      CacheHelper.getResource(ResourceType.StructureMap.name, structureMapId)?.let {
-                        it as StructureMap
-                      }
-                        ?: run {
-                          defaultRepository.loadResource<StructureMap>(structureMapId)?.also {
-                            CacheHelper.saveResource(structureMapId, it)
-                          }
-                        }
-                    }
-                  },
-                ),
-            )
-          } else {
-            ResourceMapper.extract(
-              questionnaire = questionnaire,
-              questionnaireResponse = questionnaireResponse,
-            )
-          }
+        if (extractByStructureMap) {
+          ResourceMapper.extract(
+            questionnaire = questionnaire,
+            questionnaireResponse = questionnaireResponse,
+            structureMapExtractionContext =
+              StructureMapExtractionContext(
+                transformSupportServices = transformSupportServices,
+                structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
+                  structureMapUrl?.substringAfterLast("/")?.let {
+                    defaultRepository.loadResource(it)
+                  }
+                },
+              ),
+          )
+        } else {
+          ResourceMapper.extract(
+            questionnaire = questionnaire,
+            questionnaireResponse = questionnaireResponse,
+          )
         }
       }
       .onFailure { exception ->

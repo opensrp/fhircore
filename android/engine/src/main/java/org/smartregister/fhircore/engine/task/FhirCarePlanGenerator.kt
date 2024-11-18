@@ -215,16 +215,8 @@ constructor(
               }
             source.setParameter(Task.SP_PERIOD, period)
             source.setParameter(ActivityDefinition.SP_VERSION, IntegerType(index))
-            val structureMapId = IdType(action.transform).idPart
-            val structureMap =
-              CacheHelper.getResource(ResourceType.StructureMap.name, structureMapId)?.let {
-                it as StructureMap
-              }
-                ?: run {
-                  fhirEngine.get<StructureMap>(structureMapId).also {
-                    CacheHelper.saveResource(structureMapId, it)
-                  }
-                }
+
+            val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
             structureMapUtilities.transform(
               transformSupportServices.simpleWorkerContext,
               source,
