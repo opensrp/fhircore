@@ -150,7 +150,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Inject lateinit var knowledgeManager: KnowledgeManager
 
   @Inject lateinit var contentCache: ContentCache
-
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
@@ -250,6 +249,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         extractionQuestionnaire().apply { extension = samplePatientRegisterQuestionnaire.extension }
       val questionnaireResponse = extractionQuestionnaireResponse()
       val actionParameters = emptyList<ActionParameter>()
+      coEvery { defaultRepository.applyDbTransaction(any()) } answers
+        {
+          runBlocking { (firstArg() as suspend () -> Unit).invoke() }
+        }
       val onSuccessfulSubmission =
         spyk({ idsTypes: List<IdType>, _: QuestionnaireResponse -> Timber.i(idsTypes.toString()) })
       coEvery {
@@ -326,7 +329,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   // TODO Write integration test for QuestionnaireActivity to compliment this unit test;
   @Test
-  fun testHandleQuestionnaireSubmission() {
+  fun testHandleQuestionnaireSubmission() = runTest {
     mockkObject(ResourceMapper)
     val questionnaire =
       extractionQuestionnaire().apply {
@@ -360,6 +363,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       ResourceNotFoundException("QuestionnaireResponse", "")
     coEvery { fhirEngine.create(resource = anyVararg()) } returns listOf(patient.logicalId)
     coEvery { fhirEngine.update(resource = anyVararg()) } just runs
+    coEvery { defaultRepository.applyDbTransaction(any()) } answers
+      {
+        runBlocking { (firstArg() as suspend () -> Unit).invoke() }
+      }
 
     // Mock returned bundle after extraction refer to FhirExtractionTest.kt for extraction test
     coEvery {
@@ -658,6 +665,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.retrieveQuestionnaire(
         questionnaireConfig = questionnaireConfig,
       )
+
     Assert.assertEquals(
       samplePatientRegisterQuestionnaire.idPart,
       contentCache.getResource(ResourceType.Questionnaire, questionnaireConfig.id)?.idPart,
@@ -701,8 +709,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
       )
     val patientAgeLinkId = "patient-age"
+    val newQuestionnaireId = "new-${questionnaireConfig.id}"
     val newQuestionnaireConfig =
       questionnaireConfig.copy(
+        id = newQuestionnaireId,
         resourceIdentifier = patient.id,
         resourceType = patient.resourceType,
         barcodeLinkId = "patient-barcode",
@@ -724,6 +734,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
     coEvery { fhirEngine.get(ResourceType.Questionnaire, newQuestionnaireConfig.id) } returns
       samplePatientRegisterQuestionnaire.apply {
+        id = newQuestionnaireId
         addItem(
           Questionnaire.QuestionnaireItemComponent().apply {
             linkId = patientAgeLinkId

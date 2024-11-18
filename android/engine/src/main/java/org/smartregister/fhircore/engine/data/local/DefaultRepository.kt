@@ -264,6 +264,10 @@ constructor(
     fhirEngine.update(resource)
   }
 
+  suspend fun applyDbTransaction(block: suspend () -> Unit) {
+    fhirEngine.withTransaction { block.invoke() }
+  }
+
   suspend fun loadManagingEntity(group: Group) =
     group.managingEntity?.let { reference ->
       fhirEngine
