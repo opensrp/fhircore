@@ -94,6 +94,7 @@ import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -116,7 +117,6 @@ import org.smartregister.fhircore.engine.util.extension.questionnaireResponseSta
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.extension.yesterday
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.engine.util.helper.CacheHelper
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequestHandler
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.assertResourceEquals
@@ -149,6 +149,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Inject lateinit var knowledgeManager: KnowledgeManager
 
+  @Inject lateinit var contentCache: ContentCache
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
@@ -659,15 +660,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id) } returns
       samplePatientRegisterQuestionnaire
 
-    CacheHelper.saveResource(questionnaireConfig.id, samplePatientRegisterQuestionnaire)
+    contentCache.saveResource(samplePatientRegisterQuestionnaire)
     val questionnaire =
       questionnaireViewModel.retrieveQuestionnaire(
         questionnaireConfig = questionnaireConfig,
       )
 
     Assert.assertEquals(
-      samplePatientRegisterQuestionnaire,
-      CacheHelper.getResource(ResourceType.Questionnaire.name, questionnaireConfig.id),
+      samplePatientRegisterQuestionnaire.idPart,
+      contentCache.getResource(ResourceType.Questionnaire, questionnaireConfig.id)?.idPart,
     )
     Assert.assertNotNull(questionnaire)
     Assert.assertEquals(questionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
