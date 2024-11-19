@@ -35,6 +35,7 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.geowidget.shadows.ShadowConnectivityReceiver
 import org.smartregister.fhircore.geowidget.shadows.ShadowKujakuMapView
 import org.smartregister.fhircore.geowidget.shadows.ShadowMapbox
@@ -58,7 +59,7 @@ class GeoWidgetFragmentTest {
   fun setup() {
     hiltRule.inject()
 
-    Robolectric.buildActivity(GeoWidgetTestActivity::class.java).create().resume().get()
+    Robolectric.buildActivity(HiltActivityForTest::class.java).create().resume().get()
 
     geowidgetFragment = GeoWidgetFragment()
 
