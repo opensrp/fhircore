@@ -23,6 +23,8 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
+import java.util.Date
+import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -37,8 +39,6 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.yesterday
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherViewModel
-import java.util.Date
-import javax.inject.Inject
 
 @HiltAndroidTest
 class PdfLauncherViewModelTest : RobolectricTest() {
