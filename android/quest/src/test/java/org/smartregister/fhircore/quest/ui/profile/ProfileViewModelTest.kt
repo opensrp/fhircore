@@ -54,7 +54,6 @@ import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.BLACK_COLOR_HEX_CODE
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -99,7 +98,6 @@ class ProfileViewModelTest : RobolectricTest() {
       spyk(
         RegisterRepository(
           fhirEngine = mockk(),
-          dispatcherProvider = DefaultDispatcherProvider(),
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
@@ -107,6 +105,7 @@ class ProfileViewModelTest : RobolectricTest() {
           fhirPathDataExtractor = mockk(),
           parser = parser,
           context = ApplicationProvider.getApplicationContext(),
+          dispatcherProvider = dispatcherProvider,
         ),
       )
     coEvery {
