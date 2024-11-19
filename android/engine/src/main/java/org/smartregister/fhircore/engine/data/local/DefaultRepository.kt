@@ -117,13 +117,8 @@ constructor(
   open val fhirPathDataExtractor: FhirPathDataExtractor,
   open val parser: IParser,
   @ApplicationContext open val context: Context,
+  open val contentCache: ContentCache,
 ) {
-
-  @Inject lateinit var contentCache: ContentCache
-
-  init {
-    DaggerDefaultRepositoryComponent.create().inject(this)
-  }
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? =
     fhirEngine.loadResource(resourceId)

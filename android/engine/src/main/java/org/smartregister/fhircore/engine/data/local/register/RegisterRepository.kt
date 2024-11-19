@@ -26,6 +26,8 @@ import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.include
 import com.google.android.fhir.search.revInclude
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -34,6 +36,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
@@ -46,8 +49,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class RegisterRepository
@@ -62,6 +63,7 @@ constructor(
   override val fhirPathDataExtractor: FhirPathDataExtractor,
   override val parser: IParser,
   @ApplicationContext override val context: Context,
+  override val contentCache: ContentCache,
 ) :
   Repository,
   DefaultRepository(
@@ -74,6 +76,7 @@ constructor(
     fhirPathDataExtractor = fhirPathDataExtractor,
     parser = parser,
     context = context,
+    contentCache = contentCache,
   ) {
 
   override suspend fun loadRegisterData(
@@ -105,7 +108,7 @@ constructor(
         repositoryResourceData = null,
         relatedResourceConfigs = requiredFhirResourceConfig.relatedResources,
         baseResourceConfigId = requiredFhirResourceConfig.baseResource.id,
-        pageSize = registerConfiguration.pageSize
+        pageSize = registerConfiguration.pageSize,
       )
 
     val resourcesQueue =
@@ -132,7 +135,7 @@ constructor(
           repositoryResourceData = repositoryResourceData,
           relatedResourceConfigs = resourceConfig.relatedResources,
           baseResourceConfigId = resourceConfig.id,
-          pageSize = registerConfiguration.pageSize
+          pageSize = registerConfiguration.pageSize,
         )
       resourcesQueue.addAll(newProcessedResults)
     }
@@ -153,7 +156,7 @@ constructor(
     repositoryResourceData: RepositoryResourceData?,
     relatedResourceConfigs: List<ResourceConfig>,
     baseResourceConfigId: String?,
-    pageSize: Int
+    pageSize: Int,
   ): Sequence<Triple<List<Resource>, ResourceConfig, RepositoryResourceData>> {
     val relatedResourcesQueue =
       ArrayDeque<Triple<List<Resource>, ResourceConfig, RepositoryResourceData>>()

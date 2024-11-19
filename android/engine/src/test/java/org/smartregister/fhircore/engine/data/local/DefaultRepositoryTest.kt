@@ -122,6 +122,8 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var parser: IParser
 
+  @Inject lateinit var contentCache: ContentCache
+
   @BindValue
   val configService: ConfigService =
     spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
@@ -148,6 +150,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         fhirPathDataExtractor = fhirPathDataExtractor,
         parser = parser,
         context = context,
+        contentCache = contentCache,
       )
   }
 
@@ -561,6 +564,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = context,
+          contentCache = contentCache,
         ),
       )
     coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
@@ -639,6 +643,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = context,
+          contentCache = contentCache,
         ),
       )
 

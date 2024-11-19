@@ -52,7 +52,6 @@ import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
-import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -109,6 +108,7 @@ class ProfileViewModelTest : RobolectricTest() {
           parser = parser,
           context = ApplicationProvider.getApplicationContext(),
           dispatcherProvider = dispatcherProvider,
+          contentCache = contentCache,
         ),
       )
     coEvery {

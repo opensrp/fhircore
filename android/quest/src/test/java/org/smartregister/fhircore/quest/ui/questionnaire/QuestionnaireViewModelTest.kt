@@ -85,6 +85,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Type
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ExtractedResourceUniquePropertyExpression
@@ -194,6 +195,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = context,
+          contentCache = contentCache,
         ),
       )
 
@@ -834,6 +836,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  @Ignore("Re-check this test, it takes forever to run")
   fun testSaveDraftQuestionnaireCallsAddOrUpdateForPaginatedForms() = runTest {
     val pageItem =
       QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {

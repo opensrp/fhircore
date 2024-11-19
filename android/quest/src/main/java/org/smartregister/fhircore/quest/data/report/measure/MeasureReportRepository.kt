@@ -31,22 +31,47 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
+import org.smartregister.fhircore.engine.data.local.ContentCache
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import timber.log.Timber
 
 class MeasureReportRepository
 @Inject
 constructor(
-  val fhirEngine: FhirEngine,
+  override val fhirEngine: FhirEngine,
+  override val sharedPreferencesHelper: SharedPreferencesHelper,
+  override val configurationRegistry: ConfigurationRegistry,
+  override val configService: ConfigService,
+  override val rulesExecutor: RulesExecutor,
   private val fhirOperator: FhirOperator,
   private val knowledgeManager: KnowledgeManager,
-  val parser: IParser,
-  @ApplicationContext val context: Context,
-  val dispatcherProvider: DispatcherProvider,
-) {
+  override val fhirPathDataExtractor: FhirPathDataExtractor,
+  override val parser: IParser,
+  @ApplicationContext override val context: Context,
+  override val dispatcherProvider: DispatcherProvider,
+  override val contentCache: ContentCache,
+) :
+  DefaultRepository(
+    fhirEngine = fhirEngine,
+    sharedPreferencesHelper = sharedPreferencesHelper,
+    configurationRegistry = configurationRegistry,
+    configService = configService,
+    rulesExecutor = rulesExecutor,
+    fhirPathDataExtractor = fhirPathDataExtractor,
+    parser = parser,
+    context = context,
+    dispatcherProvider = dispatcherProvider,
+    contentCache = contentCache,
+  ) {
 
   /**
    * If running a measure for any subject throws a null pointer exception the measures for
