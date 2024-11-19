@@ -58,7 +58,7 @@ import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -70,7 +70,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 class RegisterViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  @Inject lateinit var rulesExecutor: RulesExecutor
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
@@ -93,7 +93,7 @@ class RegisterViewModelTest : RobolectricTest() {
           registerRepository = registerRepository,
           configurationRegistry = configurationRegistry,
           sharedPreferencesHelper = sharedPreferencesHelper,
-          resourceDataRulesExecutor = resourceDataRulesExecutor,
+          rulesExecutor = rulesExecutor,
           dispatcherProvider = dispatcherProvider,
         ),
       )

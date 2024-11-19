@@ -97,23 +97,26 @@ suspend fun FhirEngine.countUnSyncedResources() =
     .eachCount()
     .map { it.key to it.value }
 
-suspend fun <R : Resource> FhirEngine.batchedSearch(search: Search) =
+suspend fun <R : Resource> FhirEngine.batchedSearch(search: Search): List<SearchResult<R>> {
+  val pageSize = 100
   if (search.count != null) {
-    this.search<R>(search)
-  } else {
-    val result = mutableListOf<SearchResult<R>>()
-    var offset = search.from ?: 0
-    val pageCount = 100
-    do {
-      search.from = offset
-      search.count = pageCount
-      val searchResults = this.search<R>(search)
-      result += searchResults
-      offset += searchResults.size
-    } while (searchResults.size == pageCount)
-
-    result
+    return this.search(search)
   }
+
+  val result = mutableListOf<SearchResult<R>>()
+  var offset = search.from ?: 0
+  do {
+    val paginatedSearch =
+      search.apply {
+        search.from = offset
+        search.count = pageSize
+      }
+    val searchResults = this.search<R>(paginatedSearch)
+    result.addAll(searchResults)
+    offset += searchResults.size
+  } while (searchResults.size == pageSize)
+  return result
+}
 
 suspend inline fun <reified R : Resource> FhirEngine.batchedSearch(
   init: Search.() -> Unit,

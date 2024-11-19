@@ -25,7 +25,7 @@ import org.hl7.fhir.r4.model.Location
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.Geometry
@@ -34,7 +34,7 @@ import timber.log.Timber
 /** [RegisterRepository] function for loading data to the paging source. */
 class GeoWidgetPagingSource(
   private val defaultRepository: DefaultRepository,
-  private val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  private val rulesExecutor: RulesExecutor,
   private val geoWidgetConfig: GeoWidgetConfiguration,
 ) : PagingSource<Int, GeoJsonFeature>() {
 
@@ -55,6 +55,10 @@ class GeoWidgetPagingSource(
           pageSize = DEFAULT_PAGE_SIZE,
         )
 
+      val rules =
+        rulesExecutor.rulesFactory.generateRules(
+          geoWidgetConfig.servicePointConfig?.rules ?: emptyList(),
+        )
       val nextKey = if (registerData.isNotEmpty()) currentPage + 1 else null
 
       val data =
@@ -66,9 +70,9 @@ class GeoWidgetPagingSource(
           .map {
             Pair(
               it.resource as Location,
-              resourceDataRulesExecutor.processResourceData(
+              rulesExecutor.processResourceData(
                 repositoryResourceData = it,
-                ruleConfigs = geoWidgetConfig.servicePointConfig?.rules ?: emptyList(),
+                rules = rules,
                 params = emptyMap(),
               ),
             )

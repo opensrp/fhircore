@@ -73,7 +73,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.isEditable
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -110,7 +110,7 @@ constructor(
   val defaultRepository: DefaultRepository,
   val dispatcherProvider: DispatcherProvider,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
-  val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  val rulesExecutor: RulesExecutor,
   val transformSupportServices: TransformSupportServices,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val fhirOperator: FhirOperator,
@@ -1149,7 +1149,10 @@ constructor(
     questionnaire.prepopulateWithComputedConfigValues(
       questionnaireConfig,
       actionParameters,
-      { resourceDataRulesExecutor.computeResourceDataRules(it, null, emptyMap()) },
+      {
+        val rules = rulesExecutor.rulesFactory.generateRules(it)
+        rulesExecutor.computeResourceDataRules(rules, null, emptyMap())
+      },
       { uniqueIdAssignmentConfig, computedValues ->
         // Extract ID from a Group, should be modified in future to support other resources
         uniqueIdResource =

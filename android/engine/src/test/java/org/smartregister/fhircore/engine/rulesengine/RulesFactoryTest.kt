@@ -200,7 +200,7 @@ class RulesFactoryTest : RobolectricTest() {
             secondaryRepositoryResourceData =
               listOf(
                 RepositoryResourceData(
-                  resourceRulesEngineFactId = "commodities",
+                  resourceConfigId = "commodities",
                   resource = Group().apply { id = "Commodity1" },
                   relatedResourcesMap =
                     mapOf(
@@ -219,7 +219,7 @@ class RulesFactoryTest : RobolectricTest() {
                     mapOf("stockCount" to listOf(RelatedResourceCount(count = 20))),
                 ),
                 RepositoryResourceData(
-                  resourceRulesEngineFactId = "commodities",
+                  resourceConfigId = "commodities",
                   resource = Group().apply { id = "Commodity2" },
                   relatedResourcesMap =
                     mapOf(

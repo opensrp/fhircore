@@ -46,7 +46,7 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -79,7 +79,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
   private lateinit var measureReportRepository: MeasureReportRepository
   private val registerId = "register id"
   private lateinit var rulesFactory: RulesFactory
-  private lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  private lateinit var rulesExecutor: RulesExecutor
   private lateinit var registerRepository: RegisterRepository
   private val parser = FhirContext.forR4Cached().newJsonParser()
 
@@ -103,7 +103,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           defaultRepository = defaultRepository,
         ),
       )
-    resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)
+    rulesExecutor = RulesExecutor(rulesFactory)
 
     val appId = "appId"
     val id = "id"

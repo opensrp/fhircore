@@ -78,6 +78,7 @@ private const val HOUSEHOLD_REGISTER_ID = "householdRegister"
 private const val GROUP_ID = "theGroup"
 private const val GROUP_MEMBERS = "groupMembers"
 private const val ALL_TASKS = "allTasks"
+private const val SUB_TASK = "subTask"
 private const val TASK_ID = "taskId"
 private const val PART_OF_TASK_ID = "partOfTaskId"
 private const val MEMBER_CARE_PLANS = "memberCarePlans"
@@ -392,6 +393,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       val relatedResources = repositoryResourceData.relatedResourcesMap
       Assert.assertTrue(relatedResources.isNotEmpty())
       Assert.assertTrue(relatedResources.containsKey(GROUP_MEMBERS))
+      Assert.assertTrue(relatedResources.containsKey(SUB_TASK))
       Assert.assertTrue(relatedResources.containsKey(ALL_TASKS))
       Assert.assertTrue(relatedResources.containsKey(MEMBER_CARE_PLANS))
 
@@ -483,7 +485,7 @@ class RegisterRepositoryTest : RobolectricTest() {
                   relatedResources =
                     listOf(
                       ResourceConfig(
-                        id = ALL_TASKS, // Referenced task
+                        id = SUB_TASK, // Referenced task
                         resource = ResourceType.Task,
                         searchParameter = PART_OF,
                         isRevInclude = false,

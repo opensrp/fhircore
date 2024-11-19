@@ -23,16 +23,16 @@ import com.google.android.fhir.search.Order
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
-import com.jayway.jsonpath.PathNotFoundException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.system.measureTimeMillis
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import org.apache.commons.jexl3.JexlEngine
+import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Resource
@@ -40,11 +40,11 @@ import org.hl7.fhir.r4.model.Task
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.Rules
+import org.jeasy.rules.jexl.JexlRule
 import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -71,6 +71,7 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import timber.log.Timber
 
+@Singleton
 class RulesFactory
 @Inject
 constructor(
@@ -80,10 +81,36 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val locationService: LocationService,
   val fhirContext: FhirContext,
-  val defaultRepository: DefaultRepository,
+  val jexlEngine: JexlEngine,
+  //  val defaultRepository: DefaultRepository,
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
   private var facts: Facts = Facts()
+
+  fun generateRules(ruleConfigs: List<RuleConfig>): Rules =
+    Rules(
+      ruleConfigs
+        .asSequence()
+        .map { ruleConfig ->
+          val customRule: JexlRule =
+            JexlRule(jexlEngine)
+              .name(ruleConfig.name)
+              .description(ruleConfig.description)
+              .priority(ruleConfig.priority)
+              .`when`(ruleConfig.condition.ifEmpty { TRUE })
+
+          for (action in ruleConfig.actions) {
+            try {
+              customRule.then(action)
+            } catch (jexlException: JexlException) {
+              Timber.e(jexlException)
+              continue // Skip action when an error occurs to avoid app force close
+            }
+          }
+          customRule
+        }
+        .toSet(),
+    )
 
   /**
    * This function executes the actions defined in the [Rule] s generated from the provided list of
@@ -97,6 +124,7 @@ constructor(
     repositoryResourceData: RepositoryResourceData?,
     params: Map<String, String>,
   ): Map<String, Any> {
+    facts.clear() // Reset current facts
     facts =
       Facts().apply {
         put(FHIR_PATH, fhirPathDataExtractor)
@@ -108,14 +136,14 @@ constructor(
     if (repositoryResourceData != null) {
       with(repositoryResourceData) {
         facts.apply {
-          put(resourceRulesEngineFactId ?: resource.resourceType.name, resource)
+          put(resourceConfigId ?: resource.resourceType.name, resource)
           relatedResourcesMap.addToFacts(this)
           relatedResourcesCountMap.addToFacts(this)
 
           // Populate the facts map with secondary resource data flatten base and related
           // resources
           secondaryRepositoryResourceData
-            ?.groupBy { it.resourceRulesEngineFactId ?: it.resource.resourceType.name }
+            ?.groupBy { it.resourceConfigId ?: it.resource.resourceType.name }
             ?.forEach { entry -> put(entry.key, entry.value.map { it.resource }) }
 
           secondaryRepositoryResourceData?.forEach { repoResourceData ->
@@ -139,6 +167,25 @@ constructor(
         }
       }
     }
+    if (BuildConfig.DEBUG) {
+      val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+      Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+    } else {
+      rulesEngine.fire(rules, facts)
+    }
+    return facts.get(DATA) as Map<String, Any>
+  }
+
+  fun fireRules(rules: Rules, baseResource: Resource? = null): Map<String, Any> {
+    facts =
+      Facts().apply {
+        put(FHIR_PATH, fhirPathDataExtractor)
+        put(DATA, mutableMapOf<String, Any>())
+        put(DATE_SERVICE, DateService)
+        if (baseResource != null) {
+          put(baseResource.resourceType.name, baseResource)
+        }
+      }
     if (BuildConfig.DEBUG) {
       val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
       Timber.d("Rule executed in $timeToFireRules millisecond(s)")
@@ -685,7 +732,7 @@ constructor(
       purgeAffectedResources: Boolean = false,
       createLocalChangeEntitiesAfterPurge: Boolean = true,
     ) {
-      if (resource == null || path.isNullOrEmpty()) return
+      /* if (resource == null || path.isNullOrEmpty()) return
 
       val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
 
@@ -731,7 +778,7 @@ constructor(
         } else {
           defaultRepository.createRemote(resource = arrayOf(updatedResource as Resource))
         }
-      }
+      }*/
     }
 
     fun taskServiceStatusExist(tasks: List<Task>, vararg serviceStatus: String): Boolean {

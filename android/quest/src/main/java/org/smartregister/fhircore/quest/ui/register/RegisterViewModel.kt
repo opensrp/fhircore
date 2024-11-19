@@ -76,7 +76,7 @@ import org.smartregister.fhircore.engine.domain.model.NestedSearchConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -96,7 +96,7 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  val rulesExecutor: RulesExecutor,
   val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
 
@@ -106,6 +106,7 @@ constructor(
   val registerUiCountState = mutableStateOf(RegisterUiCountState())
   val currentPage: MutableState<Int> = mutableIntStateOf(0)
   val registerData: MutableStateFlow<Flow<PagingData<ResourceData>>> = MutableStateFlow(emptyFlow())
+  val paginatedData: MutableState<List<ResourceData>> = mutableStateOf(listOf())
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
   val registerFilterState = mutableStateOf(RegisterFilterState())
   private val _totalRecordsCount = mutableLongStateOf(0L)
@@ -154,19 +155,28 @@ constructor(
     loadAll: Boolean = false,
     clearCache: Boolean = false,
   ) {
-    if (clearCache) {
+    /* if (clearCache) {
       pagesDataCache.clear()
       completeRegisterData = null
     }
     registerData.value =
       pagesDataCache.getOrPut(currentPage.value) {
         getPager(registerId, loadAll).flow.cachedIn(viewModelScope)
-      }
+      }*/
+    viewModelScope.launch {
+      val resourceData =
+        registerRepository.loadRegisterData(
+          currentPage = currentPage.value,
+          registerId = registerId,
+          fhirResourceConfig = registerFilterState.value.fhirResourceConfig,
+          paramsMap = registerUiState.value.params.toTypedArray().toParamDataMap(),
+        )
+      paginatedData.value = resourceData
+    }
   }
 
   private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, ResourceData> {
     val currentRegisterConfigs = retrieveRegisterConfiguration(registerId)
-    val ruleConfigs = currentRegisterConfigs.registerCard.rules
     val pageSize = currentRegisterConfigs.pageSize
 
     return Pager(
@@ -174,8 +184,6 @@ constructor(
       pagingSourceFactory = {
         RegisterPagingSource(
             registerRepository = registerRepository,
-            resourceDataRulesExecutor = resourceDataRulesExecutor,
-            ruleConfigs = ruleConfigs,
             fhirResourceConfig = registerFilterState.value.fhirResourceConfig,
             actionParameters = registerUiState.value.params.toTypedArray().toParamDataMap(),
           )

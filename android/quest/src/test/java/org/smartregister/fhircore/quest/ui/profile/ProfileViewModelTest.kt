@@ -48,12 +48,13 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
+import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.BLACK_COLOR_HEX_CODE
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -71,11 +72,14 @@ class ProfileViewModelTest : RobolectricTest() {
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
-  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  @Inject lateinit var rulesExecutor: RulesExecutor
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var parser: IParser
+
+  @Inject lateinit var contentCache: ContentCache
+
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var profileViewModel: ProfileViewModel
   private lateinit var resourceData: ResourceData
@@ -101,7 +105,6 @@ class ProfileViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
-          configRulesExecutor = mockk(),
           fhirPathDataExtractor = mockk(),
           parser = parser,
           context = ApplicationProvider.getApplicationContext(),
@@ -114,7 +117,7 @@ class ProfileViewModelTest : RobolectricTest() {
         any(),
         paramsList = emptyArray(),
       )
-    } returns RepositoryResourceData(resource = Faker.buildPatient())
+    } returns ResourceData("", ResourceType.Patient, emptyMap())
 
     runBlocking {
       configurationRegistry.loadConfigurations(
@@ -129,7 +132,7 @@ class ProfileViewModelTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         dispatcherProvider = dispatcherProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
-        resourceDataRulesExecutor = resourceDataRulesExecutor,
+        rulesExecutor = rulesExecutor,
       )
   }
 
@@ -254,7 +257,7 @@ class ProfileViewModelTest : RobolectricTest() {
         configurationRegistry,
         dispatcherProvider,
         fhirPathDataExtractor,
-        resourceDataRulesExecutor,
+        rulesExecutor,
       )
 
     val managingEntityConfig =

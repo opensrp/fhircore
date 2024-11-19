@@ -37,6 +37,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -98,6 +99,7 @@ fun RegisterScreen(
   onAppMainEvent: (AppMainEvent) -> Unit,
   searchQuery: MutableState<SearchQuery>,
   currentPage: MutableState<Int>,
+  paginatedData: List<ResourceData>,
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
@@ -221,6 +223,7 @@ fun RegisterScreen(
                 }
               },
               decodeImage = decodeImage,
+              paginatedData = paginatedData,
             )
           } else {
             registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
@@ -324,6 +327,7 @@ fun RegisterScreenWithDataPreview() {
       pagingItems = pagingItems,
       navController = rememberNavController(),
       decodeImage = null,
+      paginatedData = SnapshotStateList(),
     )
   }
 }

@@ -24,7 +24,6 @@ import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.NoSuchElementException
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.exceptions.FHIRException
@@ -32,44 +31,22 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import timber.log.Timber
 
 class MeasureReportRepository
 @Inject
 constructor(
-  override val fhirEngine: FhirEngine,
-  override val sharedPreferencesHelper: SharedPreferencesHelper,
-  override val configurationRegistry: ConfigurationRegistry,
-  override val configService: ConfigService,
-  override val configRulesExecutor: ConfigRulesExecutor,
+  val fhirEngine: FhirEngine,
   private val fhirOperator: FhirOperator,
   private val knowledgeManager: KnowledgeManager,
-  override val fhirPathDataExtractor: FhirPathDataExtractor,
-  override val parser: IParser,
-  @ApplicationContext override val context: Context,
-  override val dispatcherProvider: DispatcherProvider,
-) :
-  DefaultRepository(
-    fhirEngine = fhirEngine,
-    sharedPreferencesHelper = sharedPreferencesHelper,
-    configurationRegistry = configurationRegistry,
-    configService = configService,
-    configRulesExecutor = configRulesExecutor,
-    fhirPathDataExtractor = fhirPathDataExtractor,
-    parser = parser,
-    context = context,
-    dispatcherProvider = dispatcherProvider,
-  ) {
+  val parser: IParser,
+  @ApplicationContext val context: Context,
+  val dispatcherProvider: DispatcherProvider,
+) {
 
   /**
    * If running a measure for any subject throws a null pointer exception the measures for
@@ -118,14 +95,14 @@ constructor(
       }
 
       measureReport.forEach { report ->
-        // if report exists override instead of creating a new one
+        // if report exists  instead of creating a new one
         existing
           .find {
             it.measure == report.measure &&
               (!it.hasSubject() || it.subject.reference == report.subject.reference)
           }
           ?.let { existing -> report.id = existing.id }
-        addOrUpdate(resource = report)
+        fhirEngine.create(report)
       }
     } catch (exception: NullPointerException) {
       Timber.e(exception, "Exception thrown with measureUrl: $measureUrl.")
@@ -194,7 +171,7 @@ constructor(
           val resource = searchResult.resource
           if (resource is Group && !resource.hasMember()) {
             resource.addMember(Group.GroupMemberComponent(resource.asReference()))
-            update(resource)
+            fhirEngine.update(resource)
           }
           "${resource.resourceType.name}/${resource.logicalId}"
         }

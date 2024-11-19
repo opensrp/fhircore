@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -30,21 +31,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
-import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.ui.register.RegisterEvent
 import org.smartregister.fhircore.quest.ui.register.RegisterUiCountState
 import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
-import timber.log.Timber
 
 const val REGISTER_CARD_LIST_TEST_TAG = "RegisterCardListTestTag"
 const val PADDING_BOTTOM_WITH_FAB = 80
@@ -59,6 +54,7 @@ fun RegisterCardList(
   modifier: Modifier = Modifier,
   registerCardConfig: RegisterCardConfig,
   pagingItems: LazyPagingItems<ResourceData>,
+  paginatedData: List<ResourceData>,
   navController: NavController,
   lazyListState: LazyListState,
   onEvent: (RegisterEvent) -> Unit,
@@ -70,9 +66,9 @@ fun RegisterCardList(
   decodeImage: ((String) -> Bitmap?)?,
 ) {
   LazyColumn(modifier = Modifier.testTag(REGISTER_CARD_LIST_TEST_TAG), state = lazyListState) {
-    items(
-      count = pagingItems.itemCount,
-      key = pagingItems.itemKey { it.baseResourceId },
+    /*items(
+      count = paginatedData.size,
+      key = paginatedData.itemKey { it.baseResourceId },
       contentType = pagingItems.itemContentType(),
     ) { index ->
       // Register card UI rendered dynamically should be wrapped in a column
@@ -87,9 +83,24 @@ fun RegisterCardList(
         )
       }
       Divider(color = DividerColor, thickness = 1.dp)
+    }*/
+
+    items(paginatedData) { item ->
+      // Register card UI rendered dynamically should be wrapped in a column
+      Column(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
+      ) {
+        ViewRenderer(
+          viewProperties = registerCardConfig.views,
+          resourceData = item,
+          navController = navController,
+          decodeImage = decodeImage,
+        )
+      }
+      Divider(color = DividerColor, thickness = 1.dp)
     }
 
-    pagingItems.apply {
+    /*pagingItems.apply {
       when {
         loadState.refresh is LoadState.Loading -> item { CircularProgressBar() }
         loadState.append is LoadState.Loading -> item { CircularProgressBar() }
@@ -114,7 +125,7 @@ fun RegisterCardList(
           }
         }
       }
-    }
+    }*/
 
     // Register pagination
     item {
@@ -130,9 +141,9 @@ fun RegisterCardList(
               },
           ),
       ) {
-        if (pagingItems.itemCount > 0 && showPagination) {
+        if (paginatedData.isNotEmpty() && showPagination) {
           RegisterFooter(
-            resultCount = pagingItems.itemCount,
+            resultCount = paginatedData.size,
             currentPage = currentPage.value.plus(1),
             pagesCount = registerUiCountState.pagesCount,
             previousButtonClickListener = { onEvent(RegisterEvent.MoveToPreviousPage) },

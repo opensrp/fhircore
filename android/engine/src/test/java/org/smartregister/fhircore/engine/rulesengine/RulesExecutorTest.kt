@@ -56,7 +56,7 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
-class ResourceDataRulesExecutorTest : RobolectricTest() {
+class RulesExecutorTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -70,7 +70,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
   @Inject lateinit var locationService: LocationService
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var rulesFactory: RulesFactory
-  private lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  private lateinit var rulesExecutor: RulesExecutor
 
   @Inject lateinit var fhirContext: FhirContext
   private lateinit var defaultRepository: DefaultRepository
@@ -92,7 +92,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
           defaultRepository = defaultRepository,
         ),
       )
-    resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)
+    rulesExecutor = RulesExecutor(rulesFactory)
   }
 
   @Test
@@ -111,10 +111,10 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
 
     runBlocking(Dispatchers.Default) {
       val resourceData =
-        resourceDataRulesExecutor.processResourceData(
+        rulesExecutor.processResourceData(
           repositoryResourceData =
             RepositoryResourceData(
-              resourceRulesEngineFactId = null,
+              resourceConfigId = null,
               resource = baseResource,
               relatedResourcesMap = relatedRepositoryResourceData,
             ),
@@ -138,7 +138,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
       val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
       val computedValuesMap: Map<String, List<Resource>> = emptyMap()
       val listResourceDataStateMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
-      resourceDataRulesExecutor.processListResourceData(
+      rulesExecutor.processListResourceData(
         listProperties = listProperties,
         relatedResourcesMap = relatedRepositoryResourceData,
         computedValuesMap = computedValuesMap,
@@ -182,7 +182,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
           add(anotherPatient)
         }
       val listResourceDataStateMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
-      resourceDataRulesExecutor.processListResourceData(
+      rulesExecutor.processListResourceData(
         listProperties = listProperties,
         relatedResourcesMap = relatedRepositoryResourceData,
         computedValuesMap = computedValuesMap,
@@ -228,7 +228,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
 
       val listResourceDataStateMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
 
-      resourceDataRulesExecutor.processListResourceData(
+      rulesExecutor.processListResourceData(
         listProperties = listProperties,
         relatedResourcesMap = relatedRepositoryResourceData,
         computedValuesMap = computedValuesMap,
@@ -281,7 +281,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
 
       val listResourceDataStateMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
 
-      resourceDataRulesExecutor.processListResourceData(
+      rulesExecutor.processListResourceData(
         listProperties = listProperties,
         relatedResourcesMap = relatedRepositoryResourceData,
         computedValuesMap = emptyMap(),
@@ -368,7 +368,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
 
       val listResourceDataStateMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
 
-      resourceDataRulesExecutor.processListResourceData(
+      rulesExecutor.processListResourceData(
         listProperties = listProperties,
         relatedResourcesMap = relatedRepositoryResourceData,
         computedValuesMap = emptyMap(),
@@ -392,6 +392,6 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
 
   @Test
   fun getRulesFactory() {
-    Assert.assertEquals(resourceDataRulesExecutor.rulesFactory, rulesFactory)
+    Assert.assertEquals(rulesExecutor.rulesFactory, rulesFactory)
   }
 }

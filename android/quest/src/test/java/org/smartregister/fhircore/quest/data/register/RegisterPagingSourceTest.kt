@@ -34,7 +34,7 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
@@ -45,7 +45,7 @@ class RegisterPagingSourceTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
-  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  @Inject lateinit var rulesExecutor: RulesExecutor
   private val registerRepository = mockk<RegisterRepository>()
   private lateinit var registerPagingSource: RegisterPagingSource
   private val registerId = "registerId"
@@ -60,10 +60,8 @@ class RegisterPagingSourceTest : RobolectricTest() {
     registerPagingSource =
       RegisterPagingSource(
         registerRepository = registerRepository,
-        resourceDataRulesExecutor = resourceDataRulesExecutor,
-        ruleConfigs = listOf(),
-        actionParameters = emptyMap(),
         fhirResourceConfig = null,
+        actionParameters = emptyMap(),
       )
     coEvery { registerRepository.loadRegisterData(0, registerId) } returns
       listOf(RepositoryResourceData(resource = Faker.buildPatient()))
@@ -113,10 +111,8 @@ class RegisterPagingSourceTest : RobolectricTest() {
     registerPagingSource =
       RegisterPagingSource(
         registerRepository = registerRepository,
-        resourceDataRulesExecutor = resourceDataRulesExecutor,
-        ruleConfigs = listOf(),
-        actionParameters = emptyMap(),
         fhirResourceConfig = fhirResourceConfig,
+        actionParameters = emptyMap(),
       )
     coEvery {
       registerRepository.loadRegisterData(
@@ -151,10 +147,8 @@ class RegisterPagingSourceTest : RobolectricTest() {
     registerPagingSource =
       RegisterPagingSource(
         registerRepository = registerRepository,
-        resourceDataRulesExecutor = resourceDataRulesExecutor,
-        ruleConfigs = listOf(),
-        actionParameters = emptyMap(),
         fhirResourceConfig = null,
+        actionParameters = emptyMap(),
       )
     coEvery { registerRepository.loadRegisterData(0, registerId) } returns emptyList()
     val loadParams = mockk<PagingSource.LoadParams<Int>>()
@@ -176,10 +170,8 @@ class RegisterPagingSourceTest : RobolectricTest() {
     registerPagingSource =
       RegisterPagingSource(
         registerRepository = registerRepository,
-        resourceDataRulesExecutor = resourceDataRulesExecutor,
-        ruleConfigs = listOf(),
-        actionParameters = emptyMap(),
         fhirResourceConfig = null,
+        actionParameters = emptyMap(),
       )
     coEvery { registerRepository.loadRegisterData(2, registerId) } returns
       listOf(RepositoryResourceData(resource = Faker.buildPatient()))
@@ -202,10 +194,8 @@ class RegisterPagingSourceTest : RobolectricTest() {
     registerPagingSource =
       RegisterPagingSource(
         registerRepository = registerRepository,
-        resourceDataRulesExecutor = resourceDataRulesExecutor,
-        ruleConfigs = listOf(),
-        actionParameters = emptyMap(),
         fhirResourceConfig = null,
+        actionParameters = emptyMap(),
       )
     coEvery { registerRepository.loadRegisterData(0, registerId) } returns
       listOf(RepositoryResourceData(resource = Faker.buildPatient()))
@@ -235,10 +225,8 @@ class RegisterPagingSourceTest : RobolectricTest() {
     registerPagingSource =
       RegisterPagingSource(
         registerRepository = registerRepository,
-        resourceDataRulesExecutor = resourceDataRulesExecutor,
-        ruleConfigs = listOf(),
-        actionParameters = actionParameters,
         fhirResourceConfig = null,
+        actionParameters = actionParameters,
       )
     coEvery { registerRepository.loadRegisterData(0, registerId) } returns
       listOf(RepositoryResourceData(resource = Faker.buildPatient()))

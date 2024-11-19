@@ -48,7 +48,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -68,7 +68,7 @@ constructor(
   val defaultRepository: DefaultRepository,
   val dispatcherProvider: DispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  val rulesExecutor: RulesExecutor,
   val configurationRegistry: ConfigurationRegistry,
   @ApplicationContext val context: Context,
 ) : ViewModel() {
@@ -148,15 +148,20 @@ constructor(
               with((it.resource as Location).position) { hasLongitude() && hasLatitude() }
             }
 
+        val rules =
+          rulesExecutor.rulesFactory.generateRules(
+            geoWidgetConfig.servicePointConfig?.rules ?: emptyList(),
+          )
+
         val registerData =
           locationsWithCoordinates
             .asSequence()
             .map {
               Pair(
                 it.resource as Location,
-                resourceDataRulesExecutor.processResourceData(
+                rulesExecutor.processResourceData(
                   repositoryResourceData = it,
-                  ruleConfigs = geoWidgetConfig.servicePointConfig?.rules ?: emptyList(),
+                  rules = rules,
                   params = emptyMap(),
                 ),
               )

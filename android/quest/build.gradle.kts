@@ -484,7 +484,7 @@ dependencies {
   // To run only on debug builds
   debugImplementation(libs.ui.test.manifest)
   debugImplementation(libs.fragment.testing)
-  //    debugImplementation(libs.leakcanary.android)
+  debugImplementation(libs.leakcanary.android)
 
   // Annotation processors for test
   kaptTest(libs.dagger.hilt.android.compiler)

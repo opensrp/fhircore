@@ -25,7 +25,7 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 data class MigrationConfig(
   val updateValues: List<UpdateValueConfig>,
   val resourceConfig: FhirResourceConfig,
-  val rules: List<RuleConfig>,
+  val rules: List<RuleConfig> = emptyList(),
   val version: Int,
   val purgeAffectedResources: Boolean = false,
   val createLocalChangeEntitiesAfterPurge: Boolean = true,
