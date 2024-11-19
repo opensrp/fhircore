@@ -108,6 +108,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.event.EventTriggerCondition
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
+import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -159,6 +160,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
+  @Inject lateinit var contentCache: ContentCache
+
   private val context: Context = ApplicationProvider.getApplicationContext()
   private val knowledgeManager = KnowledgeManager.create(context)
   private val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
@@ -192,6 +195,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = iParser,
           context = context,
+          contentCache = contentCache,
         ),
       )
 
