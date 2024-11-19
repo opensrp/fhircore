@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -139,7 +140,7 @@ private fun LoaderContent(
               CircularProgressIndicator(
                 color = Color.White,
                 strokeWidth = 3.dp,
-                modifier = modifier.size(progressBarSize),
+                modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_BAR_TAG).size(progressBarSize),
               )
             }
 
@@ -148,7 +149,7 @@ private fun LoaderContent(
                 text = it,
                 color = Color.White,
                 fontSize = 14.sp,
-                modifier = modifier.padding(top = 8.dp),
+                modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(top = 8.dp),
               )
             }
 
