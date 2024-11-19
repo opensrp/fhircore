@@ -85,7 +85,8 @@
     <string name="record_as_anc">Enregistrer comme ANC</string>
     <string name="pregnancy_outcome">Résultats de la grossesse</string>
     <string name="registers">Registres</string>
-    <string name="title_no_location_set">Pas d\'emplacement défini</string>
+    <string name="title_no_location_set">Aucun emplacement défini.</string>
+    <string name="no_locations_to_render">Aucun emplacement à afficher sur la carte.</string>
     <string name="message_location_set">Définir l\'emplacement pour synchroniser les données et charger les points de service</string>
     <string name="positive_button_location_set">Définir l\'emplacement</string>
 
@@ -99,7 +100,9 @@
     <string name="questionnaire_not_found">Questionnaire introuvable, synchroniser tous les questionnaires pour régler ce problème</string>
     <string name="no_visits">Pas de visites</string>
     <string name="questionnaire_response_invalid">Réponse du questionnaire invalide</string>
-    <string name="application_version">Version</string>
+    <string name="extracted_resources_validation_fail">La validation des ressources extraites a échoué. Veuillez vérifier les journaux.</string>
+    <string name="error_occurred_generating_careplan">Une erreur est survenue lors de la génération du CarePlan. Veuillez vérifier les journaux.</string>
+    <string name="application_version">Version de l\'application</string>
     <string name="missing_subject_type">Type de sujet manquant dans le questionnaire. Fournir Questionnaire.subjectType pour résoudre le problème.</string>
     <string name="missing_questionnaire_config">QuestionnaireConfig est requis mais manquant</string>
     <string name="error_populating_questionnaire">Erreur dans le remplissage de certains champs du questionnaire. Réponse au questionnaire non valide.</string>
@@ -113,8 +116,23 @@
     <string name="location_services_disabled">Les services de localisation sont désactivés. Souhaitez-vous les activer ?</string>
     <string name="copy_text_success_message">Lien %1$s copié avec succès</string>
     <string name="submit_questionnaire">Soumettre</string>
-
-
+    <string name="invalid_base_resource">La ressource de base pour la configuration du GeoWidget DOIT être l\'emplacement.</string>
+    <string name="no_search_coonfigs_provided">Aucune configuration fournie pour la barre de recherche.</string>
+    <string name="no_found_locations_matching_text">Aucun emplacement trouvé correspondant au texte \"%1$s\"</string>
+    <string name="qr_code">code_QR</string>
+    <string name="barcode_camera_permission_denied">Demande d\'autorisation de caméra refusée. Le code-barres pourrait ne pas fonctionner comme prévu.</string>
+    <string name="prompt_point_at_a_barcode">Placez votre caméra sur le code QR pour commencer à scanner.</string>
+    <string name="add_qr_code">Ajouter un code QR</string>
+    <string name="scan_qr_code">Scanner le code QR</string>
+    <string name="scan_qr_camera_instruction">Placez votre caméra sur l\'intégralité du code QR pour commencer à scanner.</string>
+    <string name="failed_to_get_gps_location">Échec de récupération de la position GPS.</string>
+    <string name="exit_app">Quitter l\'application</string>
+    <string name="exit_app_message">Êtes-vous sûr de vouloir quitter l\'application ?</string>
+    <string name="missing_multi_select_view_configs">Configuration de vue multi-sélection manquante. Veuillez fournir les configurations pour que la vue puisse être rendue.</string>
+    <string name="locations_without_coordinates"><b>\"%1$d</b> hors de<b>%2$d </b> L\'emplacement (ou les emplacements) n\'ont pas de coordonnées\"</string>
+    <string name="all_locations_rendered"><b>Tous</b> Les emplacements ont été rendus avec succès\"</string>
+    <string name="all_matching_locations_rendered"><b>%1$d </b> Les emplacements correspondants ont été rendus avec succès.</string>
+    <string name="on_cancel_adding_location">Annuler l\'ajout de l\'emplacement</string>
 
     <!-- SDK SDC Strings -->
 
@@ -174,9 +192,9 @@
     <string name="date">Date</string>
     <string name="time">Heure</string>
     <!-- <string name="select_date">Sélectionnez les date</string> -->
-   <string name="select_time">Sélectionner l\'heure</string>
+    <string name="select_time">Sélectionner l\'heure</string>
 
-   <!-- 2.6 Attachment widget -->
+    <!-- 2.6 Attachment widget -->
     <string name="take_photo">Prendre une photo</string>
     <string name="cd_photo_preview">Aperçu des photos</string>
     <string name="cd_file_icon_preview">Aperçu de l\'icône du fichier</string>
@@ -253,6 +271,7 @@
     <string name="optional_helper_text">Optionnel</string>
     <string name="required">Requis</string>
     <string name="required_text_and_new_line">Requis\n</string>
+    <string name="add_repeated_group_item">Ajouter %1$s</string>
 
     <!-- End SDK SDC Strings -->
 

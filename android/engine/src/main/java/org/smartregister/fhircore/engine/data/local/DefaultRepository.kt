@@ -30,6 +30,7 @@ import com.google.android.fhir.SearchResult
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
+import com.google.android.fhir.getResourceType
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
@@ -113,18 +114,29 @@ constructor(
   open val fhirPathDataExtractor: FhirPathDataExtractor,
   open val parser: IParser,
   @ApplicationContext open val context: Context,
+  open val contentCache: ContentCache,
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? =
     fhirEngine.loadResource(resourceId)
 
+  @Throws(ResourceNotFoundException::class)
   suspend fun loadResource(resourceId: String, resourceType: ResourceType): Resource =
     fhirEngine.get(resourceType, resourceId)
 
+  @Throws(ResourceNotFoundException::class)
   suspend fun loadResource(reference: Reference) =
     IdType(reference.reference).let {
       fhirEngine.get(ResourceType.fromCode(it.resourceType), it.idPart)
     }
+
+  suspend inline fun <reified T : Resource> loadResourceFromCache(resourceId: String): T? {
+    val resourceType = getResourceType(T::class.java)
+    val resource =
+      contentCache.getResource(resourceType, resourceId)
+        ?: fhirEngine.loadResource<T>(resourceId)?.let { contentCache.saveResource(it) }
+    return resource as? T
+  }
 
   suspend inline fun <reified T : Resource> searchResourceFor(
     token: TokenClientParam,
@@ -248,6 +260,10 @@ constructor(
   suspend fun <R : Resource> update(resource: R) {
     resource.updateLastUpdated()
     fhirEngine.update(resource)
+  }
+
+  suspend fun applyDbTransaction(block: suspend () -> Unit) {
+    fhirEngine.withTransaction { block.invoke() }
   }
 
   suspend fun loadManagingEntity(group: Group) =

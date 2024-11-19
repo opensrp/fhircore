@@ -27,7 +27,9 @@ group ExtractActivityDetail(source subject : Patient, source definition: Activit
                    subject then ExtractDiseaseCode(src, det) "r_act_det_data";
             subject -> det.scheduled = evaluate(definition, $this.timing) as timing,
                    evaluate(timing, $this.repeat) as repeat then {
-                subject -> evaluate(subject, today()) as dueDate, evaluate(subject, today() + ((repeat.count.toString().toInteger() - 1).toString() + ' \'months\'').toQuantity()) as maxDate
+                subject -> evaluate(subject, ((repeat.count.toString().toInteger() - 1).toString() + ' months').toQuantity()) as duration,
+                    duration.code = 'months',
+                    evaluate(subject, today()) as dueDate, evaluate(subject, today() + duration) as maxDate
                    then ExtractTasks(dueDate, maxDate, repeat, subject, careplan, activity, timing) "r_tasks";
                 subject -> repeat.count = create('positiveInt') as c, c.value = evaluate(activity, $this.outcomeReference.count().value) "r_task_rep_count";
             } "r_tim_repeat";
@@ -48,7 +50,8 @@ group ExtractTasks(
                 // start of task is today OR first date of every month if future month | end is last day of given month
                 create('date') as startOfMonth, startOfMonth.value = evaluate(dueDate, $this.value.substring(0,7) + '-01'),
                 create('date') as start, start.value = evaluate(dueDate, iif($this = today(), $this, startOfMonth).value ),
-                evaluate(startOfMonth, ($this + '1 \'months\''.toQuantity()) - '1 \'days\''.toQuantity()) as end,
+                evaluate(startOfMonth, '1 month'.toQuantity()) as duration1month, duration1month.code = 'month',
+                evaluate(startOfMonth, ($this + duration1month) - '1 day'.toQuantity()) as end,
                 create('Period') as period,
                 careplan.contained = create('Task') as task then {
         subject then ExtractPeriod(start, end, period) "r_task_period_extr";
@@ -67,7 +70,9 @@ group ExtractTasks(
         subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/e14b5743-0a06-4ab5-aaee-ac158d4cb64f' "r_task_reason_ref";
         subject -> activity.outcomeReference = reference(task) "r_cp_task_ref";
         subject -> timing.event = evaluate(period, $this.start) "r_activity_timing";
-        repeat -> evaluate(period, $this.start + (repeat.period.toString() + ' \'months\'').toQuantity()) as nextDueDate
+        repeat -> evaluate(period, (repeat.period.toString() + ' months').toQuantity()) as duration,
+                   duration.code = 'months',
+                   evaluate(period, $this.start + duration) as nextDueDate
                           then ExtractTasks(nextDueDate, maxDate, repeat, subject, careplan, activity, timing) "r_task_repeat";
     } "r_cp_acti_outcome";
 }

@@ -126,6 +126,8 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
+  @Inject lateinit var contentCache: ContentCache
+
   @BindValue
   val configService: ConfigService =
     spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
@@ -153,6 +155,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         parser = parser,
         context = context,
         preferenceDataStore = preferenceDataStore,
+        contentCache = contentCache,
       )
   }
 
@@ -567,6 +570,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           parser = parser,
           context = context,
           preferenceDataStore = preferenceDataStore,
+          contentCache = contentCache,
         ),
       )
     coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
@@ -646,6 +650,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           parser = parser,
           context = context,
           preferenceDataStore = preferenceDataStore,
+          contentCache = contentCache,
         ),
       )
 

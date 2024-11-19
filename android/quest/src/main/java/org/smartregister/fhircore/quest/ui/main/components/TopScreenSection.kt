@@ -114,6 +114,7 @@ fun TopScreenSection(
   showSearchByQrCode: Boolean = false,
   filteredRecordsCount: Long? = null,
   searchPlaceholder: String? = null,
+  placeholderColor: String? = null,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (SearchQuery, Boolean) -> Unit = { _, _ -> },
   performSearchOnValueChanged: Boolean = true,
@@ -206,7 +207,7 @@ fun TopScreenSection(
         singleLine = true,
         placeholder = {
           Text(
-            color = GreyTextColor,
+            color = placeholderColor?.parseColor() ?: GreyTextColor,
             text = searchPlaceholder ?: stringResource(R.string.search_hint),
             modifier = modifier.testTag(SEARCH_FIELD_TEST_TAG),
           )

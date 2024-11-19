@@ -19,23 +19,33 @@ package org.smartregister.fhircore.quest.pdf
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
 import com.google.android.fhir.search.Search
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
 import java.util.Date
+import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert.assertEquals
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.yesterday
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherViewModel
 
+@HiltAndroidTest
 class PdfLauncherViewModelTest : RobolectricTest() {
+
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @Inject lateinit var contentCache: ContentCache
 
   private lateinit var fhirEngine: FhirEngine
   private lateinit var defaultRepository: DefaultRepository
@@ -43,6 +53,7 @@ class PdfLauncherViewModelTest : RobolectricTest() {
 
   @Before
   fun setUp() {
+    hiltAndroidRule.inject()
     fhirEngine = mockk()
     defaultRepository =
       DefaultRepository(
@@ -55,6 +66,7 @@ class PdfLauncherViewModelTest : RobolectricTest() {
         fhirPathDataExtractor = mockk(),
         parser = mockk(),
         context = mockk(),
+        contentCache = contentCache,
       )
     viewModel = PdfLauncherViewModel(defaultRepository)
   }

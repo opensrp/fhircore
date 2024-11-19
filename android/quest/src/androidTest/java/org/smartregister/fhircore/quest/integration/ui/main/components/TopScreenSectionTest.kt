@@ -28,6 +28,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.ui.main.components.LEADING_ICON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.OUTLINED_BOX_TEST_TAG
+import org.smartregister.fhircore.quest.ui.main.components.SEARCH_FIELD_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.TITLE_ROW_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.TOP_ROW_ICON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.TOP_ROW_TEXT_TEST_TAG
@@ -102,6 +103,50 @@ class TopScreenSectionTest {
       .assertIsDisplayed()
     composeTestRule
       .onNodeWithText("search text", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
+
+  @Test
+  fun testTopScreenSectionRendersPlaceholderCorrectly() {
+    composeTestRule.setContent {
+      TopScreenSection(
+        title = "All Clients",
+        searchQuery = SearchQuery(""),
+        onSearchTextChanged = listener,
+        navController = TestNavHostController(LocalContext.current),
+        isSearchBarVisible = true,
+        placeholderColor = null,
+        searchPlaceholder = "Custom placeholder",
+        onClick = {},
+        decodeImage = null,
+      )
+    }
+
+    composeTestRule
+      .onNodeWithTag(SEARCH_FIELD_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
+
+  @Test
+  fun testTopScreenSectionRendersPlaceholderColorCorrectly() {
+    composeTestRule.setContent {
+      TopScreenSection(
+        title = "All Clients",
+        searchQuery = SearchQuery(""),
+        onSearchTextChanged = listener,
+        navController = TestNavHostController(LocalContext.current),
+        isSearchBarVisible = true,
+        placeholderColor = "#FF0000",
+        searchPlaceholder = "Custom placeholder",
+        onClick = {},
+        decodeImage = null,
+      )
+    }
+
+    composeTestRule
+      .onNodeWithTag(SEARCH_FIELD_TEST_TAG, useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
   }

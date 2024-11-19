@@ -23,7 +23,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.validation.FhirValidator
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
@@ -34,12 +33,12 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.workflow.FhirOperator
+import dagger.Lazy
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
 import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
-import javax.inject.Provider
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -60,6 +59,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComp
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -82,7 +82,6 @@ import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.batchedSearch
-import org.smartregister.fhircore.engine.util.extension.checkResourceValid
 import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
@@ -91,7 +90,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isIn
-import org.smartregister.fhircore.engine.util.extension.logErrorMessages
 import org.smartregister.fhircore.engine.util.extension.packRepeatedGroups
 import org.smartregister.fhircore.engine.util.extension.prepopulateWithComputedConfigValues
 import org.smartregister.fhircore.engine.util.extension.questionnaireResponseStatus
@@ -99,6 +97,8 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequest
+import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequestHandler
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
 
@@ -113,7 +113,7 @@ constructor(
   val transformSupportServices: TransformSupportServices,
   val preferenceDataStore: PreferenceDataStore,
   val fhirOperator: FhirOperator,
-  val fhirValidatorProvider: Provider<FhirValidator>,
+  val fhirValidatorRequestHandlerProvider: Lazy<ResourceValidationRequestHandler>,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val configurationRegistry: ConfigurationRegistry,
 ) : ViewModel() {
@@ -143,7 +143,7 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
-    return defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)
+    return defaultRepository.loadResourceFromCache<Questionnaire>(questionnaireConfig.id)
   }
 
   /**
@@ -192,63 +192,16 @@ constructor(
           context = context,
         )
 
-      saveExtractedResources(
-        bundle = bundle,
-        questionnaire = questionnaire,
-        questionnaireConfig = questionnaireConfig,
-        questionnaireResponse = currentQuestionnaireResponse,
-        context = context,
-      )
-
-      updateResourcesLastUpdatedProperty(actionParameters)
-
-      // Important to load subject resource to retrieve ID (as reference) correctly
-      val subjectIdType: IdType? =
-        if (currentQuestionnaireResponse.subject.reference.isNullOrEmpty()) {
-          null
-        } else {
-          IdType(currentQuestionnaireResponse.subject.reference)
-        }
-
-      if (subjectIdType != null) {
-        val subject =
-          loadResource(
-            ResourceType.valueOf(subjectIdType.resourceType),
-            subjectIdType.idPart,
-          )
-
-        if (subject != null && !questionnaireConfig.isReadOnly()) {
-          val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
-
-          val extractedResources = newBundle.entry.map { it.resource }
-          validateWithFhirValidator(*extractedResources.toTypedArray())
-
-          generateCarePlan(
-            subject = subject,
-            bundle = newBundle,
-            questionnaireConfig = questionnaireConfig,
-          )
-
-          withContext(dispatcherProvider.io()) {
-            executeCql(
-              subject = subject,
-              bundle = newBundle,
-              questionnaire = questionnaire,
-              questionnaireConfig = questionnaireConfig,
-            )
-          }
-
-          fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
-            questionnaireConfig = questionnaireConfig,
-            subject = subject,
-            bundle = newBundle,
-          )
-        }
+      defaultRepository.applyDbTransaction {
+        performSave(
+          bundle,
+          questionnaire,
+          questionnaireConfig,
+          currentQuestionnaireResponse,
+          context,
+          actionParameters,
+        )
       }
-
-      softDeleteResources(questionnaireConfig)
-
-      retireUsedQuestionnaireUniqueId(questionnaireConfig, currentQuestionnaireResponse)
 
       val idTypes =
         bundle.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
@@ -261,9 +214,84 @@ constructor(
     }
   }
 
-  suspend fun validateWithFhirValidator(vararg resource: Resource) {
-    val fhirValidator = fhirValidatorProvider.get()
-    fhirValidator.checkResourceValid(*resource).logErrorMessages()
+  private suspend fun performSave(
+    bundle: Bundle,
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
+    currentQuestionnaireResponse: QuestionnaireResponse,
+    context: Context,
+    actionParameters: List<ActionParameter>,
+  ) {
+    saveExtractedResources(
+      bundle = bundle,
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig,
+      questionnaireResponse = currentQuestionnaireResponse,
+      context = context,
+    )
+
+    updateResourcesLastUpdatedProperty(actionParameters)
+
+    // Important to load subject resource to retrieve ID (as reference) correctly
+    val subjectIdType: IdType? =
+      if (currentQuestionnaireResponse.subject.reference.isNullOrEmpty()) {
+        null
+      } else {
+        IdType(currentQuestionnaireResponse.subject.reference)
+      }
+
+    if (subjectIdType != null) {
+      val subject =
+        loadResource(
+          ResourceType.valueOf(subjectIdType.resourceType),
+          subjectIdType.idPart,
+        )
+
+      if (subject != null && !questionnaireConfig.isReadOnly()) {
+        val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
+
+        val extractedResources = newBundle.entry.map { it.resource }
+        validateWithFhirValidator(*extractedResources.toTypedArray())
+
+        generateCarePlan(
+          subject = subject,
+          bundle = newBundle,
+          questionnaireConfig = questionnaireConfig,
+        )
+
+        withContext(dispatcherProvider.io()) {
+          executeCql(
+            subject = subject,
+            bundle = newBundle,
+            questionnaire = questionnaire,
+            questionnaireConfig = questionnaireConfig,
+          )
+        }
+
+        fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
+          questionnaireConfig = questionnaireConfig,
+          subject = subject,
+          bundle = newBundle,
+        )
+      }
+    }
+
+    softDeleteResources(questionnaireConfig)
+
+    retireUsedQuestionnaireUniqueId(questionnaireConfig, currentQuestionnaireResponse)
+  }
+
+  fun validateWithFhirValidator(vararg resource: Resource) {
+    if (BuildConfig.DEBUG) {
+      fhirValidatorRequestHandlerProvider
+        .get()
+        .handleResourceValidationRequest(
+          request =
+            ResourceValidationRequest(
+              *resource,
+            ),
+        )
+    }
   }
 
   suspend fun retireUsedQuestionnaireUniqueId(
@@ -342,6 +370,7 @@ constructor(
         ) {
           questionnaireResponse.subject = this.logicalId.asReference(subjectType)
         }
+
         if (questionnaireConfig.isEditable()) {
           if (resourceType == subjectType) {
             this.id = questionnaireResponse.subject.extractId()
@@ -357,19 +386,23 @@ constructor(
                 .fhirPathExpression
 
             val currentResourceIdentifier =
-              fhirPathDataExtractor.extractValue(
-                base = this,
-                expression = fhirPathExpression,
-              )
+              withContext(dispatcherProvider.default()) {
+                fhirPathDataExtractor.extractValue(
+                  base = this@run,
+                  expression = fhirPathExpression,
+                )
+              }
 
             // Search for resource with property value matching extracted value
             val resource =
               previouslyExtractedResources.getValue(resourceType).find {
                 val extractedValue =
-                  fhirPathDataExtractor.extractValue(
-                    base = it,
-                    expression = fhirPathExpression,
-                  )
+                  withContext(dispatcherProvider.default()) {
+                    fhirPathDataExtractor.extractValue(
+                      base = it,
+                      expression = fhirPathExpression,
+                    )
+                  }
                 extractedValue.isNotEmpty() &&
                   extractedValue.equals(currentResourceIdentifier, true)
               }
@@ -634,8 +667,8 @@ constructor(
               StructureMapExtractionContext(
                 transformSupportServices = transformSupportServices,
                 structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
-                  structureMapUrl?.substringAfterLast("/")?.let {
-                    defaultRepository.loadResource(it)
+                  structureMapUrl?.substringAfterLast("/")?.let { structureMapId ->
+                    defaultRepository.loadResourceFromCache<StructureMap>(structureMapId)
                   }
                 },
               ),
@@ -775,18 +808,20 @@ constructor(
       }
     }
 
-    return QuestionnaireResponseValidator.validateQuestionnaireResponse(
-        questionnaire = Questionnaire().apply { item = validQuestionnaireItems },
-        questionnaireResponse =
-          QuestionnaireResponse().apply {
-            item = validQuestionnaireResponseItems
-            packRepeatedGroups()
-          },
-        context = context,
-      )
-      .values
-      .flatten()
-      .all { it is Valid || it is NotValidated }
+    return withContext(dispatcherProvider.default()) {
+      QuestionnaireResponseValidator.validateQuestionnaireResponse(
+          questionnaire = Questionnaire().apply { item = validQuestionnaireItems },
+          questionnaireResponse =
+            QuestionnaireResponse().apply {
+              item = validQuestionnaireResponseItems
+              packRepeatedGroups()
+            },
+          context = context,
+        )
+        .values
+        .flatten()
+        .all { it is Valid || it is NotValidated }
+    }
   }
 
   suspend fun executeCql(
@@ -842,7 +877,10 @@ constructor(
                   cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
                     resultParameterResource.isResource
                 ) {
-                  defaultRepository.create(true, resultParameterResource as Resource)
+                  defaultRepository.create(
+                    true,
+                    resultParameterResource as Resource,
+                  )
                   resultParameterResource
                 } else {
                   null
@@ -1117,10 +1155,12 @@ constructor(
             computedValues,
           )
 
-        fhirPathDataExtractor.extractValue(
-          base = uniqueIdResource,
-          expression = uniqueIdAssignmentConfig.idFhirPathExpression,
-        )
+        withContext(dispatcherProvider.default()) {
+          fhirPathDataExtractor.extractValue(
+            base = uniqueIdResource,
+            expression = uniqueIdAssignmentConfig.idFhirPathExpression,
+          )
+        }
       },
     )
 
@@ -1142,6 +1182,7 @@ constructor(
           )
           ?.let {
             QuestionnaireResponse().apply {
+              id = it.id
               item = it.item.removeUnAnsweredItems()
               // Clearing the text prompts the SDK to re-process the content, which includes HTML
               clearText()
@@ -1161,7 +1202,10 @@ constructor(
           ?.mapValues { it.value.type == LinkIdType.PREPOPULATION_EXCLUSION } ?: emptyMap()
 
       questionnaireResponse.item =
-        excludePrepopulationFields(questionnaireResponse.item.toMutableList(), exclusionLinkIdsMap)
+        excludePrepopulationFields(
+          questionnaireResponse.item.toMutableList(),
+          exclusionLinkIdsMap,
+        )
     }
     return Pair(questionnaireResponse, launchContextResources)
   }
@@ -1210,13 +1254,8 @@ constructor(
           it.resourceType != null &&
           it.value.isNotEmpty()
       }
-      .mapNotNull {
-        try {
-          loadResource(it.resourceType!!, it.value)
-        } catch (resourceNotFoundException: ResourceNotFoundException) {
-          null
-        }
-      }
+      .distinctBy { "${it.resourceType?.name}${it.value}" }
+      .mapNotNull { loadResource(it.resourceType!!, it.value) }
   }
 
   /** Load [Resource] of type [ResourceType] for the provided [resourceIdentifier] */
