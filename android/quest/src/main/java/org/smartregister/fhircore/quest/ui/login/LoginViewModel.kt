@@ -65,7 +65,9 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.clearPasswordInMemory
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
@@ -228,10 +230,12 @@ constructor(
   ) {
     // ToDo : This is an object --->Practitioner Details
     val practitionerDetails =
-      PreferenceDataStore.readPractitionerDetails(
-        preferenceDataStore.dataStore,
-        PRACTITIONER_DETAILS
-      )
+      runBlocking {
+        preferenceDataStore.read(
+          key = PRACTITIONER_DETAILS
+        ).firstOrNull()
+      }?.decodeJson<PractitionerDetails>()
+
 
     if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
       _showProgressBar.postValue(false)
@@ -428,7 +432,7 @@ constructor(
     runBlocking {
       preferenceDataStore.write(
         key = PreferenceDataStore.USER_INFO,
-        value = userInfo.toString(),
+        value = userInfo.encodeJson(),
       )
     }
   }
@@ -453,10 +457,6 @@ constructor(
         key = PRACTITIONER_DETAILS,
         value = fhirPractitionerDetails.encodeResourceToString()
       )
-//      sharedPreferences.write(
-//        SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-//        fhirPractitionerDetails.encodeResourceToString(), //save as string
-//      )
       preferenceDataStore.write(CARE_TEAM_ID, careTeamId.joinToString(separator = ","))
       preferenceDataStore.write(ORGANIZATION_ID, organizationId.joinToString(separator = ","))
       preferenceDataStore.write(LOCATION_ID, locationId.joinToString(separator = ","))

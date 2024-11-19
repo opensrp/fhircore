@@ -24,6 +24,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -95,10 +96,10 @@ constructor(
 
   fun retrieveUserInfo() =
     runBlocking {
-      preferenceDataStore.read<UserInfo>(
-        key = PreferenceDataStore.USER_INFO.name.decodeJson()
+      preferenceDataStore.read(
+        key = PreferenceDataStore.USER_INFO
       ).firstOrNull()
-    }
+    }?.decodeJson<UserInfo>()
 
   fun practitionerLocation() =
     preferenceDataStore.readOnce(PreferenceDataStore.PRACTITIONER_LOCATION, null)
@@ -108,9 +109,11 @@ constructor(
 
   fun retrieveCareTeam() = preferenceDataStore.readOnce(PreferenceDataStore.CARE_TEAM_NAME, null)
 
-  // TODO: Reads an object type ---> OffsetDateTime
-  fun retrieveDataMigrationVersion(): String = runBlocking {
-    (preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).firstOrNull() ?: 0).toString()
+  // TODO: Reads an object type ---> OffsetDateTime - DONE
+  fun retrieveDataMigrationVersion(): String =
+    runBlocking {
+    (preferenceDataStore.read(
+      PreferenceDataStore.MIGRATION_VERSION).firstOrNull() ?: 0).toString()
   }
 
   suspend fun retrieveLastSyncTimestamp(): String? =
@@ -123,14 +126,29 @@ constructor(
     enableMenuOption(SettingsOptions.SWITCH_LANGUAGES) && languages.size > 1
 
   // TODO: Reads an object type ---> AppMainEvent
-  fun loadSelectedLanguage(): String =
-    runBlocking {
-      Locale.forLanguageTag(
-        preferenceDataStore.read(PreferenceDataStore.LANG).firstOrNull()
-          ?: Locale.ENGLISH.toLanguageTag(),
-      )
-        .displayName
-    }
+//  fun loadSelectedLanguage(): String =
+//
+//
+//      Locale.forLanguageTag(
+//        preferenceDataStore.read(PreferenceDataStore.currentLanguage()).firstOrNull()
+//          ?: Locale.ENGLISH.toLanguageTag(),
+//      ).displayName
+//    }
+
+  fun loadSelectedLanguage(): String = runBlocking {
+    val languageTag = preferenceDataStore.read(PreferenceDataStore.currentLanguage()).firstOrNull()
+      ?: Locale.ENGLISH.toLanguageTag()
+    Locale.forLanguageTag(languageTag).displayName
+  }.toString()
+
+
+
+//  fun loadSelectedLanguage(): String = runBlocking {
+//    val languageTag = preferenceDataStore.read(PreferenceDataStore.LANG).firstOrNull()
+//      ?: Locale.ENGLISH.toLanguageTag()
+//    Locale.forLanguageTag(languageTag).displayName
+//  }
+
 
 
   fun onEvent(event: UserSettingsEvent) {
@@ -204,7 +222,7 @@ constructor(
 
       // TODO: The clear part of datastore should be within the authenticator --->
       accountAuthenticator.invalidateSession {
-        preferenceDataStore.resetPrefs()
+        preferenceDataStore.resetPreferences()
         secureSharedPreference.resetSharedPrefs()
         context.getActivity()?.launchActivityWithNoBackStackHistory<AppSettingActivity>()
       }

@@ -102,7 +102,6 @@ class ProfileViewModelTest : RobolectricTest() {
       spyk(
         RegisterRepository(
           fhirEngine = mockk(),
-          sharedPreferencesHelper = mockk(),
           preferenceDataStore = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
@@ -276,6 +275,8 @@ class ProfileViewModelTest : RobolectricTest() {
       )
 
     coEvery { registerRepository.loadResource<Group>("group1") } returns group
+
+    //TODO: error - Missing mocked calls inside every { ... } block: make sure the object inside the block is a mock
     coEvery { group.member } returns listOf(managingEntityResource)
     every { managingEntityResource.id } returns "entity1"
     every {

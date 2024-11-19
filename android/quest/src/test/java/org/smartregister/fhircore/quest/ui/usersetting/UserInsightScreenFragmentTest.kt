@@ -42,7 +42,6 @@ import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.launchFragmentInHiltContainer
@@ -65,8 +64,6 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private val resourceService: FhirResourceService = mockk()
   private val application: Context = ApplicationProvider.getApplicationContext()
-  private var sharedPreferencesHelper: SharedPreferencesHelper
-  private lateinit var preferenceDataStore: PreferenceDataStore
   private var configService: ConfigService
   private var fhirResourceDataSource: FhirResourceDataSource
   private lateinit var syncBroadcaster: SyncBroadcaster
@@ -75,7 +72,6 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
   private lateinit var secureSharedPreference: SecureSharedPreference
 
   init {
-    sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
     preferenceDataStore = PreferenceDataStore(context = context, dataStore = mockk())
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
@@ -87,7 +83,7 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
     hiltRule.inject()
     accountAuthenticator = mockk()
     secureSharedPreference = mockk()
-    sharedPreferencesHelper = mockk()
+    preferenceDataStore = mockk()
     syncBroadcaster =
       SyncBroadcaster(
         configurationRegistry,
@@ -104,7 +100,6 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
         syncBroadcaster = syncBroadcaster,
         accountAuthenticator = accountAuthenticator,
         secureSharedPreference = secureSharedPreference,
-        sharedPreferencesHelper = sharedPreferencesHelper,
         preferenceDataStore = preferenceDataStore,
         configurationRegistry = configurationRegistry,
         workManager = mockk(relaxed = true),

@@ -111,7 +111,6 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
         RegisterRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
-          sharedPreferencesHelper = mockk(),
           preferenceDataStore = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),

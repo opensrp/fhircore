@@ -17,16 +17,11 @@
 package org.smartregister.fhircore.engine
 
 import android.app.Application
-import androidx.datastore.core.DataStore
-import androidx.datastore.dataStore
 import androidx.test.core.app.ApplicationProvider
-import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
 import kotlinx.coroutines.test.runTest
-import javax.inject.Inject
-import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -34,15 +29,11 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 class ConfigServiceTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
-  //@Inject lateinit var gson: Gson
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
@@ -53,7 +44,6 @@ class ConfigServiceTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    //sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
     preferenceDataStore = PreferenceDataStore(application, preferenceDataStore.dataStore)
   }
 

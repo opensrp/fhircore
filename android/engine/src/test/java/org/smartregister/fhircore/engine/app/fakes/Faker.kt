@@ -43,7 +43,6 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 object Faker {
 
@@ -72,7 +71,6 @@ object Faker {
     }
 
   fun buildTestConfigurationRegistry(
-    sharedPreferencesHelper: SharedPreferencesHelper = mockk(),
     preferenceDataStore: PreferenceDataStore = mockk(),
     dispatcherProvider: DispatcherProvider = testDispatcherProvider,
   ): ConfigurationRegistry {
@@ -81,7 +79,6 @@ object Faker {
     return buildTestConfigurationRegistry(
       fhirResourceService,
       fhirResourceDataSource,
-      sharedPreferencesHelper,
       preferenceDataStore,
       dispatcherProvider,
     )
@@ -90,7 +87,6 @@ object Faker {
   fun buildTestConfigurationRegistry(
     fhirResourceService: FhirResourceService,
     fhirResourceDataSource: FhirResourceDataSource,
-    sharedPreferencesHelper: SharedPreferencesHelper,
     preferenceDataStore: PreferenceDataStore,
     dispatcherProvider: DispatcherProvider,
   ): ConfigurationRegistry {
@@ -101,7 +97,6 @@ object Faker {
         ConfigurationRegistry(
           fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
-          sharedPreferencesHelper = sharedPreferencesHelper,
           dispatcherProvider = dispatcherProvider,
           configService = configService,
           json = json,

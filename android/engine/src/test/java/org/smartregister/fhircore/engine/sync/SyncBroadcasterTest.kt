@@ -40,7 +40,6 @@ import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isIn
 
 @ExperimentalCoroutinesApi
@@ -50,8 +49,6 @@ class SyncBroadcasterTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
-
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
@@ -72,7 +69,6 @@ class SyncBroadcasterTest : RobolectricTest() {
     MockKAnnotations.init(this)
     configurationRegistry =
       Faker.buildTestConfigurationRegistry(
-        sharedPreferencesHelper,
         preferenceDataStore,
         dispatcherProvider,
       )
@@ -101,9 +97,14 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun testLoadSyncParamsShouldLoadFromConfiguration() = runTest {
     // Todo - Change to pref
-    sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
-    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
-    sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
+    preferenceDataStore.write(PreferenceDataStore.CARE_TEAM_NAME, listOf("1").joinToString(separator = ","))
+    preferenceDataStore.write(PreferenceDataStore.ORGANIZATION_ID, listOf("2").joinToString(separator = ","))
+    preferenceDataStore.write(PreferenceDataStore.LOCATION_ID, listOf("3").joinToString(separator = ","))
+
+//    sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
+//    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
+//    sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
+
     val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
@@ -167,10 +168,15 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun `loadSyncParams() should load configuration when remote sync preference is missing`() =
     runTest {
-      sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
-      sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
-      sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
-      sharedPreferencesHelper.resetSharedPrefs()
+      preferenceDataStore.write(PreferenceDataStore.CARE_TEAM_NAME, listOf("1").joinToString(separator = ","))
+      preferenceDataStore.write(PreferenceDataStore.ORGANIZATION_ID, listOf("2").joinToString(separator = ","))
+      preferenceDataStore.write(PreferenceDataStore.LOCATION_ID, listOf("3").joinToString(separator = ","))
+      preferenceDataStore.resetPreferences()
+
+//      sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
+//      sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
+//      sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
+//      sharedPreferencesHelper.resetSharedPrefs()
 
       val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
@@ -200,7 +206,8 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun loadSyncParamsShouldHaveOrganizationId() = runTest {
     val organizationId = "organization-id"
-    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf(organizationId))
+    preferenceDataStore.write(PreferenceDataStore.ORGANIZATION_NAME, listOf(organizationId).joinToString(separator = ","))
+//    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf(organizationId))
     val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     // Resource types that can be filtered based on Organization
@@ -228,7 +235,8 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun loadSyncParamsShouldHaveCareTeamIdNotSupported() = runTest {
     val careTeamId = "care-team-id"
-    sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf(careTeamId))
+    preferenceDataStore.write(PreferenceDataStore.CARE_TEAM_NAME, listOf(careTeamId).joinToString(separator = ","))
+//    sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf(careTeamId))
     val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
@@ -239,7 +247,8 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun loadSyncParamsShouldNotHaveLocationIdNotSupported() = runTest {
     val locationId = "location-id"
-    sharedPreferencesHelper.write(ResourceType.Location.name, listOf(locationId))
+    preferenceDataStore.write(PreferenceDataStore.PRACTITIONER_LOCATION_NAME, listOf(locationId).joinToString(separator = ","))
+//    sharedPreferencesHelper.write(ResourceType.Location.name, listOf(locationId))
     val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
@@ -250,7 +259,8 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun loadSyncParamsShouldNotHavePractitionerIdNotSupported() = runTest {
     val practitionerId = "practitioner-id"
-    sharedPreferencesHelper.write(ResourceType.Practitioner.name, listOf(practitionerId))
+    preferenceDataStore.write(PreferenceDataStore.PRACTITIONER_ID, listOf(practitionerId).joinToString(separator = ","))
+//    sharedPreferencesHelper.write(ResourceType.Practitioner.name, listOf(practitionerId))
     val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())

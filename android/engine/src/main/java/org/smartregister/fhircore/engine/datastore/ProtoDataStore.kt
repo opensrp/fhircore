@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import timber.log.Timber
 
+ // TODO : Don't use
 private const val PRACTITIONER_DETAILS_DATASTORE_JSON = "practitioner_details.json"
 private const val USER_INFO_DATASTORE_JSON = "user_info.json"
 private const val LOCATION_COORDINATES_DATASTORE_JSON = "location_coordinates.json"

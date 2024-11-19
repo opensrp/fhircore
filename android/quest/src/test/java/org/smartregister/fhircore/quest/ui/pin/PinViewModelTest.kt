@@ -25,6 +25,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.Runs
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -148,7 +149,9 @@ class PinViewModelTest : RobolectricTest() {
       secureSharedPreference.deleteSessionPin()
       secureSharedPreference.deleteCredentials()
     }
-    verify { sharedPreferenceHelper.remove(SharedPreferenceKey.APP_ID.name) }
+//    verify { sharedPreferenceHelper.remove(SharedPreferenceKey.APP_ID.name) }
+
+    coVerify { preferenceDataStore.remove(PreferenceDataStore.APP_ID) }
     Assert.assertEquals(true, pinViewModel.navigateToSettings.value)
   }
 

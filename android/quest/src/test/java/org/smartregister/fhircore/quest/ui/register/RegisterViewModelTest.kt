@@ -28,6 +28,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.launch
@@ -62,7 +63,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
@@ -78,7 +78,6 @@ class RegisterViewModelTest : RobolectricTest() {
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var registerViewModel: RegisterViewModel
   private lateinit var registerRepository: RegisterRepository
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   private lateinit var preferenceDataStore: PreferenceDataStore
   private val registerId = "register101"
   private val screenTitle = "Register 101"
@@ -88,21 +87,20 @@ class RegisterViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     registerRepository = mockk()
-    sharedPreferencesHelper = mockk()
+    preferenceDataStore = mockk()
     registerViewModel =
       spyk(
         RegisterViewModel(
           registerRepository = registerRepository,
           configurationRegistry = configurationRegistry,
-          sharedPreferencesHelper = sharedPreferencesHelper,
           preferenceDataStore = preferenceDataStore,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
           dispatcherProvider = dispatcherProvider,
         ),
       )
 
-    every {
-      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+    coEvery {
+      preferenceDataStore.read(PreferenceDataStore.LAST_SYNC_TIMESTAMP).firstOrNull()
     } returns "Mar 20, 03:01PM"
   }
 

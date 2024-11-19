@@ -19,6 +19,9 @@ package org.smartregister.fhircore.quest.app.fakes
 import android.app.Application
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.dataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltTestApplication
@@ -112,11 +115,25 @@ object Faker {
     return configurationRegistry
   }
 
-  fun buildSharedPreferencesHelper() =
-    SharedPreferencesHelper(
-      ApplicationProvider.getApplicationContext<Application>(),
-      Gson(),
-    )
+  //Todo: How to instantiate this
+//  fun buildSharedPreferencesHelper() =
+//    SharedPreferencesHelper(
+//      ApplicationProvider.getApplicationContext<Application>(),
+//      Gson(),
+//    )
+
+//  val Context.dataStore by preferencesDataStore(name = "app_preferences")
+
+  
+//  fun buildPreferencesHelper(): PreferenceDataStore {
+//    val context = ApplicationProvider.getApplicationContext<Application>()
+//    return PreferenceDataStore(context, context.dataStore)
+//  }
+
+//  fun buildPreferenceDataStore(): DataStore<Preferences> {
+//    val context = ApplicationProvider.getApplicationContext<Application>()
+//    return context.dataStore
+//  }
 
   fun buildPatient(
     id: String = "sampleId",

@@ -72,8 +72,6 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.KnowledgeManagerUtil
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
 
@@ -86,8 +84,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
-
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
@@ -111,7 +107,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
       ConfigurationRegistry(
         fhirEngine = fhirEngine,
         fhirResourceDataSource = fhirResourceDataSource,
-        sharedPreferencesHelper = sharedPreferencesHelper,
         dispatcherProvider = dispatcherProvider,
         configService = configService,
         json = json,

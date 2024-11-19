@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.lastOffset
@@ -79,9 +80,13 @@ constructor(@ApplicationContext val context: Context, val dataStore: DataStore<P
 
   fun retrieveApplicationId() = read(APP_ID).toString()
 
-
-  fun resetPrefs() {
-
+  fun resetPreferences() {
+    runBlocking {
+      dataStore.edit {
+        preferences ->
+          preferences.clear()
+      }
+    }
   }
 
   companion object Keys {
@@ -102,7 +107,11 @@ constructor(@ApplicationContext val context: Context, val dataStore: DataStore<P
     val CARE_TEAM_NAME by lazy { stringPreferencesKey("careTeamName") }
     val ORGANIZATION_NAME by lazy { stringPreferencesKey("organizationName") }
 
+    val CAREPLAN_LAST_SYNC_TIMESTAMP by lazy { stringPreferencesKey("careplanLastSyncTimestamp") }
     val COMPLETE_CAREPLAN_WORKER_LAST_OFFSET by lazy { intPreferencesKey("completeCarePlanWorkerLastOffset".lastOffset()) }
+
+    val CAREPLAN_WORK_ID by lazy { stringPreferencesKey("careplanWorkerId") }
+    val CAREPLAN_BATCH_SIZE_FACTOR by lazy { intPreferencesKey("careplanBatchSizeFactor") }
 
     val USER_INFO by lazy { stringPreferencesKey("user_info") }
     fun resourceTimestampKey(resourceType: ResourceType) = stringPreferencesKey(
@@ -118,25 +127,13 @@ constructor(@ApplicationContext val context: Context, val dataStore: DataStore<P
     fun currentLanguage() = stringPreferencesKey(
       "$LANG, ${Locale.ENGLISH.toLanguageTag()}")
 
-    suspend fun readPractitionerDetails(
-      dataStore: DataStore<Preferences>, key: Preferences.Key<String>)
-    : PractitionerDetails? {
-      val gson = Gson()
-      val practitionerDetailsKey = stringPreferencesKey("$PRACTITIONER_DETAILS")
-      val jsonString: String? = dataStore.data.map {
-        preferences -> preferences[practitionerDetailsKey] }.firstOrNull()
-
-      return jsonString?.let { gson.fromJson(it, PractitionerDetails::class.java) }
-    }
-
     val PREFS_NAME by lazy { stringPreferencesKey("params")  }
 
     val Context.dataStore by preferencesDataStore(PREFS_NAME.name)
 
+    //TODO: check this vs similar one above
     fun resetPrefs(context: Context) = runBlocking {
       context.dataStore.edit { it.clear() }
     }
-
-
   }
 }

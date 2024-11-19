@@ -16,11 +16,14 @@
 
 package org.smartregister.fhircore.engine.ui.base
 
+import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.lifecycleScope
+import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -47,12 +50,25 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
   }
 
   override fun attachBaseContext(baseContext: Context) {
-      val lang =
-        runBlocking { preferenceDataStore.read(PreferenceDataStore.LANG).firstOrNull()
-          ?: Locale.ENGLISH.toLanguageTag() }
+    val lang = runBlocking {
+      try {
+        preferenceDataStore.read(PreferenceDataStore.LANG).firstOrNull()
+      } catch (e: UninitializedPropertyAccessException) {
+        Locale.ENGLISH.toLanguageTag()
+      }
+    }
+//    val lang =
+//      runBlocking {
+//        preferenceDataStore = PreferenceDataStore(applicationContext, dataStore = preferenceDataStore.dataStore)
+//
+//        preferenceDataStore.read(PreferenceDataStore.LANG).firstOrNull()
+//          ?: Locale.ENGLISH.toLanguageTag()
+//      }
+    if (lang != null) {
       baseContext.setAppLocale(lang).run {
         super.attachBaseContext(baseContext)
         applyOverrideConfiguration(this)
+      }
     }
   }
 

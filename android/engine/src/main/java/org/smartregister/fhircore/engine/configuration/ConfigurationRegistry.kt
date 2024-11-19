@@ -63,7 +63,6 @@ import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.KnowledgeManagerUtil
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -160,10 +159,25 @@ constructor(
    * placeholders e.g. {{ placeholder }} with value retrieved from the [paramsMap] using [configKey]
    * as the key. If value is null the placeholder is returned
    */
-  fun getConfigValueWithParam(paramsMap: Map<String, String>?, configKey: String) =
-    configsJsonMap.getValue(configKey).let { jsonValue ->
-      if (paramsMap != null) jsonValue.interpolate(paramsMap) else jsonValue
+//  fun getConfigValueWithParam(paramsMap: Map<String, String>?, configKey: String) =
+//    configsJsonMap.getValue(configKey).let { jsonValue ->
+//      if (paramsMap != null) jsonValue.interpolate(paramsMap) else jsonValue
+//    }
+
+  fun getConfigValueWithParam(paramsMap: Map<String, String>?, configKey: String): String {
+    try {
+      configsJsonMap.getValue(configKey).let { jsonValue ->
+        val interpolatedValue = if (paramsMap != null) jsonValue.interpolate(paramsMap) else jsonValue
+        // Use interpolatedValue here if needed, or perform any side effects
+        return interpolatedValue
+      }
+    } catch (e: Exception) {
+      Timber.e("Error processing config key: $configKey. Exception: ${e.message}")
+      // You can log or handle the exception as needed
+      return ""
     }
+  }
+
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]

@@ -110,11 +110,11 @@ import org.smartregister.fhircore.engine.configuration.event.EventTriggerConditi
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.REFERENCE
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -154,7 +154,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Inject lateinit var configService: ConfigService
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
@@ -188,7 +188,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         DefaultRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferenceDataStore = preferenceDataStore,
           configurationRegistry = mockk(),
           configService = configService,
           configRulesExecutor = mockk(),
