@@ -48,6 +48,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
+import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
@@ -76,6 +77,9 @@ class ProfileViewModelTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var parser: IParser
+
+  @Inject lateinit var contentCache: ContentCache
+
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var profileViewModel: ProfileViewModel
   private lateinit var resourceData: ResourceData
@@ -106,6 +110,7 @@ class ProfileViewModelTest : RobolectricTest() {
           parser = parser,
           context = ApplicationProvider.getApplicationContext(),
           dispatcherProvider = dispatcherProvider,
+          contentCache = contentCache,
         ),
       )
     coEvery {
