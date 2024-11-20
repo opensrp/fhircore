@@ -80,7 +80,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private var currentLocation: Location? = null
   private val locationPermissionLauncher: ActivityResultLauncher<Array<String>> =
     registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-      permissions: Map<String, Boolean> ->
+        permissions: Map<String, Boolean> ->
       PermissionUtils.getLocationPermissionLauncher(
         permissions = permissions,
         onFineLocationPermissionGranted = { fetchLocation() },
@@ -96,7 +96,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
   private val activityResultLauncher: ActivityResultLauncher<Intent> =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-      activityResult: ActivityResult ->
+        activityResult: ActivityResult ->
       if (activityResult.resultCode == Activity.RESULT_OK) {
         fetchLocation()
       }
@@ -174,8 +174,8 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
       if (
         currentLocation == null &&
-          LocationUtils.isLocationEnabled(this) &&
-          PermissionUtils.hasLocationPermissions(this)
+        LocationUtils.isLocationEnabled(this) &&
+        PermissionUtils.hasLocationPermissions(this)
       ) {
         fetchLocation()
       }
@@ -197,12 +197,12 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       try {
         currentLocation =
           async(dispatcherProvider.io()) {
-              if (highAccuracy) {
-                LocationUtils.getAccurateLocation(fusedLocationClient)
-              } else {
-                LocationUtils.getApproximateLocation(fusedLocationClient)
-              }
+            if (highAccuracy) {
+              LocationUtils.getAccurateLocation(fusedLocationClient)
+            } else {
+              LocationUtils.getApproximateLocation(fusedLocationClient)
             }
+          }
             .await()
       } catch (e: Exception) {
         Timber.e(e, "Failed to get GPS location for questionnaire: ${questionnaireConfig.id}")
@@ -245,9 +245,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
       val questionnaireFragment =
         getQuestionnaireFragmentBuilder(
-            questionnaire = questionnaire!!,
-            questionnaireConfig = questionnaireConfig,
-          )
+          questionnaire = questionnaire!!,
+          questionnaireConfig = questionnaireConfig,
+        )
           .build()
       viewBinding.clearAll.setOnClickListener { questionnaireFragment.clearAllAnswers() }
       supportFragmentManager.commit {
@@ -360,7 +360,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         confirmButtonListener = {
           lifecycleScope.launch {
             retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
-              viewModel.saveDraftQuestionnaire(questionnaireResponse)
+              viewModel.saveDraftQuestionnaire(questionnaireResponse, questionnaireConfig)
               finish()
             }
           }
