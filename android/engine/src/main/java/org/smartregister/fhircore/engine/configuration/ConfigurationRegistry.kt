@@ -59,6 +59,8 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
+import org.smartregister.fhircore.engine.sync.CustomSyncState
+import org.smartregister.fhircore.engine.sync.CustomWorkerState
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.KnowledgeManagerUtil
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -529,29 +531,46 @@ constructor(
   suspend fun fetchResources(
     gatewayModeHeaderValue: String? = null,
     url: String,
+    enableCustomSyncWorkerLogs: Boolean = false
   ) {
-    val resultBundle =
-      runCatching {
-          if (gatewayModeHeaderValue.isNullOrEmpty()) {
-            fhirResourceDataSource.getResource(url)
-          } else {
-            fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, url)
-          }
+    var currentPage = 0
+    var totalProcessedResources = 0
+
+    var nextPageUrl: String? = url
+    while (!nextPageUrl.isNullOrEmpty()) {
+      val currentUrl = nextPageUrl // Create an immutable reference for this iteration
+
+      currentPage++
+
+      Timber.d("Fetching page $currentPage with URL: $currentUrl")
+      if (enableCustomSyncWorkerLogs) CustomWorkerState.postState(CustomSyncState.InProgress)
+
+      val resultBundle = runCatching {
+        if (gatewayModeHeaderValue.isNullOrEmpty()) {
+          fhirResourceDataSource.getResource(currentUrl)
+        } else {
+          fhirResourceDataSource.getResourceWithGatewayModeHeader(
+            gatewayModeHeaderValue,
+            currentUrl
+          )
         }
-        .onFailure { throwable ->
-          Timber.e("Error occurred while retrieving resource via URL $url", throwable)
-        }
-        .getOrThrow()
+      }.onFailure { throwable ->
+        Timber.e("Error occurred while retrieving resource via URL $currentUrl", throwable)
+        if (enableCustomSyncWorkerLogs) CustomWorkerState.postState(CustomSyncState.Failed(throwable.localizedMessage))
+      }.getOrThrow()
 
-    val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url
+      val fetchedResources = resultBundle.entry.size
+      totalProcessedResources += fetchedResources
 
-    processResultBundleEntries(resultBundle.entry)
+      Timber.d("Page $currentPage fetched $fetchedResources resources. Total processed: $totalProcessedResources")
 
-    if (!nextPageUrl.isNullOrEmpty()) {
-      fetchResources(
-        gatewayModeHeaderValue = gatewayModeHeaderValue,
-        url = nextPageUrl,
-      )
+      // Check for the next page URL
+      nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url
+
+      if (nextPageUrl.isNullOrEmpty()) {
+        Timber.d("No more pages to fetch. Fetching completed.")
+        if (enableCustomSyncWorkerLogs) CustomWorkerState.postState(CustomSyncState.Success)
+      }
     }
   }
 
