@@ -26,8 +26,6 @@ import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.include
 import com.google.android.fhir.search.revInclude
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
-import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -49,6 +47,8 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class RegisterRepository
