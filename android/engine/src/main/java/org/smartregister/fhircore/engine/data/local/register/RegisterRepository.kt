@@ -85,6 +85,7 @@ constructor(
     fhirResourceConfig: FhirResourceConfig?,
     paramsMap: Map<String, String>?,
   ): List<ResourceData> {
+    val repositoryResourceDataList = mutableListOf<RepositoryResourceData>()
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
     val requiredFhirResourceConfig = fhirResourceConfig ?: registerConfiguration.fhirResource
@@ -100,23 +101,21 @@ constructor(
         pageSize = registerConfiguration.pageSize,
       )
 
-    val repositoryResourceDataList = mutableListOf<RepositoryResourceData>()
-    val processedResult =
-      handleSearchResults(
-        searchResults = searchResults,
-        repositoryResourceDataList = repositoryResourceDataList,
-        repositoryResourceData = null,
-        relatedResourceConfigs = requiredFhirResourceConfig.relatedResources,
-        baseResourceConfigId = requiredFhirResourceConfig.baseResource.id,
-        pageSize = registerConfiguration.pageSize,
+    val processedResults =
+      ArrayDeque(
+        handleSearchResults(
+          searchResults = searchResults,
+          repositoryResourceDataList = repositoryResourceDataList,
+          repositoryResourceDataMap = null,
+          relatedResourceConfigs = requiredFhirResourceConfig.relatedResources,
+          baseResourceConfigId = requiredFhirResourceConfig.baseResource.id,
+          pageSize = registerConfiguration.pageSize,
+        ),
       )
 
-    val resourcesQueue =
-      ArrayDeque<Triple<List<Resource>, ResourceConfig, RepositoryResourceData>>().apply {
-        addAll(processedResult)
-      }
-    while (resourcesQueue.isNotEmpty()) {
-      val (baseResources, resourceConfig, repositoryResourceData) = resourcesQueue.removeFirst()
+    while (processedResults.isNotEmpty()) {
+      val (baseResources, resourceConfig, repositoryResourceDataMap) =
+        processedResults.removeFirst()
       val newSearchResults =
         searchResources(
           baseResourceIds = baseResources.map { it.logicalId },
@@ -132,12 +131,12 @@ constructor(
         handleSearchResults(
           searchResults = newSearchResults,
           repositoryResourceDataList = repositoryResourceDataList,
-          repositoryResourceData = repositoryResourceData,
+          repositoryResourceDataMap = repositoryResourceDataMap,
           relatedResourceConfigs = resourceConfig.relatedResources,
-          baseResourceConfigId = resourceConfig.id,
+          baseResourceConfigId = requiredFhirResourceConfig.baseResource.id,
           pageSize = registerConfiguration.pageSize,
         )
-      resourcesQueue.addAll(newProcessedResults)
+      processedResults.addAll(newProcessedResults)
     }
 
     val rules = rulesExecutor.rulesFactory.generateRules(registerConfiguration.registerCard.rules)
@@ -153,27 +152,25 @@ constructor(
   private fun handleSearchResults(
     searchResults: List<SearchResult<Resource>>,
     repositoryResourceDataList: MutableList<RepositoryResourceData>,
-    repositoryResourceData: RepositoryResourceData?,
+    repositoryResourceDataMap: Map<String, RepositoryResourceData>?,
     relatedResourceConfigs: List<ResourceConfig>,
     baseResourceConfigId: String?,
     pageSize: Int,
-  ): Sequence<Triple<List<Resource>, ResourceConfig, RepositoryResourceData>> {
+  ): List<Triple<List<Resource>, ResourceConfig, Map<String, RepositoryResourceData>>> {
     val relatedResourcesQueue =
       ArrayDeque<Triple<List<Resource>, ResourceConfig, RepositoryResourceData>>()
-    val addToRepoDataMap = repositoryResourceData == null
     val (forwardIncludes, reverseIncludes) =
       relatedResourceConfigs.filter { !it.resultAsCount }.partition { !it.isRevInclude }
     val forwardIncludesMap =
       forwardIncludes.groupBy { it.searchParameter!! }.mapValues { it.value.first() }
-
     val reverseIncludesMap =
       reverseIncludes
         .groupBy { "${it.resource.name}_${it.searchParameter}".lowercase() }
         .mapValues { it.value.first() }
 
     searchResults.forEach { searchResult: SearchResult<Resource> ->
-      val currentRepositoryResourceData =
-        repositoryResourceData
+      val repositoryResourceData =
+        repositoryResourceDataMap?.get(searchResult.resource.logicalId)
           ?: RepositoryResourceData(
             resource = searchResult.resource,
             resourceConfigId = baseResourceConfigId,
@@ -181,9 +178,9 @@ constructor(
       searchResult.included?.forEach { entry ->
         val relatedResourceConfig = forwardIncludesMap[entry.key]
         createRepositoryResourceData(
-          repositoryResourceData = currentRepositoryResourceData,
-          relatedResourceConfig = relatedResourceConfig,
           resources = entry.value,
+          relatedResourceConfig = relatedResourceConfig,
+          repositoryResourceData = repositoryResourceData,
           relatedResourcesQueue = relatedResourcesQueue,
         )
       }
@@ -193,43 +190,46 @@ constructor(
         val name = "${resourceType.name}_$searchParam".lowercase()
         val relatedResourceConfig = reverseIncludesMap[name]
         createRepositoryResourceData(
-          repositoryResourceData = currentRepositoryResourceData,
-          relatedResourceConfig = relatedResourceConfig,
           resources = entry.value,
+          relatedResourceConfig = relatedResourceConfig,
+          repositoryResourceData = repositoryResourceData,
           relatedResourcesQueue = relatedResourcesQueue,
         )
       }
-      if (addToRepoDataMap) {
-        repositoryResourceDataList.add(currentRepositoryResourceData)
+      if (repositoryResourceDataMap == null) {
+        repositoryResourceDataList.add(repositoryResourceData)
       }
     }
-    return groupAndBatchResources(relatedResourcesQueue, pageSize)
+
+    return groupAndBatchResources(relatedResourcesQueue, pageSize).toList()
   }
 
   private fun createRepositoryResourceData(
-    repositoryResourceData: RepositoryResourceData,
-    relatedResourceConfig: ResourceConfig?,
     resources: List<Resource>,
+    relatedResourceConfig: ResourceConfig?,
+    repositoryResourceData: RepositoryResourceData?,
     relatedResourcesQueue:
       ArrayDeque<Triple<List<Resource>, ResourceConfig, RepositoryResourceData>>,
   ) {
-    val key = relatedResourceConfig?.id ?: relatedResourceConfig?.resource?.name
-    if (!key.isNullOrBlank()) {
-      repositoryResourceData.apply {
-        relatedResourcesMap
-          .getOrPut(key = key) { mutableListOf() }
-          .apply { (this as MutableList).addAll(resources.distinctBy { it.logicalId }) }
+    if (resources.isNotEmpty() && repositoryResourceData != null) {
+      val key = relatedResourceConfig?.id ?: relatedResourceConfig?.resource?.name
+      if (!key.isNullOrBlank()) {
+        repositoryResourceData.apply {
+          relatedResourcesMap
+            .getOrPut(key = key) { mutableListOf() }
+            .apply { (this as MutableList).addAll(resources.distinctBy { it.logicalId }) }
+        }
       }
-    }
 
-    if (!relatedResourceConfig?.relatedResources.isNullOrEmpty() && resources.isNotEmpty()) {
-      relatedResourcesQueue.addLast(
-        Triple(
-          first = resources,
-          second = relatedResourceConfig!!,
-          third = repositoryResourceData,
-        ),
-      )
+      if (!relatedResourceConfig?.relatedResources.isNullOrEmpty()) {
+        relatedResourcesQueue.addLast(
+          Triple(
+            first = resources,
+            second = relatedResourceConfig!!,
+            third = repositoryResourceData,
+          ),
+        )
+      }
     }
   }
 
@@ -365,11 +365,13 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramsMap)
 
   /**
-   * Groups resources by their [ResourceConfig] (using `id` if available, or `resourceType` as a
-   * fallback), then batches them into groups of up to a specified size.
+   * Groups resources by their [ResourceConfig] and batches them into groups of up to a specified
+   * size.
    *
-   * This function ensures that all resources with the same [ResourceConfig] are processed together,
-   * preserving their associated [RepositoryResourceData], before splitting them into batches.
+   * This function combines resources across multiple triples with the same [ResourceConfig],
+   * ensuring all resources are grouped together while maintaining their association with the
+   * respective [RepositoryResourceData]. Each batch contains a mapping of resources to their
+   * corresponding [RepositoryResourceData], allowing traceability.
    *
    * @param deque An [ArrayDeque] containing triples of:
    * - A list of [Resource]s to be grouped and batched.
@@ -380,45 +382,50 @@ constructor(
    * @return A [Sequence] of triples where each triple contains:
    * - A list of [Resource]s grouped into batches of up to [batchSize].
    * - The [ResourceConfig] shared by the batch.
-   * - The [RepositoryResourceData] shared by the batch.
+   * - A map of [Resource] to its corresponding [RepositoryResourceData], ensuring traceability.
    *
-   * @throws IllegalArgumentException if [batchSize] is less than or equal to 0
+   * @throws IllegalArgumentException if [batchSize] is less than or equal to 0.
    *
    * ```
    */
   fun groupAndBatchResources(
     deque: ArrayDeque<Triple<List<Resource>, ResourceConfig, RepositoryResourceData>>,
     batchSize: Int,
-  ): Sequence<Triple<List<Resource>, ResourceConfig, RepositoryResourceData>> {
+  ): Sequence<Triple<List<Resource>, ResourceConfig, Map<String, RepositoryResourceData>>> {
     require(batchSize > 0) { "Batch size must be greater than 0" }
     return sequence {
-      // Group by ResourceConfig's `id` or `resourceType`
-      val groupedByConfig =
-        deque.groupBy { triple -> triple.second.id ?: triple.second.resource.name }
+      val bufferMap =
+        mutableMapOf<ResourceConfig, MutableList<Pair<Resource, RepositoryResourceData>>>()
 
-      // Iterate through each group and batch resources
-      groupedByConfig.forEach { (_, group) ->
-        val buffer = mutableListOf<Resource>()
-        var currentConfig: ResourceConfig? = null
-        var currentData: RepositoryResourceData? = null
+      while (deque.isNotEmpty()) {
+        val (resources, config, data) = deque.removeFirst()
+        val resourcePairs = resources.map { it to data }
+        bufferMap.getOrPut(config) { mutableListOf() }.addAll(resourcePairs)
 
-        group.forEach { (resources, config, data) ->
-          if (buffer.isEmpty()) {
-            currentConfig = config
-            currentData = data
-          }
-
-          buffer.addAll(resources)
-
-          while (buffer.size >= batchSize) {
-            yield(Triple(buffer.subList(0, batchSize).toList(), currentConfig!!, currentData!!))
-            buffer.subList(0, batchSize).clear()
-          }
+        // Check if we can emit any batches for the current config
+        val buffer = bufferMap[config]!!
+        while (buffer.size >= batchSize) {
+          yield(
+            Triple(
+              buffer.take(batchSize).map { it.first },
+              config,
+              buffer.take(batchSize).associate { it.first.logicalId to it.second },
+            ),
+          )
+          buffer.subList(0, batchSize).clear()
         }
+      }
 
-        // Emit remaining items in the buffer
+      // Emit remaining items in the buffers
+      for ((config, buffer) in bufferMap) {
         if (buffer.isNotEmpty()) {
-          yield(Triple(buffer.toList(), currentConfig!!, currentData!!))
+          yield(
+            Triple(
+              buffer.map { it.first },
+              config,
+              buffer.associate { it.first.logicalId to it.second },
+            ),
+          )
         }
       }
     }
