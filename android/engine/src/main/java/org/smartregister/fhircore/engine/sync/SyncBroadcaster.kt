@@ -17,15 +17,20 @@
 package org.smartregister.fhircore.engine.sync
 
 import android.content.Context
+import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.BackoffCriteria
 import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.LastSyncJobStatus
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.PeriodicSyncJobStatus
 import com.google.android.fhir.sync.RepeatInterval
+import com.google.android.fhir.sync.RetryConfiguration
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
@@ -76,6 +81,12 @@ constructor(
         .setConstraints(
           Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
         )
+        .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+        .setBackoffCriteria(
+          BackoffPolicy.LINEAR,
+          10,
+          TimeUnit.SECONDS,
+        )
         .build(),
     )
   }
@@ -94,6 +105,16 @@ constructor(
             syncConstraints =
               Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
             repeat = RepeatInterval(interval = interval, timeUnit = TimeUnit.MINUTES),
+            retryConfiguration =
+              RetryConfiguration(
+                backoffCriteria =
+                  BackoffCriteria(
+                    backoffDelay = 10,
+                    timeUnit = TimeUnit.SECONDS,
+                    backoffPolicy = BackoffPolicy.EXPONENTIAL,
+                  ),
+                maxRetries = 3,
+              ),
           ),
       )
       .handlePeriodicSyncJobStatus(this)
@@ -104,7 +125,11 @@ constructor(
   ) {
     this.onEach {
         syncListenerManager.onSyncListeners.forEach { onSyncListener ->
-          onSyncListener.onSync(it.currentSyncJobStatus)
+          onSyncListener.onSync(
+            if (it.lastSyncJobStatus != null) {
+              CurrentSyncJobStatus.Succeeded((it.lastSyncJobStatus as LastSyncJobStatus).timestamp)
+            } else it.currentSyncJobStatus,
+          )
         }
       }
       .catch { throwable -> Timber.e("Encountered an error during periodic sync:", throwable) }

@@ -43,6 +43,7 @@ import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Composition.SectionComponent
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Reference
@@ -1006,17 +1007,18 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
       assertEquals(4, requestPathArgumentSlot.size)
 
-      assertEquals("Bundle/the-commodities-bundle-id", requestPathArgumentSlot.first().id)
-      assertEquals(ResourceType.Bundle, requestPathArgumentSlot.first().resourceType)
+      val bundles = requestPathArgumentSlot.filterIsInstance<Bundle>().first()
+      assertEquals("Bundle/the-commodities-bundle-id", bundles.id)
+      assertEquals(ResourceType.Bundle, bundles.resourceType)
 
-      assertEquals("Group/1000001", requestPathArgumentSlot.second().id)
-      assertEquals(ResourceType.Group, requestPathArgumentSlot.second().resourceType)
+      val groups = requestPathArgumentSlot.filterIsInstance<Group>()
+      assertEquals(2, groups.size)
+      assertTrue(groups.any { it.id == "Group/1000001" })
+      assertTrue(groups.any { it.id == "Group/2000001" })
 
-      assertEquals("Group/2000001", requestPathArgumentSlot[2].id)
-      assertEquals(ResourceType.Group, requestPathArgumentSlot[2].resourceType)
-
-      assertEquals("composition-id-1", requestPathArgumentSlot.last().id)
-      assertEquals(ResourceType.Composition, requestPathArgumentSlot.last().resourceType)
+      val compositions = requestPathArgumentSlot.filterIsInstance<Composition>().first()
+      assertEquals("composition-id-1", compositions.id)
+      assertEquals(ResourceType.Composition, compositions.resourceType)
     }
 
   @Test

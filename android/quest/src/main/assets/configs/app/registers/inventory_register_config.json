@@ -1,8 +1,8 @@
 {
-  "appId": "opensrp",
+  "appId": "app",
   "configType": "register",
   "id": "inventoryRegister",
-  "pageSize": 10,
+  "pageSize": 20,
   "fhirResource": {
     "baseResource": {
       "resource": "Group",
@@ -34,7 +34,7 @@
         "searchParameter": "subject",
         "sortConfigs": [
           {
-            "paramName": "_lastUpdated",
+            "paramName": "date",
             "dataType": "DATE",
             "order": "DESCENDING"
           }
@@ -43,14 +43,7 @@
       {
         "id": "stockOutFlags",
         "resource": "Flag",
-        "searchParameter": "subject",
-        "sortConfigs": [
-          {
-            "paramName": "_lastUpdated",
-            "dataType": "DATE",
-            "order": "DESCENDING"
-          }
-        ]
+        "searchParameter": "subject"
       },
       {
         "id": "measureReports",
@@ -90,40 +83,24 @@
         ]
       },
       {
-        "name": "preliminaryObservations",
+        "name": "latestObservation",
         "priority": 1,
         "condition": "true",
         "actions": [
-          "data.put('preliminaryObservations', service.filterResources(Observation, 'Observation.status = \"preliminary\"'))"
-        ]
-      },
-      {
-        "name": "latestObservation",
-        "priority": 2,
-        "condition": "true",
-        "actions": [
-          "var latestObs = obsList -> { var obSize = obsList.size() - 1; return obsList[obSize] }; data.put('latestObservation', latestObs(data.get('preliminaryObservations')))"
+          "data.put('latestObservation', service.filterResources(Observation, 'Observation.status = \"preliminary\"').get(0))"
         ]
       },
       {
         "name": "runningBalance",
-        "priority": 3,
+        "priority": 2,
         "condition": "true",
         "actions": [
           "data.put('runningBalance', data.get('latestObservation') != null ? fhirPath.extractValue(data.get('latestObservation'), 'Observation.component.value.value') : '0' )"
         ]
       },
       {
-        "name": "latestObservationId",
-        "priority": 3,
-        "condition": "true",
-        "actions": [
-          "data.put('latestObservationId', fhirPath.extractValue( data.get('latestObservation'), 'Observation.id.replace(\"Observation/\",\"\")').split(\"/\").get(0))"
-        ]
-      },
-      {
         "name": "lastUpdated",
-        "priority": 3,
+        "priority": 2,
         "condition": "true",
         "actions": [
           "data.put('lastUpdated', fhirPath.extractValue(data.get('latestObservation'), 'Observation.effective'))"
@@ -131,31 +108,31 @@
       },
       {
         "name": "lastUpdatedDate",
-        "priority": 4,
+        "priority": 3,
         "condition": "true",
         "actions": [
           "data.put('lastUpdatedDate', data.get('lastUpdated') != '' ? 'Last count ' + service.prettifyDate(data.get('lastUpdated')) : '')"
         ]
       },
       {
-        "name": "filteredStockOutFlags",
-        "priority": 1,
+        "name": "latestObservationId",
+        "priority": 2,
         "condition": "true",
         "actions": [
-          "data.put('filteredStockOutFlags', service.filterResources(stockOutFlags, 'Flag.status = \"active\"'))"
+          "data.put('latestObservationId', fhirPath.extractValue( data.get('latestObservation'), 'Observation.id.replace(\"Observation/\",\"\")').split(\"/\").get(0) )"
         ]
       },
       {
         "name": "activeStockOutFlag",
-        "priority": 2,
+        "priority": 1,
         "condition": "true",
         "actions": [
-          "var latestFlags = flagList -> { var flagSize = flagList.size() - 1; return flagList[flagSize] }; data.put('activeStockOutFlag', latestFlags(data.get('filteredStockOutFlags')))"
+          "data.put('activeStockOutFlag', service.filterResources(stockOutFlags, 'Flag.status = \"active\"').get(0))"
         ]
       },
       {
         "name": "stockoutFlagId",
-        "priority": 3,
+        "priority": 2,
         "condition": "true",
         "actions": [
           "data.put('stockoutFlagId', fhirPath.extractValue(data.get('activeStockOutFlag'), 'Flag.id.replace(\"Flag/\",\"\")').split(\"/\").get(0))"
@@ -163,7 +140,7 @@
       },
       {
         "name": "stockoutStartDate",
-        "priority": 3,
+        "priority": 2,
         "condition": "true",
         "actions": [
           "data.put('stockoutStartDate', fhirPath.extractValue(data.get('activeStockOutFlag'), 'Flag.period.start'))"
@@ -174,7 +151,7 @@
         "priority": 1,
         "condition": "true",
         "actions": [
-          "data.put('amcMeasureReport', service.filterResources(measureReports, 'MeasureReport.measure = \"https://fhir.eir.smartregister.org/fhir/Measure/STOCKIND02\"').get(0))"
+          "data.put('amcMeasureReport', service.filterResources(measureReports, 'MeasureReport.measure = \"https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND02\"').get(0))"
         ]
       },
       {
@@ -208,13 +185,6 @@
         "actions": [
           "data.put('stockStatusColour', data.get('stockStatus') == 'Stockout' ? '#DD0000' : data.get('stockStatus') == 'Understock' ? '#FFA500' : data.get('stockStatus') == 'Satisfactory' ? '#38B500' : data.get('stockStatus') == 'Overstock' ? '#006EB8' : '#d3d3d3')"
         ]
-      },
-      {
-        "name": "groupReference",
-        "condition": "true",
-        "actions": [
-          "data.put('groupReference', fhirPath.extractValue(Group, 'Group.id'))"
-        ]
       }
     ],
     "views": [
@@ -240,9 +210,9 @@
                 "primaryText": "Status:",
                 "primaryTextColor": "#5A5A5A",
                 "secondaryText": "@{stockStatus}",
-                "secondaryTextColor": "#FFFFFF",
-                "secondaryTextBackgroundColor": "@{stockStatusColour}",
-                "secondaryTextFontWeight": "SEMI_BOLD",
+                "secondaryTextColor" : "#FFFFFF",
+                "secondaryTextBackgroundColor" : "@{stockStatusColour}",
+                "secondaryTextFontWeight" :  "SEMI_BOLD",
                 "fontSize": 14.0
               }
             ],
@@ -263,8 +233,7 @@
                     "saveButtonText": "ADJUST STOCK LEVELS",
                     "setPractitionerDetails": true,
                     "setOrganizationDetails": true,
-                    "resourceIdentifier": "@{commodityId}",
-                    "resourceType": "Group"
+                    "resourceIdentifier": "@{commodityId}"
                   },
                   "params": [
                     {
@@ -301,13 +270,6 @@
                       "dataType": "STRING",
                       "key": "stockoutStartDate",
                       "value": "@{stockoutStartDate}"
-                    },
-                    {
-                      "paramType": "UPDATE_DATE_ON_EDIT",
-                      "linkId": "032dd376-d476-11ed-afa1-0242ac120002",
-                      "dataType": "STRING",
-                      "key": "familyLogicalId",
-                      "value": "@{familyLogicalId}"
                     }
                   ]
                 }
@@ -320,14 +282,8 @@
                 "id": "inventoryProfile",
                 "params": [
                   {
-                    "paramType": "PARAMDATA",
                     "key": "commodityId",
                     "value": "@{commodityId}"
-                  },
-                  {
-                    "paramType": "PARAMDATA",
-                    "key": "groupReference",
-                    "value": "@{groupReference}"
                   }
                 ]
               }

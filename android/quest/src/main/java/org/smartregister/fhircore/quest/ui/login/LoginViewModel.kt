@@ -22,15 +22,18 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import io.sentry.protocol.User
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
@@ -459,6 +462,12 @@ constructor(
       OneTimeWorkRequestBuilder<ConfigDownloadWorker>()
         .setConstraints(
           Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+        )
+        .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+        .setBackoffCriteria(
+          BackoffPolicy.LINEAR,
+          10,
+          TimeUnit.SECONDS,
         )
         .build(),
     )
