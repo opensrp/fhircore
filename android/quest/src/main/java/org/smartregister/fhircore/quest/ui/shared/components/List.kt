@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -74,11 +73,14 @@ fun List(
   val currentListResourceData = resourceData.listResourceDataMap?.get(viewProperties.id)
   if (currentListResourceData.isNullOrEmpty()) {
     if (!viewProperties.emptyList?.message.isNullOrEmpty()) {
-      Box(contentAlignment = Alignment.Center, modifier = modifier.wrapContentSize()) {
+      Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
         Text(
           text = viewProperties.emptyList?.message!!,
-          modifier = modifier.padding(8.dp).align(Alignment.Center),
-          color = DefaultColor,
+          modifier =
+            modifier
+              .conditional(viewProperties.enableTopBottomSpacing, { padding(8.dp) })
+              .align(Alignment.Center),
+          color = viewProperties.emptyList?.textColor?.parseColor() ?: DefaultColor,
           fontStyle = FontStyle.Italic,
         )
       }
@@ -116,7 +118,11 @@ fun List(
                   viewProperty.visible.toBooleanStrict()
                 }
               if (areChildViewsVisible) {
-                Spacer(modifier = modifier.height(6.dp))
+                // Add spacing before each item, except for first item when enableTopBottomSpacing
+                // is false
+                if (index != 0 || viewProperties.enableTopBottomSpacing) {
+                  Spacer(modifier = modifier.height(viewProperties.spacerHeight.dp))
+                }
                 Column(
                   modifier =
                     Modifier.padding(
@@ -143,7 +149,13 @@ fun List(
                     )
                   }
                 }
-                Spacer(modifier = modifier.height(6.dp))
+                // Add spacer after each item except last one when enableTopBottomSpacing is false
+                if (
+                  index != currentListResourceData.lastIndex ||
+                    viewProperties.enableTopBottomSpacing
+                ) {
+                  Spacer(modifier = modifier.height(viewProperties.spacerHeight.dp))
+                }
                 // viewProperties in this case belongs to the List, setting the showDivider will
                 // apply to all child items under the List
                 if (index < currentListResourceData.lastIndex && viewProperties.showDivider) {
