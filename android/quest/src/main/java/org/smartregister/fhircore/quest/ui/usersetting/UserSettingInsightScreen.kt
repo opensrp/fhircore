@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -77,6 +78,7 @@ import org.smartregister.fhircore.engine.util.extension.formatDate
 
 const val USER_INSIGHT_TOP_APP_BAR = "userInsightToAppBar"
 const val INSIGHT_UNSYNCED_DATA = "insightUnsyncedData"
+const val CIRCULAR_PROGRESS_INDICATOR = "progressIndicator"
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -94,6 +96,7 @@ fun UserSettingInsightScreen(
   dividerColor: Color = DividerColor,
   unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
   navController: NavController,
+  showProgressIndicator: Boolean = false,
   onRefreshRequest: () -> Unit,
   dateFormat: String = DEFAULT_FORMAT_SDF_DD_MM_YYYY,
 ) {
@@ -123,7 +126,32 @@ fun UserSettingInsightScreen(
       horizontalAlignment = Alignment.Start,
       contentPadding = PaddingValues(vertical = 24.dp, horizontal = 16.dp),
     ) {
-      if (unsyncedResources.isNotEmpty()) {
+      if (showProgressIndicator) {
+        item {
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth(),
+          ) {
+            Text(
+              text = stringResource(id = R.string.loading_ellipsis),
+              style = TextStyle(color = Color.Black, fontSize = 20.sp),
+              fontWeight = FontWeight.Bold,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            CircularProgressIndicator(
+              modifier =
+                Modifier.testTag(CIRCULAR_PROGRESS_INDICATOR).size(24.dp).wrapContentWidth(),
+              strokeWidth = 1.6.dp,
+            )
+          }
+        }
+        item {
+          Spacer(modifier = Modifier.height(16.dp))
+          Divider(color = dividerColor)
+          Spacer(modifier = Modifier.height(24.dp))
+        }
+      } else if (unsyncedResources.isNotEmpty()) {
         item {
           Text(
             text = stringResource(id = R.string.unsynced_resources),
@@ -368,6 +396,7 @@ fun UserSettingInsightScreenPreview() {
       buildDate = "29 Jan 2023",
       unsyncedResourcesFlow = MutableSharedFlow(),
       navController = rememberNavController(),
+      showProgressIndicator = true,
       onRefreshRequest = {},
       dateFormat = DEFAULT_FORMAT_SDF_DD_MM_YYYY,
     )
