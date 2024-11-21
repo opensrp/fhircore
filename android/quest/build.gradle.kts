@@ -355,6 +355,13 @@ android {
       versionNameSuffix = "-minsaEir"
       manifestPlaceholders["appLabel"] = "Minsa EIR"
     }
+
+    create("kaderjobaids") {
+      dimension = "apps"
+      applicationIdSuffix = ".jobaids"
+      versionNameSuffix = "-kaderjobaids"
+      manifestPlaceholders["appLabel"] = "Kader Job Aids"
+    }
   }
 
   applicationVariants.all {
