@@ -56,6 +56,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -63,7 +64,7 @@ import org.smartregister.fhircore.engine.domain.model.CountResultConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
-import org.smartregister.fhircore.engine.domain.model.SyncLocationToggleableState
+import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
@@ -104,6 +105,9 @@ class RegisterRepositoryTest : RobolectricTest() {
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var parser: IParser
+
+  @Inject lateinit var contentCache: ContentCache
+
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val patient = Faker.buildPatient(PATIENT_ID)
   private lateinit var registerRepository: RegisterRepository
@@ -123,6 +127,7 @@ class RegisterRepositoryTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = ApplicationProvider.getApplicationContext(),
+          contentCache = contentCache,
         ),
       )
   }
@@ -179,6 +184,50 @@ class RegisterRepositoryTest : RobolectricTest() {
       val recordsCount =
         registerRepository.countRegisterData(registerId = PATIENT_REGISTER, paramsMap = paramsMap)
       Assert.assertEquals(ResourceType.Patient, searchSlot.captured.type)
+      Assert.assertEquals(20, recordsCount)
+    }
+  }
+
+  @Ignore("Refactor this test")
+  @Test
+  fun countRegisterDataWithParamsAndRelatedEntityLocationFilter() {
+    runTest {
+      val paramsList =
+        arrayListOf(
+          ActionParameter(
+            key = "paramsName",
+            paramType = ActionParameterType.PARAMDATA,
+            value = "testing1",
+            dataType = DataType.STRING,
+            linkId = null,
+          ),
+          ActionParameter(
+            key = "paramName2",
+            paramType = ActionParameterType.PARAMDATA,
+            value = "testing2",
+            dataType = DataType.STRING,
+            linkId = null,
+          ),
+        )
+      paramsList
+        .asSequence()
+        .filter { it.paramType == ActionParameterType.PARAMDATA && it.value.isNotEmpty() }
+        .associate { it.key to it.value }
+      val paramsMap = emptyMap<String, String>()
+      val searchSlot = slot<Search>()
+      every {
+        registerRepository.retrieveRegisterConfiguration(PATIENT_REGISTER, emptyMap())
+      } returns
+        RegisterConfiguration(
+          appId = "app",
+          id = PATIENT_REGISTER,
+          fhirResource = fhirResourceConfig(),
+          filterDataByRelatedEntityLocation = true,
+        )
+      coEvery { fhirEngine.count(capture(searchSlot)) } returns 20
+      val recordsCount =
+        registerRepository.countRegisterData(registerId = PATIENT_REGISTER, paramsMap = paramsMap)
+      Assert.assertEquals(ResourceType.Group, searchSlot.captured.type)
       Assert.assertEquals(20, recordsCount)
     }
   }
@@ -496,7 +545,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       // Set locations
       ApplicationProvider.getApplicationContext<Application>()
         .syncLocationIdsProtoStore
-        .updateData { listOf(SyncLocationToggleableState(locationId, ToggleableState.On)) }
+        .updateData { mapOf(locationId to SyncLocationState(locationId, null, ToggleableState.On)) }
 
       // Prepare resources
       fhirEngine.run {

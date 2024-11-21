@@ -122,7 +122,7 @@ fun LoginScreen(loginViewModel: LoginViewModel, appVersionPair: Pair<Int, String
     onUsernameChanged = { loginViewModel.onUsernameUpdated(it) },
     password = password,
     onPasswordChanged = { loginViewModel.onPasswordUpdated(it) },
-    forgotPassword = { loginViewModel.forgotPassword() },
+    forgotPassword = { loginViewModel.forgotPassword(context) },
     onLoginButtonClicked = { loginViewModel.login(context) },
     loginErrorState = loginErrorState,
     showProgressBar = showProgressBar,
@@ -168,6 +168,7 @@ fun LoginPage(
   ) {
     if (showForgotPasswordDialog) {
       ForgotPasswordDialog(
+        supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
         forgotPassword = forgotPassword,
         onDismissDialog = { showForgotPasswordDialog = false },
       )
@@ -390,6 +391,7 @@ fun LoginPage(
 
 @Composable
 fun ForgotPasswordDialog(
+  supervisorContactNumber: String?,
   forgotPassword: () -> Unit,
   onDismissDialog: () -> Unit,
   modifier: Modifier = Modifier,
@@ -404,7 +406,20 @@ fun ForgotPasswordDialog(
       )
     },
     text = {
-      Text(text = stringResource(R.string.call_supervisor, "012-3456-789"), fontSize = 16.sp)
+      Column(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+      ) {
+        Text(
+          text = stringResource(R.string.call_supervisor),
+          fontSize = 16.sp,
+        )
+        if (!supervisorContactNumber.isNullOrBlank()) {
+          Text(
+            text = supervisorContactNumber,
+            fontSize = 16.sp,
+          )
+        }
+      }
     },
     buttons = {
       Row(

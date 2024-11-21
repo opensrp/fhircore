@@ -23,7 +23,10 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 data class RegisterContentConfig(
   val separator: String? = null,
   val display: String? = null,
+  val placeholderColor: String? = null,
   val rules: List<RuleConfig>? = null,
   val visible: Boolean? = null,
   val computedRules: List<String>? = null,
+  val searchByQrCode: Boolean? = null,
+  val dataFilterFields: List<RegisterFilterField> = emptyList(),
 )

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -47,13 +48,22 @@ fun ViewRenderer(
   viewProperties: List<ViewProperties>,
   resourceData: ResourceData,
   navController: NavController,
+  decodeImage: ((String) -> Bitmap?)?,
+  areViewPropertiesInterpolated: Boolean = false,
 ) {
   viewProperties.forEach { properties ->
+    val interpolatedProperties =
+      if (areViewPropertiesInterpolated) {
+        properties
+      } else {
+        properties.interpolate(resourceData.computedValuesMap)
+      }
     GenerateView(
       modifier = generateModifier(properties),
-      properties = properties.interpolate(resourceData.computedValuesMap),
+      properties = interpolatedProperties,
       resourceData = resourceData,
       navController = navController,
+      decodeImage = decodeImage,
     )
   }
 }
@@ -88,6 +98,7 @@ private fun PreviewWeightedViewsInRow() {
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
+    decodeImage = null,
   )
 }
 
@@ -143,6 +154,7 @@ private fun PreviewWrappedViewsInRow() {
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
+    decodeImage = null,
   )
 }
 
@@ -180,6 +192,7 @@ private fun PreviewSameSizedViewInRow() {
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
+    decodeImage = null,
   )
 }
 
@@ -298,5 +311,6 @@ private fun PreviewCardViewWithRows() {
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
+    decodeImage = null,
   )
 }

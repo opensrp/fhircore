@@ -23,7 +23,6 @@ import ca.uhn.fhir.util.TerserUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
-import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
 import javax.inject.Inject
@@ -60,6 +59,7 @@ import org.smartregister.fhircore.engine.configuration.event.EventType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.addResourceParameter
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathDuration
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathPeriod
@@ -83,7 +83,10 @@ constructor(
   @ApplicationContext val context: Context,
 ) {
   private val structureMapUtilities by lazy {
-    StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
+    StructureMapUtilities(
+      transformSupportServices.simpleWorkerContext,
+      transformSupportServices,
+    )
   }
 
   suspend fun generateOrUpdateCarePlan(
@@ -117,8 +120,11 @@ constructor(
     // Only one CarePlan per plan, update or init a new one if not exists
     val output =
       fhirEngine
-        .search<CarePlan> {
-          filter(CarePlan.INSTANTIATES_CANONICAL, { value = planDefinition.referenceValue() })
+        .batchedSearch<CarePlan> {
+          filter(
+            CarePlan.INSTANTIATES_CANONICAL,
+            { value = planDefinition.referenceValue() },
+          )
           filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
           filter(
             CarePlan.STATUS,
@@ -131,8 +137,7 @@ constructor(
         .map { it.resource }
         .firstOrNull()
         ?: CarePlan().apply {
-          // TODO delete this section once all PlanDefinitions are using new
-          // recommended approach
+          // TODO delete this section once all PlanDefinitions are using new recommended approach
           this.title = planDefinition.title
           this.description = planDefinition.description
           this.instantiatesCanonical = listOf(CanonicalType(planDefinition.asReference().reference))
@@ -155,6 +160,8 @@ constructor(
 
     val carePlanTasks = output.contained.filterIsInstance<Task>()
 
+    output.cleanPlanDefinitionCanonical()
+
     if (carePlanModified) saveCarePlan(output, relatedEntityLocationTags)
 
     if (carePlanTasks.isNotEmpty()) {
@@ -166,6 +173,19 @@ constructor(
 
     return if (output.hasActivity()) output else null
   }
+
+  // TODO refactor this code to remove hardcoded appended "PlanDefinition/" on
+  // https://github.com/opensrp/fhircore/issues/3386
+  private fun CarePlan.cleanPlanDefinitionCanonical() {
+    val canonicalValue = this.instantiatesCanonical.first().value
+    if (canonicalValue.contains('/').not()) {
+      this.instantiatesCanonical = listOf(CanonicalType("PlanDefinition/$canonicalValue"))
+    }
+  }
+
+  @VisibleForTesting
+  fun invokeCleanPlanDefinitionCanonical(carePlan: CarePlan) =
+    carePlan.cleanPlanDefinitionCanonical()
 
   /** Implements OpenSRP's $lite version of CarePlan & Tasks generation via StructureMap(s) */
   private suspend fun liteApplyPlanDefinitionOnPatient(
@@ -194,8 +214,9 @@ constructor(
               }
             source.setParameter(Task.SP_PERIOD, period)
             source.setParameter(ActivityDefinition.SP_VERSION, IntegerType(index))
+            val structureMapId = IdType(action.transform).idPart
+            val structureMap = defaultRepository.loadResourceFromCache<StructureMap>(structureMapId)
 
-            val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
             structureMapUtilities.transform(
               transformSupportServices.simpleWorkerContext,
               source,
@@ -209,7 +230,15 @@ constructor(
           definition.dynamicValue.forEach { dynamicValue ->
             if (definition.kind == ActivityDefinition.ActivityDefinitionKind.CAREPLAN) {
               dynamicValue.expression.expression
-                .let { fhirPathEngine.evaluate(null, input, planDefinition, subject, it) }
+                .let {
+                  fhirPathEngine.evaluate(
+                    null,
+                    input,
+                    planDefinition,
+                    subject,
+                    it,
+                  )
+                }
                 ?.takeIf { it.isNotEmpty() }
                 ?.let { evaluatedValue ->
                   // TODO handle cases where we explicitly need to set previous value as null,
@@ -255,8 +284,17 @@ constructor(
             .filter { it.reference.startsWith(ResourceType.Task.name) }
             .mapNotNull { getTask(it.extractId()) }
             .forEach {
-              if (it.status.isIn(TaskStatus.REQUESTED, TaskStatus.READY, TaskStatus.INPROGRESS)) {
-                cancelTaskByTaskId(it.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
+              if (
+                it.status.isIn(
+                  TaskStatus.REQUESTED,
+                  TaskStatus.READY,
+                  TaskStatus.INPROGRESS,
+                )
+              ) {
+                cancelTaskByTaskId(
+                  it.logicalId,
+                  "${carePlan.fhirType()} ${carePlan.status}",
+                )
               }
             }
         }
@@ -359,7 +397,9 @@ constructor(
           end =
             if (durationExpression.isNotBlank() && offsetDate.hasValue()) {
               evaluateToDate(offsetDate, "\$this + $durationExpression")?.value
-            } else carePlan.period.end
+            } else {
+              carePlan.period.end
+            }
         }
         .also { taskPeriods.add(it) }
     }
@@ -367,7 +407,10 @@ constructor(
     return taskPeriods
   }
 
-  private fun extractTaskPeriodsFromDosage(dosage: List<Dosage>, carePlan: CarePlan): List<Period> {
+  private fun extractTaskPeriodsFromDosage(
+    dosage: List<Dosage>,
+    carePlan: CarePlan,
+  ): List<Period> {
     val taskPeriods = mutableListOf<Period>()
     dosage
       .flatMap { extractTaskPeriodsFromTiming(it.timing, carePlan) }
@@ -406,7 +449,11 @@ constructor(
             )
 
           if (resourceClosureConditionsMet) {
-            defaultRepository.updateResourcesRecursively(eventResource, subject, eventWorkFlow)
+            defaultRepository.updateResourcesRecursively(
+              eventResource,
+              subject,
+              eventWorkFlow,
+            )
           }
         }
       }

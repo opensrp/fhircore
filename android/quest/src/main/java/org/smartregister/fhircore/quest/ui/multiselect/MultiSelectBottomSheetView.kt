@@ -47,7 +47,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,21 +61,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
+import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.ui.multiselect.MultiSelectView
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
+import org.smartregister.fhircore.engine.ui.multiselect.updateNestedCheckboxState
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.util.extension.isIn
 
 @Composable
 fun MultiSelectBottomSheetView(
   rootTreeNodes: SnapshotStateList<TreeNode<String>>,
-  selectedNodes: SnapshotStateMap<String, ToggleableState>,
+  syncLocationStateMap: MutableMap<String, SyncLocationState>,
   title: String?,
   onDismiss: () -> Unit,
   searchTextState: MutableState<String>,
   onSearchTextChanged: (String) -> Unit,
-  onSelectionDone: () -> Unit,
+  onSelectionDone: (List<MultiSelectViewAction>) -> Unit,
   search: () -> Unit,
   isLoading: State<Boolean?>,
+  multiSelectViewAction: List<MultiSelectViewAction>,
+  mutuallyExclusive: Boolean,
 ) {
   val keyboardController = LocalSoftwareKeyboardController.current
   Scaffold(
@@ -172,24 +177,62 @@ fun MultiSelectBottomSheetView(
         LazyColumn(
           modifier = Modifier.padding(horizontal = 8.dp),
         ) {
-          items(rootTreeNodes, key = { item -> item.id }) {
+          items(rootTreeNodes, key = { item -> item.id }) { rootTreeNode ->
             Column {
               MultiSelectView(
-                rootTreeNode = it,
-                selectedNodes = selectedNodes,
+                rootTreeNode = rootTreeNode,
+                syncLocationStateMap = syncLocationStateMap,
+                onChecked = {
+                  if (mutuallyExclusive) {
+                    rootTreeNodes.forEach { currentNode ->
+                      val currentNodeToggleableState =
+                        syncLocationStateMap[currentNode.id]?.toggleableState
+                      if (
+                        currentNode.id != rootTreeNode.id &&
+                          currentNodeToggleableState != null &&
+                          currentNodeToggleableState.isIn(
+                            ToggleableState.On,
+                            ToggleableState.Indeterminate,
+                          )
+                      ) {
+                        // De-select the root and its children
+                        syncLocationStateMap[currentNode.id] =
+                          SyncLocationState(
+                            locationId = currentNode.id,
+                            parentLocationId = currentNode.parent?.id,
+                            toggleableState = ToggleableState.Off,
+                          )
+
+                        updateNestedCheckboxState(
+                          currentTreeNode = currentNode,
+                          syncLocationStateMap = syncLocationStateMap,
+                          checked = false,
+                        )
+                      }
+                    }
+                  }
+                },
               ) { treeNode ->
                 Column { Text(text = treeNode.data) }
               }
             }
           }
           item {
-            if (selectedNodes.isNotEmpty() && rootTreeNodes.isNotEmpty()) {
+            if (syncLocationStateMap.isNotEmpty() && rootTreeNodes.isNotEmpty()) {
               Button(
-                onClick = { onSelectionDone() },
+                onClick = { onSelectionDone(multiSelectViewAction) },
                 modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),
               ) {
                 Text(
-                  text = stringResource(id = R.string.sync_data).uppercase(),
+                  text =
+                    stringResource(
+                        id =
+                          when (multiSelectViewAction.first()) {
+                            MultiSelectViewAction.SYNC_DATA -> R.string.sync_data
+                            MultiSelectViewAction.FILTER_DATA -> R.string.apply_filter
+                          },
+                      )
+                      .uppercase(),
                   modifier = Modifier.padding(8.dp),
                 )
               }

@@ -16,27 +16,29 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import org.hl7.fhir.r4.model.BooleanType
+import java.util.UUID
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.DateType
-import org.hl7.fhir.r4.model.DecimalType
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
-import org.hl7.fhir.r4.model.TimeType
-import org.hl7.fhir.r4.model.UriType
+import org.hl7.fhir.r4.model.Type
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class QuestionnaireExtensionTest : RobolectricTest() {
@@ -401,46 +403,89 @@ class QuestionnaireExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun testCastToTypeReturnsCorrectTypes() {
-    val booleanType = "true".castToType(DataType.BOOLEAN)
-    Assert.assertEquals(BooleanType().fhirType(), booleanType?.fhirType())
-    Assert.assertEquals("true", booleanType.valueToString())
+  fun testPrepopulateQuestionnaireWithComputedValues() = runTest {
+    val questionnaireConfig =
+      QuestionnaireConfig(
+        id = UUID.randomUUID().toString(),
+        resourceIdentifier = "patient.id",
+        resourceType = ResourceType.Patient,
+        barcodeLinkId = "patient-barcode",
+        type = QuestionnaireType.READ_ONLY.name,
+        configRules =
+          listOf(
+            RuleConfig(
+              name = "rule1",
+              actions = listOf("data.put('rule1', 'Sample Rule')"),
+            ),
+          ),
+        extraParams =
+          listOf(
+            ActionParameter(
+              key = "rule1",
+              value = "@{rule1}",
+              paramType = ActionParameterType.PARAMDATA,
+            ),
+          ),
+      )
+    val patientAgeLinkId = "patient-age"
+    val actionParameter =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.PREPOPULATE,
+          linkId = patientAgeLinkId,
+          dataType = Enumerations.DataType.INTEGER,
+          key = patientAgeLinkId,
+          value = "20",
+        ),
+      )
+    val questionnaire =
+      Questionnaire().apply {
+        addItem(
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = patientAgeLinkId
+            type = Questionnaire.QuestionnaireItemType.INTEGER
+            readOnly = true
+          },
+        )
+      }
 
-    val decimalType = "6.4".castToType(DataType.DECIMAL)
-    Assert.assertEquals(DecimalType().fhirType(), decimalType?.fhirType())
-    Assert.assertEquals("6.4", decimalType.valueToString())
+    questionnaire.prepopulateWithComputedConfigValues(
+      questionnaireConfig,
+      actionParameter,
+      { mapOf(patientAgeLinkId to "20") },
+      { _, _ -> "" },
+    )
 
-    val integerType = "4".castToType(DataType.INTEGER)
-    Assert.assertEquals(IntegerType().fhirType(), integerType?.fhirType())
-    Assert.assertEquals("4", integerType.valueToString())
+    // Questionnaire.item pre-populated
+    val questionnairePatientAgeItem = questionnaire.find(patientAgeLinkId)
+    val itemValue: Type? = questionnairePatientAgeItem?.initial?.firstOrNull()?.value
+    Assert.assertTrue(itemValue is IntegerType)
+    Assert.assertEquals(20, itemValue?.primitiveValue()?.toInt())
 
-    val dateType = "2020-02-02".castToType(DataType.DATE)
-    Assert.assertEquals(DateType().fhirType(), dateType?.fhirType())
-    Assert.assertEquals("02-Feb-2020", dateType.valueToString())
+    // Barcode linkId updated
+    val questionnaireBarcodeItem = questionnaireConfig.barcodeLinkId?.let { questionnaire.find(it) }
+    val barCodeItemValue: Type? = questionnaireBarcodeItem?.initial?.firstOrNull()?.value
+    Assert.assertFalse(barCodeItemValue is StringType)
+    Assert.assertNull(
+      questionnaireConfig.resourceIdentifier,
+      barCodeItemValue?.primitiveValue(),
+    )
+  }
 
-    val dateTimeType = "2020-02-02T13:00:32".castToType(DataType.DATETIME)
-    Assert.assertEquals(DateTimeType().fhirType(), dateTimeType?.fhirType())
-    Assert.assertEquals("02-Feb-2020", dateTimeType.valueToString())
+  @Test
+  fun testQuestionnaireResponseStatusReturnsCompletedWhenIsEditableIsTrue() {
+    val questionnaireConfig =
+      QuestionnaireConfig(id = "patient-reg-config", type = QuestionnaireType.EDIT.name)
+    Assert.assertEquals("completed", questionnaireConfig.questionnaireResponseStatus())
+  }
 
-    val timeType = "T13:00:32".castToType(DataType.TIME)
-    Assert.assertEquals(TimeType().fhirType(), timeType?.fhirType())
-    Assert.assertEquals("T13:00:32", timeType.valueToString())
+  fun testQuestionnaireResponseStatusReturnsInProgressWhenSaveDraftIsTrue() {
+    val questionnaireConfig = QuestionnaireConfig(id = "patient-reg-config", saveDraft = true)
+    Assert.assertEquals("in-progress", questionnaireConfig.questionnaireResponseStatus())
+  }
 
-    val stringType = "str".castToType(DataType.STRING)
-    Assert.assertEquals(StringType().fhirType(), stringType?.fhirType())
-    Assert.assertEquals("str", stringType.valueToString())
-
-    val uriType = "https://str.org".castToType(DataType.URI)
-    Assert.assertEquals(UriType().fhirType(), uriType?.fhirType())
-    Assert.assertEquals("https://str.org", uriType.valueToString())
-
-    // test invalid JSON
-    val codingType = "invalid".castToType(DataType.CODING)
-    Assert.assertEquals(null, codingType)
-
-    val quantityType = "invalid".castToType(DataType.QUANTITY)
-    Assert.assertEquals(null, quantityType)
-
-    // TODO: test valid JSON
+  fun testQuestionnaireResponseStatusReturnsNullWhenBothSaveDraftAndIsEditableAreFalse() {
+    val questionnaireConfig = QuestionnaireConfig(id = "patient-reg-config", saveDraft = true)
+    Assert.assertEquals("in-progress", questionnaireConfig.questionnaireResponseStatus())
   }
 }

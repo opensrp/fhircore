@@ -32,7 +32,6 @@
         <item name="cardElevation">8dp</item>
     </style>
 
-
     <style name="AlertDialogTheme" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
         <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
         <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
@@ -60,6 +59,29 @@
         <item name="questionnaireSubmitButtonStyle">@style/AppTheme.QuestionnaireSubmitButtonStyle</item>
         <item name="questionnaireButtonStyle">@style/AppTheme.QuestionnaireButtonStyle</item>
         <item name="questionnaireCancelButtonStyle">@style/AppTheme.QuestionnaireCancelButtonStyle</item>
+        <item name="questionnaireGroupTypeQuestionTextStyle">@style/TextAppearance.Material3.HeadlineMedium</item>
+        <item name="questionnaireQuestionTextStyle">@style/TextAppearance.Material3.BodyLarge</item>
+        <item name="questionnaireMediaImageStyle">@style/AppTheme.MediaImageStyle</item>
+        <item name="questionnaireHelpHeaderStyle">@style/AppTheme.HelpHeaderStyle</item>
+        <item name="questionnaireNextButtonCircularProgressIndicatorStyle">@style/AppTheme.NextButtonCircularProgressIndicatorStyle</item>
+        <!-- Help card container color -->
+        <item
+            name="android:colorBackground"
+            >@color/background_neutral_100</item>
+        <item name="colorOnBackground">@color/onBackground_neutral_10</item>
+        <item name="colorSurface">@color/surface_neutral_100</item>
+        <item name="colorOnSurface">@color/onSurface_neutral_10</item>
+        <item
+            name="colorSurfaceVariant"
+            >@color/surfaceVariant_neutral_variant_90</item>
+        <item
+            name="colorOnSurfaceVariant"
+            >@color/onSurfaceVariant_neutral_variant_30</item>
+        <!-- /Help card container color -->
+    </style>
+
+    <style name="AppTheme.NextButtonCircularProgressIndicatorStyle" parent="Questionnaire.NextButtonCircularProgressIndicatorStyle">
+        <item name="indicatorColor">@color/colorPrimary</item>
     </style>
 
     <style name="AppTheme.QuestionnaireSubmitButtonStyle" parent="Widget.MaterialComponents.Button">
@@ -77,6 +99,21 @@
     <style name="AppTheme.QuestionnaireCancelButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="AppTheme.MediaImageStyle" parent="">
+        <item name="android:layout_gravity">center</item>
+        <item
+            name="android:layout_marginTop"
+            >@dimen/item_media_image_margin_vertical</item>
+        <item
+            name="android:layout_marginBottom"
+            >@dimen/item_media_image_margin_vertical</item>
+    </style>
+
+    <style name="AppTheme.HelpHeaderStyle" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:visibility">invisible</item>
+        <item name="android:height">0dp</item>
     </style>
 
 </resources>

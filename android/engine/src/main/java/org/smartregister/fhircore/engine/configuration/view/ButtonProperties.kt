@@ -43,6 +43,7 @@ data class ButtonProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   override val visible: String = "true",
+  override val opacity: Float? = null,
   val contentColor: String? = null,
   val enabled: String = "true",
   val text: String? = null,
@@ -91,7 +92,9 @@ data class ButtonProperties(
     val interpolated = this.status.interpolate(computedValuesMap)
     return if (ServiceStatus.values().map { it.name }.contains(interpolated)) {
       ServiceStatus.valueOf(interpolated)
-    } else ServiceStatus.UPCOMING
+    } else {
+      ServiceStatus.UPCOMING
+    }
   }
 }
 

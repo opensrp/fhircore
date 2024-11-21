@@ -56,6 +56,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -78,6 +79,9 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var parser: IParser
+
+  @Inject lateinit var contentCache: ContentCache
+
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var defaultRepository: DefaultRepository
 
@@ -95,7 +99,7 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
           period = Period().apply { end = DateTime().plusDays(-2).toDate() }
         }
     }
-  val serviceRequest =
+  private val serviceRequest =
     ServiceRequest().apply {
       id = UUID.randomUUID().toString()
       status = ServiceRequest.ServiceRequestStatus.COMPLETED
@@ -120,6 +124,7 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
           fhirPathDataExtractor = mockk(),
           parser = parser,
           context = ApplicationProvider.getApplicationContext(),
+          contentCache = contentCache,
         ),
       )
 

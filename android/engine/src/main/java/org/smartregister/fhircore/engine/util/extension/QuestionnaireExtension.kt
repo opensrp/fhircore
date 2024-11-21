@@ -20,24 +20,23 @@ import com.google.android.fhir.datacapture.extensions.asStringValue
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.datacapture.extensions.targetStructureMap
 import java.util.Locale
-import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.DateType
-import org.hl7.fhir.r4.model.DecimalType
-import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.IdType
-import org.hl7.fhir.r4.model.IntegerType
-import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseStatus
 import org.hl7.fhir.r4.model.StringType
-import org.hl7.fhir.r4.model.TimeType
-import org.hl7.fhir.r4.model.Type
-import org.hl7.fhir.r4.model.UriType
+import org.smartregister.fhircore.engine.configuration.LinkIdType
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.domain.model.isEditable
+import org.smartregister.fhircore.engine.domain.model.isReadOnly
+import org.smartregister.fhircore.engine.util.castToType
 
 fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
   if (this.linkId != null) {
@@ -176,7 +175,9 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
               (it.value is Coding) &&
                 if (actionParam.value.contains(",")) {
                   actionParam.value.split(",").contains((it.value as Coding).code)
-                } else actionParam.value == (it.value as Coding).code
+                } else {
+                  actionParam.value == (it.value as Coding).code
+                }
             }
             .forEach { it.initialSelected = true }
         } else {
@@ -194,19 +195,117 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
   }
 }
 
-/** Cast string value (including json string) to the FHIR {@link org.hl7.fhir.r4.model.Type} */
-fun String.castToType(type: DataType): Type? {
-  return when (type) {
-    DataType.BOOLEAN -> BooleanType(this)
-    DataType.DECIMAL -> DecimalType(this)
-    DataType.INTEGER -> IntegerType(this)
-    DataType.DATE -> DateType(this)
-    DataType.DATETIME -> DateTimeType(this)
-    DataType.TIME -> TimeType(this)
-    DataType.STRING -> StringType(this)
-    DataType.URI -> UriType(this)
-    DataType.CODING -> this.tryDecodeJson<Coding>()
-    DataType.QUANTITY -> this.tryDecodeJson<Quantity>()
-    else -> null // TODO cast the (several) remaining Enumeration.DataTypes
+/**
+ * Pre-populates questionnaire with computed values from the Rules engine as well as include initial
+ * values set on configured [QuestionnaireConfig.barcodeLinkId] or
+ * [QuestionnaireConfig.uniqueIdAssignment] properties.
+ */
+suspend fun Questionnaire.prepopulateWithComputedConfigValues(
+  questionnaireConfig: QuestionnaireConfig,
+  actionParameters: List<ActionParameter>?,
+  questionnaireConfigRulesComputeFunc: (List<RuleConfig>) -> Map<String, Any>,
+  extractUniqueIdAssignmentFunc: suspend (UniqueIdAssignmentConfig, Map<String, Any>) -> String,
+): Map<String, Any> {
+  require(questionnaireConfig.id.isNotBlank())
+
+  // Compute questionnaire config rules and add extra questionnaire params to action parameters
+
+  val questionnaireComputedValues =
+    questionnaireConfig.configRules?.let { questionnaireConfigRulesComputeFunc.invoke(it) }
+      ?: emptyMap()
+
+  val allActionParameters =
+    actionParameters?.plus(
+      questionnaireConfig.extraParams?.map { it.interpolate(questionnaireComputedValues) }
+        ?: emptyList(),
+    )
+
+  if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
+    item.prepareQuestionsForReadingOrEditing(
+      readOnly = questionnaireConfig.isReadOnly(),
+      readOnlyLinkIds =
+        questionnaireConfig.readOnlyLinkIds
+          ?: questionnaireConfig.linkIds
+            ?.filter { it.type == LinkIdType.READ_ONLY }
+            ?.map { it.linkId },
+    )
+  }
+
+  if (questionnaireConfig.isEditable()) {
+    item.prepareQuestionsForEditing(
+      readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds,
+    )
+  }
+
+  // Pre-populate questionnaire items with configured values
+  allActionParameters
+    ?.filter { (it.paramType == ActionParameterType.PREPOPULATE && it.value.isNotEmpty()) }
+    ?.let { actionParam -> item.prePopulateInitialValues(DEFAULT_PLACEHOLDER_PREFIX, actionParam) }
+
+  // Set barcode to the configured linkId default: "patient-barcode"
+  if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
+    (questionnaireConfig.barcodeLinkId
+        ?: questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
+      ?.let { barcodeLinkId ->
+        find(barcodeLinkId)?.apply {
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(questionnaireConfig.resourceIdentifier)),
+            ) // TODO should this be resource identifier or OpenSrp unique ID?
+          readOnly = true
+        }
+      }
+  }
+
+  prepopulateUniqueIdAssignment(
+    questionnaireConfig,
+    questionnaireComputedValues,
+    extractUniqueIdAssignmentFunc,
+  )
+
+  return questionnaireComputedValues
+}
+
+/** Pre-populates questionnaire with computed [QuestionnaireConfig.uniqueIdAssignment]. */
+suspend fun Questionnaire.prepopulateUniqueIdAssignment(
+  questionnaireConfig: QuestionnaireConfig,
+  questionnaireComputedValues: Map<String, Any>,
+  extractUniqueIdAssignmentFunc: suspend (UniqueIdAssignmentConfig, Map<String, Any>) -> String,
+) {
+  // Set configured OpenSRPId on Questionnaire
+  questionnaireConfig.uniqueIdAssignment?.let { uniqueIdAssignmentConfig ->
+    find(uniqueIdAssignmentConfig.linkId)?.apply {
+      if (initial.isNotEmpty() && !initial.first().isEmpty) return@apply
+
+      val extractedId =
+        extractUniqueIdAssignmentFunc(
+          questionnaireConfig.uniqueIdAssignment,
+          questionnaireComputedValues,
+        )
+      if (extractedId.isNotEmpty()) {
+        initial =
+          mutableListOf(
+            Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(extractedId)),
+          )
+      }
+      readOnly = extractedId.isNotEmpty() && uniqueIdAssignmentConfig.readOnly
+    }
+  }
+}
+
+/**
+ * Determines the [QuestionnaireResponse.Status] depending on the [saveDraft] and [isEditable]
+ * values contained in the [QuestionnaireConfig]
+ *
+ * returns [COMPLETED] when [isEditable] is [true] returns [INPROGRESS] when [saveDraft] is [true]
+ */
+fun QuestionnaireConfig.questionnaireResponseStatus(): String? {
+  return if (this.isEditable()) {
+    QuestionnaireResponseStatus.COMPLETED.toCode()
+  } else if (this.saveDraft) {
+    QuestionnaireResponseStatus.INPROGRESS.toCode()
+  } else {
+    null
   }
 }

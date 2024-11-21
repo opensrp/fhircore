@@ -27,7 +27,9 @@ import android.provider.Settings
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
@@ -38,6 +40,7 @@ import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.Serializable
 import javax.inject.Inject
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -46,6 +49,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
+import org.smartregister.fhircore.engine.domain.model.isSummary
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -57,6 +61,8 @@ import org.smartregister.fhircore.engine.util.location.LocationUtils
 import org.smartregister.fhircore.engine.util.location.PermissionUtils
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
+import org.smartregister.fhircore.quest.ui.shared.ActivityOnResultType
+import org.smartregister.fhircore.quest.ui.shared.ON_RESULT_TYPE
 import org.smartregister.fhircore.quest.util.ResourceUtils
 import timber.log.Timber
 
@@ -71,9 +77,30 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private var questionnaire: Questionnaire? = null
   private var alertDialog: AlertDialog? = null
   private lateinit var fusedLocationClient: FusedLocationProviderClient
-  var currentLocation: Location? = null
-  private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
-  private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+  private var currentLocation: Location? = null
+  private val locationPermissionLauncher: ActivityResultLauncher<Array<String>> =
+    registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+      permissions: Map<String, Boolean> ->
+      PermissionUtils.getLocationPermissionLauncher(
+        permissions = permissions,
+        onFineLocationPermissionGranted = { fetchLocation() },
+        onCoarseLocationPermissionGranted = { fetchLocation() },
+        onLocationPermissionDenied = {
+          showToast(
+            getString(R.string.location_permissions_denied),
+            Toast.LENGTH_SHORT,
+          )
+        },
+      )
+    }
+
+  private val activityResultLauncher: ActivityResultLauncher<Intent> =
+    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+      activityResult: ActivityResult ->
+      if (activityResult.resultCode == Activity.RESULT_OK) {
+        fetchLocation()
+      }
+    }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -122,46 +149,37 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  fun setupLocationServices() {
+  private fun setupLocationServices() {
     if (
       viewModel.applicationConfiguration.logGpsLocation.contains(LocationLogOptions.QUESTIONNAIRE)
     ) {
       fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
       if (!LocationUtils.isLocationEnabled(this)) {
-        openLocationServicesSettings()
+        showLocationSettingsDialog(
+          Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
+            putExtra(ON_RESULT_TYPE, ActivityOnResultType.LOCATION.name)
+          },
+        )
       }
 
-      if (!hasLocationPermissions()) {
-        launchLocationPermissionsDialog()
+      if (!PermissionUtils.hasLocationPermissions(this)) {
+        locationPermissionLauncher.launch(
+          arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+          ),
+        )
       }
 
-      if (LocationUtils.isLocationEnabled(this) && hasLocationPermissions()) {
-        fetchLocation(true)
+      if (
+        currentLocation == null &&
+          LocationUtils.isLocationEnabled(this) &&
+          PermissionUtils.hasLocationPermissions(this)
+      ) {
+        fetchLocation()
       }
     }
-  }
-
-  fun hasLocationPermissions(): Boolean {
-    return PermissionUtils.checkPermissions(
-      this,
-      listOf(
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-        Manifest.permission.ACCESS_FINE_LOCATION,
-      ),
-    )
-  }
-
-  fun openLocationServicesSettings() {
-    activityResultLauncher =
-      PermissionUtils.getStartActivityForResultLauncher(this) { resultCode, _ ->
-        if (resultCode == RESULT_OK || hasLocationPermissions()) {
-          fetchLocation()
-        }
-      }
-
-    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-    showLocationSettingsDialog(intent)
   }
 
   private fun showLocationSettingsDialog(intent: Intent) {
@@ -174,45 +192,21 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       .show()
   }
 
-  fun launchLocationPermissionsDialog() {
-    locationPermissionLauncher =
-      PermissionUtils.getLocationPermissionLauncher(
-        this,
-        onFineLocationPermissionGranted = { fetchLocation(true) },
-        onCoarseLocationPermissionGranted = { fetchLocation(false) },
-        onLocationPermissionDenied = {
-          Toast.makeText(
-              this,
-              getString(R.string.location_permissions_denied),
-              Toast.LENGTH_SHORT,
-            )
-            .show()
-          Timber.e("Location permissions denied")
-        },
-      )
-
-    locationPermissionLauncher.launch(
-      arrayOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-      ),
-    )
-  }
-
   fun fetchLocation(highAccuracy: Boolean = true) {
     lifecycleScope.launch {
       try {
-        if (highAccuracy) {
-          currentLocation = LocationUtils.getAccurateLocation(fusedLocationClient)
-        } else {
-          currentLocation = LocationUtils.getApproximateLocation(fusedLocationClient)
-        }
+        currentLocation =
+          async(dispatcherProvider.io()) {
+              if (highAccuracy) {
+                LocationUtils.getAccurateLocation(fusedLocationClient)
+              } else {
+                LocationUtils.getApproximateLocation(fusedLocationClient)
+              }
+            }
+            .await()
       } catch (e: Exception) {
         Timber.e(e, "Failed to get GPS location for questionnaire: ${questionnaireConfig.id}")
-      } finally {
-        if (currentLocation == null) {
-          this@QuestionnaireActivity.showToast("Failed to get GPS location", Toast.LENGTH_LONG)
-        }
+        showToast("Failed to get GPS location", Toast.LENGTH_LONG)
       }
     }
   }
@@ -223,59 +217,53 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   }
 
   private fun renderQuestionnaire() {
+    if (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) != null) return
+
     lifecycleScope.launch {
-      var questionnaireFragment: QuestionnaireFragment? = null
-      if (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) == null) {
-        viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(true))
-        with(viewBinding) {
-          questionnaireToolbar.apply {
-            setNavigationIcon(R.drawable.ic_arrow_back)
-            setNavigationOnClickListener { handleBackPress() }
-          }
-          questionnaireTitle.apply { text = questionnaireConfig.title }
-          clearAll.apply {
-            visibility = if (questionnaireConfig.showClearAll) View.VISIBLE else View.GONE
-            setOnClickListener { questionnaireFragment?.clearAllAnswers() }
-          }
-        }
+      viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(true))
 
-        questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig, actionParameters)
+      viewBinding.questionnaireToolbar.setNavigationIcon(R.drawable.ic_cancel)
+      viewBinding.questionnaireToolbar.setNavigationOnClickListener { handleBackPress() }
+      viewBinding.questionnaireTitle.text = questionnaireConfig.title
+      viewBinding.clearAll.visibility =
+        if (questionnaireConfig.showClearAll) View.VISIBLE else View.GONE
 
-        try {
-          val questionnaireFragmentBuilder =
-            buildQuestionnaireFragment(
-              questionnaire = questionnaire!!,
-              questionnaireConfig = questionnaireConfig,
-            )
+      questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig)
 
-          questionnaireFragment = questionnaireFragmentBuilder.build()
-          supportFragmentManager.commit {
-            setReorderingAllowed(true)
-            add(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
-          }
-
-          registerFragmentResultListener()
-        } catch (nullPointerException: NullPointerException) {
-          showToast(getString(R.string.questionnaire_not_found))
-          finish()
-        } finally {
-          viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
-        }
+      if (questionnaire == null) {
+        showToast(getString(R.string.questionnaire_not_found))
+        finish()
+        return@launch
       }
+      if (questionnaire!!.subjectType.isNullOrEmpty()) {
+        val subjectRequiredMessage = getString(R.string.missing_subject_type)
+        showToast(subjectRequiredMessage)
+        Timber.e(subjectRequiredMessage)
+        finish()
+        return@launch
+      }
+
+      val questionnaireFragment =
+        getQuestionnaireFragmentBuilder(
+            questionnaire = questionnaire!!,
+            questionnaireConfig = questionnaireConfig,
+          )
+          .build()
+      viewBinding.clearAll.setOnClickListener { questionnaireFragment.clearAllAnswers() }
+      supportFragmentManager.commit {
+        setReorderingAllowed(true)
+        add(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
+      }
+      registerFragmentResultListener()
+
+      viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
     }
   }
 
-  private suspend fun buildQuestionnaireFragment(
+  private suspend fun getQuestionnaireFragmentBuilder(
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig,
   ): QuestionnaireFragment.Builder {
-    if (questionnaire.subjectType.isNullOrEmpty()) {
-      val subjectRequiredMessage = getString(R.string.missing_subject_type)
-      showToast(subjectRequiredMessage)
-      Timber.e(subjectRequiredMessage)
-      finish()
-    }
-
     val (questionnaireResponse, launchContextResources) =
       viewModel.populateQuestionnaire(questionnaire, this.questionnaireConfig, actionParameters)
 
@@ -289,6 +277,8 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       )
       .showAsterisk(this.questionnaireConfig.showRequiredTextAsterisk)
       .showRequiredText(this.questionnaireConfig.showRequiredText)
+      .setIsReadOnly(questionnaireConfig.isSummary())
+      .setShowSubmitAnywayButton(questionnaireConfig.showSubmitAnywayButton.toBooleanStrict())
       .apply {
         if (questionnaireResponse != null) {
           questionnaireResponse
@@ -346,6 +336,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
                   putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
                   putExtra(QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS, idTypes as Serializable)
                   putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
+                  putExtra(ON_RESULT_TYPE, ActivityOnResultType.QUESTIONNAIRE.name)
                 },
               )
               finish()
@@ -369,16 +360,20 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         confirmButtonListener = {
           lifecycleScope.launch {
             retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
-              viewModel.saveDraftQuestionnaire(questionnaireResponse)
+              viewModel.saveDraftQuestionnaire(questionnaireResponse, questionnaireConfig)
+              finish()
             }
           }
         },
         confirmButtonText =
           org.smartregister.fhircore.engine.R.string
             .questionnaire_alert_back_pressed_save_draft_button_title,
-        neutralButtonListener = { finish() },
+        neutralButtonListener = {},
         neutralButtonText =
-          org.smartregister.fhircore.engine.R.string.questionnaire_alert_back_pressed_button_title,
+          org.smartregister.fhircore.engine.R.string.questionnaire_alert_neutral_button_title,
+        negativeButtonListener = { finish() },
+        negativeButtonText =
+          org.smartregister.fhircore.engine.R.string.questionnaire_alert_negative_button_title,
       )
     } else {
       AlertDialogue.showConfirmAlert(

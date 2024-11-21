@@ -49,7 +49,7 @@ class AppSettingActivity : AppCompatActivity() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  val appSettingViewModel: AppSettingViewModel by viewModels()
+  private val appSettingViewModel: AppSettingViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -75,7 +75,6 @@ class AppSettingActivity : AppCompatActivity() {
         loadConfigurations(appSettingActivity)
       }
     } else if (!BuildConfig.OPENSRP_APP_ID.isNullOrEmpty()) {
-      // this part simulates what the user would have done manually via the text field and button
       appSettingViewModel.onApplicationIdChanged(BuildConfig.OPENSRP_APP_ID)
       appSettingViewModel.fetchConfigurations(appSettingActivity)
     } else {

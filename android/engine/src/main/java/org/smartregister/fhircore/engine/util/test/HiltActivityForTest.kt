@@ -16,16 +16,31 @@
 
 package org.smartregister.fhircore.engine.util.test
 
+import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @ExcludeFromJacocoGeneratedReport
 @AndroidEntryPoint
 class HiltActivityForTest : AppCompatActivity(), OnSyncListener {
+  override fun onCreate(savedInstanceState: Bundle?) {
+    if (intent.hasExtra(THEME_EXTRAS_BUNDLE_KEY)) {
+      setTheme(intent.getIntExtra(THEME_EXTRAS_BUNDLE_KEY, R.style.AppTheme))
+    }
+
+    super.onCreate(savedInstanceState)
+  }
+
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     // DO nothing. This activity implements OnSyncListener for testing purposes
+  }
+
+  companion object {
+    const val THEME_EXTRAS_BUNDLE_KEY =
+      "org.smartregister.fhircore.engine.util.test.HiltActivityForTest.THEME_EXTRAS_BUNDLE_KEY"
   }
 }

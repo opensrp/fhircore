@@ -17,52 +17,22 @@
 package org.smartregister.fhircore.geowidget.screens
 
 import androidx.lifecycle.ViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import org.jetbrains.annotations.VisibleForTesting
-import org.json.JSONObject
-import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.geowidget.model.Feature
+import com.mapbox.geojson.Feature
+import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.ServicePointType
-import org.smartregister.fhircore.geowidget.util.extensions.getGeoJsonGeometry
-import org.smartregister.fhircore.geowidget.util.extensions.getProperties
-import timber.log.Timber
+import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment.Companion.MAP_FEATURES_LIMIT
 
-@HiltViewModel
-class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherProvider) :
-  ViewModel() {
+class GeoWidgetViewModel : ViewModel() {
 
-  private val _featuresFlow: MutableStateFlow<Set<com.mapbox.geojson.Feature>> =
-    MutableStateFlow(setOf())
-  val featuresFlow: StateFlow<Set<com.mapbox.geojson.Feature>> = _featuresFlow
+  val mapFeatures = ArrayDeque<Feature>()
 
-  @VisibleForTesting
-  fun addLocationToMap(feature: Feature) {
-    try {
-      val jsonFeature =
-        JSONObject().apply {
-          put("id", feature.id)
-          put("type", feature.type)
-          put("properties", feature.getProperties())
-          put("geometry", feature.getGeoJsonGeometry())
-          put("serverVersion", feature.serverVersion)
-        }
-      val mapBoxfeature = com.mapbox.geojson.Feature.fromJson(jsonFeature.toString())
-      _featuresFlow.value += mapBoxfeature
-    } catch (e: Exception) {
-      Timber.e(e)
+  fun updateMapFeatures(geoJsonFeatures: List<GeoJsonFeature>) {
+    if (mapFeatures.size <= MAP_FEATURES_LIMIT) {
+      mapFeatures.addAll(geoJsonFeatures.map { it.toFeature() })
     }
   }
 
-  fun addLocationsToMap(locations: Set<Feature>) {
-    locations.forEach { location -> addLocationToMap(location) }
-  }
-
-  fun clearLocations() {
-    _featuresFlow.value = setOf()
-  }
+  fun clearMapFeatures() = mapFeatures.clear()
 
   fun getServicePointKeyToType(): Map<String, ServicePointType> {
     val map: MutableMap<String, ServicePointType> = HashMap()
@@ -90,6 +60,12 @@ class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherP
     map[ServicePointType.BSD.name.lowercase()] = ServicePointType.BSD
     map[ServicePointType.MEN.name.lowercase()] = ServicePointType.MEN
     map[ServicePointType.DREN.name.lowercase()] = ServicePointType.DREN
+    map[ServicePointType.DISTRICT_PPSPF.name.lowercase()] = ServicePointType.DISTRICT_PPSPF
+    map[ServicePointType.MAIRIE.name.lowercase()] = ServicePointType.MAIRIE
+    map[ServicePointType.ECOLE_COMMUNAUTAIRE.name.lowercase()] =
+      ServicePointType.ECOLE_COMMUNAUTAIRE
+    map[ServicePointType.ECOLE_PRIVÉ.name.lowercase()] = ServicePointType.ECOLE_PRIVÉ
+    map[ServicePointType.LYCÉE.name.lowercase()] = ServicePointType.LYCÉE
     return map
   }
 }

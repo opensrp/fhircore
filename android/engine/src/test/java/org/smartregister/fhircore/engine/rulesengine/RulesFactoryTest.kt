@@ -17,9 +17,13 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.Called
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -29,6 +33,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -36,6 +41,8 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.ListResource
+import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
@@ -56,6 +63,7 @@ import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -64,6 +72,8 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
@@ -84,10 +94,14 @@ class RulesFactoryTest : RobolectricTest() {
   private lateinit var rulesFactory: RulesFactory
   private lateinit var rulesEngineService: RulesFactory.RulesEngineService
 
+  @Inject lateinit var fhirContext: FhirContext
+  private lateinit var defaultRepository: DefaultRepository
+
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltAndroidRule.inject()
+    defaultRepository = mockk(relaxed = true)
     rulesFactory =
       spyk(
         RulesFactory(
@@ -96,6 +110,8 @@ class RulesFactoryTest : RobolectricTest() {
           fhirPathDataExtractor = fhirPathDataExtractor,
           dispatcherProvider = dispatcherProvider,
           locationService = locationService,
+          fhirContext = fhirContext,
+          defaultRepository = defaultRepository,
         ),
       )
     rulesEngineService = rulesFactory.RulesEngineService()
@@ -284,6 +300,29 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun retrieveRelatedResourcesReturnsCorrectResourceWithForwardInclude() {
+    val patient = Faker.buildPatient()
+    val group =
+      Group().apply {
+        id = "grp1"
+        addMember(
+          Group.GroupMemberComponent().apply { entity = patient.asReference() },
+        )
+      }
+    populateFactsWithResources(group)
+    val result =
+      rulesEngineService.retrieveRelatedResources(
+        resource = group,
+        relatedResourceKey = ResourceType.Patient.name,
+        referenceFhirPathExpression = "Group.member.entity.reference",
+        isRevInclude = false,
+      )
+    Assert.assertEquals(1, result.size)
+    Assert.assertEquals("Patient", result[0].resourceType.name)
+    Assert.assertEquals(patient.logicalId, result[0].logicalId)
+  }
+
+  @Test
   fun retrieveRelatedResourcesWithoutReferenceReturnsResources() {
     populateFactsWithResources()
     val result =
@@ -410,7 +449,7 @@ class RulesFactoryTest : RobolectricTest() {
   @Test
   fun mapResourceToLabeledCSVReturnsCorrectLabels() {
     val fhirPathExpression = "Patient.active and (Patient.birthDate >= today() - 5 'years')"
-    val resource = Patient().setActive(true).setBirthDate(LocalDate.parse("2019-10-03").toDate())
+    val resource = Patient().setActive(true).setBirthDate(Date().plusYears(-5))
 
     val result = rulesEngineService.mapResourceToLabeledCSV(resource, fhirPathExpression, "CHILD")
     Assert.assertEquals("CHILD", result)
@@ -872,13 +911,16 @@ class RulesFactoryTest : RobolectricTest() {
     Assert.assertTrue(result.isEmpty())
   }
 
-  private fun populateFactsWithResources() {
+  private fun populateFactsWithResources(vararg resource: Resource = emptyArray()) {
     val carePlanRelatedResource = mutableListOf(Faker.buildCarePlan())
-    val patientRelatedResource = mutableListOf(Faker.buildPatient())
+    val patient = Faker.buildPatient()
+    val patientRelatedResource = mutableListOf(patient)
+
     val facts = ReflectionHelpers.getField<Facts>(rulesFactory, "facts")
     facts.apply {
       put(carePlanRelatedResource[0].resourceType.name, carePlanRelatedResource)
       put(patientRelatedResource[0].resourceType.name, patientRelatedResource)
+      resource.forEach { put(it.resourceType.name, it) }
     }
     ReflectionHelpers.setField(rulesFactory, "facts", facts)
   }
@@ -1015,5 +1057,309 @@ class RulesFactoryTest : RobolectricTest() {
     ) {
       rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
     }
+  }
+
+  @Test
+  fun testUpdateResourceWithNullResource() {
+    rulesEngineService.updateResource(null, "List.entry[0].item.reference", "new-ref")
+    verify { defaultRepository wasNot Called }
+  }
+
+  @Test
+  fun testUpdateResourceWithNullPath() {
+    val resource = ListResource().apply { id = "list1" }
+    rulesEngineService.updateResource(resource, null, "new-value")
+    verify { defaultRepository wasNot Called }
+  }
+
+  @Test
+  fun testUpdateResourceWithEmptyPath() {
+    val resource = ListResource().apply { id = "list1" }
+    rulesEngineService.updateResource(resource, "", "new-value")
+    verify { defaultRepository wasNot Called }
+  }
+
+  @Test
+  fun testUpdateResourceWithValidResourceAndPathAndPurgeAffectedResourcesIsTrue() {
+    val resource =
+      ListResource().apply {
+        id = "list1"
+        addEntry().apply { item.apply { reference = "old-ref" } }
+      }
+
+    runBlocking {
+      coEvery { defaultRepository.purge(any<Resource>(), any()) } returns Unit
+
+      rulesEngineService.updateResource(
+        resource = resource,
+        path = "List.entry[0].item.reference",
+        value = "Group/new-ref",
+        purgeAffectedResources = true,
+        createLocalChangeEntitiesAfterPurge = true,
+      )
+
+      coVerify {
+        defaultRepository.purge(
+          withArg {
+            Assert.assertEquals("Group/new-ref", (it as ListResource).entry[0].item.reference)
+          },
+          any(),
+        )
+      }
+
+      coVerify {
+        defaultRepository.addOrUpdate(
+          any(),
+          withArg {
+            Assert.assertEquals("Group/new-ref", (it as ListResource).entry[0].item.reference)
+          },
+        )
+      }
+    }
+  }
+
+  @Test
+  fun testUpdateResourceWithValidResourceAndPathAndPurgeAffectedResourcesIsTrueAndPathStartsWithDollarSign() {
+    val resource =
+      ListResource().apply {
+        id = "list1"
+        addEntry().apply { item.apply { reference = "old-ref" } }
+      }
+
+    runBlocking {
+      coEvery { defaultRepository.purge(any<Resource>(), any()) } returns Unit
+
+      rulesEngineService.updateResource(
+        resource = resource,
+        path = "$.entry[0].item.reference",
+        value = "Group/new-ref",
+        purgeAffectedResources = true,
+        createLocalChangeEntitiesAfterPurge = true,
+      )
+
+      coVerify {
+        defaultRepository.purge(
+          withArg {
+            Assert.assertEquals("Group/new-ref", (it as ListResource).entry[0].item.reference)
+          },
+          any(),
+        )
+      }
+
+      coVerify {
+        defaultRepository.addOrUpdate(
+          any(),
+          withArg {
+            Assert.assertEquals("Group/new-ref", (it as ListResource).entry[0].item.reference)
+          },
+        )
+      }
+    }
+  }
+
+  @Test
+  fun testUpdateResourceWithValidResourceAndPathAndPurgeAffectedResourcesAndCreateLocalChangeEntitiesAfterPurgeAreTrue() {
+    val resource =
+      ListResource().apply {
+        id = "list1"
+        addEntry().apply { item.apply { reference = "old-ref" } }
+      }
+
+    runBlocking {
+      coEvery { defaultRepository.purge(any<Resource>(), any()) } returns Unit
+      coEvery { defaultRepository.addOrUpdate(any(), any()) } returns Unit
+
+      rulesEngineService.updateResource(
+        resource = resource,
+        path = "List.entry[0].item.reference",
+        value = "Group/new-ref",
+        purgeAffectedResources = true,
+        createLocalChangeEntitiesAfterPurge = true,
+      )
+
+      coVerify {
+        defaultRepository.purge(
+          withArg {
+            Assert.assertEquals("Group/new-ref", (it as ListResource).entry[0].item.reference)
+          },
+          any(),
+        )
+      }
+
+      coVerify {
+        defaultRepository.addOrUpdate(
+          any(),
+          withArg {
+            Assert.assertEquals("Group/new-ref", (it as ListResource).entry[0].item.reference)
+          },
+        )
+      }
+    }
+  }
+
+  @Test
+  fun testUpdateResourceWithValidResourceAndPathAndPurgeAffectedResourcesIsFalseAndCreateLocalChangeEntitiesAfterPurgeIsTrue() {
+    val resource =
+      ListResource().apply {
+        id = "list1"
+        addEntry().apply { item.apply { reference = "old-ref" } }
+      }
+
+    runBlocking {
+      coEvery { defaultRepository.addOrUpdate(any(), any()) } returns Unit
+
+      rulesEngineService.updateResource(
+        resource = resource,
+        path = "List.entry[0].item.reference",
+        value = "Group/new-ref",
+        purgeAffectedResources = true,
+        createLocalChangeEntitiesAfterPurge = true,
+      )
+
+      coVerify {
+        defaultRepository.addOrUpdate(
+          any(),
+          withArg {
+            Assert.assertEquals("Group/new-ref", (it as ListResource).entry[0].item.reference)
+          },
+        )
+      }
+    }
+  }
+
+  @Test
+  fun testFilterResourcesByJsonPathWithNullResources() {
+    val results =
+      rulesEngineService.filterResourcesByJsonPath(null, "$.resourceType", "STRING", "Group", 0)
+    Assert.assertNull(results)
+  }
+
+  @Test
+  fun testFilterResourcesByJsonPathWithBlankResources() {
+    val results =
+      rulesEngineService.filterResourcesByJsonPath(listOf(), "$.resourceType", "STRING", "Group", 0)
+    Assert.assertNull(results)
+  }
+
+  @Test
+  fun testFilterResourcesByJsonPathWithBlankJsonPathExpression() {
+    val results =
+      rulesEngineService.filterResourcesByJsonPath(getListOfResource(), "", "STRING", "Group", 0)
+    Assert.assertNull(results)
+  }
+
+  @Test
+  fun testFilterResourcesByJsonPathWithInvalidJsonPathExpression() {
+    val results =
+      rulesEngineService.filterResourcesByJsonPath(
+        getListOfResource(),
+        "$.date",
+        "STRING",
+        "Group",
+        0,
+      )
+    Assert.assertNull(results)
+  }
+
+  @Test
+  fun testFilterResourcesByJsonPathWithInvalidDataType() {
+    val results =
+      rulesEngineService.filterResourcesByJsonPath(
+        getListOfResource(),
+        "$.resourceType",
+        "code",
+        "Group",
+        0,
+      )
+    Assert.assertEquals(0, results?.size)
+  }
+
+  @Test
+  fun testFilterResourcesByJsonPathFieldWithValidResourcesAndJsonPathExpressionAndDataTypeAndCompareToResultAndNonExistentValue() {
+    val results =
+      rulesEngineService.filterResourcesByJsonPath(
+        getListOfResource(),
+        "$.resourceType",
+        "STRING",
+        "Patient",
+        0,
+      )
+
+    Assert.assertEquals(0, results?.size)
+  }
+
+  @Test
+  fun testFilterResourcesByJsonPathFieldWithValidResourcesAndJsonPathExpressionAndDataTypeAndValueAndCompareToResult() {
+    val results =
+      rulesEngineService.filterResourcesByJsonPath(
+        getListOfResource(),
+        "$.resourceType",
+        "STRING",
+        "Group",
+        0,
+      )
+
+    Assert.assertEquals(2, results?.size)
+    with(results?.first() as Resource) {
+      Assert.assertEquals("group-id-1", id)
+      Assert.assertEquals("Group", resourceType.name)
+    }
+  }
+
+  @Test
+  fun mapResourcesToExtractedValuesReturnsCorrectlyFormattedString() {
+    val patientsList =
+      listOf(
+        Patient().apply {
+          birthDate = LocalDate.parse("2015-10-03").toDate()
+          addName().apply { family = "alpha" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2017-10-03").toDate()
+          addName().apply { family = "beta" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2018-10-03").toDate()
+          addName().apply { family = "gamma" }
+        },
+      )
+
+    val names =
+      rulesEngineService.mapResourcesToExtractedValues(patientsList, "Patient.name.family", " | ")
+    Assert.assertEquals("alpha | beta | gamma", names)
+  }
+
+  @Test
+  fun mapResourcesToExtractedValuesReturnsEmptyStringWhenFhirPathExpressionIsEmpty() {
+    val patientsList =
+      listOf(
+        Patient().apply {
+          birthDate = LocalDate.parse("2015-10-03").toDate()
+          addName().apply { family = "alpha" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2017-10-03").toDate()
+          addName().apply { family = "beta" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2018-10-03").toDate()
+          addName().apply { family = "gamma" }
+        },
+      )
+
+    val names = rulesEngineService.mapResourcesToExtractedValues(patientsList, "", " | ")
+    Assert.assertEquals("", names)
+  }
+
+  private fun getListOfResource(): List<Resource> {
+    return listOf(
+      Group().apply { id = "group-id-1" },
+      Location().apply { id = "location-id-1" },
+      ListResource().apply {
+        id = "list-id-1"
+        addEntry().apply { item.apply { reference = "Group/group-id-1" } }
+      },
+      Group().apply { id = "group-id-2" },
+    )
   }
 }

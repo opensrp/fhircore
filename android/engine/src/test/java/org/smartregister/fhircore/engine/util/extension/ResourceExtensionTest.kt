@@ -18,9 +18,6 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -28,6 +25,10 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import java.math.BigDecimal
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -35,6 +36,7 @@ import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Consent
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
@@ -59,6 +61,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.LinkIdConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -686,46 +689,6 @@ class ResourceExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun testGenerateMissingItemsFromQuestionnaireShouldNotThrowException() {
-    val patientRegistrationQuestionnaire =
-      "register-patient-missingitems/missingitem-questionnaire.json".readFile()
-    val patientRegistrationQuestionnaireResponse =
-      "register-patient-missingitems/missingitem-questionnaire-response.json".readFile()
-    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-    val questionnaire =
-      iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
-    val questionnaireResponse =
-      iParser.parseResource(
-        QuestionnaireResponse::class.java,
-        patientRegistrationQuestionnaireResponse,
-      )
-
-    questionnaire.item.generateMissingItems(questionnaireResponse.item)
-
-    Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
-  }
-
-  @Test
-  fun testGenerateMissingItemsFromQuestionnaireResponseShouldNotThrowException() {
-    val patientRegistrationQuestionnaire =
-      "register-patient-missingitems/missingitem-questionnaire.json".readFile()
-    val patientRegistrationQuestionnaireResponse =
-      "register-patient-missingitems/missingitem-questionnaire-response.json".readFile()
-    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-    val questionnaire =
-      iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
-    val questionnaireResponse =
-      iParser.parseResource(
-        QuestionnaireResponse::class.java,
-        patientRegistrationQuestionnaireResponse,
-      )
-
-    questionnaireResponse.generateMissingItems(questionnaire)
-
-    Assert.assertTrue(questionnaireResponse.item.size <= questionnaire.item.size)
-  }
-
-  @Test
   fun `prepareQuestionsForReadingOrEditing should set readOnly to true when passed`() {
     val questionnaire = Questionnaire()
     questionnaire.item.add(Questionnaire.QuestionnaireItemComponent().apply { linkId = "1" })
@@ -897,6 +860,13 @@ class ResourceExtensionTest : RobolectricTest() {
   }
 
   @Test
+  fun `test Organization Info Appended on Consent Resource`() {
+    val consent = Consent().apply { this.id = "123456" }
+    consent.appendOrganizationInfo(listOf("Organization/12345"))
+    Assert.assertEquals("Organization/12345", consent.organization.first().reference)
+  }
+
+  @Test
   fun `prepareQuestionsForEditing should set readOnly correctly when readOnlyLinkIds passed`() {
     val questionnaire = Questionnaire()
     questionnaire.item.add(Questionnaire.QuestionnaireItemComponent().apply { linkId = "1" })
@@ -907,5 +877,321 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertTrue(questionnaire.item[0].readOnly)
     Assert.assertFalse(questionnaire.item[1].readOnly)
     Assert.assertTrue(questionnaire.item[2].readOnly)
+  }
+
+  @Test
+  fun testExtractGenderShouldReturnMaleStringWhenPatientGenderIsMale() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.MALE }
+
+    Assert.assertEquals(
+      (ApplicationProvider.getApplicationContext() as Application).getString(R.string.male),
+      patient.extractGender(ApplicationProvider.getApplicationContext()),
+    )
+  }
+
+  @Test
+  fun testExtractGenderShouldReturnMaleStringWhenRelatedPersonGenderIsMale() {
+    val relatedPerson = RelatedPerson().apply { gender = Enumerations.AdministrativeGender.MALE }
+
+    Assert.assertEquals(
+      (ApplicationProvider.getApplicationContext() as Application).getString(R.string.male),
+      relatedPerson.extractGender(ApplicationProvider.getApplicationContext()),
+    )
+  }
+
+  @Test
+  fun testExtractGenderShouldReturnFemaleStringWhenPatientGenderIsFemale() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.FEMALE }
+
+    Assert.assertEquals(
+      (ApplicationProvider.getApplicationContext() as Application).getString(R.string.female),
+      patient.extractGender(ApplicationProvider.getApplicationContext()),
+    )
+  }
+
+  @Test
+  fun testExtractGenderShouldReturnOtherStringWhenPatientGenderIsOther() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.OTHER }
+
+    val applicationContext = (ApplicationProvider.getApplicationContext() as Application)
+
+    Assert.assertEquals(
+      applicationContext.getString(R.string.other),
+      patient.extractGender(applicationContext),
+    )
+  }
+
+  @Test
+  fun testExtractGenderShouldReturnUnknownStringWhenPatientGenderIsUnknown() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.UNKNOWN }
+
+    Assert.assertEquals(
+      (ApplicationProvider.getApplicationContext() as Application).getString(R.string.unknown),
+      patient.extractGender(ApplicationProvider.getApplicationContext()),
+    )
+  }
+
+  @Test
+  fun testExtractGenderShouldReturnNullWhenPatientGenderIsNull() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.NULL }
+
+    Assert.assertEquals("", patient.extractGender(ApplicationProvider.getApplicationContext()))
+  }
+
+  @Test
+  fun testExtractGenderShouldReturnNullWhenResourceDoesNotHaveGenderField() {
+    val resource = Task()
+
+    Assert.assertEquals("", resource.extractGender(ApplicationProvider.getApplicationContext()))
+  }
+
+  @Test
+  fun testTranslateMaleGender() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.MALE }
+    Assert.assertEquals(
+      "Male",
+      patient.gender.translateGender(ApplicationProvider.getApplicationContext()),
+    )
+  }
+
+  @Test
+  fun testTranslateFemaleGender() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.FEMALE }
+    Assert.assertEquals(
+      "Female",
+      patient.gender.translateGender(ApplicationProvider.getApplicationContext()),
+    )
+  }
+
+  @Test
+  fun testTranslateGenderReturnsUnknownWhenValeIsNotMaleOrFemale() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.OTHER }
+    Assert.assertEquals(
+      "Unknown",
+      patient.gender.translateGender(ApplicationProvider.getApplicationContext()),
+    )
+  }
+
+  private fun getDateFromDaysAgo(daysAgo: Long, localDateNow: LocalDate = LocalDate.now()): Date {
+    val localDate = localDateNow.minusDays(daysAgo)
+    return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant())
+  }
+
+  @Test
+  fun testGetAgeString() {
+    val expectedAge = "1y"
+    Assert.assertEquals(
+      expectedAge,
+      calculateAge(
+        getDateFromDaysAgo(365, LocalDate.of(2023, 4, 4)),
+        context,
+        LocalDate.of(2023, 4, 4),
+      ),
+    )
+
+    val expectedAge2 = "1y 1m"
+    // passing days value for 1y 1m
+    Assert.assertEquals(
+      expectedAge2,
+      calculateAge(
+        getDateFromDaysAgo(399, LocalDate.of(2023, 4, 4)),
+        context,
+        LocalDate.of(2023, 4, 4),
+      ),
+    )
+
+    val expectedAge3 = "1y"
+    // passing days value for 1y 1w
+    Assert.assertEquals(
+      expectedAge3,
+      calculateAge(
+        getDateFromDaysAgo(372, LocalDate.of(2023, 4, 4)),
+        context,
+        LocalDate.of(2023, 4, 4),
+      ),
+    )
+
+    val expectedAge4 = "1m"
+    Assert.assertEquals(
+      expectedAge4,
+      calculateAge(
+        getDateFromDaysAgo(32, LocalDate.of(2023, 4, 4)),
+        context,
+        LocalDate.of(2023, 4, 4),
+      ),
+    )
+
+    val expectedAge6 = "1w"
+    Assert.assertEquals(
+      expectedAge6,
+      calculateAge(
+        getDateFromDaysAgo(7, LocalDate.of(2023, 4, 4)),
+        context,
+        LocalDate.of(2023, 4, 4),
+      ),
+    )
+
+    val expectedAge7 = "1w 2d"
+    Assert.assertEquals(
+      expectedAge7,
+      calculateAge(
+        getDateFromDaysAgo(9, LocalDate.of(2023, 4, 4)),
+        context,
+        LocalDate.of(2023, 4, 4),
+      ),
+    )
+
+    val expectedAge8 = "3d"
+    Assert.assertEquals(
+      expectedAge8,
+      calculateAge(
+        getDateFromDaysAgo(3, LocalDate.of(2023, 4, 4)),
+        context,
+        LocalDate.of(2023, 4, 4),
+      ),
+    )
+
+    val expectedAge9 = "1y 2m"
+    Assert.assertEquals(
+      expectedAge9,
+      calculateAge(
+        getDateFromDaysAgo(450, LocalDate.of(2023, 4, 4)),
+        context,
+        LocalDate.of(2023, 4, 4),
+      ),
+    )
+
+    val expectedAge10 = "40y 3m"
+    Assert.assertNotEquals(
+      expectedAge10,
+      calculateAge(
+        getDateFromDaysAgo(14700, LocalDate.of(2023, 4, 4)),
+        context,
+        LocalDate.of(2023, 4, 4),
+      ),
+    )
+
+    val expectedAge11 = "40y"
+    Assert.assertEquals(
+      expectedAge11,
+      calculateAge(
+        getDateFromDaysAgo(14700, LocalDate.of(2023, 4, 4)),
+        context,
+        LocalDate.of(2023, 4, 4),
+      ),
+    )
+
+    val expectedAge12 = "0d"
+    // if difference b/w current date and DOB is O from extractAge extension
+    Assert.assertEquals(
+      expectedAge12,
+      calculateAge(
+        getDateFromDaysAgo(0, LocalDate.of(2023, 4, 4)),
+        context,
+        LocalDate.of(2023, 4, 4),
+      ),
+    )
+
+    val expectedAge13 = "1y 6m"
+    // passing days value for 1y 6m
+    Assert.assertEquals(
+      expectedAge13,
+      calculateAge(
+        getDateFromDaysAgo(550, LocalDate.of(2023, 4, 4)),
+        context,
+        LocalDate.of(2023, 4, 4),
+      ),
+    )
+
+    val expectedAge14 = "5y"
+    // passing days value for 5y
+    Assert.assertEquals(
+      expectedAge14,
+      calculateAge(
+        getDateFromDaysAgo(1826, LocalDate.of(2023, 4, 4)),
+        context,
+        LocalDate.of(2023, 4, 4),
+      ),
+    )
+  }
+
+  @Test
+  fun testGetAgeStringFor49DayPeriod() {
+    val expectedAge5 = "1m 3w"
+    Assert.assertEquals(
+      expectedAge5,
+      calculateAge(
+        getDateFromDaysAgo(49, LocalDate.of(2023, 4, 4)),
+        context,
+        LocalDate.of(2023, 4, 4),
+      ),
+    )
+  }
+
+  @Test
+  fun testExtractAgeReturnsCorrectDateStringForAPatient() {
+    val patient =
+      Patient().apply { birthDate = Calendar.getInstance().apply { add(Calendar.YEAR, -19) }.time }
+
+    Assert.assertEquals("19y", patient.extractAge(context))
+  }
+
+  @Test
+  fun testExtractAgeReturnsCorrectDateStringForARelatedPerson() {
+    val relatedPerson =
+      RelatedPerson().apply {
+        birthDate = Calendar.getInstance().apply { add(Calendar.YEAR, -21) }.time
+      }
+
+    Assert.assertEquals("21y", relatedPerson.extractAge(context))
+  }
+
+  @Test
+  fun testExtractAgeShouldReturnAnEmptyStringWhenResourceDoesNotHaveBirthDate() {
+    val resource = Task()
+
+    Assert.assertEquals("", resource.extractAge(context))
+  }
+
+  @Test
+  fun testExtractAgeShouldReturnAgeStringFromDaysWhenPatientHasBirthDate() {
+    val currentDate = LocalDate.now()
+    val oneYearAgo = currentDate.minusYears(1)
+
+    val calendar =
+      Calendar.getInstance().apply {
+        timeInMillis = oneYearAgo.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+      }
+
+    val patient = Patient().apply { birthDate = calendar.time }
+    Assert.assertEquals("1y", patient.extractAge(context))
+  }
+
+  @Test
+  fun extractBirthDateReturnsCorrectDateWhenResourceIsPatientAndHasAValidBirthDate() {
+    val resource = Patient().setBirthDate(org.joda.time.LocalDate.parse("2015-10-03").toDate())
+
+    Assert.assertEquals(
+      "03/10/2015",
+      resource.extractBirthDate()?.let { SimpleDateFormat("dd/MM/yyyy").format(it) },
+    )
+  }
+
+  @Test
+  fun extractBirthDateReturnsCorrectDateWhenResourceIsRelatedPersonAndHasAValidBirthDate() {
+    val resource =
+      RelatedPerson().setBirthDate(org.joda.time.LocalDate.parse("2015-10-03").toDate())
+
+    Assert.assertEquals(
+      "03/10/2015",
+      resource.extractBirthDate()?.let { SimpleDateFormat("dd/MM/yyyy").format(it) },
+    )
+  }
+
+  @Test
+  fun extractBirthDateReturnsNullWhenResourceDoesNotHaveABirthDateField() {
+    val resource = Task()
+
+    Assert.assertNull(resource.extractBirthDate())
   }
 }

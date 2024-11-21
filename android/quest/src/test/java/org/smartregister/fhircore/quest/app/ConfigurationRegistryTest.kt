@@ -119,7 +119,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
-    coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
 
     configurationRegistry.fetchNonWorkflowConfigResources()
     coVerify { configurationRegistry.addOrUpdate(any()) }
@@ -162,7 +161,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { configurationRegistry.fetchRemoteCompositionByAppId(any()) } returns composition
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
-    coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
     coEvery { fhirResourceDataSource.getResource("List?_id=123456") } returns bundle
 
     configurationRegistry.fetchNonWorkflowConfigResources()
@@ -202,7 +200,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
-    coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
     coEvery { fhirResourceDataSource.getResource("List?_id=123456&_page=1&_count=200") } returns
       bundle
 

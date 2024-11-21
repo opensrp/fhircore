@@ -32,12 +32,20 @@ import android.os.Parcelable
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.compose.ui.state.ToggleableState
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import java.io.Serializable
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.withContext
+import org.smartregister.fhircore.engine.datastore.dataFilterLocationIdsProtoStore
+import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
+import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
+import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
@@ -205,13 +213,6 @@ inline fun <reified T : Parcelable> Bundle.parcelable(key: String): T? =
   }
 
 @ExcludeFromJacocoGeneratedReport
-inline fun <reified T : Parcelable> Bundle.parcelableArrayList(key: String): ArrayList<T>? =
-  when {
-    SDK_INT >= 33 -> getParcelableArrayList(key, T::class.java)
-    else -> @Suppress("DEPRECATION") getParcelableArrayList(key)
-  }
-
-@ExcludeFromJacocoGeneratedReport
 inline fun <reified T : Serializable> Intent.serializable(key: String): T? =
   when {
     SDK_INT >= 33 -> getSerializableExtra(key, T::class.java)
@@ -224,3 +225,26 @@ inline fun <reified T : Parcelable> Intent.parcelableArrayList(key: String): Arr
     SDK_INT >= 33 -> getParcelableArrayListExtra(key, T::class.java)
     else -> @Suppress("DEPRECATION") getParcelableArrayListExtra(key)
   }
+
+suspend fun Context.retrieveRelatedEntitySyncLocationState(
+  multiSelectViewAction: MultiSelectViewAction,
+  filterToggleableStateOn: Boolean = true,
+): List<SyncLocationState> {
+  val selectedLocationStateMap =
+    withContext(Dispatchers.IO) {
+      val context = this@retrieveRelatedEntitySyncLocationState
+      when (multiSelectViewAction) {
+        MultiSelectViewAction.SYNC_DATA -> context.syncLocationIdsProtoStore.data.firstOrNull()
+        MultiSelectViewAction.FILTER_DATA ->
+          context.dataFilterLocationIdsProtoStore.data.firstOrNull()
+      }
+    }
+  return if (filterToggleableStateOn) {
+    selectedLocationStateMap?.values?.filter {
+      it.toggleableState == ToggleableState.On &&
+        selectedLocationStateMap[it.parentLocationId]?.toggleableState != ToggleableState.On
+    }
+  } else {
+    selectedLocationStateMap?.values?.toList()
+  } ?: emptyList()
+}

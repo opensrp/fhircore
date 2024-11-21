@@ -22,6 +22,7 @@ enum class QuestionnaireType {
   DEFAULT,
   EDIT,
   READ_ONLY,
+  SUMMARY,
 }
 
 fun QuestionnaireConfig.isDefault() =
@@ -32,3 +33,6 @@ fun QuestionnaireConfig.isEditable() =
 
 fun QuestionnaireConfig.isReadOnly() =
   QuestionnaireType.valueOf(this.type) == QuestionnaireType.READ_ONLY
+
+fun QuestionnaireConfig.isSummary() =
+  QuestionnaireType.valueOf(this.type) == QuestionnaireType.SUMMARY

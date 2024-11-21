@@ -45,9 +45,12 @@ class CompoundTextTest {
             primaryTextColor = "#000000",
             primaryTextFontWeight = TextFontWeight.SEMI_BOLD,
             padding = 16,
+            primaryTextBackgroundColor = "#FFA500",
+            textInnerPadding = 4,
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeTestRule.onNodeWithText("Full Name, Age").assertExists().assertIsDisplayed()
@@ -66,9 +69,11 @@ class CompoundTextTest {
             separator = ".",
             secondaryTextBackgroundColor = "#FFA500",
             fontSize = 18.0f,
+            textInnerPadding = 4,
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeTestRule.onNodeWithText("Yesterday").assertExists().assertIsDisplayed()

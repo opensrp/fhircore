@@ -1,0 +1,117 @@
+# PDF Generation
+
+## Overview
+The PDF generation feature is using the `HtmlPopulator` class that simplifies the process of dynamically populating HTML templates with data from a QuestionnaireResponse, making it easy to generate customized content based on user responses.
+
+The `HtmlPopulator` class is utilized by replacing custom tags with data from a QuestionnaireResponse. Currently supported tags are: `@is-not-empty`, `@answer-as-list`, `@answer`, `@submitted-date`, `@contains`, and `@is-questionnaire-submitted`.
+
+The `HtmlPopulator` class allows multiple QuestionnaireResponses to be populated into the HTML. Please use `questionnaireId/linkId` format to describe which linkId from which Questionnaire you want to retrieve the answer from.
+
+## Usage
+Below are examples of how each custom tag can be used in an HTML template and the expected output.
+
+### @is-not-empty
+
+#### Template HTML:
+``` html
+<p>@is-not-empty('questionnaireId/linkId')This content will be included if the answer exists.@is-not-empty('questionnaireId/linkId')</p>
+```
+
+#### Explanation:
+The `@is-not-empty` tag checks if there is an answer for the specified `linkId`. If an answer exists, the content within the tags will be included in the final HTML. If no answer exists, the content will be removed.
+
+### @answer-as-list
+
+#### Template HTML:
+``` html
+<ul>
+  @answer-as-list('questionnaireId/linkId')
+</ul>
+```
+
+#### Explanation:
+The `@answer-as-list` tag will be replaced with a list of answers for the specified `linkId`. Each answer will be wrapped in an `<li>` tag.
+
+### @answer
+
+#### Template HTML:
+``` html
+<p>The answer is: @answer('questionnaireId/linkId')</p>
+```
+
+#### Explanation:
+The `@answer tag` will be replaced with the answer for the specified `linkId`. If a date format is provided, the answer will be formatted accordingly.
+
+### @submitted-date
+
+#### Template HTML:
+``` html
+<p>Submitted on: @submitted-date('questionnaireId','MM/dd/yyyy')</p>
+```
+
+#### Explanation:
+The `@submitted-date` tag will be replaced with the formatted submission date from the specified `questionnaireId`. If no format is provided, a default date format will be used.
+
+### @contains
+
+#### Template HTML:
+``` html
+<p>@contains('questionnaireId/linkId', 'indicator')This content will be included if the indicator is found.@contains('questionnaireId/linkId', 'indicator')</p>
+```
+
+#### Explanation:
+The `@contains` tag checks if the specified `linkId` contains the given `indicator`. If the indicator is found, the content within the tags will be included in the final HTML. If the indicator is not found, the content will be removed.
+
+### @is-questionnaire-submitted
+
+#### Template HTML:
+``` html
+<p>@is-questionnaire-submitted('questionnaireId')This content will only show if the Questionnaire Response of the described Questionnaire exists.@is-questionnaire-submitted('questionnaireId')</p>
+```
+
+#### Explanation:
+The `@is-questionnaire-submitted` tag checks if the specified `questionnaireId` has been submitted i.e. the matching Questionnaire Response is passed to the HtmlPopulator class. If the Questionnaire Response is found, the content within the tags will be included in the final HTML. If the indicator is not found, the content will be removed.
+
+## Example
+
+### Input HTML Template
+``` html
+<html>
+  <body>
+    <p>@is-not-empty('Q123/name')Name: @answer('Q123/name')@is-not-empty('Q123/name')</p>
+    <p>Hobbies:</p>
+    <ul>
+      @answer-as-list('Q123/hobbies')
+    </ul>
+    <p>Submitted on: @submitted-date('Q123','yyyy-MM-dd')</p>
+    <p>@contains('Q123/age', '30')This person is 30 years old.@contains('Q123/age', '30')</p>
+  </body>
+</html>
+```
+
+### Populated HTML Output
+
+Assuming the QuestionnaireResponse has the following data:
+<ul>
+    <li>`name`: "John Doe"</li>
+    <li>`hobbies`: ["Reading", "Traveling", "Cooking"]</li>
+    <li>`age`: 30</li>
+    <li>`submitted date`: "2024-07-01"</li>
+</ul>
+
+The populated HTML will look like:
+``` html
+<html>
+  <body>
+    <p>Name: John Doe</p>
+    <p>Hobbies:</p>
+    <ul>
+      <li>Reading</li>
+      <li>Traveling</li>
+      <li>Cooking</li>
+    </ul>
+    <p>Submitted on: 2024-07-01</p>
+    <p>This person is 30 years old.</p>
+  </body>
+</html>
+```

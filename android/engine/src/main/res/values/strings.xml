@@ -1,5 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="sync">Manual Sync</string>
+    <string name="manual_sync">Manual Sync</string>
+    <string name="sync">Sync</string>
     <string name="language">Language</string>
     <string name="logout_as_user">Log out as </string>
     <string name="show_overdue">Show overdue</string>
@@ -14,6 +15,7 @@
     <string name="app_logo">Application logo</string>
     <string name="powered_by">Powered By</string>
     <string name="app_version">App version %1$d(%2$s)</string>
+    <string name="data_migration_version">Data migration version %1$s</string>
     <string name="last_sync">Last sync %1$s</string>
     <string name="login_text">LOGIN</string>
     <string name="login_call_fail_error_message">Failed to verify credentials from the server. Check your internet connection</string>
@@ -63,11 +65,12 @@
     <string name="error_saving_form">Error encountered cannot save form</string>
     <string name="form_progress_message">Processing data. Please wait</string>
     <string name="questionnaire_alert_back_pressed_message">Are you sure you want to go back?</string>
-    <string name="questionnaire_in_progress_alert_back_pressed_message">Are you sure you want to discard the answers?</string>
-    <string name="questionnaire_alert_back_pressed_title">Discard changes</string>
-    <string name="questionnaire_alert_back_pressed_button_title">Discard</string>
-    <string name="questionnaire_alert_back_pressed_save_draft_button_title">Save partial draft</string>
+    <string name="questionnaire_in_progress_alert_back_pressed_message">If you leave without saving, all your changes will not be saved</string>
+    <string name="questionnaire_alert_back_pressed_title">You have unsaved changes</string>
+    <string name="questionnaire_alert_back_pressed_button_title">Discard changes</string>
+    <string name="questionnaire_alert_back_pressed_save_draft_button_title">Save as draft</string>
     <string name="questionnaire_alert_neutral_button_title">Cancel</string>
+    <string name="questionnaire_alert_negative_button_title">Discard Changes</string>
     <string name="questionnaire_alert_confirm_button_title">Yes</string>
     <string name="questionnaire_alert_invalid_message">Given details have validation errors. Resolve errors and submit again</string>
     <string name="questionnaire_alert_invalid_title">Validation Failed</string>
@@ -77,7 +80,7 @@
     <string name="forgot_password">Forgot Password</string>
     <string name="forgot_password_title">Forgot Password!</string>
     <string name="more">More</string>
-    <string name="call_supervisor">Please call your supervisor at %1$s</string>
+    <string name="call_supervisor">Please contact your supervisor.</string>
     <string name="cancel" tools:ignore="ButtonCase">CANCEL</string>
     <string name="dial_number">DIAL NUMBER</string>
     <string name="register">Register</string>
@@ -111,7 +114,6 @@
     <string name="incorrect_pin_please_retry">Incorrect PIN, please try again</string>
     <string name="pin_menu_login">Login</string>
     <string name="forgot_pin">Forgot PIN?</string>
-    <string name="please_contact_supervisor">Please contact your supervisor.</string>
     <string name="percentage" translatable="false">%</string>
     <string name="logging_out">Logging out. Please wait…</string>
     <string name="session_expired">Session has been expired and must login again</string>
@@ -149,6 +151,7 @@
     <string name="weeks">Week(s)</string>
     <string name="days">Days(s)</string>
     <string name="initializing">Initializing settings &#8230;</string>
+    <string name="initializing_application">Initializing application &#8230;</string>
     <string name="username_sample" translatable="false">e.g JohnDoe</string>
     <string name="percentage_progress" translatable="false">%1$d%%</string>
     <string name="error_occurred">Something went wrong…</string>
@@ -184,5 +187,18 @@
     <string name="add">ADD</string>
     <string name="data_migration_started">Started data migration from version %1$d</string>
     <string name="data_migration_completed">Application data migrated to version %1$d</string>
+    <string name="help">Help</string>
     <string name="no_data">No data set</string>
+    <string name="sync_complete">Sync complete</string>
+    <string name="sync_error">Sync error</string>
+    <string name="minutes_remaining">Calculating minutes remaining…</string>
+    <string name="sync_up_inprogress"> %1$d%% Syncing up…</string>
+    <string name="sync_down_inprogress"> %1$d%% Syncing down…</string>
+    <string name="default_html_title">file</string>
+    <string name="retry">RETRY</string>
+    <string name="unsynced_data_present">There\'s some un-synced data</string>
+    <string name="missing_supervisor_contact">Supervisor contact missing or the provided phone number is invalid</string>
+    <string name="apply_filter">APPLY FILTER</string>
+    <string name="questionnaire_save_draft_title">Save draft changes</string>
+    <string name="questionnaire_save_draft_message">Do you want to save draft changes?</string>
 </resources>

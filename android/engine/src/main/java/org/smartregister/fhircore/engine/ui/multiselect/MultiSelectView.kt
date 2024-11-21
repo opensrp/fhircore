@@ -39,42 +39,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
-import java.util.LinkedList
+import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 
 @Composable
 fun <T> ColumnScope.MultiSelectView(
   rootTreeNode: TreeNode<T>,
-  selectedNodes: MutableMap<String, ToggleableState>,
+  syncLocationStateMap: MutableMap<String, SyncLocationState>,
   depth: Int = 0,
+  onChecked: () -> Unit,
   content: @Composable (TreeNode<T>) -> Unit,
 ) {
   val collapsedState = remember { mutableStateOf(false) }
   MultiSelectCheckbox(
-    selectedNodes = selectedNodes,
+    syncLocationStateMap = syncLocationStateMap,
     currentTreeNode = rootTreeNode,
     depth = depth,
     content = content,
     collapsedState = collapsedState,
+    onChecked = onChecked,
   )
   if (collapsedState.value) {
     rootTreeNode.children.forEach {
       MultiSelectView(
         rootTreeNode = it,
-        selectedNodes = selectedNodes,
+        syncLocationStateMap = syncLocationStateMap,
         depth = depth + 16,
         content = content,
+        onChecked = onChecked,
       )
     }
   }
 }
 
 @Composable
-fun <T> MultiSelectCheckbox(
-  selectedNodes: MutableMap<String, ToggleableState>,
+private fun <T> MultiSelectCheckbox(
+  syncLocationStateMap: MutableMap<String, SyncLocationState>,
   currentTreeNode: TreeNode<T>,
   depth: Int,
   content: @Composable (TreeNode<T>) -> Unit,
   collapsedState: MutableState<Boolean>,
+  onChecked: () -> Unit,
 ) {
   val checked = remember { mutableStateOf(false) }
   Column {
@@ -87,7 +91,9 @@ fun <T> MultiSelectCheckbox(
           imageVector =
             if (collapsedState.value) {
               Icons.Default.ArrowDropDown
-            } else Icons.AutoMirrored.Filled.ArrowRight,
+            } else {
+              Icons.AutoMirrored.Filled.ArrowRight
+            },
           contentDescription = null,
           tint = Color.Gray,
           modifier = Modifier.clickable { collapsedState.value = !collapsedState.value },
@@ -95,11 +101,18 @@ fun <T> MultiSelectCheckbox(
       }
 
       TriStateCheckbox(
-        state = selectedNodes[currentTreeNode.id] ?: ToggleableState.Off,
+        state = syncLocationStateMap[currentTreeNode.id]?.toggleableState ?: ToggleableState.Off,
         onClick = {
-          selectedNodes[currentTreeNode.id] =
-            ToggleableState(selectedNodes[currentTreeNode.id] != ToggleableState.On)
-          checked.value = selectedNodes[currentTreeNode.id] == ToggleableState.On
+          syncLocationStateMap[currentTreeNode.id] =
+            SyncLocationState(
+              currentTreeNode.id,
+              currentTreeNode.parent?.id,
+              ToggleableState(
+                syncLocationStateMap[currentTreeNode.id]?.toggleableState != ToggleableState.On,
+              ),
+            )
+          checked.value =
+            syncLocationStateMap[currentTreeNode.id]?.toggleableState == ToggleableState.On
 
           var toggleableState: ToggleableState
           var parent = currentTreeNode.parent
@@ -107,26 +120,30 @@ fun <T> MultiSelectCheckbox(
             toggleableState = ToggleableState.Indeterminate
             if (
               parent.children.all {
-                selectedNodes[it.id] == ToggleableState.Off || selectedNodes[it.id] == null
+                syncLocationStateMap[it.id]?.toggleableState == ToggleableState.Off ||
+                  syncLocationStateMap[it.id] == null
               }
             ) {
               toggleableState = ToggleableState.Off
             }
-            if (parent.children.all { selectedNodes[it.id] == ToggleableState.On }) {
+            if (
+              parent.children.all {
+                syncLocationStateMap[it.id]?.toggleableState == ToggleableState.On
+              }
+            ) {
               toggleableState = ToggleableState.On
             }
-            selectedNodes[parent.id] = toggleableState
+            syncLocationStateMap[parent.id] =
+              SyncLocationState(parent.id, parent.parent?.id, toggleableState)
             parent = parent.parent
           }
 
-          // Select all the nested checkboxes
-          val linkedList = LinkedList(currentTreeNode.children)
-
-          while (linkedList.isNotEmpty()) {
-            val currentNode = linkedList.removeFirst()
-            selectedNodes[currentNode.id] = ToggleableState(checked.value)
-            currentNode.children.forEach { linkedList.add(it) }
-          }
+          updateNestedCheckboxState(
+            currentTreeNode = currentTreeNode,
+            syncLocationStateMap = syncLocationStateMap,
+            checked = checked.value,
+          )
+          onChecked()
         },
         modifier = Modifier.padding(0.dp),
         colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colors.primary),
@@ -134,5 +151,28 @@ fun <T> MultiSelectCheckbox(
       )
       content(currentTreeNode)
     }
+  }
+}
+
+/**
+ * This function selects/deselects all the children for the [currentTreeNode] based on the value for
+ * the [checked] parameter. The states for the [MultiSelectCheckbox] is updated in the
+ * [syncLocationStateMap].
+ */
+fun <T> updateNestedCheckboxState(
+  currentTreeNode: TreeNode<T>,
+  syncLocationStateMap: MutableMap<String, SyncLocationState>,
+  checked: Boolean,
+) {
+  val treeNodeArrayDeque = ArrayDeque(currentTreeNode.children)
+  while (treeNodeArrayDeque.isNotEmpty()) {
+    val currentNode = treeNodeArrayDeque.removeFirst()
+    syncLocationStateMap[currentNode.id] =
+      SyncLocationState(
+        locationId = currentNode.id,
+        parentLocationId = currentNode.parent?.id,
+        toggleableState = ToggleableState(checked),
+      )
+    currentNode.children.forEach { treeNodeArrayDeque.addLast(it) }
   }
 }

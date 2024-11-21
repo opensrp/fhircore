@@ -22,7 +22,10 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -43,6 +46,34 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
   @Before
   fun setUp() {
     secureSharedPreference = spyk(SecureSharedPreference(application))
+  }
+
+  @Test
+  fun testInitEncryptedSharedPreferences() {
+    val result = secureSharedPreference.initEncryptedSharedPreferences()
+    Assert.assertNotNull(result)
+  }
+
+  @Test
+  fun testInitEncryptedSharedPreferencesHandlesException() {
+    every { secureSharedPreference.createEncryptedSharedPreferences() } throws
+      RuntimeException("Exception") andThenAnswer
+      {
+        callOriginal()
+      }
+
+    val result = secureSharedPreference.initEncryptedSharedPreferences()
+
+    Assert.assertNotNull(result)
+
+    verify(exactly = 2) { secureSharedPreference.createEncryptedSharedPreferences() }
+    verify(exactly = 1) { secureSharedPreference.resetSharedPrefs() }
+  }
+
+  @Test
+  fun testCreateEncryptedSharedPreferences() {
+    val result = secureSharedPreference.createEncryptedSharedPreferences()
+    Assert.assertNotNull(result)
   }
 
   @Test
@@ -73,9 +104,13 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
   }
 
   @Test
-  fun testSaveAndRetrievePin() {
+  fun testSaveAndRetrievePin() = runBlocking {
     every { secureSharedPreference.get256RandomBytes() } returns byteArrayOf(-100, 0, 100, 101)
-    secureSharedPreference.saveSessionPin(pin = "1234".toCharArray())
+
+    val onSavedPinMock = mockk<() -> Unit>(relaxed = true)
+    secureSharedPreference.saveSessionPin(pin = "1234".toCharArray(), onSavedPin = onSavedPinMock)
+
+    verify { onSavedPinMock.invoke() }
     Assert.assertEquals(
       "1234".toCharArray().toPasswordHash(byteArrayOf(-100, 0, 100, 101)),
       secureSharedPreference.retrieveSessionPin(),
@@ -85,10 +120,13 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
   }
 
   @Test
-  fun testResetSharedPrefsClearsData() {
+  fun testResetSharedPrefsClearsData() = runBlocking {
     every { secureSharedPreference.get256RandomBytes() } returns byteArrayOf(-128, 100, 112, 127)
 
-    secureSharedPreference.saveSessionPin(pin = "6699".toCharArray())
+    val onSavedPinMock = mockk<() -> Unit>(relaxed = true)
+    secureSharedPreference.saveSessionPin(pin = "6699".toCharArray(), onSavedPin = onSavedPinMock)
+
+    verify { onSavedPinMock.invoke() }
 
     val retrievedSessionPin = secureSharedPreference.retrieveSessionPin()
 

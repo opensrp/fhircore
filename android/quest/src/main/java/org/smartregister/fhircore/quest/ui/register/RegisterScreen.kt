@@ -16,10 +16,13 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
+import android.graphics.Bitmap
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -31,7 +34,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,19 +47,33 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import kotlinx.coroutines.flow.flowOf
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
+import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
+import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
+import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
+import org.smartregister.fhircore.quest.ui.shared.components.SyncBottomBar
+import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
+import org.smartregister.fhircore.quest.ui.shared.models.SearchMode
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val NO_REGISTER_VIEW_COLUMN_TEST_TAG = "noRegisterViewColumnTestTag"
@@ -74,39 +93,44 @@ fun RegisterScreen(
   openDrawer: (Boolean) -> Unit,
   onEvent: (RegisterEvent) -> Unit,
   registerUiState: RegisterUiState,
-  searchText: MutableState<String>,
+  registerUiCountState: RegisterUiCountState,
+  appDrawerUIState: AppDrawerUIState = AppDrawerUIState(),
+  onAppMainEvent: (AppMainEvent) -> Unit,
+  searchQuery: MutableState<SearchQuery>,
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   val lazyListState: LazyListState = rememberLazyListState()
-
   Scaffold(
     topBar = {
       Column {
-        /*
-         * Top section has toolbar and a results counts view
-         * by default isSearchBarVisible is visible
-         * */
         val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
           modifier = modifier.testTag(TOP_REGISTER_SCREEN_TEST_TAG),
           title =
             registerUiState.screenTitle.ifEmpty {
               registerUiState.registerConfiguration?.topScreenSection?.title ?: ""
-            }, // backward compatibility for screen title
-          searchText = searchText.value,
-          filteredRecordsCount = registerUiState.filteredRecordsCount,
+            },
+          searchQuery = searchQuery.value,
+          filteredRecordsCount = registerUiCountState.filteredRecordsCount,
           isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
+          placeholderColor = registerUiState.registerConfiguration?.searchBar?.placeholderColor,
+          showSearchByQrCode = registerUiState.registerConfiguration?.showSearchByQrCode ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
-          onSearchTextChanged = { searchText ->
-            onEvent(RegisterEvent.SearchRegister(searchText = searchText))
+          onSearchTextChanged = { uiSearchQuery, performSearchOnValueChanged ->
+            searchQuery.value = uiSearchQuery
+            if (performSearchOnValueChanged) {
+              onEvent(RegisterEvent.SearchRegister(searchQuery = uiSearchQuery))
+            }
           },
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
           topScreenSection = registerUiState.registerConfiguration?.topScreenSection,
           navController = navController,
+          decodeImage = decodeImage,
         ) { event ->
           when (event) {
             ToolbarClickEvent.Navigate ->
@@ -118,15 +142,10 @@ fun RegisterScreen(
               onEvent(RegisterEvent.ResetFilterRecordsCount)
               filterActions?.handleClickEvent(navController)
             }
-            is ToolbarClickEvent.Actions -> {
-              event.actions.handleClickEvent(
-                navController = navController,
-              )
-            }
+            is ToolbarClickEvent.Actions -> event.actions.handleClickEvent(navController)
           }
         }
-        // Only show counter during search
-        if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
+        if (!searchQuery.value.isBlank()) RegisterHeader(resultCount = pagingItems.itemCount)
       }
     },
     floatingActionButton = {
@@ -137,42 +156,78 @@ fun RegisterScreen(
           fabActions = fabActions,
           navController = navController,
           lazyListState = lazyListState,
+          decodeImage = decodeImage,
         )
       }
+    },
+    bottomBar = {
+      SyncBottomBar(
+        isFirstTimeSync = registerUiState.isFirstTimeSync,
+        appDrawerUIState = appDrawerUIState,
+        onAppMainEvent = onAppMainEvent,
+        openDrawer = openDrawer,
+      )
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       if (registerUiState.isFirstTimeSync) {
-        val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
         LoaderDialog(
           modifier = modifier.testTag(FIRST_TIME_SYNC_DIALOG),
-          percentageProgressFlow = registerUiState.progressPercentage,
+          percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress ?: 0),
           dialogMessage =
             stringResource(
-              id = if (isSyncUpload) R.string.syncing_up else R.string.syncing_down,
+              id =
+                if (appDrawerUIState.isSyncUpload == true) {
+                  R.string.syncing_up
+                } else {
+                  R.string.syncing_down
+                },
             ),
           showPercentageProgress = true,
         )
       }
-      if (
-        registerUiState.totalRecordsCount > 0 &&
-          registerUiState.registerConfiguration?.registerCard != null
-      ) {
-        RegisterCardList(
-          modifier = modifier.testTag(REGISTER_CARD_TEST_TAG),
-          registerCardConfig = registerUiState.registerConfiguration.registerCard,
-          pagingItems = pagingItems,
-          navController = navController,
-          lazyListState = lazyListState,
-          onEvent = onEvent,
-          registerUiState = registerUiState,
-          currentPage = currentPage,
-          showPagination = searchText.value.isEmpty(),
-        )
-      } else {
-        registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
-          NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {
-            noResultConfig.actionButton?.actions?.handleClickEvent(navController)
+
+      Column(modifier = Modifier.fillMaxSize()) {
+        Box(
+          modifier = Modifier.fillMaxWidth().background(Color.White).weight(1f),
+        ) {
+          if (registerUiState.registerConfiguration?.registerCard != null) {
+            RegisterCardList(
+              modifier = modifier.fillMaxSize().testTag(REGISTER_CARD_TEST_TAG),
+              registerCardConfig = registerUiState.registerConfiguration.registerCard,
+              pagingItems = pagingItems,
+              navController = navController,
+              lazyListState = lazyListState,
+              onEvent = onEvent,
+              registerUiState = registerUiState,
+              registerUiCountState = registerUiCountState,
+              currentPage = currentPage,
+              showPagination =
+                !registerUiState.registerConfiguration.infiniteScroll &&
+                  searchQuery.value.isBlank(),
+              onSearchByQrSingleResultAction = { resourceData ->
+                if (
+                  !searchQuery.value.isBlank() && searchQuery.value.mode == SearchMode.QrCodeScan
+                ) {
+                  registerUiState.registerConfiguration.onSearchByQrSingleResultValidActions
+                    ?.apply {
+                      handleClickEvent(
+                        navController,
+                        resourceData,
+                        context = navController.context,
+                      )
+                      searchQuery.value = searchQuery.value.copy(mode = SearchMode.KeyboardInput)
+                    }
+                }
+              },
+              decodeImage = decodeImage,
+            )
+          } else {
+            registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
+              NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {
+                noResultConfig.actionButton?.actions?.handleClickEvent(navController)
+              }
+            }
           }
         }
       }
@@ -224,15 +279,51 @@ fun NoRegisterDataView(
   }
 }
 
-@PreviewWithBackgroundExcludeGenerated
 @Composable
-private fun PreviewNoRegistersView() {
-  NoRegisterDataView(
-    noResults =
-      NoResultsConfig(
-        title = "Title",
-        message = "This is message",
-        actionButton = NavigationMenuConfig(display = "Button Text", id = "1"),
-      ),
-  ) {}
+@PreviewWithBackgroundExcludeGenerated
+fun RegisterScreenWithDataPreview() {
+  val registerUiState =
+    RegisterUiState(
+      screenTitle = "Sample Register",
+      isFirstTimeSync = false,
+      registerConfiguration =
+        RegisterConfiguration(
+          "app",
+          configType = ConfigType.Register.name,
+          id = "register",
+          fhirResource =
+            FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Patient)),
+        ),
+      registerId = "register101",
+      progressPercentage = flowOf(0),
+      isSyncUpload = flowOf(false),
+      params = emptyList(),
+    )
+
+  val registerUiCountState =
+    RegisterUiCountState(
+      totalRecordsCount = 1,
+      filteredRecordsCount = 0,
+      pagesCount = 1,
+    )
+  val searchText = remember { mutableStateOf(SearchQuery.emptyText) }
+  val currentPage = remember { mutableIntStateOf(0) }
+  val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
+  val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
+
+  AppTheme {
+    RegisterScreen(
+      modifier = Modifier,
+      openDrawer = {},
+      onEvent = {},
+      registerUiState = registerUiState,
+      registerUiCountState = registerUiCountState,
+      onAppMainEvent = {},
+      searchQuery = searchText,
+      currentPage = currentPage,
+      pagingItems = pagingItems,
+      navController = rememberNavController(),
+      decodeImage = null,
+    )
+  }
 }

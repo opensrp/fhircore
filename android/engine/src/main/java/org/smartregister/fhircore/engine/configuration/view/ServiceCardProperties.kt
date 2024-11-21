@@ -36,9 +36,11 @@ data class ServiceCardProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "true",
   override val visible: String = "true",
+  override val opacity: Float? = null,
   val details: List<CompoundTextProperties> = emptyList(),
   val showVerticalDivider: Boolean = false,
   val serviceMemberIcons: String? = null,
+  val serviceMemberIconsTint: String? = null,
   val serviceButton: ButtonProperties? = null,
   val services: List<ButtonProperties>? = null,
   val actions: List<ActionConfig> = emptyList(),
@@ -46,6 +48,7 @@ data class ServiceCardProperties(
   override fun interpolate(computedValuesMap: Map<String, Any>): ServiceCardProperties {
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      serviceMemberIconsTint = serviceMemberIconsTint?.interpolate(computedValuesMap),
       visible = visible.interpolate(computedValuesMap),
       serviceMemberIcons = serviceMemberIcons?.interpolate(computedValuesMap),
       clickable = clickable.interpolate(computedValuesMap),

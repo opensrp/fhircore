@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.integration.ui.shared.components
 
 import android.graphics.Bitmap
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -88,6 +89,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule.onNodeWithText("Upcoming household service").assertExists().assertIsDisplayed()
@@ -113,6 +115,7 @@ class ViewGeneratorTest {
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule
@@ -139,6 +142,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule
@@ -171,6 +175,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule
@@ -203,6 +208,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule.onNodeWithTag(COLUMN_DIVIDER_TEST_TAG).assertExists()
@@ -256,6 +262,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule.onNodeWithText("Richard Brown, M, 29", useUnmergedTree = true).assertDoesNotExist()
@@ -283,6 +290,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule
@@ -315,6 +323,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule
@@ -341,6 +350,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule.onNodeWithText("Sex").assertIsDisplayed()
@@ -358,6 +368,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule
@@ -369,17 +380,20 @@ class ViewGeneratorTest {
   @Test
   fun testImageIsRenderedFromDecodedBitmap() {
     composeRule.setContent {
+      val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+      decodedImageMap["testImageReference"] = Bitmap.createBitmap(100, 16, Bitmap.Config.ARGB_8888)
       GenerateView(
         properties =
           ImageProperties(
             imageConfig =
               ImageConfig(
                 ICON_TYPE_REMOTE,
-                decodedBitmap = Bitmap.createBitmap(100, 16, Bitmap.Config.ARGB_8888),
+                reference = "testImageReference",
               ),
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = { reference -> decodedImageMap[reference] },
       )
     }
     composeRule
@@ -406,6 +420,7 @@ class ViewGeneratorTest {
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeRule

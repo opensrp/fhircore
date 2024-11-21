@@ -63,6 +63,7 @@ class ExtendedFabTest {
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = TestNavHostController(LocalContext.current),
         lazyListState = null,
+        decodeImage = null,
       )
     }
   }
@@ -90,6 +91,7 @@ class ExtendedFabTest {
         resourceData = null,
         navController = TestNavHostController(LocalContext.current),
         lazyListState = null,
+        decodeImage = null,
       )
     }
     composeRule
@@ -127,8 +129,8 @@ class ExtendedFabTest {
 
   @Test
   fun testFloatingButtonWhenAnimateIsFalse() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
-      composeRule.mainClock.autoAdvance = false
       ExtendedFab(
         fabActions =
           listOf(
@@ -150,6 +152,7 @@ class ExtendedFabTest {
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = TestNavHostController(LocalContext.current),
         lazyListState = null,
+        decodeImage = null,
       )
     }
     composeRule.run {
@@ -165,8 +168,8 @@ class ExtendedFabTest {
 
   @Test
   fun testFloatingButtonWhenAnimateIsTrue() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
-      composeRule.mainClock.autoAdvance = false
       ExtendedFab(
         fabActions =
           listOf(
@@ -188,6 +191,7 @@ class ExtendedFabTest {
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = TestNavHostController(LocalContext.current),
         lazyListState = null,
+        decodeImage = null,
       )
     }
     composeRule.run {

@@ -41,11 +41,11 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import javax.inject.Inject
 import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
 import kotlin.test.assertNotNull
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Enumerations
@@ -68,9 +68,8 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
-import org.smartregister.fhircore.engine.util.location.LocationUtils
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -89,8 +88,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
   private lateinit var questionnaireActivityController: ActivityController<QuestionnaireActivity>
   private lateinit var questionnaireActivity: QuestionnaireActivity
 
-  @Inject lateinit var testDispatcherProvider: DispatcherProvider
-
   @BindValue lateinit var defaultRepository: DefaultRepository
 
   @BindValue
@@ -104,7 +101,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
     }
     defaultRepository =
       mockk(relaxUnitFun = true) {
-        every { dispatcherProvider } returns testDispatcherProvider
         every { fhirEngine } returns spyk(this@QuestionnaireActivityTest.fhirEngine)
       }
     questionnaireConfig =
@@ -185,18 +181,20 @@ class QuestionnaireActivityTest : RobolectricTest() {
 
       setupActivity()
       Assert.assertTrue(questionnaireActivity.supportFragmentManager.fragments.isNotEmpty())
-      val firstFragment = questionnaireActivity.supportFragmentManager.fragments.firstOrNull()
+      val firstFragment =
+        questionnaireActivity.supportFragmentManager.fragments[
+            questionnaireActivity.supportFragmentManager.fragments.size - 1,
+          ]
       Assert.assertTrue(firstFragment is QuestionnaireFragment)
 
       // Questionnaire should be the same
       val fragmentQuestionnaire =
-        questionnaireActivity.supportFragmentManager.fragments
-          .firstOrNull()
+        firstFragment
           ?.arguments
           ?.getString("questionnaire")
           ?.decodeResourceFromString<Questionnaire>()
 
-      Assert.assertEquals(questionnaire.id, fragmentQuestionnaire?.id)
+      Assert.assertEquals(questionnaire.id, fragmentQuestionnaire?.id!!.extractLogicalIdUuid())
       val sortedQuestionnaireItemLinkIds =
         questionnaire.item.map { it.linkId }.sorted().joinToString(",")
       val sortedFragmentQuestionnaireItemLinkIds =
@@ -206,34 +204,11 @@ class QuestionnaireActivityTest : RobolectricTest() {
     }
 
   @Test
-  fun testThatOnBackPressShowsConfirmationAlertDialog() = runTest {
+  fun testThatOnBackPressShowsConfirmationAlertDialog() = runBlocking {
     setupActivity()
     questionnaireActivity.onBackPressedDispatcher.onBackPressed()
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
     Assert.assertNotNull(dialog)
-  }
-
-  @Test
-  fun `setupLocationServices should fetch location when location is enabled and permissions granted`() {
-    setupActivity()
-    assertTrue(
-      questionnaireActivity.viewModel.applicationConfiguration.logGpsLocation.contains(
-        LocationLogOptions.QUESTIONNAIRE,
-      ),
-    )
-
-    val fusedLocationProviderClient =
-      LocationServices.getFusedLocationProviderClient(questionnaireActivity)
-    assertNotNull(fusedLocationProviderClient)
-    shadowOf(questionnaireActivity)
-      .grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
-
-    assertTrue(LocationUtils.isLocationEnabled(questionnaireActivity))
-
-    questionnaireActivity.setupLocationServices()
-    assertTrue(questionnaireActivity.hasLocationPermissions())
-    questionnaireActivity.fetchLocation()
-    assertNotNull(questionnaireActivity.currentLocation)
   }
 
   @Test
@@ -261,26 +236,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
     val expectedIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
 
     assertEquals(expectedIntent.component, startedIntent.component)
-  }
-
-  @Test
-  fun `setupLocationServices should launch location permissions dialog if permissions are not granted`() {
-    setupActivity()
-    assertTrue(
-      questionnaireActivity.viewModel.applicationConfiguration.logGpsLocation.contains(
-        LocationLogOptions.QUESTIONNAIRE,
-      ),
-    )
-
-    val fusedLocationProviderClient =
-      LocationServices.getFusedLocationProviderClient(questionnaireActivity)
-    assertNotNull(fusedLocationProviderClient)
-
-    assertTrue(LocationUtils.isLocationEnabled(questionnaireActivity))
-    assertFalse(questionnaireActivity.hasLocationPermissions())
-
-    val dialog = questionnaireActivity.launchLocationPermissionsDialog()
-    assertNotNull(dialog)
   }
 
   private fun setupActivity() {

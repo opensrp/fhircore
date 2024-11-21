@@ -21,9 +21,10 @@ import androidx.work.impl.utils.taskexecutor.TaskExecutor
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.AcceptLocalConflictResolver
 import com.google.android.fhir.sync.ParamMap
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
@@ -41,13 +42,13 @@ class AppSyncWorkerTest : RobolectricTest() {
 
     every { taskExecutor.serialTaskExecutor } returns mockk()
     every { workerParams.taskExecutor } returns taskExecutor
-    every { syncListenerManager.loadSyncParams() } returns syncParams
+    coEvery { syncListenerManager.loadResourceSearchParams() } returns syncParams
 
     val appSyncWorker =
       AppSyncWorker(mockk(), workerParams, syncListenerManager, fhirEngine, timeContext)
 
     appSyncWorker.getDownloadWorkManager()
-    verify { syncListenerManager.loadSyncParams() }
+    coVerify { syncListenerManager.loadResourceSearchParams() }
 
     Assert.assertEquals(AcceptLocalConflictResolver, appSyncWorker.getConflictResolver())
     Assert.assertEquals(fhirEngine, appSyncWorker.getFhirEngine())

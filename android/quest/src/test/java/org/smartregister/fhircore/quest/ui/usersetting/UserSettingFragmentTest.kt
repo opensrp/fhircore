@@ -22,6 +22,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.WorkManager
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -37,6 +38,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -54,6 +56,9 @@ class UserSettingFragmentTest : RobolectricTest() {
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var workManager: WorkManager
+
   private val navController = TestNavHostController(ApplicationProvider.getApplicationContext())
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private val resourceService: FhirResourceService = mockk()
@@ -65,6 +70,7 @@ class UserSettingFragmentTest : RobolectricTest() {
   private lateinit var userSettingViewModel: UserSettingViewModel
   private lateinit var accountAuthenticator: AccountAuthenticator
   private lateinit var secureSharedPreference: SecureSharedPreference
+  private lateinit var preferenceDataStore: PreferenceDataStore
 
   init {
     sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
@@ -79,12 +85,14 @@ class UserSettingFragmentTest : RobolectricTest() {
     accountAuthenticator = mockk()
     secureSharedPreference = mockk()
     sharedPreferencesHelper = mockk()
+    preferenceDataStore = mockk()
     syncBroadcaster =
       SyncBroadcaster(
         configurationRegistry,
         fhirEngine = mockk(),
         dispatcherProvider = dispatcherProvider,
         syncListenerManager = mockk(relaxed = true),
+        workManager = workManager,
         context = application,
       )
 
@@ -95,6 +103,7 @@ class UserSettingFragmentTest : RobolectricTest() {
         accountAuthenticator = accountAuthenticator,
         secureSharedPreference = secureSharedPreference,
         sharedPreferencesHelper = sharedPreferencesHelper,
+        preferenceDataStore = preferenceDataStore,
         configurationRegistry = configurationRegistry,
         workManager = mockk(relaxed = true),
         dispatcherProvider = dispatcherProvider,

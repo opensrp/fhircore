@@ -51,6 +51,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.app.SettingsOptions
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -78,6 +79,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
   lateinit var fhirEngine: FhirEngine
   private var sharedPreferencesHelper: SharedPreferencesHelper
   private var configService: ConfigService
@@ -113,6 +115,7 @@ class UserSettingViewModelTest : RobolectricTest() {
           fhirEngine = mockk(),
           dispatcherProvider = dispatcherProvider,
           syncListenerManager = mockk(relaxed = true),
+          workManager = workManager,
           context = context,
         ),
       )
@@ -125,6 +128,7 @@ class UserSettingViewModelTest : RobolectricTest() {
           accountAuthenticator = accountAuthenticator,
           secureSharedPreference = secureSharedPreference,
           sharedPreferencesHelper = sharedPreferencesHelper,
+          preferenceDataStore = preferenceDataStore,
           configurationRegistry = configurationRegistry,
           workManager = workManager,
           dispatcherProvider = dispatcherProvider,

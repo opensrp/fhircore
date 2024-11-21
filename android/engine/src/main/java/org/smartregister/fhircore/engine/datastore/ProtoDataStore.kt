@@ -30,16 +30,15 @@ import org.smartregister.fhircore.engine.datastore.serializers.LocationCoordinat
 import org.smartregister.fhircore.engine.datastore.serializers.PractitionerDetailsDataStoreSerializer
 import org.smartregister.fhircore.engine.datastore.serializers.SyncLocationIdDataStoreSerializer
 import org.smartregister.fhircore.engine.datastore.serializers.UserInfoDataStoreSerializer
-import org.smartregister.fhircore.engine.domain.model.SyncLocationToggleableState
+import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import timber.log.Timber
 
 private const val PRACTITIONER_DETAILS_DATASTORE_JSON = "practitioner_details.json"
 private const val USER_INFO_DATASTORE_JSON = "user_info.json"
-
 private const val LOCATION_COORDINATES_DATASTORE_JSON = "location_coordinates.json"
-
 private const val SYNC_LOCATION_IDS = "sync_location_ids.json"
+private const val DATA_FILTER_LOCATION_IDS = "data_filter_location_ids.json"
 
 val Context.practitionerProtoStore: DataStore<PractitionerDetails> by
   dataStore(
@@ -59,9 +58,14 @@ val Context.locationCoordinatesDatastore: DataStore<LocationCoordinate> by
     serializer = LocationCoordinatesSerializer,
   )
 
-val Context.syncLocationIdsProtoStore: DataStore<List<SyncLocationToggleableState>> by
+val Context.syncLocationIdsProtoStore: DataStore<Map<String, SyncLocationState>> by
   dataStore(
     fileName = SYNC_LOCATION_IDS,
+    serializer = SyncLocationIdDataStoreSerializer,
+  )
+val Context.dataFilterLocationIdsProtoStore: DataStore<Map<String, SyncLocationState>> by
+  dataStore(
+    fileName = DATA_FILTER_LOCATION_IDS,
     serializer = SyncLocationIdDataStoreSerializer,
   )
 

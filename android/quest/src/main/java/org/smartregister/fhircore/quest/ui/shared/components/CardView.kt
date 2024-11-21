@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -58,6 +59,7 @@ fun CardView(
   viewProperties: CardViewProperties,
   resourceData: ResourceData,
   navController: NavController,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   // Check if card is visible
   if (viewProperties.visible.toBoolean()) {
@@ -109,6 +111,7 @@ fun CardView(
             viewProperties = viewProperties.content,
             resourceData = resourceData,
             navController = navController,
+            decodeImage = decodeImage,
           )
         }
       }
@@ -147,6 +150,7 @@ private fun CardViewWithoutPaddingPreview() {
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodeImage = null,
     )
   }
 }
@@ -183,6 +187,7 @@ private fun CardViewWithPaddingPreview() {
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodeImage = null,
     )
   }
 }
@@ -205,6 +210,7 @@ private fun CardViewWithoutPaddingAndHeaderPreview() {
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodeImage = null,
     )
   }
 }
@@ -272,6 +278,7 @@ private fun CardViewImageWithItems() {
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodeImage = null,
     )
   }
 }

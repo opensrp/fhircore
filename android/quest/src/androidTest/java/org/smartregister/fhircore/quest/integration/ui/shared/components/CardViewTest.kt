@@ -44,6 +44,7 @@ class CardViewTest {
         viewProperties = viewProperties,
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodeImage = null,
       )
     }
     composeTestRule.onNodeWithText("IMMUNIZATIONS").assertIsDisplayed()

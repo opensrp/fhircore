@@ -49,7 +49,7 @@ class SummaryBottomSheetFragment(
       setContent {
         AppTheme {
           SummaryBottomSheetView(
-            properties = summaryBottomSheetConfig.views!!,
+            properties = summaryBottomSheetConfig.views ?: emptyList(),
             resourceData = resourceData,
             navController = findNavController(),
           )

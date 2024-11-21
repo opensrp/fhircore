@@ -16,7 +16,9 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -46,5 +48,86 @@ class QuestionnaireResponseExtensionTest {
     Assert.assertNull(item1.text)
     val item2 = item1.itemFirstRep
     Assert.assertNull(item2.text)
+  }
+
+  @Test
+  fun testQuestionnaireResponsePackingRepeatedGroups() {
+    val unPackedRepeatingGroupQuestionnaireResponse =
+      QuestionnaireResponse().apply {
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType("page-1")).apply {
+            addItem(
+              QuestionnaireResponse.QuestionnaireResponseItemComponent(
+                  StringType("repeating-group"),
+                )
+                .apply {
+                  addItem(
+                    QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType("bp"))
+                      .apply {
+                        addAnswer(
+                          QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                            value =
+                              IntegerType(
+                                124,
+                              )
+                          },
+                        )
+                      },
+                  )
+                },
+            )
+
+            addItem(
+              QuestionnaireResponse.QuestionnaireResponseItemComponent(
+                  StringType("repeating-group"),
+                )
+                .apply {
+                  addItem(
+                    QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType("bp"))
+                      .apply {
+                        addAnswer(
+                          QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                            value =
+                              IntegerType(
+                                104,
+                              )
+                          },
+                        )
+                      },
+                  )
+                },
+            )
+
+            addItem(
+              QuestionnaireResponse.QuestionnaireResponseItemComponent(
+                  StringType("repeating-group"),
+                )
+                .apply {
+                  addItem(
+                    QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType("bp"))
+                      .apply {
+                        addAnswer(
+                          QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                            value =
+                              IntegerType(
+                                138,
+                              )
+                          },
+                        )
+                      },
+                  )
+                },
+            )
+          },
+        )
+      }
+    Assert.assertEquals(3, unPackedRepeatingGroupQuestionnaireResponse.itemFirstRep.item.size)
+    val packedRepeatingGroupsQuestionnaireResponse =
+      unPackedRepeatingGroupQuestionnaireResponse.copy().apply { this.packRepeatedGroups() }
+    Assert.assertEquals(1, packedRepeatingGroupsQuestionnaireResponse.itemFirstRep.item.size)
+    Assert.assertEquals(
+      3,
+      packedRepeatingGroupsQuestionnaireResponse.itemFirstRep.itemFirstRep.answer.size,
+    )
   }
 }

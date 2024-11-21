@@ -16,13 +16,14 @@
 
 package org.smartregister.fhircore.engine.configuration.navigation
 
-import android.graphics.Bitmap
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.util.extension.interpolate
+
+const val ICON_TYPE_LOCAL = "local"
+const val ICON_TYPE_REMOTE = "remote"
 
 @Serializable
 @Parcelize
@@ -46,7 +47,6 @@ data class ImageConfig(
   val alpha: Float = 1.0f,
   val imageType: ImageType = ImageType.SVG,
   val contentScale: ContentScaleType = ContentScaleType.FIT,
-  @Contextual var decodedBitmap: Bitmap? = null,
 ) : Parcelable, java.io.Serializable {
   fun interpolate(computedValuesMap: Map<String, Any>): ImageConfig {
     return this.copy(
@@ -55,9 +55,6 @@ data class ImageConfig(
     )
   }
 }
-
-const val ICON_TYPE_LOCAL = "local"
-const val ICON_TYPE_REMOTE = "remote"
 
 enum class ImageType {
   JPEG,

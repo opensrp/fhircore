@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -70,6 +71,7 @@ fun GenerateView(
   properties: ViewProperties,
   resourceData: ResourceData,
   navController: NavController,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   if (properties.visible.toBoolean()) {
     when (properties.viewType) {
@@ -86,6 +88,7 @@ fun GenerateView(
           buttonProperties = properties as ButtonProperties,
           resourceData = resourceData,
           navController = navController,
+          decodeImage = decodeImage,
         )
       ViewType.COLUMN -> {
         val children = (properties as ColumnProperties).children
@@ -108,6 +111,7 @@ fun GenerateView(
                 properties = properties,
                 resourceData = resourceData,
                 navController = navController,
+                decodeImage = decodeImage,
               )
             }
           }
@@ -130,11 +134,7 @@ fun GenerateView(
                 .conditional(
                   properties.clickable.toBoolean(),
                   {
-                    clickable {
-                      (properties as RowProperties)
-                        .actions
-                        .handleClickEvent(navController, resourceData)
-                    }
+                    clickable { properties.actions.handleClickEvent(navController, resourceData) }
                   },
                 ),
             verticalArrangement =
@@ -150,6 +150,7 @@ fun GenerateView(
                 properties = child.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
                 navController = navController,
+                decodeImage = decodeImage,
               )
               if (properties.showDivider.toBoolean() && index < children.lastIndex) {
                 Divider(
@@ -183,6 +184,7 @@ fun GenerateView(
                 properties = properties.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
                 navController = navController,
+                decodeImage = decodeImage,
               )
             }
           }
@@ -205,11 +207,7 @@ fun GenerateView(
                 .conditional(
                   properties.clickable.toBoolean(),
                   {
-                    clickable {
-                      (properties as RowProperties)
-                        .actions
-                        .handleClickEvent(navController, resourceData)
-                    }
+                    clickable { properties.actions.handleClickEvent(navController, resourceData) }
                   },
                 ),
             horizontalArrangement =
@@ -225,6 +223,7 @@ fun GenerateView(
                 properties = child.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
                 navController = navController,
+                decodeImage = decodeImage,
               )
             }
           }
@@ -236,6 +235,7 @@ fun GenerateView(
           serviceCardProperties = properties as ServiceCardProperties,
           resourceData = resourceData,
           navController = navController,
+          decodeImage = decodeImage,
         )
       ViewType.CARD ->
         CardView(
@@ -243,6 +243,7 @@ fun GenerateView(
           viewProperties = properties as CardViewProperties,
           resourceData = resourceData,
           navController = navController,
+          decodeImage = decodeImage,
         )
       ViewType.PERSONAL_DATA ->
         PersonalDataView(
@@ -261,6 +262,7 @@ fun GenerateView(
           viewProperties = properties as ListProperties,
           resourceData = resourceData,
           navController = navController,
+          decodeImage = decodeImage,
         )
       ViewType.IMAGE ->
         Image(
@@ -268,6 +270,7 @@ fun GenerateView(
           imageProperties = properties as ImageProperties,
           resourceData = resourceData,
           navController = navController,
+          decodeImage = decodeImage,
         )
       ViewType.STACK ->
         StackView(
@@ -275,6 +278,7 @@ fun GenerateView(
           stackViewProperties = properties as StackViewProperties,
           resourceData = resourceData,
           navController = navController,
+          decodeImage = decodeImage,
         )
     }
   }
@@ -325,5 +329,13 @@ fun generateModifier(viewProperties: ViewProperties): Modifier =
 private fun Modifier.applyCommonProperties(viewProperties: ViewProperties): Modifier =
   this.conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
     .conditional(viewProperties.fillMaxHeight, { fillMaxHeight() })
-    .background(viewProperties.backgroundColor.parseColor())
+    .background(
+      viewProperties.backgroundColor.parseColor().let { baseColor ->
+        if (viewProperties.opacity != null) {
+          baseColor.copy(alpha = viewProperties.opacity!!.toFloat())
+        } else {
+          baseColor
+        }
+      },
+    )
     .clip(RoundedCornerShape(viewProperties.borderRadius.dp))

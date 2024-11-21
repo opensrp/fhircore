@@ -32,5 +32,6 @@ fun SummaryBottomSheetView(
     viewProperties = properties,
     resourceData = resourceData,
     navController = navController,
+    decodeImage = null,
   )
 }

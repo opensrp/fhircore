@@ -51,4 +51,6 @@ sealed class AppMainEvent {
   ) : AppMainEvent()
 
   data class SyncData(val context: Context) : AppMainEvent()
+
+  data class CancelSyncData(val context: Context) : AppMainEvent()
 }

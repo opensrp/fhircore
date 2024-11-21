@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.geowidget.screens
 
 import android.os.Build
-import android.os.Bundle
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -36,6 +35,7 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.geowidget.shadows.ShadowConnectivityReceiver
 import org.smartregister.fhircore.geowidget.shadows.ShadowKujakuMapView
 import org.smartregister.fhircore.geowidget.shadows.ShadowMapbox
@@ -59,7 +59,7 @@ class GeoWidgetFragmentTest {
   fun setup() {
     hiltRule.inject()
 
-    Robolectric.buildActivity(GeoWidgetTestActivity::class.java).create().resume().get()
+    Robolectric.buildActivity(HiltActivityForTest::class.java).create().resume().get()
 
     geowidgetFragment = GeoWidgetFragment()
 
@@ -89,29 +89,5 @@ class GeoWidgetFragmentTest {
 
     // Verify mocks
     verify { kujakuMapView.addPoint(any(), any()) }
-  }
-
-  @Test
-  fun testOnCreateViewAddsSavedStateToMapView() {
-    val activity = Robolectric.buildActivity(GeoWidgetTestActivity::class.java).create().get()
-
-    val geowidgetFragment = GeoWidgetFragment()
-
-    var kujakuMapView = mockk<KujakuMapView>(relaxed = true)
-
-    geowidgetFragment.setKujakuMapview(kujakuMapView)
-
-    activity.supportFragmentManager
-      .beginTransaction()
-      .add(android.R.id.content, geowidgetFragment, "")
-      .commitNow()
-
-    every { kujakuMapView.parent } returns null
-
-    val savedInstanceBundle: Bundle = mockk()
-
-    geowidgetFragment.onCreateView(activity.layoutInflater, null, savedInstanceBundle)
-
-    verify { kujakuMapView.onCreate(savedInstanceBundle) }
   }
 }

@@ -25,7 +25,6 @@ import com.google.android.fhir.SearchResult
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Search
-import com.google.common.reflect.TypeToken
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -46,10 +45,10 @@ import org.hl7.fhir.r4.model.Composition.SectionComponent
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -71,6 +70,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.KnowledgeManagerUtil
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getPayload
@@ -773,7 +773,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
-  fun testThatNextIsInvokedWhenItExistsInABundleLink() = runTest {
+  fun testThatNextIsInvokedWhenItExistsInABundleLink() {
     val appId = "theAppId"
     val compositionSections = mutableListOf<SectionComponent>()
     compositionSections.add(
@@ -804,14 +804,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
           },
         )
       }
+    val nextPageUrlLink = bundle.getLink(PAGINATION_NEXT).url
 
     val finalBundle =
       Bundle().apply { entry = listOf(BundleEntryComponent().setResource(listResource)) }
 
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
-    fhirEngine.create(composition)
-
+    runBlocking { fhirEngine.create(composition) }
     coEvery {
       fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
     } returns Bundle().apply { addEntry().resource = composition }
@@ -823,8 +823,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     } returns bundle
 
-    val nextPageUrlLink = bundle.getLink(PAGINATION_NEXT).url
-
     coEvery {
       fhirResourceDataSource.getResourceWithGatewayModeHeader(
         "list-entries",
@@ -832,7 +830,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     } returns finalBundle
 
-    configRegistry.fetchNonWorkflowConfigResources()
+    runBlocking { configRegistry.fetchNonWorkflowConfigResources() }
 
     coVerify {
       fhirResourceDataSource.getResourceWithGatewayModeHeader(
@@ -1022,38 +1020,21 @@ class ConfigurationRegistryTest : RobolectricTest() {
     }
 
   @Test
-  fun testSaveSyncSharedPreferencesShouldVerifyDataSave() {
-    val resourceType =
-      listOf(ResourceType.Task, ResourceType.Patient, ResourceType.Task, ResourceType.Patient)
-
-    configRegistry.saveSyncSharedPreferences(resourceType)
-
-    val savedSyncResourcesResult =
-      configRegistry.sharedPreferencesHelper.read(
-        SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-        null,
-      )!!
-    val listResourceTypeToken = object : TypeToken<List<ResourceType>>() {}.type
-    val savedSyncResourceTypes: List<ResourceType> =
-      configRegistry.sharedPreferencesHelper.gson.fromJson(
-        savedSyncResourcesResult,
-        listResourceTypeToken,
-      )
-
-    assertEquals(2, savedSyncResourceTypes.size)
-    assertEquals(ResourceType.Task, savedSyncResourceTypes.first())
-    assertEquals(ResourceType.Patient, savedSyncResourceTypes.last())
-  }
-
-  @Test
   fun writeToFileWithMetadataResourceWithNameShouldCreateFileWithResourceName() {
     val parser = fhirContext.newJsonParser()
-    val resource = Faker.buildPatient()
-    val resultFile = configRegistry.writeToFile(resource)
+    val resource = StructureMap().apply { id = "structuremap-id-1" }
+    val resultFile =
+      KnowledgeManagerUtil.writeToFile(
+        configService = configService,
+        metadataResource = resource,
+        context = context,
+        subFilePath =
+          "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/${resource.resourceType}/${resource.idElement.idPart}.json",
+      )
     assertNotNull(resultFile)
     assertEquals(
       resource.logicalId,
-      (parser.parseResource(resultFile.readText()) as Patient).logicalId,
+      (parser.parseResource(resultFile.readText()) as StructureMap).logicalId,
     )
   }
 

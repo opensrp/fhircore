@@ -39,12 +39,15 @@ data class ListProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   override val visible: String = "true",
+  override val opacity: Float? = null,
   val id: String = "listId",
   val registerCard: RegisterCardConfig,
   val showDivider: Boolean = true,
   val emptyList: NoResultsConfig? = null,
   val orientation: ListOrientation = ListOrientation.VERTICAL,
-  val resources: List<ListResource> = emptyList(),
+  val resources: List<ListResourceConfig> = emptyList(),
+  val spacerHeight: Int = 6,
+  val enableTopBottomSpacing: Boolean = true,
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): ListProperties {
     return this.copy(
@@ -61,12 +64,13 @@ enum class ListOrientation {
 
 @Serializable
 @Parcelize
-data class ListResource(
+data class ListResourceConfig(
   val id: String? = null,
   val relatedResourceId: String? = null,
   val resourceType: ResourceType,
   val conditionalFhirPathExpression: String? = null,
   val sortConfig: SortConfig? = null,
   val fhirPathExpression: String? = null,
-  val relatedResources: List<ListResource> = emptyList(),
+  val relatedResources: List<ListResourceConfig> = emptyList(),
+  val isRevInclude: Boolean = true,
 ) : Parcelable, java.io.Serializable

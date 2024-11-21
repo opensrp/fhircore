@@ -17,27 +17,19 @@
 package org.smartregister.fhircore.engine.sync
 
 import android.content.Context
-import androidx.compose.ui.state.ToggleableState
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.download.ResourceSearchParams
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.lang.ref.WeakReference
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.SearchParameter
-import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
@@ -55,14 +47,6 @@ constructor(
   @ApplicationContext val context: Context,
   val dispatcherProvider: DefaultDispatcherProvider,
 ) {
-  private val appConfig by lazy {
-    configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-      ConfigType.Application,
-    )
-  }
-  private val syncConfig by lazy {
-    configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
-  }
 
   private val _onSyncListeners = mutableListOf<WeakReference<OnSyncListener>>()
   val onSyncListeners: List<OnSyncListener>
@@ -75,16 +59,18 @@ constructor(
    * [Lifecycle.State.DESTROYED]
    */
   fun registerSyncListener(onSyncListener: OnSyncListener, lifecycle: Lifecycle) {
-    _onSyncListeners.add(WeakReference(onSyncListener))
-    Timber.w("${onSyncListener::class.simpleName} registered to receive sync state events")
-    lifecycle.addObserver(
-      object : DefaultLifecycleObserver {
-        override fun onStop(owner: LifecycleOwner) {
-          super.onStop(owner)
-          deregisterSyncListener(onSyncListener)
-        }
-      },
-    )
+    if (_onSyncListeners.find { it.get() == onSyncListener } == null) {
+      _onSyncListeners.add(WeakReference(onSyncListener))
+      Timber.w("${onSyncListener::class.simpleName} registered to receive sync state events")
+      lifecycle.addObserver(
+        object : DefaultLifecycleObserver {
+          override fun onDestroy(owner: LifecycleOwner) {
+            super.onDestroy(owner)
+            deregisterSyncListener(onSyncListener)
+          }
+        },
+      )
+    }
   }
 
   /**
@@ -98,96 +84,16 @@ constructor(
     }
   }
 
-  /** Retrieve registry sync params */
-  fun loadSyncParams(): Map<ResourceType, Map<String, String>> {
-    val pairs = mutableListOf<Pair<ResourceType, MutableMap<String, String>>>()
-
-    val organizationResourceTag =
-      configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
-
-    val mandatoryTags = configService.provideResourceTags(sharedPreferencesHelper)
-
-    val relatedResourceTypes: List<String>? =
-      sharedPreferencesHelper.read(SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name)
-
-    // TODO Does not support nested parameters i.e. parameters.parameters...
-    // TODO: expressionValue supports for Organization and Publisher literals for now
-    syncConfig.parameter
-      .map { it.resource as SearchParameter }
-      .forEach { sp ->
-        val paramName = sp.name // e.g. organization
-        val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
-        val paramExpression = sp.expression
-        val expressionValue =
-          when (paramName) {
-            // TODO: Does not support multi organization yet,
-            // https://github.com/opensrp/fhircore/issues/1550
-            ConfigurationRegistry.ORGANIZATION ->
-              mandatoryTags
-                .firstOrNull {
-                  it.display.contentEquals(organizationResourceTag?.tag?.display, ignoreCase = true)
-                }
-                ?.code
-            ConfigurationRegistry.ID -> paramExpression
-            ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
-            else -> null
-          }?.let {
-            // replace the evaluated value into expression for complex expressions
-            // e.g. #organization -> 123
-            // e.g. patient.organization eq #organization -> patient.organization eq 123
-            paramExpression?.replace(paramLiteral, it)
-          }
-
-        // for each entity in base create and add param map
-        // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital
-        // ],..]
-        if (relatedResourceTypes.isNullOrEmpty()) {
-            sp.base.mapNotNull { it.code }
-          } else {
-            relatedResourceTypes
-          }
-          .forEach { clinicalResource ->
-            val resourceType = ResourceType.fromCode(clinicalResource)
-            val pair = pairs.find { it.first == resourceType }
-            if (pair == null) {
-              pairs.add(
-                Pair(
-                  resourceType,
-                  expressionValue?.let { mutableMapOf(sp.code to expressionValue) }
-                    ?: mutableMapOf(),
-                ),
-              )
-            } else {
-              expressionValue?.let {
-                // add another parameter if there is a matching resource type
-                // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105,
-                // _count=100})]
-                val updatedPair = pair.second.apply { put(sp.code, expressionValue) }
-                val index = pairs.indexOfFirst { it.first == resourceType }
-                pairs.set(index, Pair(resourceType, updatedPair))
-              }
-            }
-          }
-      }
-
-    // Set sync locations Location query params
-    runBlocking {
-      context.syncLocationIdsProtoStore.data
-        .firstOrNull()
-        ?.filter { it.toggleableState == ToggleableState.On }
-        ?.map { it.locationId }
-        .takeIf { !it.isNullOrEmpty() }
-        ?.let { locationIds ->
-          pairs.forEach { it.second[SYNC_LOCATION_IDS] = locationIds.joinToString(",") }
-        }
-    }
-
-    Timber.i("SYNC CONFIG $pairs")
-
-    return mapOf(*pairs.toTypedArray())
-  }
-
-  companion object {
-    private const val SYNC_LOCATION_IDS = "_syncLocations"
+  /**
+   * This function is used to retrieve search parameters for the various [ResourceType]'s synced by
+   * the application. The function returns a pair of maps, one contains the the custom Resource
+   * types and the other returns the supported FHIR [ResourceType]s. The [OpenSrpDownloadManager]
+   * does not support downloading of custom resource, a separate worker is implemented instead to
+   * download the custom resources.
+   */
+  suspend fun loadResourceSearchParams(): ResourceSearchParams {
+    val (_, resourceSearchParams) = configurationRegistry.loadResourceSearchParams()
+    Timber.i("FHIR resource sync parameters $resourceSearchParams")
+    return resourceSearchParams
   }
 }

@@ -16,9 +16,12 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
+import android.graphics.Bitmap
+import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,19 +30,37 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.math.ceil
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.CodeType
+import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.DecimalType
 import org.hl7.fhir.r4.model.Enumerations.DataType
+import org.hl7.fhir.r4.model.IntegerType
+import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.TimeType
+import org.hl7.fhir.r4.model.UriType
+import org.hl7.fhir.r4.model.UrlType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -51,6 +72,7 @@ import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
+import org.smartregister.fhircore.engine.domain.model.NestedSearchConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
@@ -61,9 +83,12 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
+import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
+import org.smartregister.fhircore.quest.util.extensions.referenceToBitmap
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class RegisterViewModel
 @Inject
@@ -71,28 +96,52 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val dispatcherProvider: DispatcherProvider,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
 
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
   val registerUiState = mutableStateOf(RegisterUiState())
+  val registerUiCountState = mutableStateOf(RegisterUiCountState())
   val currentPage: MutableState<Int> = mutableIntStateOf(0)
-  val searchText = mutableStateOf("")
-  val paginatedRegisterData: MutableStateFlow<Flow<PagingData<ResourceData>>> =
-    MutableStateFlow(emptyFlow())
+  val registerData: MutableStateFlow<Flow<PagingData<ResourceData>>> = MutableStateFlow(emptyFlow())
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
   val registerFilterState = mutableStateOf(RegisterFilterState())
   private val _totalRecordsCount = mutableLongStateOf(0L)
   private val _filteredRecordsCount = mutableLongStateOf(-1L)
   private lateinit var registerConfiguration: RegisterConfiguration
-  private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
+  private var completeRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
-
+  private val _currentSyncJobStatusFlow: MutableSharedFlow<CurrentSyncJobStatus?> =
+    MutableSharedFlow(0)
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
+  }
+  private val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+
+  private val _searchQueryFlow: MutableSharedFlow<SearchQuery> = MutableSharedFlow()
+
+  @VisibleForTesting
+  val debouncedSearchQueryFlow =
+    _searchQueryFlow.debounce {
+      val searchText = it.query
+      when (searchText.length) {
+        0 -> 2.milliseconds // when search is cleared
+        1,
+        2, -> 1000.milliseconds
+        else -> 500.milliseconds
+      }
+    }
+
+  init {
+    viewModelScope.launch {
+      debouncedSearchQueryFlow.collect {
+        val registerId = registerUiState.value.registerId
+        performSearch(registerId, it)
+      }
+    }
   }
 
   /**
@@ -107,9 +156,9 @@ constructor(
   ) {
     if (clearCache) {
       pagesDataCache.clear()
-      allPatientRegisterData = null
+      completeRegisterData = null
     }
-    paginatedRegisterData.value =
+    registerData.value =
       pagesDataCache.getOrPut(currentPage.value) {
         getPager(registerId, loadAll).flow.cachedIn(viewModelScope)
       }
@@ -118,7 +167,7 @@ constructor(
   private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, ResourceData> {
     val currentRegisterConfigs = retrieveRegisterConfiguration(registerId)
     val ruleConfigs = currentRegisterConfigs.registerCard.rules
-    val pageSize = currentRegisterConfigs.pageSize // Default 10
+    val pageSize = currentRegisterConfigs.pageSize
 
     return Pager(
       config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
@@ -128,7 +177,7 @@ constructor(
             resourceDataRulesExecutor = resourceDataRulesExecutor,
             ruleConfigs = ruleConfigs,
             fhirResourceConfig = registerFilterState.value.fhirResourceConfig,
-            actionParameters = registerUiState.value.params,
+            actionParameters = registerUiState.value.params.toTypedArray().toParamDataMap(),
           )
           .apply {
             setPatientPagingSourceState(
@@ -150,60 +199,221 @@ constructor(
     // Ensures register configuration is initialized once
     if (!::registerConfiguration.isInitialized) {
       registerConfiguration =
-        configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramMap)
+        configurationRegistry.retrieveConfiguration(
+          ConfigType.Register,
+          registerId,
+          paramMap,
+        )
     }
     return registerConfiguration
   }
 
-  private fun retrieveAllPatientRegisterData(registerId: String): Flow<PagingData<ResourceData>> {
-    // Ensure that we only initialize this flow once
-    if (allPatientRegisterData == null) {
-      allPatientRegisterData = getPager(registerId, true).flow.cachedIn(viewModelScope)
+  private fun retrieveCompleteRegisterData(
+    registerId: String,
+    forceRefresh: Boolean,
+  ): Flow<PagingData<ResourceData>> {
+    if (completeRegisterData == null || forceRefresh) {
+      completeRegisterData = getPager(registerId, true).flow.cachedIn(viewModelScope)
     }
-    return allPatientRegisterData!!
+    return completeRegisterData!!
   }
 
-  fun onEvent(event: RegisterEvent) =
+  fun onEvent(event: RegisterEvent) {
+    val registerId = registerUiState.value.registerId
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
-        searchText.value = event.searchText
-        if (event.searchText.isEmpty()) {
-          paginateRegisterData(registerUiState.value.registerId)
-        } else {
-          filterRegisterData(event)
-        }
+        viewModelScope.launch { _searchQueryFlow.emit(event.searchQuery) }
       }
       is RegisterEvent.MoveToNextPage -> {
         currentPage.value = currentPage.value.plus(1)
-        paginateRegisterData(registerUiState.value.registerId)
+        paginateRegisterData(registerId)
       }
       is RegisterEvent.MoveToPreviousPage -> {
         currentPage.value.let { if (it > 0) currentPage.value = it.minus(1) }
-        paginateRegisterData(registerUiState.value.registerId)
+        paginateRegisterData(registerId)
       }
       RegisterEvent.ResetFilterRecordsCount -> _filteredRecordsCount.longValue = -1
     }
+  }
 
-  fun filterRegisterData(event: RegisterEvent.SearchRegister) {
-    val searchBar = registerUiState.value.registerConfiguration?.searchBar
-    // computedRules (names of pre-computed rules) must be provided for search to work.
-    if (searchBar?.computedRules != null) {
-      paginatedRegisterData.value =
-        retrieveAllPatientRegisterData(registerUiState.value.registerId).map {
-          pagingData: PagingData<ResourceData> ->
-          pagingData.filter { resourceData: ResourceData ->
-            searchBar.computedRules!!.any { ruleName ->
-              // if ruleName not found in map return {-1}; check always return false hence no data
-              val value = resourceData.computedValuesMap[ruleName]?.toString() ?: "{-1}"
-              value.contains(other = event.searchText, ignoreCase = true)
-            }
-          }
-        }
+  @VisibleForTesting
+  fun performSearch(registerId: String, searchQuery: SearchQuery) {
+    if (searchQuery.isBlank()) {
+      val regConfig = retrieveRegisterConfiguration(registerId)
+      val searchByDynamicQueries = !regConfig.searchBar?.dataFilterFields.isNullOrEmpty()
+      if (searchByDynamicQueries) {
+        registerFilterState.value = RegisterFilterState() // Reset queries
+      }
+      when {
+        regConfig.infiniteScroll ->
+          registerData.value = retrieveCompleteRegisterData(registerId, searchByDynamicQueries)
+        else ->
+          retrieveRegisterUiState(
+            registerId = registerId,
+            screenTitle = registerUiState.value.screenTitle,
+            params = registerUiState.value.params.toTypedArray(),
+            clearCache = searchByDynamicQueries,
+          )
+      }
+    } else {
+      filterRegisterData(searchQuery.query)
     }
   }
 
-  fun updateRegisterFilterState(registerId: String, questionnaireResponse: QuestionnaireResponse) {
+  fun filterRegisterData(searchText: String) {
+    val searchBar = registerUiState.value.registerConfiguration?.searchBar
+    val registerId = registerUiState.value.registerId
+    if (!searchBar?.dataFilterFields.isNullOrEmpty()) {
+      val dataFilterFields = searchBar?.dataFilterFields
+      updateRegisterFilterState(
+        registerId = registerId,
+        questionnaireResponse =
+          constructSearchQuestionnaireResponse(
+            searchText = searchText,
+            dataFilterFields = searchBar?.dataFilterFields ?: emptyList(),
+          ),
+        dataFilterFields = dataFilterFields,
+      )
+      paginateRegisterData(registerId = registerId, loadAll = true, clearCache = true)
+    } else if (searchBar?.computedRules != null) {
+      registerData.value =
+        retrieveCompleteRegisterData(
+            registerId = registerId,
+            forceRefresh = false,
+          )
+          .map { pagingData: PagingData<ResourceData>,
+            ->
+            pagingData.filter { resourceData: ResourceData ->
+              searchBar.computedRules!!.any { ruleName ->
+                // if ruleName not found in map return {-1}; check always return false hence no data
+                val value = resourceData.computedValuesMap[ruleName]?.toString() ?: "{-1}"
+                value.contains(other = searchText, ignoreCase = true)
+              }
+            }
+          }
+    }
+  }
+
+  private fun constructSearchQuestionnaireResponse(
+    searchText: String,
+    dataFilterFields: List<RegisterFilterField>,
+  ): QuestionnaireResponse {
+    val questionnaireResponse = QuestionnaireResponse()
+    dataFilterFields.forEach {
+      it.dataQueries.mapToQRItems(questionnaireResponse, searchText)
+      it.nestedSearchResources?.forEach { nestedSearchConfig ->
+        nestedSearchConfig.dataQueries.mapToQRItems(questionnaireResponse, searchText)
+      }
+    }
+    return questionnaireResponse
+  }
+
+  private fun List<DataQuery>?.mapToQRItems(
+    questionnaireResponse: QuestionnaireResponse,
+    searchText: String,
+  ) {
+    this?.forEach { dataQuery ->
+      dataQuery.filterCriteria.map { filterCriterionConfig ->
+        questionnaireResponse.addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent(
+              StringType(filterCriterionConfig.dataFilterLinkId),
+            )
+            .apply {
+              when (filterCriterionConfig.dataType) {
+                DataType.QUANTITY ->
+                  addAnswer(
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = Quantity(searchText.toDouble())
+                    },
+                  )
+                DataType.DATETIME ->
+                  addAnswer(
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = DateTimeType(searchText)
+                    },
+                  )
+                DataType.DATE ->
+                  addAnswer(
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = DateType(searchText)
+                    },
+                  )
+                DataType.TIME ->
+                  addAnswer(
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = TimeType(searchText)
+                    },
+                  )
+                DataType.DECIMAL ->
+                  addAnswer(
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = DecimalType(searchText)
+                    },
+                  )
+                DataType.INTEGER ->
+                  addAnswer(
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = IntegerType(searchText)
+                    },
+                  )
+                DataType.STRING ->
+                  addAnswer(
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = StringType(searchText)
+                    },
+                  )
+                DataType.URI ->
+                  addAnswer(
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = UriType(searchText)
+                    },
+                  )
+                DataType.URL ->
+                  addAnswer(
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = UrlType(searchText)
+                    },
+                  )
+                DataType.REFERENCE ->
+                  addAnswer(
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = Reference(searchText)
+                    },
+                  )
+                DataType.CODING ->
+                  addAnswer(
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = Coding("", searchText, "")
+                    },
+                  )
+                DataType.CODEABLECONCEPT ->
+                  addAnswer(
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = CodeableConcept(Coding("", searchText, ""))
+                    },
+                  )
+                DataType.CODE ->
+                  addAnswer(
+                    QuestionnaireResponseItemAnswerComponent().apply {
+                      value = CodeType(searchText)
+                    },
+                  )
+                else -> {
+                  // Type cannot be used in search query
+                }
+              }
+            },
+        )
+      }
+    }
+  }
+
+  fun updateRegisterFilterState(
+    registerId: String,
+    questionnaireResponse: QuestionnaireResponse,
+    dataFilterFields: List<RegisterFilterField>? = null,
+  ) {
     // Reset filter state if no answer is provided for all the fields
     if (questionnaireResponse.item.all { !it.hasAnswer() }) {
       registerFilterState.value =
@@ -220,8 +430,7 @@ constructor(
     val qrItemMap = questionnaireResponse.item.groupBy { it.linkId }.mapValues { it.value.first() }
 
     val registerDataFilterFieldsMap =
-      registerConfiguration.registerFilter
-        ?.dataFilterFields
+      (dataFilterFields ?: registerConfiguration.registerFilter?.dataFilterFields)
         ?.groupBy { it.filterId }
         ?.mapValues { it.value.first() }
 
@@ -246,15 +455,19 @@ constructor(
           baseResource.copy(
             dataQueries = newBaseResourceDataQueries ?: baseResource.dataQueries,
             nestedSearchResources =
-              baseResourceRegisterFilterField?.nestedSearchResources?.map { nestedSearchConfig ->
-                nestedSearchConfig.copy(
-                  dataQueries =
-                    createQueriesForRegisterFilter(
-                      dataQueries = nestedSearchConfig.dataQueries,
-                      qrItemMap = qrItemMap,
-                    ),
+              getValidatedNestedSearchResources(
+                  baseResourceRegisterFilterField?.nestedSearchResources,
+                  qrItemMap,
                 )
-              } ?: baseResource.nestedSearchResources,
+                ?.map { nestedSearchConfig ->
+                  nestedSearchConfig.copy(
+                    dataQueries =
+                      createQueriesForRegisterFilter(
+                        dataQueries = nestedSearchConfig.dataQueries,
+                        qrItemMap = qrItemMap,
+                      ),
+                  )
+                } ?: baseResource.nestedSearchResources,
           ),
         relatedResources = newRelatedResources,
       )
@@ -265,6 +478,19 @@ constructor(
       )
     Timber.i("New ResourceConfig for register data filter: ${fhirResourceConfig.encodeJson()}")
   }
+
+  private fun getValidatedNestedSearchResources(
+    nestedSearchResources: List<NestedSearchConfig>?,
+    qrItemMap: Map<String, QuestionnaireResponse.QuestionnaireResponseItemComponent>,
+  ) =
+    nestedSearchResources?.filter { nestedSearchConfig ->
+      nestedSearchConfig.dataQueries?.any { dataQuery ->
+        dataQuery.filterCriteria.any { filterCriterionConfig ->
+          filterCriterionConfig.dataFilterLinkId.isNullOrEmpty() ||
+            qrItemMap[filterCriterionConfig.dataFilterLinkId]?.answer?.isNotEmpty() == true
+        }
+      } ?: false
+    }
 
   private fun createFilterRelatedResources(
     registerDataFilterFieldsMap: Map<String, RegisterFilterField>?,
@@ -313,7 +539,10 @@ constructor(
           val answerComponent = qrItemMap[filterCriterionConfig.dataFilterLinkId]
           answerComponent?.answer?.forEach { itemAnswerComponent ->
             val criterion =
-              convertAnswerToFilterCriterion(itemAnswerComponent, filterCriterionConfig)
+              convertAnswerToFilterCriterion(
+                itemAnswerComponent,
+                filterCriterionConfig,
+              )
             if (criterion != null) newFilterCriteria.add(criterion)
           }
         } else {
@@ -324,7 +553,7 @@ constructor(
     }
 
   private fun convertAnswerToFilterCriterion(
-    answerComponent: QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent,
+    answerComponent: QuestionnaireResponseItemAnswerComponent,
     oldFilterCriterion: FilterCriterionConfig,
   ): FilterCriterionConfig? =
     when {
@@ -430,64 +659,82 @@ constructor(
   ) {
     if (registerId.isNotEmpty()) {
       val paramsMap: Map<String, String> = params.toParamDataMap()
-      viewModelScope.launch(dispatcherProvider.io()) {
-        val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
 
-        _totalRecordsCount.longValue =
-          registerRepository.countRegisterData(registerId = registerId, paramsMap = paramsMap)
-
-        // Only count filtered data when queries are updated
-        if (registerFilterState.value.fhirResourceConfig != null) {
-          _filteredRecordsCount.longValue =
+      val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
+      if (currentRegisterConfiguration.infiniteScroll) {
+        registerData.value =
+          retrieveCompleteRegisterData(currentRegisterConfiguration.id, clearCache)
+      } else {
+        paginateRegisterData(
+          registerId = registerId,
+          loadAll = false,
+          clearCache = clearCache,
+        )
+        viewModelScope.launch(dispatcherProvider.io()) {
+          _totalRecordsCount.longValue =
             registerRepository.countRegisterData(
               registerId = registerId,
               paramsMap = paramsMap,
-              fhirResourceConfig = registerFilterState.value.fhirResourceConfig,
+            )
+
+          // Only count filtered data when queries are updated
+          if (registerFilterState.value.fhirResourceConfig != null) {
+            _filteredRecordsCount.longValue =
+              registerRepository.countRegisterData(
+                registerId = registerId,
+                paramsMap = paramsMap,
+                fhirResourceConfig = registerFilterState.value.fhirResourceConfig,
+              )
+          }
+
+          registerUiCountState.value =
+            RegisterUiCountState(
+              totalRecordsCount = _totalRecordsCount.longValue,
+              filteredRecordsCount = _filteredRecordsCount.longValue,
+              pagesCount =
+                ceil(
+                    (if (registerFilterState.value.fhirResourceConfig != null) {
+                        _filteredRecordsCount.longValue
+                      } else {
+                        _totalRecordsCount.longValue
+                      })
+                      .toDouble()
+                      .div(currentRegisterConfiguration.pageSize.toLong()),
+                  )
+                  .toInt(),
             )
         }
-
-        paginateRegisterData(registerId, loadAll = false, clearCache = clearCache)
-
-        registerUiState.value =
-          RegisterUiState(
-            screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
-            isFirstTimeSync =
-              sharedPreferencesHelper
-                .read(
-                  SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-                  null,
-                )
-                .isNullOrEmpty() &&
-                _totalRecordsCount.longValue == 0L &&
-                // Do not show progress dialog if initial sync is disabled
-                applicationConfiguration.usePractitionerAssignedLocationOnSync,
-            registerConfiguration = currentRegisterConfiguration,
-            registerId = registerId,
-            totalRecordsCount = _totalRecordsCount.longValue,
-            filteredRecordsCount = _filteredRecordsCount.longValue,
-            pagesCount =
-              ceil(
-                  (if (registerFilterState.value.fhirResourceConfig != null) {
-                      _filteredRecordsCount.longValue
-                    } else _totalRecordsCount.longValue)
-                    .toDouble()
-                    .div(currentRegisterConfiguration.pageSize.toLong()),
-                )
-                .toInt(),
-            progressPercentage = _percentageProgress,
-            isSyncUpload = _isUploadSync,
-            params = paramsMap,
-          )
       }
+
+      registerUiState.value =
+        RegisterUiState(
+          screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
+          isFirstTimeSync = isFirstTimeSync(),
+          registerConfiguration = currentRegisterConfiguration,
+          registerId = registerId,
+          progressPercentage = _percentageProgress,
+          isSyncUpload = _isUploadSync,
+          currentSyncJobStatus = _currentSyncJobStatusFlow,
+          params = params?.toList() ?: emptyList(),
+        )
     }
   }
+
+  private fun isFirstTimeSync() =
+    sharedPreferencesHelper
+      .read(
+        SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+        null,
+      )
+      .isNullOrEmpty() &&
+      applicationConfiguration.usePractitionerAssignedLocationOnSync &&
+      _totalRecordsCount.longValue == 0L
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
   }
 
-  suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {
-    _percentageProgress.emit(progress)
-    _isUploadSync.emit(isUploadSync)
+  fun getImageBitmap(reference: String) = runBlocking {
+    reference.referenceToBitmap(registerRepository.fhirEngine, decodedImageMap)
   }
 }

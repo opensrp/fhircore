@@ -1,0 +1,459 @@
+---
+title: Forms
+---
+
+# Form configuration
+
+Forms in FHIR and OpenSRP2 are defined through the [Questionnaire resource](https://www.hl7.org/FHIR/questionnaire.html).
+This configuration is used to configure a Questionnaire.
+
+:::tip
+Use this configuration in other configs like profile and register.
+:::
+
+FHIR Core reads user data from label fields, date pickers, radiobutton, checkboxes  e.t.c through forms called Questionnaires
+We can group these into 3 categories.fields
+
+## A general questionnaire config
+
+``` json
+{
+  "id":"recordAsSick",
+  "title": "Record as Sick",
+  "titleColor": "@{patientTextColor}",
+  "visible": "@{isChildUnder2months}",
+  "enabled": "@{patientActive}",
+  "actions": [
+    {
+      "trigger": "ON_CLICK",
+      "workflow": "LAUNCH_QUESTIONNAIRE",
+      "questionnaire": {
+        "id": "questionnaire-uuid",
+        "title": "Record sick child",
+        "resourceIdentifier": "@{patientId}"
+      }
+    }
+  ]
+}
+```
+
+The above is a simple question that can be used to record a sick patient.
+
+## Config properties
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+id | Questionnaire Unique String | no             | null         |
+title | Display text shown as on the button | yes |              |
+titleColor | Display text color             |     |              |
+visible    | A string to show if the questionnaire button should be shown | no | true |
+enabled    | A string to show if the questionnaire button should be clickable | no | true |
+actions    | A list of actions that you would like to be executed | yes if you are using a questionnaire |  |
+actions (trigger) | Defines when you want to launch the questions | yes |        |
+actions(workflow) | Import to execute logic related to the questionnaire | yes |  |
+linkIds    | Contains configurations for linkIds for fields in the Questionnaires that are used to control application workflow and content; ranging from read only fields to fields used to capure location/barcode details. Each linkId is identified by a type (`READ_ONLY`, `LOCATION`, `BARCODE`, `IDENTIFIER`) | no |  |
+type | The item type, e.g. `date`, `choice` or `group`. A `group` type allows you to create a section within a questionnaire that controls and treats the items within the `group` as a single item. This is suitable for block sections that can be toggled based on condition or answer expression logic | no | null
+repeats | Boolean that controls whether an item is repeated or not, used to control a single item or group item that creates a repeated group | no | false
+
+### Questionnaire config actions
+
+``` json
+"questionnaire": {
+  "id": "questionnaire-uuid",
+  "title": "Record sick child",
+  "resourceIdentifier": "@{patientId}",
+  "linkIds": [
+    {
+      "linkId": "122d7ffe-3137-46b5-a28d-5c1a335c4899",
+      "type": "READ_ONLY",
+    },
+    {
+      "linkId": "145fb5a7-66b0-455d-9cff-a0d0d5994caf",
+      "type": "LOCATION",
+    }
+  ]
+}
+```
+
+## Questionnaire block config properties
+
+| Property | Description | Required | Default |
+|--|--|:--:|:--:|
+id   | Unique uuid that determines what questionnaire i.e form to launch | yes | |
+title | label text of the questionnaire | yes | |
+resourceIdentifier | FHIR resource to pull/add or update | yes | |
+
+
+The questionnaire id inside the questionnaire block
+
+
+## Sample questionnaire with a planDefinition
+
+``` json
+{
+  "title": "Register Pregnancy",
+  "titleColor": "@{patientTextColor}",
+  "visible": "@{canRegisterPregnancy}",
+  "enabled": "@{patientActive}",
+  "actions": [
+    {
+      "trigger": "ON_CLICK",
+      "workflow": "LAUNCH_QUESTIONNAIRE",
+      "questionnaire": {
+        "id": "questionnaire-uuid",
+        "title": "Record to ANC",
+        "resourceIdentifier": "@{patientId}",
+        "planDefinitions": [
+          "planDefinition-uuid"
+        ]
+      }
+    }
+  ]
+}
+```
+
+The above questionnaire JSON config adds planDefinition in an array. For each item in the array, we pull related plan Definitions.
+These are used when generating other tasks, CarePlans and related resources.See https://fhircore.smartregister.org/writing-fhir/plan-definiton
+
+## Extra config properties
+
+| Property                                   | Description                                                                                        | Required | Default |
+|--------------------------------------------|----------------------------------------------------------------------------------------------------|:--------:|:-------:|
+| planDefinitions                            | A list of questionnaire planDefinition uuids                                                       |    no    |  null   |
+| cqlInputResources                          | A list of CQL Library `id`'s. The referenced Libraries are executed after questionnaire submission |    no    |  null   |
+| barcodeLinkId                              | The link ID for barcode widget used in the Questionnaire                                           |    no    |  null   |
+| saveQuestionnaireResponse                  | Indicate whether to save QuestionnaireResponse or not                                              |   yes    |  true   |
+| onSubmitActions                            | Configurations for actions invoked post Questionnaire submission                                   |    no    |  null   |
+| extractedResourceUniquePropertyExpressions | Configurations for unique properties used to identify resources during Questionnaire edit          |    no    |  null   |
+| uniqueIdAssignment                         | Configuration for unique identifier assignment                                                      |    no    |  null   |
+
+## Dynamic data pass between Profiles and Questionnaires
+
+For you to pass data between profiles and questionnaires you can make use of **action config params** which are executed when **LAUNCH_QUESTIONNAIRE** is invoked.
+
+Data extraction happens during rules execution and is persisted in `computedValuesMap` which is later used to interpolate values annotated with `@value`. See [working with rules] (https://docs.opensrp.io/engineering/android-app/configuring/working-with-rules).
+
+For example, in the `underlying_conditions` questionnaire you would like to show or hide the Cancer option based on whether the patient has cancer or not. The solution would be to pass `has-cancer` BOOLEAN from `adult_profile_config` to `underlying_conditions`.
+
+Assuming that the `LAUNCH_QUESTIONAIRE` `onClick` function of `adult_profile_config` takes you to `underlying_conditions` questionnaire screen, below is a practical example of how the data would be passed.
+
+### Cancer LAUNCH_QUESTIONAIRE
+#### Sample JSON
+1. Write rules to extract the data you need.
+``` json
+"rules":[
+      {
+      "name": "hasCancer",
+      "condition": "true",
+      "priority": 1,
+      "actions": [
+        "data.put('hasCancer', service.evaluateToBoolean(availableConditions, \"Condition.code.coding.code = '363346000' and Condition.clinicalStatus.coding.code = 'active'\", false))"]
+    },
+  ]
+```
+
+2. add your params at **LAUNCH_QUESTIONNAIRE** section of adult_profile_config.json
+#### Sample JSON
+``` json
+    { "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "54497",
+            "title": "Record Comorbidity",
+            "resourceIdentifier": "@{patientId}",
+            "params": [
+              {
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}",
+                "paramType": "UPDATE_DATE_ON_EDIT"
+              }
+            ]
+          },
+          "params": [
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "has-cancer",
+              "dataType": "BOOLEAN",
+              "key": "hasCancer",
+              "value": "@{hasCancer}"
+            }],
+}
+```
+
+On the `underlying_conditions` questionnaire side, we will then call the `has-cancer` linkId that was declared in the `adult_profile_config`, as shown in the example below.
+``` json
+{
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+      "valueBoolean": true
+    } ],
+    "linkId": "has-cancer",
+    "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
+    "type": "boolean"
+  }, {
+    "linkId": "e4b02bd1-faa3-415e-84e7-378b8cc84d92",
+    "text": "Cancer",
+    "type": "choice",
+    "enableWhen": [ {
+      "question": "9f320854-7677-4ecb-9886-d323b7161a2e",
+      "operator": "=",
+      "answerCoding": {
+        "system": "urn:uuid:5fddcabd-9ae1-412a-e591-8fb6089a4f26",
+        "code": "yes"
+      }
+    }, {
+      "question": "has-cancer",
+      "operator": "=",
+      "answerBoolean": false
+    } ],
+    "enableBehavior": "all",
+    "required": false,
+    "answerOption": [ {
+      "valueCoding": {
+        "id": "727795dd-2870-4bc2-e057-4aa8518405dd",
+        "system": "urn:uuid:5fddcabd-9ae1-412a-e591-8fb6089a4f26",
+        "code": "yes",
+        "display": "Yes"
+      }
+    }, {
+      "valueCoding": {
+        "id": "944752c4-b116-4bca-8bc0-7e2889219565",
+        "system": "urn:uuid:5fddcabd-9ae1-412a-e591-8fb6089a4f26",
+        "code": "no",
+        "display": "No"
+      }
+    } ]
+  }
+```
+
+
+## Sample questionnaire with an event workflow
+
+Suppose you wanted to close above mentioned generated resources. For example, when moving a patient from ANC to PNC you would like to close exsiting Tasks and Careplans generated for ANC, the below configs shows how to do this.
+
+
+## Sample questionnaire with an event workflow
+``` json
+{
+  "title": "Pregnancy Outcome",
+  "titleColor": "@{patientTextColor}",
+  "visible": "@{isPregnant}",
+  "enabled": "@{patientActive}",
+  "actions": [
+   {
+     "trigger": "ON_CLICK",
+     "workflow": "LAUNCH_QUESTIONNAIRE",
+     "questionnaire": {
+       "id": "questionnaire-uuid",
+       "title": "Pregnancy outcome",
+       "resourceIdentifier": "@{patientId}",
+       "planDefinitions": [
+         "planDefinitions-uuid"
+       ],
+       "eventWorkflows": [
+         {
+           "eventType": "RESOURCE_CLOSURE",
+           "triggerConditions": [
+             {
+               "eventResourceId": "carePlanToBeClosed",
+               "matchAll": false,
+               "conditionalFhirPathExpressions": [
+                 "condition-to-check"
+               ]
+             }
+           ],
+           "eventResources": [
+             {
+               "id": "carePlanToBeClosed",
+               "resource": "CarePlan",
+               "configRules": [
+                 {
+                   "name": "patientId",
+                   "condition": "true",
+                   "actions": [
+                     "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
+                   ]
+                 }
+               ],
+               "dataQueries": [
+                 {
+                   "paramName": "instantiates-canonical",
+                   "filterCriteria": [
+                     {
+                       "dataType": "REFERENCE",
+                       "value": "PlanDefinition/planDefinition-uuid-used-to-generate-the-resources"
+                     }
+                   ]
+                 },
+                 {
+                   "paramName": "subject",
+                   "filterCriteria": [
+                     {
+                       "dataType": "REFERENCE",
+                       "computedRule": "patientId"
+                     }
+                   ]
+                 }
+               ],
+               "relatedResources": [
+                 {
+                   "resource": "Task",
+                   "searchParameter": "based-on"
+                 }
+               ]
+             }
+           ]
+         }
+       ]
+     },
+     "params": [
+       {
+         "paramType": "PREPOPULATE",
+         "linkId": "linkId-uuid",
+         "dataType": "STRING",
+         "key": "key",
+         "value": "@{value-before-interpolation}"
+       }
+     ]
+   }
+  ]
+}
+```
+
+## Extra eventWorkflows properties
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+eventType |The intention of the eventWorkflow. E.g close resources | yes | RESOURCE_CLOSURE is supported for now |
+triggerConditions | This defines an array of condition for to be met for the event to run | no | null |
+eventResourceId |  uniqueId of resource id to be closed |  yes   |               |
+eventResources | A list of resources to close(Type of ResourceConfig) |    yes           |     |      |
+
+## Hiding characters in a questionnaire
+
+Sensitive information typed on a questionnaire can be hidden through adding a linkId extension. A sample linkId with password-widget extension looks like
+
+``` json
+{
+  "extension": [
+    {
+      "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+      "valueString": "password-widget"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+      "valueInteger": 16
+    },
+    {
+      "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+      "valueString": "NIK number should be of 16 digits"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/regex",
+      "valueString": "^\\+?(?:[()\\h-]*\\d[()\\h-]*){16}$"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://hl7.org/fhir/questionnaire-display-category",
+            "code": "instructions"
+          }
+        ]
+      }
+    }
+  ],
+  "linkId": "82a80049-8d2d-4008-81aa-55356b9d6628",
+  "text": "NIK number",
+  "_text": {
+    "extension": [
+      {
+        "url": "http://hl7.org/fhir/StructureDefinition/translation",
+        "extension": [
+          {
+            "url": "lang",
+            "valueCode": "id"
+          },
+          {
+            "url": "content",
+            "valueString": "Nomor Induk Kependudukan (NIK)"
+          }
+        ]
+      }
+    ]
+  },
+  "type": "string",
+  "required": false,
+  "maxLength": 16
+}
+```
+
+Below is the specific extension for this. The extension is validated in this class [PasswordViewHolderFactory](https://github.com/opensrp/fhircore/blob/main/android/quest/src/main/java/org/smartregister/fhircore/quest/ui/sdc/PasswordViewHolderFactory.kt)
+
+``` json
+  {
+    "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+    "valueString": "password-widget"
+  }
+```
+
+## QR Code Support
+
+QR Code widget can be set up for a Questionnaire by adding `qr_code-widget` extension, with url `https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget`, to a QuestionnaireItem
+
+```json
+    {
+      "url": "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+      "extension": []
+    }
+```
+The QR Code widget extension can be configured to take another extension with url `set-only-readonly` that takes in a value `Boolean`, which when set to `true`, the QR code widget only allows set QR code once and thereafter the field would behave as `readOnly`
+
+```json
+    {
+      "url": "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+      "extension": [
+        {
+          "url": "set-only-readonly",
+          "valueBoolean": true
+        }
+      ]
+    }
+```
+Normal behaviour of the `qr_code-widget` extension or if the `set-only-readonly` extension has a value of `false`, would be to allow setting QR code multiple times whereby subsequent QR codes would replace current
+
+The QR code widget supports adding an arbitrary number of QR codes, implemented by showing `+Add QR Code` button. This can be configured by setting QuestionnaireItem with the `qr_code-widget` extension to `"repeats": true`
+
+```json
+      "repeats": true,
+      "extension": [
+        {
+          "url": "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+          "extension": [
+            {
+              "url": "set-only-readonly",
+              "valueBoolean": true
+            }
+          ]
+        }
+      ]
+    }
+```
+The extension's implementation can be found [here](https://github.com/opensrp/fhircore/blob/main/android/quest/src/main/java/org/smartregister/fhircore/quest/ui/sdc/qrCode/EditTextQrCodeViewHolderFactory.kt)
+
+## Excluding questionnaire fields from prepopulation
+
+Use the `linkIds` property to provide linkIds for the Questionnaire fields that should not be pre-field with data during editing or when opening the questionnaire in a read only format. 
+The `LinkIdType` required for the exclusion to work is `PREPOPULATION_EXCLUSION`. Nested fields can also be excluded from pre-population of forms.
+
+Example:
+
+```json
+"linkIds": [
+  {
+    "linkId": "ad29c7bd-8041-427f-8e63-b066afe5b438-009",
+    "type": "PREPOPULATION_EXCLUSION"
+  }
+]
+```

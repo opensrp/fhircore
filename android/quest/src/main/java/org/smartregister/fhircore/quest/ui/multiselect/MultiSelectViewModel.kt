@@ -21,24 +21,26 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import androidx.compose.ui.state.ToggleableState
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.LinkedList
+import java.io.IOException
 import javax.inject.Inject
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.dataFilterLocationIdsProtoStore
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
+import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewConfig
-import org.smartregister.fhircore.engine.domain.model.SyncLocationToggleableState
+import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.ui.multiselect.TreeBuilder
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import timber.log.Timber
 
 @HiltViewModel
 class MultiSelectViewModel
@@ -50,29 +52,40 @@ constructor(
 
   val searchTextState: MutableState<String> = mutableStateOf("")
   val rootTreeNodes: SnapshotStateList<TreeNode<String>> = SnapshotStateList()
-  val selectedNodes: SnapshotStateMap<String, ToggleableState> = SnapshotStateMap()
-  val flag = MutableLiveData(false)
+  val selectedNodes: SnapshotStateMap<String, SyncLocationState> = SnapshotStateMap()
+  val isLoading = MutableLiveData(false)
   private var _rootTreeNodes: List<TreeNode<String>> = mutableListOf()
 
   fun populateLookupMap(context: Context, multiSelectViewConfig: MultiSelectViewConfig) {
-    // Mark previously selected nodes
     viewModelScope.launch {
-      flag.postValue(true)
-      val previouslySelectedNodes = context.syncLocationIdsProtoStore.data.firstOrNull()
-      if (!previouslySelectedNodes.isNullOrEmpty()) {
-        previouslySelectedNodes.forEach { selectedNodes[it.locationId] = it.toggleableState }
+      isLoading.postValue(true)
+      // Populate previously selected nodes for every Multi-Select view action
+      multiSelectViewConfig.viewActions.forEach {
+        val previouslySelectedNodes =
+          context.retrieveRelatedEntitySyncLocationState(
+            multiSelectViewAction = it,
+            filterToggleableStateOn = false,
+          )
+        previouslySelectedNodes.forEach { syncLocationState ->
+          selectedNodes[syncLocationState.locationId] = syncLocationState
+        }
       }
 
+      val repositoryResourceData =
+        defaultRepository.searchResourcesRecursively(
+          filterByRelatedEntityLocationMetaTag = false,
+          fhirResourceConfig = multiSelectViewConfig.resourceConfig,
+          filterActiveResources = null,
+          secondaryResourceConfigs = null,
+          configRules = null,
+        )
+
       val resourcesMap =
-        defaultRepository
-          .searchResourcesRecursively(
-            filterByRelatedEntityLocationMetaTag = false,
-            fhirResourceConfig = multiSelectViewConfig.resourceConfig,
-            filterActiveResources = null,
-            secondaryResourceConfigs = null,
-            configRules = null,
-          )
-          .associateByTo(mutableMapOf(), { it.resource.logicalId }, { it.resource })
+        repositoryResourceData.associateByTo(
+          mutableMapOf(),
+          { it.resource.logicalId },
+          { it.resource },
+        )
       val rootNodeIds = mutableSetOf<String>()
 
       val lookupItems: List<TreeNode<String>> =
@@ -103,7 +116,6 @@ constructor(
           }
 
           val parentResource = resourcesMap[parentId]
-
           TreeNode(
             id = resource.logicalId,
             parent =
@@ -125,7 +137,7 @@ constructor(
             data = data,
           )
         }
-      flag.postValue(false)
+      isLoading.postValue(false)
       _rootTreeNodes = TreeBuilder.buildTrees(lookupItems, rootNodeIds)
       rootTreeNodes.addAll(_rootTreeNodes)
     }
@@ -141,9 +153,24 @@ constructor(
     }
   }
 
-  suspend fun saveSelectedLocations(context: Context) {
-    context.syncLocationIdsProtoStore.updateData {
-      selectedNodes.map { SyncLocationToggleableState(it.key, it.value) }
+  suspend fun saveSelectedLocations(
+    context: Context,
+    viewActions: List<MultiSelectViewAction>,
+    onSaveDone: () -> Unit,
+  ) {
+    try {
+      viewActions.forEach {
+        when (it) {
+          MultiSelectViewAction.SYNC_DATA ->
+            context.syncLocationIdsProtoStore.updateData { selectedNodes }
+          MultiSelectViewAction.FILTER_DATA ->
+            context.dataFilterLocationIdsProtoStore.updateData { selectedNodes }
+        }
+      }
+
+      onSaveDone()
+    } catch (ioException: IOException) {
+      Timber.e("Error saving selected locations", ioException)
     }
   }
 
@@ -160,9 +187,9 @@ constructor(
           rootTreeNodeMap[rootTreeNode.id] = rootTreeNode
           return@forEach
         }
-        val childrenList = LinkedList(rootTreeNode.children)
-        while (childrenList.isNotEmpty()) {
-          val currentNode = childrenList.removeFirst()
+        val treeNodeArrayDeque = ArrayDeque(rootTreeNode.children)
+        while (treeNodeArrayDeque.isNotEmpty()) {
+          val currentNode = treeNodeArrayDeque.removeFirst()
           if (currentNode.data.contains(other = searchTerm, ignoreCase = true)) {
             when {
               rootTreeNodeMap.containsKey(rootTreeNode.id) -> return@forEach
@@ -172,7 +199,7 @@ constructor(
               }
             }
           }
-          currentNode.children.forEach { childrenList.add(it) }
+          currentNode.children.forEach { treeNodeArrayDeque.addLast(it) }
         }
       }
       rootTreeNodes.addAll(rootTreeNodeMap.values)

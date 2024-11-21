@@ -28,4 +28,7 @@ enum class ActionTrigger {
 
   /** Action that is triggered when a Questionnaire has been submitted */
   ON_QUESTIONNAIRE_SUBMISSION,
+
+  /** Action triggered on search returning single result */
+  ON_SEARCH_SINGLE_RESULT,
 }

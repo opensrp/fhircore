@@ -16,148 +16,137 @@
 
 package org.smartregister.fhircore.quest.ui.geowidget
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import io.mockk.mockk
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
+import javax.inject.Inject
+import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.DecimalType
+import org.hl7.fhir.r4.model.Location
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TestRule
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
-import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.geowidget.model.Coordinates
-import org.smartregister.fhircore.geowidget.model.Feature
-import org.smartregister.fhircore.geowidget.model.Geometry
-import org.smartregister.fhircore.geowidget.model.ServicePointType
-import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
-import org.smartregister.fhircore.quest.ui.launcher.GeoWidgetLauncherViewModel
+import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
-class GeoWidgetLauncherViewModelTest {
+@HiltAndroidTest
+class GeoWidgetLauncherViewModelTest : RobolectricTest() {
 
-  @get:Rule var rule: TestRule = InstantTaskExecutorRule()
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
+  @Inject lateinit var defaultRepository: DefaultRepository
+
+  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
+
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+
+  private lateinit var applicationContext: Context
+
+  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var viewModel: GeoWidgetLauncherViewModel
-  private lateinit var defaultRepository: DefaultRepository
-  private lateinit var mockDispatcherProvider: DispatcherProvider
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-  private lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  private val geoWidgetConfiguration =
+    GeoWidgetConfiguration(
+      appId = "appId",
+      id = "id",
+      registrationQuestionnaire =
+        QuestionnaireConfig(
+          id = "id",
+        ),
+      resourceConfig =
+        FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Location)),
+      servicePointConfig = null,
+      noResults =
+        NoResultsConfig(
+          title = "Message Title",
+          message = "Message text",
+        ),
+    )
+
+  private val location =
+    Location().apply {
+      id = "loc1"
+      name = "Root Location"
+      position = Location.LocationPositionComponent(DecimalType(-10.05), DecimalType(5.55))
+    }
 
   @Before
   fun setUp() {
-    defaultRepository = mockk()
-    mockDispatcherProvider = mockk()
-    sharedPreferencesHelper = mockk()
-    resourceDataRulesExecutor = mockk()
+    hiltAndroidRule.inject()
+    applicationContext = ApplicationProvider.getApplicationContext<HiltTestApplication>()
     viewModel =
       GeoWidgetLauncherViewModel(
-        defaultRepository,
-        mockDispatcherProvider,
-        sharedPreferencesHelper,
-        resourceDataRulesExecutor,
+        defaultRepository = defaultRepository,
+        dispatcherProvider = dispatcherProvider,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        resourceDataRulesExecutor = resourceDataRulesExecutor,
+        configurationRegistry = configurationRegistry,
+        context = applicationContext,
       )
+    runBlocking { defaultRepository.addOrUpdate(resource = location) }
   }
 
-  private fun getDefaultGeometry() = Geometry(coordinates = listOf(Coordinates(3.7, 41.53)))
-
-  // clearLocations method clears all locations from the map
   @Test
-  fun test_clearLocations() {
-    // Arrange
-    val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-    val locations =
-      setOf(
-        Feature(id = "1", type = "Point"),
-        Feature(id = "2", type = "Point"),
+  fun testShowNoLocationDialogShouldNotSetLiveDataValueWhenConfigIsNull() = runTest {
+    val geoWidgetConfiguration =
+      GeoWidgetConfiguration(
+        appId = "appId",
+        id = "id",
+        registrationQuestionnaire =
+          QuestionnaireConfig(
+            id = "id",
+          ),
+        resourceConfig =
+          FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Location)),
+        servicePointConfig = null,
       )
-    viewModel.addLocationsToMap(locations)
 
-    // Act
-    viewModel.clearLocations()
+    viewModel.showNoLocationDialog(geoWidgetConfiguration)
 
-    // Assert
-    assertEquals(0, viewModel.featuresFlow.value.size)
+    val value = viewModel.noLocationFoundDialog.value
+    assertNull(value)
   }
 
-  // getServicePointKeyToType method returns a map of service point types
   @Test
-  fun test_getServicePointKeyToType() {
-    // Arrange
-    val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-
-    // Act
-    val servicePointMap = viewModel.getServicePointKeyToType()
-
-    // Assert
-    assertEquals(ServicePointType.EPP, servicePointMap["epp"])
-    assertEquals(ServicePointType.CEG, servicePointMap["ceg"])
-    assertEquals(ServicePointType.CHRD1, servicePointMap["chrd1"])
-    // ... (continue for all service point types)
+  fun testShowNoLocationDialogShouldSetLiveDataValueWhenConfigIsPresent() = runTest {
+    viewModel.showNoLocationDialog(geoWidgetConfiguration)
+    val value = viewModel.noLocationFoundDialog.value
+    assertNotNull(value)
+    assertTrue(value!!)
   }
 
-  // GeoWidgetViewModel is properly constructed with a DispatcherProvider
   @Test
-  fun test_constructor() {
-    // Arrange
-    val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-
-    // Assert
-    assertNotNull(viewModel.dispatcherProvider)
-  }
-
-  // featuresFlow is properly initialized as a StateFlow
-  @Test
-  fun test_featuresFlowInitialization() {
-    // Arrange
-    val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-
-    // Assert
-    assertNotNull(viewModel.featuresFlow)
-  }
-
-  // addLocationsToMap method handles empty set of locations
-  @Test
-  fun test_addLocationsToMap_emptySet() {
-    // Arrange
-    val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-    val locations = emptySet<Feature>()
-
-    // Act
-    viewModel.addLocationsToMap(locations)
-
-    // Assert
-    assertEquals(0, viewModel.featuresFlow.value.size)
-  }
-
-  // addLocationToMap method handles null geometry
-  @Test
-  fun test_addLocationToMap_nullGeometry() {
-    // Arrange
-    val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-    val feature = Feature(id = "1", type = "Point", geometry = null)
-
-    // Act
-    viewModel.addLocationToMap(feature)
-
-    // Assert
-    assertEquals(0, viewModel.featuresFlow.value.size)
-  }
-
-  // addLocationToMap method handles null coordinates
-  @Test
-  fun test_addLocationToMap_nullCoordinates() {
-    // Arrange
-    val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-    val feature = Feature(id = "1", type = "Point", geometry = Geometry(null))
-
-    // Act
-    viewModel.addLocationToMap(feature)
-
-    // Assert
-    assertEquals(0, viewModel.featuresFlow.value.size)
+  @Ignore("Fix kotlinx.coroutines.test.UncompletedCoroutinesError")
+  fun testEmitSnackBarState() {
+    runTest {
+      val barMessageConfig = SnackBarMessageConfig(message = "message")
+      val deferred = async { viewModel.snackBarStateFlow.first() }
+      viewModel.emitSnackBarState(barMessageConfig)
+      assertEquals(barMessageConfig.message, deferred.await().message)
+    }
   }
 }

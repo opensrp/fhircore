@@ -46,6 +46,7 @@ data class QuestionnaireConfig(
   val confirmationDialog: ConfirmationDialog? = null,
   val groupResource: GroupResourceConfig? = null,
   val taskId: String? = null,
+  val encounterId: String? = null,
   val saveDraft: Boolean = false,
   val snackBarMessage: SnackBarMessageConfig? = null,
   val eventWorkflows: List<EventWorkflow> = emptyList(),
@@ -65,12 +66,14 @@ data class QuestionnaireConfig(
   val managingEntityRelationshipCode: String? = null,
   val uniqueIdAssignment: UniqueIdAssignmentConfig? = null,
   val linkIds: List<LinkIdConfig>? = null,
+  val showSubmitAnywayButton: String = "false",
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
     this.copy(
       id = id.interpolate(computedValuesMap).extractLogicalIdUuid(),
       taskId = taskId?.interpolate(computedValuesMap),
+      encounterId = encounterId?.interpolate(computedValuesMap),
       title = title?.interpolate(computedValuesMap),
       type = type.interpolate(computedValuesMap),
       managingEntityRelationshipCode =
@@ -98,6 +101,7 @@ data class QuestionnaireConfig(
         uniqueIdAssignment?.copy(linkId = uniqueIdAssignment.linkId.interpolate(computedValuesMap)),
       linkIds = linkIds?.onEach { it.linkId.interpolate(computedValuesMap) },
       saveButtonText = saveButtonText?.interpolate(computedValuesMap),
+      showSubmitAnywayButton = showSubmitAnywayButton.interpolate(computedValuesMap),
     )
 }
 
@@ -163,5 +167,5 @@ enum class LinkIdType : Parcelable {
   READ_ONLY,
   BARCODE,
   LOCATION,
-  IDENTIFIER,
+  PREPOPULATION_EXCLUSION,
 }
