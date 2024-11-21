@@ -321,7 +321,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
               confirmButtonListener = { finish() },
               neutralButtonListener = { dialog -> dialog.dismiss() },
             )
-          } else navHostFragment.navController.navigateUp()
+          } else {
+            navHostFragment.navController.navigateUp()
+          }
         }
       },
     )

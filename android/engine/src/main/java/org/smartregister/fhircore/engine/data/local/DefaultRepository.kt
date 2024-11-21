@@ -641,6 +641,51 @@ constructor(
     }
   }
 
+  protected suspend fun computeCountForEachRelatedResource(
+    resources: List<Resource>,
+    resourceConfig: ResourceConfig,
+    configComputedRuleValues: Map<String, Any>,
+    repositoryResourceData: RepositoryResourceData,
+  ) {
+    val relatedResourceCountList = LinkedList<RelatedResourceCount>()
+    resources.forEach { resource ->
+      val countSearch =
+        Search(resourceConfig.resource).apply {
+          filter(
+            ReferenceClientParam(resourceConfig.searchParameter),
+            { value = resource.logicalId.asReference(resource.resourceType).reference },
+          )
+          applyConfiguredSortAndFilters(
+            resourceConfig = resourceConfig,
+            sortData = false,
+            configComputedRuleValues = configComputedRuleValues,
+          )
+        }
+      countSearch.count(
+        onSuccess = {
+          relatedResourceCountList.add(
+            RelatedResourceCount(
+              relatedResourceType = resourceConfig.resource,
+              parentResourceId = resource.logicalId,
+              count = it,
+            ),
+          )
+        },
+        onFailure = { throwable ->
+          Timber.e(
+            throwable,
+            "Error retrieving count for ${resource.asReference().reference} for related resource identified ID ${resourceConfig.id ?: resourceConfig.resource.name}",
+          )
+        },
+      )
+    }
+
+    if (relatedResourceCountList.isNotEmpty()) {
+      val key = resourceConfig.id ?: resourceConfig.resource.name
+      repositoryResourceData.relatedResourcesCountMap.apply { put(key, relatedResourceCountList) }
+    }
+  }
+
   protected fun updateRelatedResourcesMap(
     key: String,
     defaultKey: String?,

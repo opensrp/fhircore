@@ -233,7 +233,9 @@ constructor(
         val message =
           if (searchText.isNullOrBlank()) {
             context.getString(R.string.all_locations_rendered)
-          } else context.getString(R.string.all_matching_locations_rendered, locationsCount)
+          } else {
+            context.getString(R.string.all_matching_locations_rendered, locationsCount)
+          }
         emitSnackBarState(
           SnackBarMessageConfig(
             message = message,
