@@ -9,12 +9,10 @@ fun readProperties(file: String): Properties {
   val properties = Properties()
   val localProperties = File(file)
   if (localProperties.isFile) {
-    InputStreamReader(FileInputStream(localProperties), Charsets.UTF_8).use { reader
-      ->
+    InputStreamReader(FileInputStream(localProperties), Charsets.UTF_8).use { reader ->
       properties.load(reader)
     }
-  }
-  else  throw FileNotFoundException("\u001B[34mFile $file not found\u001B[0m")
+  } else  throw FileNotFoundException("\u001B[34mFile $file not found\u001B[0m")
 
   return properties
 }
@@ -45,15 +43,35 @@ requiredFhirProperties.forEach { property ->
 
 // Set required keystore properties
 val requiredKeystoreProperties = listOf("KEYSTORE_ALIAS", "KEY_PASSWORD", "KEYSTORE_PASSWORD")
-val keystoreProperties = try{ readProperties((project.properties["keystorePropertiesFile"] ?: "${rootProject.projectDir}/keystore.properties").toString()) } catch (e:FileNotFoundException){
-
-  if (project.properties["keystorePropertiesFile"] != null){
+val keystoreProperties = try {
+  readProperties((project.properties["keystorePropertiesFile"] ?: "${rootProject.projectDir}/keystore.properties").toString())
+} catch (e:FileNotFoundException) {
+  if (project.properties["keystorePropertiesFile"] != null) {
     throw e
-  }else Properties()
-
-
+  } else Properties()
 }
 
 requiredKeystoreProperties.forEach { property ->
   project.extra.set(property, keystoreProperties.getProperty(property, "sample_$property"))
+}
+
+// Set Sentry properties
+val requiredSentryProperties =
+  listOf(
+    "org",
+    "project",
+    "auth.token",
+    "url"
+  )
+
+val sentryProperties = try {
+  readProperties((project.properties["sentryPropertiesFile"] ?: "${rootProject.projectDir}/sentry.properties").toString())
+} catch (e: FileNotFoundException) {
+  if (project.properties["sentryPropertiesFile"] != null) {
+    throw e
+  } else Properties()
+}
+
+requiredSentryProperties.forEach { property ->
+  project.extra.set(property, sentryProperties.getProperty(property, "sentry_$property"))
 }
