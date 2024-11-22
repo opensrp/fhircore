@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.profile
 import android.graphics.Bitmap
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -40,12 +39,10 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
-import org.smartregister.fhircore.engine.configuration.view.retrieveListProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -80,10 +77,6 @@ constructor(
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
   private lateinit var profileConfiguration: ProfileConfiguration
-
-  private val listResourceDataStateMap =
-    mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
-
   private val decodedImageMap = mutableStateMapOf<String, Bitmap>()
 
   fun retrieveProfileUiState(
@@ -94,29 +87,23 @@ constructor(
   ) {
     viewModelScope.launch {
       if (resourceId.isNotEmpty()) {
-        var resourceData =
-          registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
-        val paramsMap: Map<String, String> = paramsList.toParamDataMap()
-        val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
+        val paramsMap = paramsList.toParamDataMap()
+        val resourceData =
+          registerRepository.loadProfileData(
+            profileId = profileId,
+            resourceId = resourceId,
+            fhirResourceConfig = fhirResourceConfig,
+            paramsMap = paramsMap,
+          )
 
-        resourceData = resourceData.copy(listResourceDataMap = listResourceDataStateMap)
-
+        val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
         profileUiState.value =
           ProfileUiState(
             resourceData = resourceData,
-            profileConfiguration = profileConfigs,
+            profileConfiguration = profileConfiguration,
             snackBarTheme = applicationConfiguration.snackBarTheme,
             showDataLoadProgressIndicator = false,
           )
-
-        profileConfigs.views.retrieveListProperties().forEach { listProperties ->
-          rulesExecutor.processListResourceData(
-            listProperties = listProperties,
-            relatedResourcesMap = emptyMap(), // repositoryResourceData.relatedResourcesMap, //TODO
-            computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
-            listResourceDataStateMap = listResourceDataStateMap,
-          )
-        }
       }
     }
   }
@@ -125,7 +112,6 @@ constructor(
     profileId: String,
     paramsMap: Map<String, String>?,
   ): ProfileConfiguration {
-    // Ensures profile configuration is initialized once
     if (!::profileConfiguration.isInitialized) {
       profileConfiguration =
         configurationRegistry.retrieveConfiguration(ConfigType.Profile, profileId, paramsMap)
@@ -141,26 +127,24 @@ constructor(
     when (event) {
       is ProfileEvent.OverflowMenuClick -> {
         val actions = event.overflowMenuItemConfig?.actions
-        viewModelScope.launch {
-          actions?.run {
-            find { actionConfig ->
-                actionConfig
-                  .interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
-                  .workflow
-                  ?.let { workflow -> ApplicationWorkflow.valueOf(workflow) } ==
-                  ApplicationWorkflow.CHANGE_MANAGING_ENTITY
-              }
-              ?.let {
-                changeManagingEntity(
-                  event = event,
-                  managingEntity =
-                    it
-                      .interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
-                      .managingEntity,
-                )
-              }
-            handleClickEvent(navController = event.navController, resourceData = event.resourceData)
-          }
+        actions?.run {
+          find { actionConfig ->
+              actionConfig
+                .interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
+                .workflow
+                ?.let { workflow -> ApplicationWorkflow.valueOf(workflow) } ==
+                ApplicationWorkflow.CHANGE_MANAGING_ENTITY
+            }
+            ?.let {
+              changeManagingEntity(
+                event = event,
+                managingEntity =
+                  it
+                    .interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
+                    .managingEntity,
+              )
+            }
+          handleClickEvent(navController = event.navController, resourceData = event.resourceData)
         }
       }
       is ProfileEvent.OnChangeManagingEntity -> {

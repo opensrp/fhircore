@@ -17,9 +17,9 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import androidx.compose.runtime.Stable
+import java.util.concurrent.ConcurrentHashMap
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * This represent the outcome of a query performed via the Repository. The query performed can
@@ -37,7 +37,7 @@ data class RepositoryResourceData(
   val relatedResourcesMap: ConcurrentHashMap<String, List<Resource>> = ConcurrentHashMap(),
   val relatedResourcesCountMap: ConcurrentHashMap<String, List<RelatedResourceCount>> =
     ConcurrentHashMap(),
-  val secondaryRepositoryResourceData: List<RepositoryResourceData>? = null,
+  var secondaryRepositoryResourceData: List<RepositoryResourceData>? = null,
 )
 
 /**

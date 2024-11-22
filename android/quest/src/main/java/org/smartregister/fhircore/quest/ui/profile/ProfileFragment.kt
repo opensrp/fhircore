@@ -61,11 +61,7 @@ class ProfileFragment : Fragment() {
     savedInstanceState: Bundle?,
   ): View {
     with(profileFragmentArgs) {
-      lifecycleScope.launch {
-        profileViewModel.run {
-          retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
-        }
-      }
+      profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
     }
 
     profileViewModel.refreshProfileDataLiveData.observe(viewLifecycleOwner) {

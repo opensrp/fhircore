@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.engine.data.local.register
 
 import android.content.Context
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.FhirEngine
@@ -37,9 +39,9 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.configuration.view.retrieveListProperties
 import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
@@ -54,7 +56,8 @@ import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
-typealias QuerySearchResult = ArrayDeque<Triple<List<String>, ResourceConfig, Map<String, String>>>
+typealias SearchQueryResultQueue =
+  ArrayDeque<Triple<List<String>, ResourceConfig, Map<String, String>>>
 
 typealias RelatedResourcesQueue = ArrayDeque<Triple<List<String>, ResourceConfig, String>>
 
@@ -93,64 +96,29 @@ constructor(
     fhirResourceConfig: FhirResourceConfig?,
     paramsMap: Map<String, String>?,
   ): List<ResourceData> {
-    // Use a map to avoid copying this RepositoryResourceData objects when fetching nested data
-    // The key for the map is the UUID part (logicalId) of the baseResource; always unique
-    val repositoryResourceDataResultMap = mutableMapOf<String, RepositoryResourceData>()
+    val registerDataMap = mutableMapOf<String, RepositoryResourceData>()
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
-    val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
     val requiredFhirResourceConfig = fhirResourceConfig ?: registerConfiguration.fhirResource
+    val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
 
-    val searchResults =
-      searchResources(
-        baseResourceIds = null,
-        baseResourceConfig = requiredFhirResourceConfig.baseResource,
-        relatedResourcesConfigs = requiredFhirResourceConfig.relatedResources,
-        activeResourceFilters = registerConfiguration.activeResourceFilters,
-        configComputedRuleValues = configComputedRuleValues,
-        currentPage = currentPage,
-        pageSize = registerConfiguration.pageSize,
-      )
+    searchNestedResources(
+      baseResourceIds = null,
+      fhirResourceConfig = requiredFhirResourceConfig,
+      resultsDataMap = registerDataMap,
+      configComputedRuleValues = configComputedRuleValues,
+      activeResourceFilters = registerConfiguration.activeResourceFilters,
+      currentPage = currentPage,
+      pageSize = registerConfiguration.pageSize,
+    )
 
-    val processedSearchResults =
-      handleSearchResults(
-        searchResults = searchResults,
-        repositoryResourceDataResultMap = repositoryResourceDataResultMap,
-        repositoryResourceDataMap = null,
-        relatedResourceConfigs = requiredFhirResourceConfig.relatedResources,
-        baseResourceConfigId = requiredFhirResourceConfig.baseResource.id,
-        pageSize = registerConfiguration.pageSize,
-        configComputedRuleValues = configComputedRuleValues,
-      )
-
-    while (processedSearchResults.isNotEmpty()) {
-      val (baseResourceIds, resourceConfig, repositoryResourceDataMap) =
-        processedSearchResults.removeFirst()
-      val newSearchResults =
-        searchResources(
-          baseResourceIds = baseResourceIds,
-          baseResourceConfig = resourceConfig,
-          relatedResourcesConfigs = resourceConfig.relatedResources,
-          activeResourceFilters = registerConfiguration.activeResourceFilters,
-          configComputedRuleValues = configComputedRuleValues,
-          currentPage = null,
-          pageSize = null,
-        )
-
-      val newProcessedSearchResults =
-        handleSearchResults(
-          searchResults = newSearchResults,
-          repositoryResourceDataResultMap = repositoryResourceDataResultMap,
-          repositoryResourceDataMap = repositoryResourceDataMap,
-          relatedResourceConfigs = resourceConfig.relatedResources,
-          baseResourceConfigId = requiredFhirResourceConfig.baseResource.id,
-          pageSize = registerConfiguration.pageSize,
-          configComputedRuleValues = configComputedRuleValues,
-        )
-      processedSearchResults.addAll(newProcessedSearchResults)
-    }
+    populateSecondaryResources(
+      secondaryResources = registerConfiguration.secondaryResources,
+      configComputedRuleValues = configComputedRuleValues,
+      resultsDataMap = registerDataMap,
+    )
 
     val rules = rulesExecutor.rulesFactory.generateRules(registerConfiguration.registerCard.rules)
-    return repositoryResourceDataResultMap.values
+    return registerDataMap.values
       .asSequence()
       .map { repositoryResourceData ->
         rulesExecutor.processResourceData(
@@ -162,11 +130,161 @@ constructor(
       .toList()
   }
 
+  /** Count register data for the provided [registerId]. Use the configured base resource filters */
+  override suspend fun countRegisterData(
+    registerId: String,
+    fhirResourceConfig: FhirResourceConfig?,
+    paramsMap: Map<String, String>?,
+  ): Long {
+    val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
+    val fhirResource = fhirResourceConfig ?: registerConfiguration.fhirResource
+    val baseResourceConfig = fhirResource.baseResource
+    val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
+    val filterByRelatedEntityLocation = registerConfiguration.filterDataByRelatedEntityLocation
+    val filterActiveResources = registerConfiguration.activeResourceFilters
+    return countResources(
+      filterByRelatedEntityLocation = filterByRelatedEntityLocation,
+      baseResourceConfig = baseResourceConfig,
+      filterActiveResources = filterActiveResources,
+      configComputedRuleValues = configComputedRuleValues,
+    )
+  }
+
+  override suspend fun loadProfileData(
+    profileId: String,
+    resourceId: String,
+    fhirResourceConfig: FhirResourceConfig?,
+    paramsMap: Map<String, String>?,
+  ): ResourceData {
+    val profileDataMap = mutableMapOf<String, RepositoryResourceData>()
+    val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
+    val requiredFhirResourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
+    val configComputedRuleValues = profileConfiguration.configRules.configRulesComputedValues()
+
+    searchNestedResources(
+      baseResourceIds = listOf(resourceId),
+      fhirResourceConfig = requiredFhirResourceConfig,
+      resultsDataMap = profileDataMap,
+      configComputedRuleValues = configComputedRuleValues,
+      activeResourceFilters = null,
+      currentPage = null,
+      pageSize = null,
+    )
+
+    populateSecondaryResources(
+      secondaryResources = profileConfiguration.secondaryResources,
+      configComputedRuleValues = configComputedRuleValues,
+      resultsDataMap = profileDataMap,
+    )
+
+    if (profileDataMap.values.isNotEmpty()) { // Expectation is that this is never empty
+      val repositoryResourceData = profileDataMap.values.first()
+      val listResourceDataMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
+
+      val rules = rulesExecutor.rulesFactory.generateRules(profileConfiguration.rules)
+      val resourceData =
+        rulesExecutor
+          .processResourceData(
+            repositoryResourceData = repositoryResourceData,
+            params = paramsMap,
+            rules = rules,
+          )
+          .copy(listResourceDataMap = listResourceDataMap)
+
+      profileConfiguration.views.retrieveListProperties().forEach { listProperties ->
+        rulesExecutor.processListResourceData(
+          listProperties = listProperties,
+          relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
+          computedValuesMap =
+            if (!paramsMap.isNullOrEmpty()) {
+              resourceData.computedValuesMap.plus(
+                paramsMap.toList(),
+              )
+            } else resourceData.computedValuesMap,
+          listResourceDataStateMap = listResourceDataMap,
+        )
+      }
+      return resourceData
+    }
+    return ResourceData("", ResourceType.Basic, emptyMap())
+  }
+
+  fun retrieveProfileConfiguration(profileId: String, paramsMap: Map<String, String>?) =
+    configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
+      configType = ConfigType.Profile,
+      configId = profileId,
+      paramsMap = paramsMap,
+    )
+
+  fun retrieveRegisterConfiguration(
+    registerId: String,
+    paramsMap: Map<String, String>?,
+  ): RegisterConfiguration =
+    configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramsMap)
+
+  private suspend fun searchNestedResources(
+    baseResourceIds: List<String>?,
+    fhirResourceConfig: FhirResourceConfig,
+    resultsDataMap: MutableMap<String, RepositoryResourceData>,
+    configComputedRuleValues: Map<String, Any>,
+    activeResourceFilters: List<ActiveResourceFilterConfig>?,
+    currentPage: Int?,
+    pageSize: Int?,
+  ): MutableMap<String, RepositoryResourceData> {
+    val searchResults =
+      searchResources(
+        baseResourceIds = baseResourceIds,
+        baseResourceConfig = fhirResourceConfig.baseResource,
+        relatedResourcesConfigs = fhirResourceConfig.relatedResources,
+        activeResourceFilters = activeResourceFilters,
+        configComputedRuleValues = configComputedRuleValues,
+        currentPage = currentPage,
+        pageSize = pageSize,
+      )
+
+    val processedSearchResults =
+      handleSearchResults(
+        searchResults = searchResults,
+        repositoryResourceDataResultMap = resultsDataMap,
+        repositoryResourceDataMap = null,
+        relatedResourceConfigs = fhirResourceConfig.relatedResources,
+        baseResourceConfigId = fhirResourceConfig.baseResource.id,
+        configComputedRuleValues = configComputedRuleValues,
+      )
+
+    while (processedSearchResults.isNotEmpty()) {
+      val (newBaseResourceIds, newResourceConfig, repositoryResourceDataMap) =
+        processedSearchResults.removeFirst()
+      val newSearchResults =
+        searchResources(
+          baseResourceIds = newBaseResourceIds,
+          baseResourceConfig = newResourceConfig,
+          relatedResourcesConfigs = newResourceConfig.relatedResources,
+          activeResourceFilters = activeResourceFilters,
+          configComputedRuleValues = configComputedRuleValues,
+          currentPage = null,
+          pageSize = null,
+        )
+
+      val newProcessedSearchResults =
+        handleSearchResults(
+          searchResults = newSearchResults,
+          repositoryResourceDataResultMap = resultsDataMap,
+          repositoryResourceDataMap = repositoryResourceDataMap,
+          relatedResourceConfigs = newResourceConfig.relatedResources,
+          baseResourceConfigId = fhirResourceConfig.baseResource.id,
+          configComputedRuleValues = configComputedRuleValues,
+        )
+      processedSearchResults.addAll(newProcessedSearchResults)
+    }
+    return resultsDataMap
+  }
+
   suspend fun searchResources(
     baseResourceIds: List<String>?,
     baseResourceConfig: ResourceConfig,
     relatedResourcesConfigs: List<ResourceConfig>,
-    activeResourceFilters: List<ActiveResourceFilterConfig>,
+    activeResourceFilters: List<ActiveResourceFilterConfig>?,
     configComputedRuleValues: Map<String, Any>,
     currentPage: Int?,
     pageSize: Int?,
@@ -219,9 +337,8 @@ constructor(
     repositoryResourceDataMap: Map<String, String>?,
     relatedResourceConfigs: List<ResourceConfig>,
     baseResourceConfigId: String?,
-    pageSize: Int,
     configComputedRuleValues: Map<String, Any>,
-  ): QuerySearchResult {
+  ): SearchQueryResultQueue {
     val relatedResourcesQueue = RelatedResourcesQueue()
     val (forwardIncludes, reverseIncludes) =
       relatedResourceConfigs
@@ -268,7 +385,6 @@ constructor(
             repositoryResourceData = repositoryResourceData,
             countConfigs = includedResourcesCountConfigs,
             configComputedRuleValues = configComputedRuleValues,
-            pageSize = pageSize,
           )
         }
       }
@@ -289,7 +405,6 @@ constructor(
             repositoryResourceData = repositoryResourceData,
             countConfigs = includedResourcesCountConfigs,
             configComputedRuleValues = configComputedRuleValues,
-            pageSize = pageSize,
           )
         }
       }
@@ -297,7 +412,7 @@ constructor(
         repositoryResourceDataResultMap[searchResult.resource.logicalId] = repositoryResourceData
       }
     }
-    return groupAndBatchQueriedResources(relatedResourcesQueue, pageSize)
+    return groupAndBatchQueriedResources(relatedResourcesQueue, RESOURCE_BATCH_SIZE)
   }
 
   private fun updateRepositoryResourceData(
@@ -338,10 +453,9 @@ constructor(
     repositoryResourceData: RepositoryResourceData,
     countConfigs: List<ResourceConfig>,
     configComputedRuleValues: Map<String, Any>,
-    pageSize: Int,
   ) {
     if (countConfigs.isEmpty()) return
-    resources.chunked(pageSize).forEach { theResources ->
+    resources.chunked(RESOURCE_BATCH_SIZE).forEach { theResources ->
       countRelatedResources(
         resources = theResources,
         repositoryResourceData = repositoryResourceData,
@@ -414,84 +528,37 @@ constructor(
     }
   }
 
-  /** Count register data for the provided [registerId]. Use the configured base resource filters */
-  override suspend fun countRegisterData(
-    registerId: String,
-    fhirResourceConfig: FhirResourceConfig?,
-    paramsMap: Map<String, String>?,
-  ): Long {
-    val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
-    val fhirResource = fhirResourceConfig ?: registerConfiguration.fhirResource
-    val baseResourceConfig = fhirResource.baseResource
-    val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
-    val filterByRelatedEntityLocation = registerConfiguration.filterDataByRelatedEntityLocation
-    val filterActiveResources = registerConfiguration.activeResourceFilters
-    return countResources(
-      filterByRelatedEntityLocation = filterByRelatedEntityLocation,
-      baseResourceConfig = baseResourceConfig,
-      filterActiveResources = filterActiveResources,
-      configComputedRuleValues = configComputedRuleValues,
-    )
+  /**
+   * Retrieve and populate secondary resources in [resultsDataMap]. Every [RepositoryResourceData]
+   * in [resultsDataMap] must have a copy of the secondary resources. Secondary resources
+   * independent resources that needs to be loaded and have no relationship with the primary base
+   * resources.
+   */
+  private suspend fun populateSecondaryResources(
+    secondaryResources: List<FhirResourceConfig>?,
+    configComputedRuleValues: Map<String, Any>,
+    resultsDataMap: MutableMap<String, RepositoryResourceData>,
+  ) {
+    if (!secondaryResources.isNullOrEmpty()) {
+      val secondaryRepositoryResourceData = mutableListOf<RepositoryResourceData>()
+      secondaryResources.forEach { secondaryFhirResourceConfig ->
+        val resultsMap =
+          searchNestedResources(
+            baseResourceIds = null,
+            fhirResourceConfig = secondaryFhirResourceConfig,
+            resultsDataMap = resultsDataMap,
+            configComputedRuleValues = configComputedRuleValues,
+            activeResourceFilters = null,
+            currentPage = null,
+            pageSize = 1,
+          )
+        secondaryRepositoryResourceData.addAll(resultsMap.values)
+      }
+      resultsDataMap.forEach { entry ->
+        entry.value.secondaryRepositoryResourceData = secondaryRepositoryResourceData
+      }
+    }
   }
-
-  override suspend fun loadProfileData(
-    profileId: String,
-    resourceId: String,
-    fhirResourceConfig: FhirResourceConfig?,
-    paramsList: Array<ActionParameter>?,
-  ): ResourceData {
-    /*
-      val paramsMap: Map<String, String> =
-        paramsList
-          ?.asSequence()
-          ?.filter {
-            (it.paramType == ActionParameterType.PARAMDATA ||
-              it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
-          }
-          ?.associate { it.key to it.value } ?: emptyMap()
-
-      val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
-      val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
-      val baseResourceConfig = resourceConfig.baseResource
-
-      val baseResource: Resource =
-        fhirEngine.get(baseResourceConfig.resource, resourceId.extractLogicalIdUuid())
-
-      val configComputedRuleValues = profileConfiguration.configRules.configRulesComputedValues()
-
-      val retrievedRelatedResources =
-        retrieveRelatedResources(
-          resource = baseResource,
-          relatedResourcesConfigs = resourceConfig.relatedResources,
-          configComputedRuleValues = configComputedRuleValues,
-        )
-
-      RepositoryResourceData(
-        resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
-        resource = baseResource,
-        relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
-        relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
-        secondaryRepositoryResourceData =
-          profileConfiguration.secondaryResources.retrieveSecondaryRepositoryResourceData(
-            profileConfiguration.filterActiveResources,
-          ),
-      )
-    }*/
-    return ResourceData("", ResourceType.Patient, emptyMap())
-  }
-
-  fun retrieveProfileConfiguration(profileId: String, paramsMap: Map<String, String>) =
-    configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
-      configType = ConfigType.Profile,
-      configId = profileId,
-      paramsMap = paramsMap,
-    )
-
-  fun retrieveRegisterConfiguration(
-    registerId: String,
-    paramsMap: Map<String, String>?,
-  ): RegisterConfiguration =
-    configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramsMap)
 
   /**
    * Groups resources by their [ResourceConfig] and batches them into groups of up to a specified
@@ -521,9 +588,9 @@ constructor(
   fun groupAndBatchQueriedResources(
     relatedResourcesQueue: RelatedResourcesQueue,
     batchSize: Int,
-  ): QuerySearchResult {
+  ): SearchQueryResultQueue {
     require(batchSize > 0) { "Batch size must be greater than 0" }
-    val resultQueue = QuerySearchResult()
+    val resultQueue = SearchQueryResultQueue()
     val bufferMap = mutableMapOf<ResourceConfig, MutableList<Pair<String, String>>>()
 
     while (relatedResourcesQueue.isNotEmpty()) {

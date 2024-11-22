@@ -1348,6 +1348,7 @@ constructor(
 
   companion object {
     const val DEFAULT_BATCH_SIZE = 200
+    const val RESOURCE_BATCH_SIZE = 50
     const val SNOMED_SYSTEM = "http://hl7.org/fhir/R4B/valueset-condition-clinical.html"
     const val PATIENT_CONDITION_RESOLVED_CODE = "resolved"
     const val PATIENT_CONDITION_RESOLVED_DISPLAY = "Resolved"
