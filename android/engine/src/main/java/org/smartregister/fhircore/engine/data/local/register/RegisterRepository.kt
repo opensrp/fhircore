@@ -92,6 +92,7 @@ constructor(
         fhirResourceConfig = requiredFhirResourceConfig,
         configComputedRuleValues = configComputedRuleValues,
         activeResourceFilters = registerConfiguration.activeResourceFilters,
+        filterByRelatedEntityLocationMetaTag = registerConfiguration.filterDataByRelatedEntityLocation,
         currentPage = currentPage,
         pageSize = registerConfiguration.pageSize,
       )
@@ -183,6 +184,7 @@ constructor(
         fhirResourceConfig = requiredFhirResourceConfig,
         configComputedRuleValues = configComputedRuleValues,
         activeResourceFilters = null,
+        filterByRelatedEntityLocationMetaTag = false,
         currentPage = null,
         pageSize = null,
       )
@@ -258,6 +260,7 @@ constructor(
             fhirResourceConfig = secondaryFhirResourceConfig,
             configComputedRuleValues = configComputedRuleValues,
             activeResourceFilters = null,
+            filterByRelatedEntityLocationMetaTag = false,
             currentPage = null,
             pageSize = 1,
           )

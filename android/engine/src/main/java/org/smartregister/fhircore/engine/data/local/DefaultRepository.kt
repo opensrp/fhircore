@@ -43,10 +43,6 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
 import com.jayway.jsonpath.PathNotFoundException
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.LinkedList
-import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -100,6 +96,10 @@ import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
+import java.util.LinkedList
+import java.util.UUID
+import javax.inject.Inject
+import javax.inject.Singleton
 
 typealias SearchQueryResultQueue =
   ArrayDeque<Triple<List<String>, ResourceConfig, Map<String, String>>>
@@ -572,8 +572,9 @@ constructor(
           fhirResourceConfig = FhirResourceConfig(resourceConfig, resourceConfig.relatedResources),
           configComputedRuleValues = configComputedRuleValues,
           activeResourceFilters = null,
+          filterByRelatedEntityLocationMetaTag = false,
           currentPage = null,
-          pageSize = null,
+          pageSize = null
         )
 
       repositoryResourceDataList.forEach { entry ->
@@ -739,7 +740,7 @@ constructor(
     fhirResourceConfig: FhirResourceConfig,
     configComputedRuleValues: Map<String, Any>,
     activeResourceFilters: List<ActiveResourceFilterConfig>?,
-    filterByRelatedEntityLocationMetaTag: Boolean = false,
+    filterByRelatedEntityLocationMetaTag: Boolean,
     currentPage: Int?,
     pageSize: Int?,
   ): MutableMap<String, RepositoryResourceData> {
