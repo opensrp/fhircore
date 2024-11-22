@@ -71,17 +71,20 @@ constructor(
         }
       }
 
-      val repositoryResourceData =
-        defaultRepository.searchResourcesRecursively(
-          filterByRelatedEntityLocationMetaTag = false,
-          fhirResourceConfig = multiSelectViewConfig.resourceConfig,
-          filterActiveResources = null,
-          secondaryResourceConfigs = null,
-          configRules = null,
-        )
+      val repositoryResourceDataList =
+        defaultRepository
+          .searchNestedResources(
+            baseResourceIds = null,
+            fhirResourceConfig = multiSelectViewConfig.resourceConfig,
+            configComputedRuleValues = emptyMap(),
+            activeResourceFilters = null,
+            currentPage = null,
+            pageSize = null,
+          )
+          .values
 
       val resourcesMap =
-        repositoryResourceData.associateByTo(
+        repositoryResourceDataList.associateByTo(
           mutableMapOf(),
           { it.resource.logicalId },
           { it.resource },

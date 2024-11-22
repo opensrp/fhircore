@@ -155,13 +155,15 @@ constructor(
         val resourceFilterExpression = migrationConfig.resourceFilterExpression
         val repositoryResourceDataList =
           defaultRepository
-            .searchResourcesRecursively(
-              filterByRelatedEntityLocationMetaTag = false,
-              filterActiveResources = null,
+            .searchNestedResources(
+              baseResourceIds = null,
               fhirResourceConfig = migrationConfig.resourceConfig,
-              configRules = null,
-              secondaryResourceConfigs = null,
+              configComputedRuleValues = emptyMap(),
+              activeResourceFilters = emptyList(),
+              currentPage = null,
+              pageSize = null,
             )
+            .values
             .filterByFhirPathExpression(
               fhirPathDataExtractor = fhirPathDataExtractor,
               conditionalFhirPathExpressions =
