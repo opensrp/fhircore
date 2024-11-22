@@ -1141,29 +1141,18 @@ constructor(
     val search =
       Search(type = baseResourceConfig.resource).apply {
         if (!baseResourceIds.isNullOrEmpty()) {
-          val filters =
-            baseResourceIds.map {
-              val apply: TokenParamFilterCriterion.() -> Unit = {
-                val coding =
-                  if (relTagCodeSystem.isNullOrBlank()) {
-                    Coding(null, it, null)
-                  } else {
-                    Coding(relTagCodeSystem, it, null)
-                  }
-                value = of(coding)
+          when (baseResourceConfig.resource) {
+            ResourceType.Location ->
+              filter(Resource.RES_ID, *createFilters(baseResourceIds, null).toTypedArray())
+            else ->
+              if (relTagCodeSystem.isNullOrBlank()) {
+                filter(Resource.RES_ID, *createFilters(baseResourceIds, null).toTypedArray())
+              } else {
+                filter(
+                  TokenClientParam(TAG),
+                  *createFilters(baseResourceIds, relTagCodeSystem).toTypedArray()
+                )
               }
-              apply
-            }
-          if (!relTagCodeSystem.isNullOrBlank()) {
-            filter(
-              when (baseResourceConfig.resource) {
-                ResourceType.Location -> Resource.RES_ID
-                else -> TokenClientParam(TAG)
-              },
-              *filters.toTypedArray(),
-            )
-          } else {
-            filter(Resource.RES_ID, *filters.toTypedArray())
           }
         }
         applyConfiguredSortAndFilters(
@@ -1178,6 +1167,20 @@ constructor(
         }
       }
     return search
+  }
+
+  private fun createFilters(
+    baseResourceIds: List<String>,
+    relTagCodeSystem: String? = null,
+  ): List<TokenParamFilterCriterion.() -> Unit> {
+    val filters =
+      baseResourceIds.map {
+        val apply: TokenParamFilterCriterion.() -> Unit = {
+          value = of(Coding(relTagCodeSystem, it, null))
+        }
+        apply
+      }
+    return filters
   }
 
   /**
