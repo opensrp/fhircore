@@ -49,6 +49,7 @@ import org.junit.Rule
 import org.junit.runner.RunWith
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
+import org.robolectric.junit.rules.TimeoutRule
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.formatDate
@@ -68,6 +69,8 @@ abstract class RobolectricTest {
   @get:Rule(order = 13) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
   @get:Rule(order = 20) val fhirEngineProviderTestRule = FhirEngineProviderTestRule()
+
+  @get:Rule(order = 38) val globalTimeoutRule: TimeoutRule = TimeoutRule.seconds(900) // 15 minutes
 
   /** Get the liveData value by observing but wait for 3 seconds if not ready then stop observing */
   @Throws(InterruptedException::class)
