@@ -16,124 +16,95 @@
 
 package org.smartregister.fhircore.quest.ui.usersetting
 
-import android.content.Context
-import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.fragment.app.commitNow
+import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
-import androidx.test.core.app.ApplicationProvider
-import androidx.work.WorkManager
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.mockk
-import io.mockk.spyk
-import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.quest.app.AppConfigService
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.launchFragmentInHiltContainer
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 
 @HiltAndroidTest
 class UserInsightScreenFragmentTest : RobolectricTest() {
 
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
-  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
+  @BindValue
+  val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  @Inject lateinit var testDispatcherProvider: DispatcherProvider
+  @BindValue lateinit var userSettingViewModel: UserSettingViewModel
 
-  @Inject lateinit var workManager: WorkManager
-
-  @Inject lateinit var preferenceDataStore: PreferenceDataStore
-  private val navController = TestNavHostController(ApplicationProvider.getApplicationContext())
-  private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
-  private val resourceService: FhirResourceService = mockk()
-  private val application: Context = ApplicationProvider.getApplicationContext()
-  private var sharedPreferencesHelper: SharedPreferencesHelper
-  private var configService: ConfigService
-  private var fhirResourceDataSource: FhirResourceDataSource
-  private lateinit var syncBroadcaster: SyncBroadcaster
-  private lateinit var userSettingViewModel: UserSettingViewModel
-  private lateinit var accountAuthenticator: AccountAuthenticator
-  private lateinit var secureSharedPreference: SecureSharedPreference
-
-  init {
-    sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
-    configService = AppConfigService(context = context)
-    fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
-  }
+  private val activityController = Robolectric.buildActivity(HiltActivityForTest::class.java)
 
   @Before
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
-    accountAuthenticator = mockk()
-    secureSharedPreference = mockk()
-    sharedPreferencesHelper = mockk()
-    syncBroadcaster =
-      SyncBroadcaster(
-        configurationRegistry,
-        fhirEngine = mockk(),
-        dispatcherProvider = testDispatcherProvider,
-        syncListenerManager = mockk(relaxed = true),
-        workManager = workManager,
-        context = application,
-      )
 
-    userSettingViewModel =
-      UserSettingViewModel(
-        fhirEngine = mockk(),
-        syncBroadcaster = syncBroadcaster,
-        accountAuthenticator = accountAuthenticator,
-        secureSharedPreference = secureSharedPreference,
-        sharedPreferencesHelper = sharedPreferencesHelper,
-        preferenceDataStore = preferenceDataStore,
-        configurationRegistry = configurationRegistry,
-        workManager = mockk(relaxed = true),
-        dispatcherProvider = testDispatcherProvider,
-      )
+    userSettingViewModel = mockk(relaxed = true)
   }
 
   @Test
   fun testUserSettingViewModelReturnsCorrectViewModelInstance() {
-    launchFragmentInHiltContainer<UserInsightScreenFragment>(
-      Bundle(),
-      R.style.AppTheme,
-      navController,
-    ) {
-      Assert.assertNotNull(this)
-      Assert.assertNotNull((this as UserInsightScreenFragment).userSettingViewModel)
-      Assert.assertEquals(userSettingViewModel, userSettingViewModel)
+    activityController.create().resume()
+    val activity = activityController.get()
+    val navHostController = TestNavHostController(activity)
+    val fragment =
+      UserInsightScreenFragment().apply {
+        viewLifecycleOwnerLiveData.observeForever {
+          if (it != null) {
+            navHostController.setGraph(
+              org.smartregister.fhircore.quest.R.navigation.application_nav_graph,
+            )
+            Navigation.setViewNavController(requireView(), navHostController)
+          }
+        }
+      }
+    activity.supportFragmentManager.run {
+      commitNow {
+        add(android.R.id.content, fragment, UserInsightScreenFragment::class.java.simpleName)
+      }
+      executePendingTransactions()
     }
+    Assert.assertEquals(userSettingViewModel, fragment.userSettingViewModel)
   }
 
   @Test
-  fun testUserSettinViewIsRenderedCorrectlyByOnCreateView() {
-    launchFragmentInHiltContainer<UserInsightScreenFragment>(
-      Bundle(),
-      R.style.AppTheme,
-      navController,
-    ) {
-      this.view!!.findViewWithTag<View>(USER_INSIGHT_TOP_APP_BAR)?.let {
-        Assert.assertTrue(it.isVisible)
-        Assert.assertTrue(it.isShown)
+  fun testUserInsightScreenViewIsRenderedCorrectlyByOnCreateView() {
+    activityController.create().resume()
+    val activity = activityController.get()
+    val navHostController = TestNavHostController(activity)
+    val fragment =
+      UserInsightScreenFragment().apply {
+        viewLifecycleOwnerLiveData.observeForever {
+          if (it != null) {
+            navHostController.setGraph(
+              org.smartregister.fhircore.quest.R.navigation.application_nav_graph,
+            )
+            Navigation.setViewNavController(requireView(), navHostController)
+          }
+        }
       }
+    activity.supportFragmentManager.run {
+      commitNow {
+        add(android.R.id.content, fragment, UserInsightScreenFragment::class.java.simpleName)
+      }
+      executePendingTransactions()
+    }
+    fragment.view!!.findViewWithTag<View>(USER_INSIGHT_TOP_APP_BAR)?.let {
+      Assert.assertTrue(it.isVisible)
+      Assert.assertTrue(it.isShown)
     }
   }
 }

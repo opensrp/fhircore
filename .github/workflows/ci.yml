@@ -240,7 +240,7 @@ jobs:
  
       - name: Spotless check quest application
         run: ./gradlew -PlocalPropertiesFile=local.properties :quest:spotlessCheck --stacktrace :quest:ktlintCheck --stacktrace
-        working-directory: android 
+        working-directory: android
       
       - name: Load AVD cache
         uses: actions/cache@v4
@@ -272,7 +272,11 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew clean  -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --info -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
+          script: ./gradlew clean  -PlocalPropertiesFile=local.properties :quest:connectedOpensrpDebugAndroidTest --stacktrace -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
+
+      - name: Test UnitTest
+        run: ./gradlew clean  -PlocalPropertiesFile=local.properties :quest:testOpensrpDebugUnitTest --stacktrace
+        working-directory: android
 
       - name: Run Quest module unit and instrumentation tests and generate aggregated coverage report (Disabled)
         if: false

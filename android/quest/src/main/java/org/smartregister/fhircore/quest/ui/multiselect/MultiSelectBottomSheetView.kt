@@ -161,9 +161,30 @@ fun MultiSelectBottomSheetView(
         )
       }
     },
-  ) {
+    bottomBar = {
+      if (syncLocationStateMap.isNotEmpty() && rootTreeNodes.isNotEmpty()) {
+        Button(
+          onClick = { onSelectionDone(multiSelectViewAction) },
+          modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),
+        ) {
+          Text(
+            text =
+              stringResource(
+                  id =
+                    when (multiSelectViewAction.first()) {
+                      MultiSelectViewAction.SYNC_DATA -> R.string.sync_data
+                      MultiSelectViewAction.FILTER_DATA -> R.string.apply_filter
+                    },
+                )
+                .uppercase(),
+            modifier = Modifier.padding(8.dp),
+          )
+        }
+      }
+    },
+  ) { paddingValues ->
     Box(
-      modifier = Modifier.fillMaxSize().padding(it),
+      modifier = Modifier.fillMaxSize().padding(paddingValues),
       contentAlignment = Alignment.TopCenter,
     ) {
       if (isLoading.value == true) {
@@ -214,27 +235,6 @@ fun MultiSelectBottomSheetView(
                 },
               ) { treeNode ->
                 Column { Text(text = treeNode.data) }
-              }
-            }
-          }
-          item {
-            if (syncLocationStateMap.isNotEmpty() && rootTreeNodes.isNotEmpty()) {
-              Button(
-                onClick = { onSelectionDone(multiSelectViewAction) },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),
-              ) {
-                Text(
-                  text =
-                    stringResource(
-                        id =
-                          when (multiSelectViewAction.first()) {
-                            MultiSelectViewAction.SYNC_DATA -> R.string.sync_data
-                            MultiSelectViewAction.FILTER_DATA -> R.string.apply_filter
-                          },
-                      )
-                      .uppercase(),
-                  modifier = Modifier.padding(8.dp),
-                )
               }
             }
           }
