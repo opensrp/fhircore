@@ -92,7 +92,8 @@ constructor(
         fhirResourceConfig = requiredFhirResourceConfig,
         configComputedRuleValues = configComputedRuleValues,
         activeResourceFilters = registerConfiguration.activeResourceFilters,
-        filterByRelatedEntityLocationMetaTag = registerConfiguration.filterDataByRelatedEntityLocation,
+        filterByRelatedEntityLocationMetaTag =
+          registerConfiguration.filterDataByRelatedEntityLocation,
         currentPage = currentPage,
         pageSize = registerConfiguration.pageSize,
       )
@@ -158,6 +159,7 @@ constructor(
           baseResourceConfig = baseResourceConfig,
           filterActiveResources = filterActiveResources,
           configComputedRuleValues = configComputedRuleValues,
+          sortData = false,
           currentPage = null,
           count = null,
           relTagCodeSystem =

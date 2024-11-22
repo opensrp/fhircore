@@ -26,6 +26,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.IOException
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.datastore.dataFilterLocationIdsProtoStore
@@ -39,8 +41,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
-import java.io.IOException
-import javax.inject.Inject
 
 @HiltViewModel
 class MultiSelectViewModel

@@ -53,6 +53,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.hl7.fhir.instance.model.api.IBaseResource
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
@@ -574,7 +575,7 @@ constructor(
           activeResourceFilters = null,
           filterByRelatedEntityLocationMetaTag = false,
           currentPage = null,
-          pageSize = null
+          pageSize = null,
         )
 
       repositoryResourceDataList.forEach { entry ->
@@ -888,6 +889,7 @@ constructor(
         baseResourceConfig = baseResourceConfig,
         filterActiveResources = activeResourceFilters,
         configComputedRuleValues = configComputedRuleValues,
+        sortData = true,
         currentPage = currentPage,
         count = pageSize,
         relTagCodeSystem = relTagCodeSystem,
@@ -1131,6 +1133,7 @@ constructor(
     baseResourceConfig: ResourceConfig,
     filterActiveResources: List<ActiveResourceFilterConfig>?,
     configComputedRuleValues: Map<String, Any>,
+    sortData: Boolean,
     currentPage: Int?,
     count: Int?,
     relTagCodeSystem: String?,
@@ -1140,7 +1143,15 @@ constructor(
         if (!baseResourceIds.isNullOrEmpty()) {
           val filters =
             baseResourceIds.map {
-              val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it) }
+              val apply: TokenParamFilterCriterion.() -> Unit = {
+                val coding =
+                  if (relTagCodeSystem.isNullOrBlank()) {
+                    Coding(null, it, null)
+                  } else {
+                    Coding(relTagCodeSystem, it, null)
+                  }
+                value = of(coding)
+              }
               apply
             }
           if (!relTagCodeSystem.isNullOrBlank()) {
@@ -1158,7 +1169,7 @@ constructor(
         applyConfiguredSortAndFilters(
           resourceConfig = baseResourceConfig,
           filterActiveResources = filterActiveResources,
-          sortData = true,
+          sortData = sortData,
           configComputedRuleValues = configComputedRuleValues,
         )
         if (currentPage != null && count != null) {

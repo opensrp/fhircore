@@ -23,6 +23,8 @@ import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.instance.model.api.IBaseResource
@@ -44,8 +46,6 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.event.EventBus
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * The main functionalities of the DataMigration class are:
