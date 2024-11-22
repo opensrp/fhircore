@@ -47,6 +47,7 @@ import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.math.min
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -1158,7 +1159,7 @@ constructor(
     filterActiveResources: List<ActiveResourceFilterConfig>?,
     baseResourceConfig: ResourceConfig,
   ) =
-    this.pmap { searchResult ->
+    this.pmap(Dispatchers.IO) { searchResult ->
       val retrievedRelatedResources =
         retrieveRelatedResources(
           resource = searchResult.resource,

@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="manual_sync">Manual Sync</string>
+    <string name="manual_sync">Manual sync</string>
     <string name="sync">Sync</string>
     <string name="language">Language</string>
     <string name="logout_as_user">Log out as </string>
@@ -24,8 +24,8 @@
     <string name="logout_user">Log out as %1$s</string>
     <string name="sync_completed">Sync complete</string>
     <string name="syncing">Syncing</string>
-    <string name="syncing_up" >Syncing up</string>
-    <string name="syncing_down" >Syncing down</string>
+    <string name="syncing_up" >Syncing up&#8230;</string>
+    <string name="syncing_down" >Syncing down&#8230;</string>
     <string name="syncing_initiated">Sync initiated&#8230;</string>
     <string name="sync_failed">Sync failed. Check internet connection or try again later</string>
     <string name="sync_completed_with_errors"> Sync completed with errors. Retrying…</string>

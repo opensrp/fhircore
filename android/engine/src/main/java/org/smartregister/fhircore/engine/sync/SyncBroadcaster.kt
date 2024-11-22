@@ -21,7 +21,6 @@ import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.BackoffCriteria
@@ -81,7 +80,6 @@ constructor(
         .setConstraints(
           Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
         )
-        .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
         .setBackoffCriteria(
           BackoffPolicy.LINEAR,
           10,

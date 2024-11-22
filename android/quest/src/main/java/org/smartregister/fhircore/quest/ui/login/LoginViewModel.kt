@@ -26,7 +26,6 @@ import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
@@ -35,6 +34,7 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 import org.hl7.fhir.r4.model.ResourceType
@@ -408,10 +408,12 @@ constructor(
   private fun writeUserInfo(
     userInfo: UserInfo?,
   ) {
-    sharedPreferences.write(
-      key = SharedPreferenceKey.USER_INFO.name,
-      value = userInfo,
-    )
+    CoroutineScope(dispatcherProvider.io()).launch {
+      sharedPreferences.write(
+        key = SharedPreferenceKey.USER_INFO.name,
+        value = userInfo,
+      )
+    }
   }
 
   fun writePractitionerDetailsToShredPref(
@@ -463,7 +465,6 @@ constructor(
         .setConstraints(
           Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
         )
-        .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
         .setBackoffCriteria(
           BackoffPolicy.LINEAR,
           10,
