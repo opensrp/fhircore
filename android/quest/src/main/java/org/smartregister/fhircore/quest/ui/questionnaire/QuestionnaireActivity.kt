@@ -351,7 +351,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     if (questionnaireConfig.isReadOnly()) {
       finish()
     } else if (questionnaireConfig.saveDraft) {
-      AlertDialogue.showCancelAlert(
+      AlertDialogue.showThreeButtonAlert(
         context = this,
         message =
           org.smartregister.fhircore.engine.R.string

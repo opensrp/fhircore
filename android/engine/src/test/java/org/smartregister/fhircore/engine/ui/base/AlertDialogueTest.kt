@@ -143,7 +143,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
 
   @Test
   fun testShowCancelAlertShowsWithCorrectData() {
-    AlertDialogue.showCancelAlert(
+    AlertDialogue.showThreeButtonAlert(
       context = context,
       message = R.string.questionnaire_in_progress_alert_back_pressed_message,
       title = R.string.questionnaire_alert_back_pressed_title,

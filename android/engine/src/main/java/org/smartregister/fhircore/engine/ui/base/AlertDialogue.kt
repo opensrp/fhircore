@@ -169,7 +169,7 @@ object AlertDialogue {
     )
   }
 
-  fun showCancelAlert(
+  fun showThreeButtonAlert(
     context: Context,
     @StringRes message: Int,
     @StringRes title: Int? = null,
