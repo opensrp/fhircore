@@ -32,6 +32,8 @@ import org.hl7.fhir.r4.model.RelatedArtifact
 import org.hl7.fhir.r4.model.Resource
 import timber.log.Timber
 
+private const val PAGE_SIZE = 100
+
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
   return try {
     this.get(resourceId)
@@ -98,7 +100,7 @@ suspend fun FhirEngine.countUnSyncedResources() =
     .map { it.key to it.value }
 
 suspend fun <R : Resource> FhirEngine.batchedSearch(search: Search): List<SearchResult<R>> {
-  val pageSize = 100
+  val pageSize = PAGE_SIZE
   if (search.count != null) {
     return this.search(search)
   }

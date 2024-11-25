@@ -23,8 +23,6 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
-import javax.inject.Singleton
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -43,6 +41,8 @@ import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class RegisterRepository
@@ -102,16 +102,13 @@ constructor(
     )
 
     val rules = rulesExecutor.rulesFactory.generateRules(registerConfiguration.registerCard.rules)
-    return registerDataMap.values
-      .asSequence()
-      .map { repositoryResourceData ->
-        rulesExecutor.processResourceData(
-          repositoryResourceData = repositoryResourceData,
-          params = paramsMap,
-          rules = rules,
-        )
-      }
-      .toList()
+    return registerDataMap.values.map { repositoryResourceData ->
+      rulesExecutor.processResourceData(
+        repositoryResourceData = repositoryResourceData,
+        params = paramsMap,
+        rules = rules,
+      )
+    }
   }
 
   /** Count register data for the provided [registerId]. Use the configured base resource filters */

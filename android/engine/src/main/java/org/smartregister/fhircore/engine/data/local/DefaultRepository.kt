@@ -43,10 +43,6 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
 import com.jayway.jsonpath.PathNotFoundException
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.LinkedList
-import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -101,6 +97,10 @@ import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
+import java.util.LinkedList
+import java.util.UUID
+import javax.inject.Inject
+import javax.inject.Singleton
 
 typealias SearchQueryResultQueue =
   ArrayDeque<Triple<List<String>, ResourceConfig, Map<String, String>>>
@@ -1308,13 +1308,13 @@ constructor(
     val locations = HashSet<String>(locationIds)
     val queue = ArrayDeque<List<String>>()
     val subLocations = retrieveSubLocations(locationIds)
-    if (!subLocations.isNullOrEmpty()) {
+    if (subLocations.isNotEmpty()) {
       locations.addAll(subLocations)
       queue.add(subLocations)
     }
     while (queue.isNotEmpty()) {
       val newSubLocations = retrieveSubLocations(queue.removeFirst())
-      if (!newSubLocations.isNullOrEmpty()) {
+      if (newSubLocations.isNotEmpty()) {
         locations.addAll(newSubLocations)
         queue.add(newSubLocations)
       }
@@ -1322,7 +1322,7 @@ constructor(
     return locations
   }
 
-  private suspend fun retrieveSubLocations(locationIds: List<String>): List<String>? {
+  private suspend fun retrieveSubLocations(locationIds: List<String>): List<String> {
     val search =
       Search(type = ResourceType.Location).apply {
         val filters = createFilters(locationIds)
