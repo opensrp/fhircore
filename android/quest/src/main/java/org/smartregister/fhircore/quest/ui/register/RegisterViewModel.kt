@@ -166,7 +166,7 @@ constructor(
     val pageSize = currentRegisterConfigs.pageSize
 
     return Pager(
-        config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
+        config = PagingConfig(pageSize = pageSize, prefetchDistance = pageSize / 2),
         pagingSourceFactory = {
           RegisterPagingSource(
             registerRepository = registerRepository,
