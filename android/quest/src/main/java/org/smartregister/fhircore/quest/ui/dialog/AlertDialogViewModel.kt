@@ -17,8 +17,11 @@
 package org.smartregister.fhircore.quest.ui.dialog
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseStatus
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -31,7 +34,7 @@ constructor(
   val defaultRepository: DefaultRepository,
   val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
-  suspend fun deleteDraft(questionnaireConfig: QuestionnaireConfig?) {
+  fun deleteDraft(questionnaireConfig: QuestionnaireConfig?) {
     if (
       questionnaireConfig == null ||
         questionnaireConfig.resourceIdentifier.isNullOrBlank() ||
@@ -40,18 +43,22 @@ constructor(
       return
     }
 
-    val questionnaireResponse =
-      defaultRepository.searchQuestionnaireResponse(
-        resourceId = questionnaireConfig.resourceIdentifier!!,
-        resourceType = questionnaireConfig.resourceType!!,
-        questionnaireId = questionnaireConfig.id,
-        encounterId = null,
-        questionnaireResponseStatus = QuestionnaireResponseStatus.INPROGRESS.toCode(),
-      )
+    viewModelScope.launch {
+      withContext(dispatcherProvider.io()) {
+        val questionnaireResponse =
+          defaultRepository.searchQuestionnaireResponse(
+            resourceId = questionnaireConfig.resourceIdentifier!!,
+            resourceType = questionnaireConfig.resourceType!!,
+            questionnaireId = questionnaireConfig.id,
+            encounterId = null,
+            questionnaireResponseStatus = QuestionnaireResponseStatus.INPROGRESS.toCode(),
+          )
 
-    if (questionnaireResponse != null) {
-      questionnaireResponse.status = QuestionnaireResponseStatus.STOPPED
-      defaultRepository.update(questionnaireResponse)
+        if (questionnaireResponse != null) {
+          questionnaireResponse.status = QuestionnaireResponseStatus.STOPPED
+          defaultRepository.update(questionnaireResponse)
+        }
+      }
     }
   }
 }
