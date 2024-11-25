@@ -179,7 +179,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 navController = findNavController(),
                 toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
                 decodeImage = { registerViewModel.getImageBitmap(it) },
-                paginatedData = registerViewModel.paginatedData.value,
               )
             }
           }

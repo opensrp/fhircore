@@ -26,16 +26,15 @@ import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSource
 import timber.log.Timber
 
 /**
- * @property _registerPagingSourceState as state containing the properties used in the
+ * @property registerPagingSourceState as state containing the properties used in the
  *   [RegisterRepository] function for loading data to the paging source.
  */
 class RegisterPagingSource(
   private val registerRepository: RegisterRepository,
   private val fhirResourceConfig: FhirResourceConfig?,
   private val actionParameters: Map<String, String>?,
+  private val registerPagingSourceState: RegisterPagingSourceState,
 ) : PagingSource<Int, ResourceData>() {
-
-  private lateinit var _registerPagingSourceState: RegisterPagingSourceState
 
   /**
    * To load data for the current page, nextKey and prevKey for [params] are both set to null to
@@ -51,19 +50,19 @@ class RegisterPagingSource(
    */
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ResourceData> {
     return try {
-      val currentPage = params.key ?: _registerPagingSourceState.currentPage
+      val currentPage = params.key ?: registerPagingSourceState.currentPage
       val registerData =
         registerRepository.loadRegisterData(
           currentPage = currentPage,
-          registerId = _registerPagingSourceState.registerId,
+          registerId = registerPagingSourceState.registerId,
           fhirResourceConfig = fhirResourceConfig,
           paramsMap = actionParameters,
         )
 
       val prevKey =
-        if (_registerPagingSourceState.loadAll && currentPage > 0) currentPage - 1 else null
+        if (registerPagingSourceState.loadAll && currentPage > 0) currentPage - 1 else null
       val nextKey =
-        if (_registerPagingSourceState.loadAll && registerData.isNotEmpty()) {
+        if (registerPagingSourceState.loadAll && registerData.isNotEmpty()) {
           currentPage + 1
         } else {
           null
@@ -76,11 +75,6 @@ class RegisterPagingSource(
       Timber.e(exception)
       LoadResult.Error(exception)
     }
-  }
-
-  @Synchronized
-  fun setPatientPagingSourceState(registerPagingSourceState: RegisterPagingSourceState) {
-    this._registerPagingSourceState = registerPagingSourceState
   }
 
   override fun getRefreshKey(state: PagingState<Int, ResourceData>): Int? {

@@ -32,9 +32,6 @@ import androidx.paging.cachedIn
 import androidx.paging.filter
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import kotlin.math.ceil
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -87,6 +84,9 @@ import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.util.extensions.referenceToBitmap
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
+import javax.inject.Inject
+import kotlin.math.ceil
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
 @HiltViewModel
@@ -100,48 +100,45 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
 
+  private lateinit var registerConfiguration: RegisterConfiguration
+
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
+
   val registerUiState = mutableStateOf(RegisterUiState())
   val registerUiCountState = mutableStateOf(RegisterUiCountState())
   val currentPage: MutableState<Int> = mutableIntStateOf(0)
   val registerData: MutableStateFlow<Flow<PagingData<ResourceData>>> = MutableStateFlow(emptyFlow())
-  val paginatedData: MutableState<List<ResourceData>> = mutableStateOf(listOf())
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
   val registerFilterState = mutableStateOf(RegisterFilterState())
-  private val _totalRecordsCount = mutableLongStateOf(0L)
-  private val _filteredRecordsCount = mutableLongStateOf(-1L)
-  private lateinit var registerConfiguration: RegisterConfiguration
-  private var completeRegisterData: Flow<PagingData<ResourceData>>? = null
+  val applicationConfiguration: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
+  }
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
   private val _currentSyncJobStatusFlow: MutableSharedFlow<CurrentSyncJobStatus?> =
     MutableSharedFlow(0)
-  val applicationConfiguration: ApplicationConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
-  }
   private val decodedImageMap = mutableStateMapOf<String, Bitmap>()
-
+  private val _totalRecordsCount = mutableLongStateOf(0L)
+  private val _filteredRecordsCount = mutableLongStateOf(-1L)
   private val _searchQueryFlow: MutableSharedFlow<SearchQuery> = MutableSharedFlow()
-
-  @VisibleForTesting
-  val debouncedSearchQueryFlow =
-    _searchQueryFlow.debounce {
-      val searchText = it.query
-      when (searchText.length) {
-        0 -> 2.milliseconds // when search is cleared
-        1,
-        2, -> 1000.milliseconds
-        else -> 500.milliseconds
-      }
-    }
 
   init {
     viewModelScope.launch {
-      debouncedSearchQueryFlow.collect {
-        val registerId = registerUiState.value.registerId
-        performSearch(registerId, it)
-      }
+      _searchQueryFlow
+        .debounce {
+          val searchText = it.query
+          when (searchText.length) {
+            0 -> 2.milliseconds // when search is cleared
+            1,
+            2, -> 1000.milliseconds
+            else -> 500.milliseconds
+          }
+        }
+        .collect {
+          val registerId = registerUiState.value.registerId
+          performSearch(registerId, it)
+        }
     }
   }
 
@@ -155,49 +152,37 @@ constructor(
     loadAll: Boolean = false,
     clearCache: Boolean = false,
   ) {
-    /* if (clearCache) {
-      pagesDataCache.clear()
-      completeRegisterData = null
-    }
+    // TODO Replace Cache with LRU Cache
+    if (clearCache) pagesDataCache.clear()
     registerData.value =
-      pagesDataCache.getOrPut(currentPage.value) {
-        getPager(registerId, loadAll).flow.cachedIn(viewModelScope)
-      }*/
-    viewModelScope.launch {
-      val resourceData =
-        registerRepository.loadRegisterData(
-          currentPage = currentPage.value,
-          registerId = registerId,
-          fhirResourceConfig = registerFilterState.value.fhirResourceConfig,
-          paramsMap = registerUiState.value.params.toTypedArray().toParamDataMap(),
-        )
-      paginatedData.value = resourceData
-    }
+      pagesDataCache.getOrPut(currentPage.value) { getPagerFlow(registerId, loadAll) }
   }
 
-  private fun getPager(registerId: String, loadAll: Boolean = false): Pager<Int, ResourceData> {
+  private fun getPagerFlow(
+    registerId: String,
+    loadAll: Boolean = false,
+  ): Flow<PagingData<ResourceData>> {
     val currentRegisterConfigs = retrieveRegisterConfiguration(registerId)
     val pageSize = currentRegisterConfigs.pageSize
 
     return Pager(
-      config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
-      pagingSourceFactory = {
-        RegisterPagingSource(
+        config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
+        pagingSourceFactory = {
+          RegisterPagingSource(
             registerRepository = registerRepository,
             fhirResourceConfig = registerFilterState.value.fhirResourceConfig,
             actionParameters = registerUiState.value.params.toTypedArray().toParamDataMap(),
-          )
-          .apply {
-            setPatientPagingSourceState(
+            registerPagingSourceState =
               RegisterPagingSourceState(
                 registerId = registerId,
                 loadAll = loadAll,
                 currentPage = if (loadAll) 0 else currentPage.value,
               ),
-            )
-          }
-      },
-    )
+          )
+        },
+      )
+      .flow
+      .cachedIn(viewModelScope)
   }
 
   fun retrieveRegisterConfiguration(
@@ -214,16 +199,6 @@ constructor(
         )
     }
     return registerConfiguration
-  }
-
-  private fun retrieveCompleteRegisterData(
-    registerId: String,
-    forceRefresh: Boolean,
-  ): Flow<PagingData<ResourceData>> {
-    if (completeRegisterData == null || forceRefresh) {
-      completeRegisterData = getPager(registerId, true).flow.cachedIn(viewModelScope)
-    }
-    return completeRegisterData!!
   }
 
   fun onEvent(event: RegisterEvent) {
@@ -255,7 +230,7 @@ constructor(
       }
       when {
         regConfig.infiniteScroll ->
-          registerData.value = retrieveCompleteRegisterData(registerId, searchByDynamicQueries)
+          registerData.value = getPagerFlow(registerId, searchByDynamicQueries)
         else ->
           retrieveRegisterUiState(
             registerId = registerId,
@@ -286,20 +261,15 @@ constructor(
       paginateRegisterData(registerId = registerId, loadAll = true, clearCache = true)
     } else if (searchBar?.computedRules != null) {
       registerData.value =
-        retrieveCompleteRegisterData(
-            registerId = registerId,
-            forceRefresh = false,
-          )
-          .map { pagingData: PagingData<ResourceData>,
-            ->
-            pagingData.filter { resourceData: ResourceData ->
-              searchBar.computedRules!!.any { ruleName ->
-                // if ruleName not found in map return {-1}; check always return false hence no data
-                val value = resourceData.computedValuesMap[ruleName]?.toString() ?: "{-1}"
-                value.contains(other = searchText, ignoreCase = true)
-              }
+        getPagerFlow(registerId, true).map { pagingData: PagingData<ResourceData> ->
+          pagingData.filter { resourceData: ResourceData ->
+            searchBar.computedRules!!.any { ruleName ->
+              // if ruleName not found in map return {-1}; check always return false hence no data
+              val value = resourceData.computedValuesMap[ruleName]?.toString() ?: "{-1}"
+              value.contains(other = searchText, ignoreCase = true)
             }
           }
+        }
     }
   }
 
@@ -667,11 +637,9 @@ constructor(
   ) {
     if (registerId.isNotEmpty()) {
       val paramsMap: Map<String, String> = params.toParamDataMap()
-
       val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
       if (currentRegisterConfiguration.infiniteScroll) {
-        registerData.value =
-          retrieveCompleteRegisterData(currentRegisterConfiguration.id, clearCache)
+        registerData.value = getPagerFlow(currentRegisterConfiguration.id, clearCache)
       } else {
         paginateRegisterData(
           registerId = registerId,
