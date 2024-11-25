@@ -1580,7 +1580,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     }
 
   @Test
-  fun testRetrieveFlattenedSubLocationsShouldReturnCorrectLocations() =
+  fun testRetrieveFlattenedSubLocationsShouldReturnCorrectLocationIds() =
     runTest(timeout = 120.seconds) {
       val location1 = Location().apply { id = "loc1" }
       val location2 =
@@ -1607,7 +1607,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       fhirEngine.create(location1, location2, location3, location4, location5, isLocalOnly = true)
 
       val location1SubLocations =
-        defaultRepository.retrieveFlattenedSubLocations(location1.logicalId)
+        defaultRepository.retrieveFlattenedSubLocationIds(location1.logicalId)
       Assert.assertEquals(5, location1SubLocations.size)
       Assert.assertEquals(location2.logicalId, location1SubLocations[1].logicalId)
       Assert.assertEquals(location3.logicalId, location1SubLocations[2].logicalId)
@@ -1615,7 +1615,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       Assert.assertEquals(location5.logicalId, location1SubLocations[4].logicalId)
 
       val location4SubLocations =
-        defaultRepository.retrieveFlattenedSubLocations(location4.logicalId)
+        defaultRepository.retrieveFlattenedSubLocationIds(location4.logicalId)
       Assert.assertEquals(2, location4SubLocations.size)
       Assert.assertEquals(location5.logicalId, location4SubLocations.last().logicalId)
     }

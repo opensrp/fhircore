@@ -43,6 +43,10 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
 import com.jayway.jsonpath.PathNotFoundException
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.LinkedList
+import java.util.UUID
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -97,10 +101,6 @@ import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
-import java.util.LinkedList
-import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 
 typealias SearchQueryResultQueue =
   ArrayDeque<Triple<List<String>, ResourceConfig, Map<String, String>>>
@@ -747,15 +747,7 @@ constructor(
   ): MutableMap<String, RepositoryResourceData> {
     val resultsDataMap = mutableMapOf<String, RepositoryResourceData>()
     if (filterByRelatedEntityLocationMetaTag) {
-      val locationIds =
-        context
-          .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.FILTER_DATA)
-          .map { it.locationId }
-          .map { retrieveFlattenedSubLocations(it).map { subLocation -> subLocation.logicalId } }
-          .asSequence()
-          .flatten()
-          .chunked(SQL_WHERE_CLAUSE_LIMIT)
-
+      val locationIds = retrieveRelatedEntitySyncLocationIds()
       if (currentPage != null && pageSize != null) {
         for (ids in locationIds) {
           if (resultsDataMap.size == pageSize) return resultsDataMap
@@ -1150,7 +1142,7 @@ constructor(
               } else {
                 filter(
                   TokenClientParam(TAG),
-                  *createFilters(baseResourceIds, relTagCodeSystem).toTypedArray()
+                  *createFilters(baseResourceIds, relTagCodeSystem).toTypedArray(),
                 )
               }
           }
@@ -1302,29 +1294,46 @@ constructor(
     return null
   }
 
-  suspend fun retrieveFlattenedSubLocations(locationId: String): ArrayDeque<Location> {
-    val locations = ArrayDeque<Location>()
-    val resources: ArrayDeque<Location> = retrieveSubLocations(locationId)
-    while (resources.isNotEmpty()) {
-      val currentResource = resources.removeFirst()
-      locations.add(currentResource)
-      retrieveSubLocations(currentResource.logicalId).forEach(resources::addLast)
+  protected suspend fun retrieveRelatedEntitySyncLocationIds(): List<List<String>> =
+    withContext(dispatcherProvider.io()) {
+      context
+        .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.FILTER_DATA)
+        .chunked(SQL_WHERE_CLAUSE_LIMIT)
+        .map { it.map { state -> state.locationId } }
+        .flatMap { retrieveFlattenedSubLocationIds(it) }
+        .chunked(SQL_WHERE_CLAUSE_LIMIT)
     }
-    loadResource<Location>(locationId)?.let { parentLocation -> locations.addFirst(parentLocation) }
+
+  suspend fun retrieveFlattenedSubLocationIds(locationIds: List<String>): HashSet<String> {
+    val locations = HashSet<String>(locationIds)
+    val queue = ArrayDeque<List<String>>()
+    val subLocations = retrieveSubLocations(locationIds)
+    if (!subLocations.isNullOrEmpty()) {
+      locations.addAll(subLocations)
+      queue.add(subLocations)
+    }
+    while (queue.isNotEmpty()) {
+      val newSubLocations = retrieveSubLocations(queue.removeFirst())
+      if (!newSubLocations.isNullOrEmpty()) {
+        locations.addAll(newSubLocations)
+        queue.add(newSubLocations)
+      }
+    }
     return locations
   }
 
-  private suspend fun retrieveSubLocations(locationId: String): ArrayDeque<Location> =
-    fhirEngine
-      .batchedSearch<Location>(
-        Search(type = ResourceType.Location).apply {
-          filter(
-            Location.PARTOF,
-            { value = locationId.asReference(ResourceType.Location).reference },
-          )
-        },
-      )
-      .mapTo(ArrayDeque()) { it.resource }
+  private suspend fun retrieveSubLocations(locationIds: List<String>): List<String>? {
+    val search =
+      Search(type = ResourceType.Location).apply {
+        val filters = createFilters(locationIds)
+        filter(Resource.RES_ID, *filters.toTypedArray())
+        revInclude<Location>(Location.PARTOF)
+      }
+    return fhirEngine
+      .search<Location>(search)
+      .flatMap { it.revIncluded?.values?.flatten() ?: emptyList() }
+      .map { it.logicalId }
+  }
 
   companion object {
     const val RESOURCE_BATCH_SIZE = 50

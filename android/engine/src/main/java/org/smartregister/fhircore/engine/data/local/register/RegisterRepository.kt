@@ -21,7 +21,6 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.hl7.fhir.r4.model.ResourceType
@@ -35,14 +34,12 @@ import org.smartregister.fhircore.engine.configuration.view.retrieveListProperti
 import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -143,14 +140,7 @@ constructor(
       )
     }
 
-    val locationIds =
-      context
-        .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.FILTER_DATA)
-        .map { it.locationId }
-        .map { retrieveFlattenedSubLocations(it).map { subLocation -> subLocation.logicalId } }
-        .asSequence()
-        .flatten()
-        .chunked(SQL_WHERE_CLAUSE_LIMIT)
+    val locationIds = retrieveRelatedEntitySyncLocationIds()
     var total = 0L
     for (ids in locationIds) {
       val search =
