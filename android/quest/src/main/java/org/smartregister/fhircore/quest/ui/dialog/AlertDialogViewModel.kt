@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.dialog
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseStatus
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -30,7 +31,27 @@ constructor(
   val defaultRepository: DefaultRepository,
   val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
-  fun deleteDraft(questionnaireConfig: QuestionnaireConfig?) {
-    TODO("Add implementation")
+  suspend fun deleteDraft(questionnaireConfig: QuestionnaireConfig?) {
+    if (
+      questionnaireConfig == null ||
+        questionnaireConfig.resourceIdentifier.isNullOrBlank() ||
+        questionnaireConfig.resourceType == null
+    ) {
+      return
+    }
+
+    val questionnaireResponse =
+      defaultRepository.searchQuestionnaireResponse(
+        resourceId = questionnaireConfig.resourceIdentifier!!,
+        resourceType = questionnaireConfig.resourceType!!,
+        questionnaireId = questionnaireConfig.id,
+        encounterId = null,
+        questionnaireResponseStatus = QuestionnaireResponseStatus.INPROGRESS.toCode(),
+      )
+
+    if (questionnaireResponse != null) {
+      questionnaireResponse.status = QuestionnaireResponseStatus.STOPPED
+      defaultRepository.update(questionnaireResponse)
+    }
   }
 }
