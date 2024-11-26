@@ -237,9 +237,11 @@ fun ActionConfig.handleClickEvent(
       PdfLauncherFragment.launch(appCompatActivity, interpolatedPdfConfig.encodeJson())
     }
     ApplicationWorkflow.LAUNCH_DELETE_DRAFT_FORM -> {
+      val questionnaireConfigInterpolated =
+        actionConfig.questionnaire?.interpolate(computedValuesMap)
       val args =
         bundleOf(
-          NavigationArg.QUESTIONNAIRE_CONFIG to actionConfig.questionnaire,
+          NavigationArg.QUESTIONNAIRE_CONFIG to questionnaireConfigInterpolated,
         )
       navController.navigate(MainNavigationScreen.AlertDialogFragment.route, args)
     }

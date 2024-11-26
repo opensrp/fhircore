@@ -1146,6 +1146,7 @@ constructor(
           ?.let {
             QuestionnaireResponse().apply {
               id = it.id
+              status = it.status
               item = it.item.removeUnAnsweredItems()
               // Clearing the text prompts the SDK to re-process the content, which includes HTML
               clearText()

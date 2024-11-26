@@ -23,6 +23,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 
 @AndroidEntryPoint
@@ -39,9 +40,9 @@ class AlertDialogFragment() : DialogFragment() {
           .questionnaire_in_progress_alert_back_pressed_message,
       title = org.smartregister.fhircore.engine.R.string.questionnaire_alert_back_pressed_title,
       confirmButtonListener = {
-        if (requireContext() is QuestionnaireHandler) {
-          (requireContext() as QuestionnaireHandler).launchQuestionnaire(
-            context = requireContext(),
+        if (requireContext().getActivity() is QuestionnaireHandler) {
+          (requireContext().getActivity() as QuestionnaireHandler).launchQuestionnaire(
+            context = requireContext().getActivity()!!.baseContext,
             questionnaireConfig = alertDialogFragmentArgs.questionnaireConfig,
             actionParams = listOf(),
           )
