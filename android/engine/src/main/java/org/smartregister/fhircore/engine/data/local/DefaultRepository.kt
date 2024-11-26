@@ -43,6 +43,10 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
 import com.jayway.jsonpath.PathNotFoundException
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.LinkedList
+import java.util.UUID
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -97,15 +101,11 @@ import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
-import java.util.LinkedList
-import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 
 typealias SearchQueryResultQueue =
   ArrayDeque<Triple<List<String>, ResourceConfig, Map<String, String>>>
 
-typealias RelatedResourcesQueue = ArrayDeque<Triple<List<String>, ResourceConfig, String>>
+typealias RelatedResourcesQueue = ArrayDeque<Triple<HashSet<String>, ResourceConfig, String>>
 
 @Singleton
 open class DefaultRepository
@@ -1018,17 +1018,18 @@ constructor(
         repositoryResourceData.apply {
           relatedResourcesMap
             .getOrPut(key = key) { mutableListOf() }
-            .apply { (this as MutableList).addAll(resources.distinctBy { it.logicalId }) }
+            .apply { (this as MutableList).addAll(resources) }
         }
       }
 
-      if (!relatedResourceConfig?.relatedResources.isNullOrEmpty()) {
+      val hasRelatedResources = relatedResourceConfig?.relatedResources?.any { !it.resultAsCount }
+      if (hasRelatedResources == true) {
         // Track the next nested resource to be fetched. ID for base resources is the unique key
         relatedResourcesQueue.addLast(
           Triple(
-            first = resources.map { it.logicalId }.distinct(),
-            second = relatedResourceConfig!!,
-            third = repositoryResourceData.resource.logicalId,
+            first = resources.mapTo(HashSet()) { it.logicalId },
+            second = relatedResourceConfig,
+            third = repositoryResourceData.resource.logicalId, // The key to the result data map
           ),
         )
       }
@@ -1204,12 +1205,13 @@ constructor(
     batchSize: Int = RESOURCE_BATCH_SIZE,
   ): SearchQueryResultQueue {
     require(batchSize > 0) { "Batch size must be greater than 0" }
+    if (relatedResourcesQueue.isEmpty()) return SearchQueryResultQueue()
     val resultQueue = SearchQueryResultQueue()
-    val bufferMap = mutableMapOf<ResourceConfig, MutableList<Pair<String, String>>>()
+    val bufferMap = mutableMapOf<ResourceConfig, ArrayDeque<Pair<String, String>>>()
 
     while (relatedResourcesQueue.isNotEmpty()) {
       val (resourceIds, config, data) = relatedResourcesQueue.removeFirst()
-      val buffer = bufferMap.getOrPut(config) { mutableListOf() }
+      val buffer = bufferMap.getOrPut(config) { ArrayDeque() }
 
       resourceIds.forEach { id -> buffer.add(id to data) }
 

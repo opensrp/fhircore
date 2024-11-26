@@ -177,6 +177,7 @@ constructor(
   }
 
   fun fireRules(rules: Rules, baseResource: Resource? = null): Map<String, Any> {
+    facts.clear() // Reset current facts
     facts =
       Facts().apply {
         put(FHIR_PATH, fhirPathDataExtractor)
@@ -621,7 +622,7 @@ constructor(
      * [fhirPathExpression] to a list separated by the [separator]
      *
      * e.g for a provided list of Patients we can extract a string containing the family names using
-     * the [Patient.name.family] as the [fhirpathExpression] and [ | ] as the [separator] the
+     * the 'Patient.name.family' as the [fhirPathExpression] and [ | ] as the [separator] the
      * returned string would be [John | Jane | James]
      */
     @JvmOverloads
