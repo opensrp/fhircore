@@ -940,12 +940,6 @@ constructor(
       reverseIncludes
         .groupBy { "${it.resource.name}_${it.searchParameter}".lowercase() }
         .mapValues { it.value.first() }
-    val includedResourcesCountConfigs =
-      relatedResourceConfigs
-        .asSequence()
-        .flatMap { it.relatedResources }
-        .filter { it.resultAsCount && !it.searchParameter.isNullOrEmpty() }
-        .toList()
 
     searchResults.forEach { searchResult: SearchResult<Resource> ->
       // Create new repository data if none exist (subsequent queries will have repository data)
@@ -961,18 +955,18 @@ constructor(
 
       searchResult.included?.forEach { entry ->
         // Add the forward included resources to the relatedResourcesMap
-        val relatedResourceConfig = forwardIncludesMap[entry.key]
+        val fwdIncludedResourceConfig = forwardIncludesMap[entry.key]
         updateRepositoryResourceData(
           resources = entry.value,
-          relatedResourceConfig = relatedResourceConfig,
+          relatedResourceConfig = fwdIncludedResourceConfig,
           repositoryResourceData = repositoryResourceData,
           relatedResourcesQueue = relatedResourcesQueue,
         )
-        if (entry.value.isNotEmpty()) {
+        if (entry.value.isNotEmpty() && fwdIncludedResourceConfig != null) {
           handleCountResults(
             resources = entry.value,
             repositoryResourceData = repositoryResourceData,
-            countConfigs = includedResourcesCountConfigs,
+            countConfigs = extractCountConfigs(fwdIncludedResourceConfig),
             configComputedRuleValues = configComputedRuleValues,
           )
         }
@@ -980,19 +974,19 @@ constructor(
       searchResult.revIncluded?.forEach { entry ->
         val (resourceType, searchParam) = entry.key
         val name = "${resourceType.name}_$searchParam".lowercase()
-        val relatedResourceConfig = reverseIncludesMap[name]
+        val revIncludedResourceConfig = reverseIncludesMap[name]
         // Add the reverse included resources to the relatedResourcesMap
         updateRepositoryResourceData(
           resources = entry.value,
-          relatedResourceConfig = relatedResourceConfig,
+          relatedResourceConfig = revIncludedResourceConfig,
           repositoryResourceData = repositoryResourceData,
           relatedResourcesQueue = relatedResourcesQueue,
         )
-        if (entry.value.isNotEmpty()) {
+        if (entry.value.isNotEmpty() && revIncludedResourceConfig != null) {
           handleCountResults(
             resources = entry.value,
             repositoryResourceData = repositoryResourceData,
-            countConfigs = includedResourcesCountConfigs,
+            countConfigs = extractCountConfigs(revIncludedResourceConfig),
             configComputedRuleValues = configComputedRuleValues,
           )
         }
@@ -1006,6 +1000,11 @@ constructor(
     }
     return groupAndBatchQueriedResources(relatedResourcesQueue)
   }
+
+  private fun extractCountConfigs(relatedResourceConfig: ResourceConfig) =
+    relatedResourceConfig.relatedResources
+      .filter { it.resultAsCount && !it.searchParameter.isNullOrEmpty() }
+      .toList()
 
   private fun updateRepositoryResourceData(
     resources: List<Resource>,
