@@ -645,7 +645,7 @@ constructor(
           loadAll = false,
           clearCache = clearCache,
         )
-        viewModelScope.launch(dispatcherProvider.io()) {
+        viewModelScope.launch {
           _totalRecordsCount.longValue =
             registerRepository.countRegisterData(
               registerId = registerId,
