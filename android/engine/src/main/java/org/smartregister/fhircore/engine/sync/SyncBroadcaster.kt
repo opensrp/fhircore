@@ -103,12 +103,26 @@ constructor(
   private fun Flow<PeriodicSyncJobStatus>.handlePeriodicSyncJobStatus(
     coroutineScope: CoroutineScope,
   ) {
-    this.onEach {
+    this.onEach { status ->
         syncListenerManager.onSyncListeners.forEach { onSyncListener ->
+          Timber.d("fhir sync worker...")
           onSyncListener.onSync(
-            if (it.lastSyncJobStatus != null) {
-              CurrentSyncJobStatus.Succeeded((it.lastSyncJobStatus as LastSyncJobStatus).timestamp)
-            } else it.currentSyncJobStatus,
+            if (status.lastSyncJobStatus != null) {
+              CurrentSyncJobStatus.Succeeded(
+                (status.lastSyncJobStatus as LastSyncJobStatus).timestamp,
+              )
+            } else status.currentSyncJobStatus,
+          )
+        }
+
+        if (status.currentSyncJobStatus is CurrentSyncJobStatus.Succeeded) {
+          Timber.d("Periodic sync succeeded. Triggering CustomSyncWorker...")
+          workManager.enqueue(
+            OneTimeWorkRequestBuilder<CustomSyncWorker>()
+              .setConstraints(
+                Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+              )
+              .build(),
           )
         }
       }
