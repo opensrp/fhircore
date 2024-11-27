@@ -17,29 +17,24 @@
 package org.smartregister.fhircore.engine.data.local.register
 
 import android.content.Context
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
-import org.smartregister.fhircore.engine.configuration.view.retrieveListProperties
 import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
-import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.repository.Repository
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -53,7 +48,7 @@ constructor(
   override val sharedPreferencesHelper: SharedPreferencesHelper,
   override val configurationRegistry: ConfigurationRegistry,
   override val configService: ConfigService,
-  override val rulesExecutor: RulesExecutor,
+  override val configRulesExecutor: ConfigRulesExecutor,
   override val fhirPathDataExtractor: FhirPathDataExtractor,
   override val parser: IParser,
   @ApplicationContext override val context: Context,
@@ -66,7 +61,7 @@ constructor(
     sharedPreferencesHelper = sharedPreferencesHelper,
     configurationRegistry = configurationRegistry,
     configService = configService,
-    rulesExecutor = rulesExecutor,
+    configRulesExecutor = configRulesExecutor,
     fhirPathDataExtractor = fhirPathDataExtractor,
     parser = parser,
     context = context,
@@ -78,7 +73,7 @@ constructor(
     registerId: String,
     fhirResourceConfig: FhirResourceConfig?,
     paramsMap: Map<String, String>?,
-  ): List<ResourceData> {
+  ): List<RepositoryResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     val requiredFhirResourceConfig = fhirResourceConfig ?: registerConfiguration.fhirResource
     val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
@@ -101,14 +96,7 @@ constructor(
       resultsDataMap = registerDataMap,
     )
 
-    val rules = rulesExecutor.rulesFactory.generateRules(registerConfiguration.registerCard.rules)
-    return registerDataMap.values.map { repositoryResourceData ->
-      rulesExecutor.processResourceData(
-        repositoryResourceData = repositoryResourceData,
-        params = paramsMap,
-        rules = rules,
-      )
-    }
+    return registerDataMap.values.toList()
   }
 
   /** Count register data for the provided [registerId]. Use the configured base resource filters */
@@ -162,7 +150,7 @@ constructor(
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig?,
     paramsMap: Map<String, String>?,
-  ): ResourceData {
+  ): RepositoryResourceData? {
     val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
     val requiredFhirResourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
     val configComputedRuleValues = profileConfiguration.configRules.configRulesComputedValues()
@@ -183,37 +171,7 @@ constructor(
       configComputedRuleValues = configComputedRuleValues,
       resultsDataMap = profileDataMap,
     )
-
-    if (profileDataMap.values.isNotEmpty()) { // Expectation is that this is never empty
-      val repositoryResourceData = profileDataMap.values.first()
-      val listResourceDataMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
-
-      val rules = rulesExecutor.rulesFactory.generateRules(profileConfiguration.rules)
-      val resourceData =
-        rulesExecutor
-          .processResourceData(
-            repositoryResourceData = repositoryResourceData,
-            params = paramsMap,
-            rules = rules,
-          )
-          .copy(listResourceDataMap = listResourceDataMap)
-
-      profileConfiguration.views.retrieveListProperties().forEach { listProperties ->
-        rulesExecutor.processListResourceData(
-          listProperties = listProperties,
-          relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
-          computedValuesMap =
-            if (!paramsMap.isNullOrEmpty()) {
-              resourceData.computedValuesMap.plus(
-                paramsMap.toList(),
-              )
-            } else resourceData.computedValuesMap,
-          listResourceDataStateMap = listResourceDataMap,
-        )
-      }
-      return resourceData
-    }
-    return ResourceData("", ResourceType.Basic, emptyMap())
+    return profileDataMap.values.firstOrNull()
   }
 
   fun retrieveProfileConfiguration(profileId: String, paramsMap: Map<String, String>?) =

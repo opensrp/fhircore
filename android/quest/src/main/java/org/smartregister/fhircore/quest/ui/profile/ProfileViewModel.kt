@@ -16,9 +16,12 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import android.content.Context
 import android.graphics.Bitmap
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,10 +42,12 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
+import org.smartregister.fhircore.engine.configuration.view.retrieveListProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -78,32 +83,67 @@ constructor(
   val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
   private lateinit var profileConfiguration: ProfileConfiguration
   private val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+  private val listResourceDataMap = SnapshotStateMap<String, SnapshotStateList<ResourceData>>()
 
   fun retrieveProfileUiState(
+    context: Context,
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
     paramsList: Array<ActionParameter>? = emptyArray(),
   ) {
     viewModelScope.launch {
-      if (resourceId.isNotEmpty()) {
-        val paramsMap = paramsList.toParamDataMap()
-        val resourceData =
-          registerRepository.loadProfileData(
-            profileId = profileId,
-            resourceId = resourceId,
-            fhirResourceConfig = fhirResourceConfig,
-            paramsMap = paramsMap,
-          )
+      if (resourceId.isNotBlank()) {
+        kotlin
+          .runCatching {
+            val paramsMap = paramsList.toParamDataMap()
+            val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
+            val repositoryResourceData =
+              registerRepository.loadProfileData(
+                profileId = profileId,
+                resourceId = resourceId,
+                fhirResourceConfig = fhirResourceConfig,
+                paramsMap = paramsMap,
+              ) ?: throw IllegalStateException("Unable to render profile")
 
-        val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
-        profileUiState.value =
-          ProfileUiState(
-            resourceData = resourceData,
-            profileConfiguration = profileConfiguration,
-            snackBarTheme = applicationConfiguration.snackBarTheme,
-            showDataLoadProgressIndicator = false,
-          )
+            val rules = rulesExecutor.rulesFactory.generateRules(profileConfiguration.rules)
+            val resourceData =
+              rulesExecutor
+                .processResourceData(
+                  repositoryResourceData = repositoryResourceData,
+                  params = paramsMap,
+                  rules = rules,
+                )
+                .copy(listResourceDataMap = listResourceDataMap)
+
+            profileUiState.value =
+              ProfileUiState(
+                resourceData = resourceData,
+                profileConfiguration = profileConfiguration,
+                snackBarTheme = applicationConfiguration.snackBarTheme,
+                showDataLoadProgressIndicator = false,
+              )
+
+            profileConfiguration.views.retrieveListProperties().forEach { listProperties ->
+              rulesExecutor.processListResourceData(
+                listProperties = listProperties,
+                relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
+                computedValuesMap =
+                  if (paramsMap.isNotEmpty()) {
+                    resourceData.computedValuesMap.plus(
+                      paramsMap.toList(),
+                    )
+                  } else resourceData.computedValuesMap,
+                listResourceDataStateMap = listResourceDataMap,
+              )
+            }
+          }
+          .onFailure {
+            Timber.e("Unable to render profile")
+            _snackBarStateFlow.emit(
+              SnackBarMessageConfig(context.getString(R.string.error_rendering_profile))
+            )
+          }
       }
     }
   }

@@ -84,7 +84,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -116,7 +116,7 @@ constructor(
   open val sharedPreferencesHelper: SharedPreferencesHelper,
   open val configurationRegistry: ConfigurationRegistry,
   open val configService: ConfigService,
-  open val rulesExecutor: RulesExecutor,
+  open val configRulesExecutor: ConfigRulesExecutor,
   open val fhirPathDataExtractor: FhirPathDataExtractor,
   open val parser: IParser,
   @ApplicationContext open val context: Context,
@@ -553,19 +553,19 @@ constructor(
     eventWorkflow: EventWorkflow,
   ) {
     withContext(dispatcherProvider.io()) {
-      val configRules =
-        rulesExecutor.rulesFactory.generateRules(resourceConfig.configRules ?: listOf())
+      val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
       val configComputedRuleValues =
-        rulesExecutor.computeConfigRules(rules = configRules, baseResource = subject).mapValues {
-          entry,
-          ->
-          val initialValue = entry.value.toString()
-          if (initialValue.contains('/')) {
-            """${initialValue.substringBefore("/")}/${initialValue.extractLogicalIdUuid()}"""
-          } else {
-            initialValue
+        configRulesExecutor
+          .computeConfigRules(rules = configRules, baseResource = subject)
+          .mapValues { entry,
+            ->
+            val initialValue = entry.value.toString()
+            if (initialValue.contains('/')) {
+              """${initialValue.substringBefore("/")}/${initialValue.extractLogicalIdUuid()}"""
+            } else {
+              initialValue
+            }
           }
-        }
 
       val repositoryResourceDataList =
         searchNestedResources(
@@ -1247,8 +1247,8 @@ constructor(
 
   protected fun List<RuleConfig>?.configRulesComputedValues(): Map<String, Any> {
     if (this == null) return emptyMap()
-    val rules = rulesExecutor.rulesFactory.generateRules(this)
-    return rulesExecutor.computeConfigRules(rules = rules, null)
+    val rules = configRulesExecutor.generateRules(this)
+    return configRulesExecutor.computeConfigRules(rules = rules, null)
   }
 
   suspend fun retrieveUniqueIdAssignmentResource(

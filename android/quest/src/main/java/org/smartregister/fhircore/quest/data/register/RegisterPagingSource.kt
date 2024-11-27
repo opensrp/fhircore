@@ -22,6 +22,7 @@ import androidx.paging.PagingState
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import timber.log.Timber
 
@@ -34,6 +35,7 @@ class RegisterPagingSource(
   private val fhirResourceConfig: FhirResourceConfig?,
   private val actionParameters: Map<String, String>?,
   private val registerPagingSourceState: RegisterPagingSourceState,
+  private val rulesExecutor: RulesExecutor,
 ) : PagingSource<Int, ResourceData>() {
 
   /**
@@ -52,12 +54,20 @@ class RegisterPagingSource(
     return try {
       val currentPage = params.key ?: registerPagingSourceState.currentPage
       val registerData =
-        registerRepository.loadRegisterData(
-          currentPage = currentPage,
-          registerId = registerPagingSourceState.registerId,
-          fhirResourceConfig = fhirResourceConfig,
-          paramsMap = actionParameters,
-        )
+        registerRepository
+          .loadRegisterData(
+            currentPage = currentPage,
+            registerId = registerPagingSourceState.registerId,
+            fhirResourceConfig = fhirResourceConfig,
+            paramsMap = actionParameters,
+          )
+          .map {
+            rulesExecutor.processResourceData(
+              repositoryResourceData = it,
+              params = actionParameters,
+              rules = registerPagingSourceState.rules,
+            )
+          }
 
       val prevKey =
         if (registerPagingSourceState.loadAll && currentPage > 0) currentPage - 1 else null

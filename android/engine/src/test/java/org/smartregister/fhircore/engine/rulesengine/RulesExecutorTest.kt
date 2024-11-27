@@ -25,10 +25,12 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
 import io.mockk.spyk
 import java.util.LinkedList
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.apache.commons.jexl3.JexlEngine
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -68,11 +70,14 @@ class RulesExecutorTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var locationService: LocationService
+
+  @Inject lateinit var fhirContext: FhirContext
+
+  @Inject lateinit var jexlEngine: JexlEngine
+
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var rulesFactory: RulesFactory
   private lateinit var rulesExecutor: RulesExecutor
-
-  @Inject lateinit var fhirContext: FhirContext
   private lateinit var defaultRepository: DefaultRepository
 
   @Before
@@ -89,6 +94,7 @@ class RulesExecutorTest : RobolectricTest() {
           dispatcherProvider = dispatcherProvider,
           locationService = locationService,
           fhirContext = fhirContext,
+          jexlEngine = jexlEngine,
           defaultRepository = defaultRepository,
         ),
       )
@@ -100,7 +106,7 @@ class RulesExecutorTest : RobolectricTest() {
   fun processResourceData() {
     val patientId = "patient id"
     val baseResource = Faker.buildPatient(id = patientId)
-    val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
+    val relatedRepositoryResourceData = ConcurrentHashMap<String, List<Resource>>()
     val ruleConfig =
       RuleConfig(
         name = "patientName",
@@ -110,6 +116,7 @@ class RulesExecutorTest : RobolectricTest() {
     val ruleConfigs = listOf(ruleConfig)
 
     runBlocking(Dispatchers.Default) {
+      val rules = rulesExecutor.rulesFactory.generateRules(ruleConfigs)
       val resourceData =
         rulesExecutor.processResourceData(
           repositoryResourceData =
@@ -118,7 +125,7 @@ class RulesExecutorTest : RobolectricTest() {
               resource = baseResource,
               relatedResourcesMap = relatedRepositoryResourceData,
             ),
-          ruleConfigs = ruleConfigs,
+          rules = rules,
           params = emptyMap(),
         )
 

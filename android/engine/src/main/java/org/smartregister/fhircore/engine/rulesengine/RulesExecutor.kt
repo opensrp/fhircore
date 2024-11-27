@@ -111,16 +111,6 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
       params = params,
     )
 
-  /** Compute configuration level [Rules] */
-  fun computeConfigRules(
-    rules: Rules,
-    baseResource: Resource?,
-  ): Map<String, Any> =
-    rulesFactory.fireRules(
-      rules = rules,
-      baseResource = baseResource,
-    )
-
   private fun List<Resource>.mapToResourceData(
     listResourceConfig: ListResourceConfig,
     relatedResourcesMap: Map<String, List<Resource>>,

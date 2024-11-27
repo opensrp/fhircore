@@ -32,6 +32,9 @@ import androidx.paging.cachedIn
 import androidx.paging.filter
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlin.math.ceil
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -84,9 +87,6 @@ import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 import org.smartregister.fhircore.quest.util.extensions.referenceToBitmap
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
-import javax.inject.Inject
-import kotlin.math.ceil
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
 @HiltViewModel
@@ -162,8 +162,9 @@ constructor(
     registerId: String,
     loadAll: Boolean = false,
   ): Flow<PagingData<ResourceData>> {
-    val currentRegisterConfigs = retrieveRegisterConfiguration(registerId)
-    val pageSize = currentRegisterConfigs.pageSize
+    val currentRegisterConfig = retrieveRegisterConfiguration(registerId)
+    val pageSize = currentRegisterConfig.pageSize
+    val rules = rulesExecutor.rulesFactory.generateRules(currentRegisterConfig.registerCard.rules)
     return Pager(
         config = PagingConfig(pageSize = pageSize, prefetchDistance = pageSize / 2),
         pagingSourceFactory = {
@@ -173,10 +174,12 @@ constructor(
             actionParameters = registerUiState.value.params.toTypedArray().toParamDataMap(),
             registerPagingSourceState =
               RegisterPagingSourceState(
-                registerId = registerId,
+                registerId = currentRegisterConfig.id,
                 loadAll = loadAll,
                 currentPage = if (loadAll) 0 else currentPage.value,
+                rules = rules,
               ),
+            rulesExecutor = rulesExecutor,
           )
         },
       )

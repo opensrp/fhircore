@@ -23,6 +23,7 @@ import com.google.android.fhir.search.Order
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
+import com.jayway.jsonpath.PathNotFoundException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
@@ -31,8 +32,9 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.system.measureTimeMillis
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.apache.commons.jexl3.JexlEngine
-import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Resource
@@ -40,11 +42,11 @@ import org.hl7.fhir.r4.model.Task
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.Rules
-import org.jeasy.rules.jexl.JexlRule
 import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -63,6 +65,7 @@ import org.smartregister.fhircore.engine.util.extension.extractBirthDate
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.generateRules
 import org.smartregister.fhircore.engine.util.extension.isOverDue
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
@@ -82,35 +85,13 @@ constructor(
   val locationService: LocationService,
   val fhirContext: FhirContext,
   val jexlEngine: JexlEngine,
-  //  val defaultRepository: DefaultRepository,
+  val defaultRepository: DefaultRepository,
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
-  private var facts: Facts = Facts()
 
-  fun generateRules(ruleConfigs: List<RuleConfig>): Rules =
-    Rules(
-      ruleConfigs
-        .asSequence()
-        .map { ruleConfig ->
-          val customRule: JexlRule =
-            JexlRule(jexlEngine)
-              .name(ruleConfig.name)
-              .description(ruleConfig.description)
-              .priority(ruleConfig.priority)
-              .`when`(ruleConfig.condition.ifEmpty { TRUE })
+  @get:Synchronized @set:Synchronized private var facts: Facts = Facts()
 
-          for (action in ruleConfig.actions) {
-            try {
-              customRule.then(action)
-            } catch (jexlException: JexlException) {
-              Timber.e(jexlException)
-              continue // Skip action when an error occurs to avoid app force close
-            }
-          }
-          customRule
-        }
-        .toSet(),
-    )
+  fun generateRules(ruleConfigs: List<RuleConfig>): Rules = ruleConfigs.generateRules(jexlEngine)
 
   /**
    * This function executes the actions defined in the [Rule] s generated from the provided list of
@@ -119,6 +100,7 @@ constructor(
    * [RepositoryResourceData.relatedResourcesCountMap]. All related resources of same type are
    * flattened in a map for ease of usage in the rule engine.
    */
+  @Synchronized
   fun fireRules(
     rules: Rules,
     repositoryResourceData: RepositoryResourceData?,
@@ -733,7 +715,7 @@ constructor(
       purgeAffectedResources: Boolean = false,
       createLocalChangeEntitiesAfterPurge: Boolean = true,
     ) {
-      /* if (resource == null || path.isNullOrEmpty()) return
+      if (resource == null || path.isNullOrEmpty()) return
 
       val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
 
@@ -761,8 +743,8 @@ constructor(
               set(idPath, resource.id.replace("#", ""))
             }
           }
-        } catch (e: PathNotFoundException) {
-          Timber.e(e, "Path $path not found")
+        } catch (pathNotFoundException: PathNotFoundException) {
+          Timber.e(pathNotFoundException, "Path $path not found")
           jsonParse
         }
 
@@ -779,7 +761,7 @@ constructor(
         } else {
           defaultRepository.createRemote(resource = arrayOf(updatedResource as Resource))
         }
-      }*/
+      }
     }
 
     fun taskServiceStatusExist(tasks: List<Task>, vararg serviceStatus: String): Boolean {
