@@ -57,12 +57,12 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.KnowledgeManagerUtil
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -86,7 +86,7 @@ class ConfigurationRegistry
 constructor(
   val fhirEngine: FhirEngine,
   val fhirResourceDataSource: FhirResourceDataSource,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val dispatcherProvider: DispatcherProvider,
   val configService: ConfigService,
   val json: Json,
@@ -159,10 +159,25 @@ constructor(
    * placeholders e.g. {{ placeholder }} with value retrieved from the [paramsMap] using [configKey]
    * as the key. If value is null the placeholder is returned
    */
-  fun getConfigValueWithParam(paramsMap: Map<String, String>?, configKey: String) =
-    configsJsonMap.getValue(configKey).let { jsonValue ->
-      if (paramsMap != null) jsonValue.interpolate(paramsMap) else jsonValue
+//  fun getConfigValueWithParam(paramsMap: Map<String, String>?, configKey: String) =
+//    configsJsonMap.getValue(configKey).let { jsonValue ->
+//      if (paramsMap != null) jsonValue.interpolate(paramsMap) else jsonValue
+//    }
+
+  fun getConfigValueWithParam(paramsMap: Map<String, String>?, configKey: String): String {
+    try {
+      configsJsonMap.getValue(configKey).let { jsonValue ->
+        val interpolatedValue = if (paramsMap != null) jsonValue.interpolate(paramsMap) else jsonValue
+        // Use interpolatedValue here if needed, or perform any side effects
+        return interpolatedValue
+      }
+    } catch (e: Exception) {
+      Timber.e("Error processing config key: $configKey. Exception: ${e.message}")
+      // You can log or handle the exception as needed
+      return ""
     }
+  }
+
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -410,7 +425,7 @@ constructor(
   suspend fun fetchNonWorkflowConfigResources() {
     Timber.d("Triggered fetching application configurations remotely")
     configCacheMap.clear()
-    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
+    preferenceDataStore.readOnce(PreferenceDataStore.APP_ID, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val compositionResource = fetchRemoteCompositionByAppId(parsedAppId)
       compositionResource?.let { composition ->
@@ -729,7 +744,10 @@ constructor(
     val fhirResourceSearchParams = mutableMapOf<ResourceType, MutableMap<String, String>>()
     val organizationResourceTag =
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
-    val mandatoryTags = configService.provideResourceTags(sharedPreferencesHelper)
+    val mandatoryTags =
+      configService.provideResourceTags(
+        preferenceDataStore
+      )
 
     val locationIds =
       context.retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA).map {

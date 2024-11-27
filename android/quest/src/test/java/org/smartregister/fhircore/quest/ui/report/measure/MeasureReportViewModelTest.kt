@@ -76,9 +76,9 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.MeasurePopulationType
 import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
@@ -115,7 +115,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   @Inject lateinit var fhirEngine: FhirEngine
   private val measureReportRepository: MeasureReportRepository = mockk()
   private val fhirOperator: FhirOperator = mockk()
-  private val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
+  private val preferenceDataStore: PreferenceDataStore = mockk(relaxed = true)
   private val measureReportPagingSource = mockk<MeasureReportPagingSource>()
   private val navController: NavController = mockk(relaxUnitFun = true)
   private val invalidReportId = "invalidSupplyChainMeasureReport"
@@ -141,7 +141,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
         MeasureReportViewModel(
           fhirEngine = fhirEngine,
           fhirOperator = fhirOperator,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferenceDataStore = preferenceDataStore,
           dispatcherProvider = mockk(),
           measureReportSubjectViewDataMapper = measureReportSubjectViewDataMapper,
           configurationRegistry = configurationRegistry,

@@ -42,12 +42,12 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -61,7 +61,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
 
@@ -102,7 +102,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
       GeoWidgetLauncherViewModel(
         defaultRepository = defaultRepository,
         dispatcherProvider = dispatcherProvider,
-        sharedPreferencesHelper = sharedPreferencesHelper,
+        preferenceDataStore = preferenceDataStore,
         resourceDataRulesExecutor = resourceDataRulesExecutor,
         configurationRegistry = configurationRegistry,
         context = applicationContext,

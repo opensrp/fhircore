@@ -29,6 +29,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
@@ -45,10 +46,9 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.PAGINATION_NEXT
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -62,7 +62,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Inject lateinit var configService: AppConfigService
   private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var fhirEngine: FhirEngine
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  private lateinit var preferenceDataStore: PreferenceDataStore
   private val secureSharedPreference = mockk<SecureSharedPreference>()
   private val application: Context = ApplicationProvider.getApplicationContext()
   private val fhirResourceService =
@@ -73,7 +73,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
-    sharedPreferencesHelper = mockk()
+    preferenceDataStore = mockk()
     fhirEngine = mockk()
 
     configurationRegistry =
@@ -81,7 +81,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         ConfigurationRegistry(
           fhirEngine = fhirEngine,
           fhirResourceDataSource = fhirResourceDataSource,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferenceDataStore = preferenceDataStore,
           dispatcherProvider = dispatcherProvider,
           configService = configService,
           json = Faker.json,
@@ -118,7 +118,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { configurationRegistry.fetchRemoteCompositionByAppId(any()) } returns composition
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    every { preferenceDataStore.read(PreferenceDataStore.APP_ID) }
 
     configurationRegistry.fetchNonWorkflowConfigResources()
     coVerify { configurationRegistry.addOrUpdate(any()) }
@@ -160,7 +160,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { configurationRegistry.fetchRemoteCompositionByAppId(any()) } returns composition
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    coEvery { preferenceDataStore.read(PreferenceDataStore.Keys.APP_ID).firstOrNull()} returns "demo"
     coEvery { fhirResourceDataSource.getResource("List?_id=123456") } returns bundle
 
     configurationRegistry.fetchNonWorkflowConfigResources()
@@ -199,7 +199,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
         "List?_id=123456&_page=1&_count=200",
       )
     } returns bundle
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    coEvery { preferenceDataStore.read(PreferenceDataStore.APP_ID).firstOrNull() } returns "demo"
+    //every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
     coEvery { fhirResourceDataSource.getResource("List?_id=123456&_page=1&_count=200") } returns
       bundle
 

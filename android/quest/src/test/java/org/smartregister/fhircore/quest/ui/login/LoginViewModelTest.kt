@@ -38,6 +38,7 @@ import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import okhttp3.internal.http.RealResponseBody
 import org.hl7.fhir.r4.model.Bundle
@@ -65,10 +66,11 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
@@ -88,7 +90,7 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
@@ -120,7 +122,6 @@ internal class LoginViewModelTest : RobolectricTest() {
         LoginViewModel(
           configurationRegistry = configurationRegistry,
           accountAuthenticator = accountAuthenticator,
-          sharedPreferences = sharedPreferencesHelper,
           defaultRepository = defaultRepository,
           configService = configService,
           keycloakService = keycloakService,
@@ -129,6 +130,7 @@ internal class LoginViewModelTest : RobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           dispatcherProvider = dispatcherProvider,
           workManager = workManager,
+          preferenceDataStore = preferenceDataStore,
         ),
       )
   }
@@ -199,10 +201,17 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testSuccessfulOnlineLoginWithActiveSessionWithSavedPractitionerDetails() {
     updateCredentials()
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-      PractitionerDetails(),
-    )
+    // TODO: THIS IS AN OBJECT TYPE ---->?PRACTITIONER DETAILS
+//    sharedPreferencesHelper.write(
+//      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+//      PractitionerDetails(),
+//    )
+    runBlocking {
+      preferenceDataStore.write(
+        PreferenceDataStore.PRACTITIONER_DETAILS,
+        PractitionerDetails().toString()
+      )
+    }
     every { tokenAuthenticator.sessionActive() } returns true
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
@@ -535,7 +544,10 @@ internal class LoginViewModelTest : RobolectricTest() {
       UserInfo(),
     ) {}
     Assert.assertNotNull(
-      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+      // TODO: READS OBJECT TYPE -----> PRACTITIONER DETAILS
+      runBlocking {
+        preferenceDataStore.read(PreferenceDataStore.PRACTITIONER_DETAILS).firstOrNull()
+      }?.decodeJson<PractitionerDetails>()
     )
   }
 
@@ -571,7 +583,12 @@ internal class LoginViewModelTest : RobolectricTest() {
       ),
     ) {}
     Assert.assertNotNull(
-      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+      // TODO: READS OBJECT TYPE -----> PRACTITIONER DETAILS
+      runBlocking {
+        preferenceDataStore.read(
+          PreferenceDataStore.PRACTITIONER_DETAILS
+        ).firstOrNull()
+      }?.decodeJson<PractitionerDetails>()
     )
   }
 
@@ -616,7 +633,10 @@ internal class LoginViewModelTest : RobolectricTest() {
       UserInfo().apply { keycloakUuid = "my-test-practitioner-id" },
     ) {}
     Assert.assertNotNull(
-      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+      // TODO: READS OBJECT TYPE -----> PRACTITIONER DETAILS
+      runBlocking {
+        preferenceDataStore.read(PreferenceDataStore.PRACTITIONER_DETAILS).firstOrNull()
+      }
     )
   }
 
@@ -689,19 +709,21 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testWritePractitionerDetailsToShredPrefSavesPractitionerLocationId() {
     val locationId = "ABCD123"
-    loginViewModel.writePractitionerDetailsToShredPref(
-      careTeams = listOf(""),
+    loginViewModel.writePractitionerDetailsToPreference(
+      careTeamId = listOf(""),
       careTeam = listOf(""),
       organization = listOf(""),
-      organizations = listOf(""),
+      organizationId = listOf(""),
       location = listOf(""),
-      locations = listOf(locationId),
+      locationId = listOf(locationId),
       fhirPractitionerDetails = PractitionerDetails(),
       locationHierarchies = listOf(LocationHierarchy()),
     )
     assertEquals(
       locationId,
-      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name),
+      runBlocking {
+        preferenceDataStore.read(PreferenceDataStore.PRACTITIONER_LOCATION_ID).firstOrNull()
+      }
     )
   }
 

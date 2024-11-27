@@ -42,7 +42,9 @@ import java.util.TimeZone
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
@@ -56,6 +58,8 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
+import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.sync.CustomSyncWorker
@@ -68,7 +72,6 @@ import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragm
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.countUnSyncedResources
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
@@ -95,7 +98,7 @@ class AppMainViewModel
 constructor(
   val secureSharedPreference: SecureSharedPreference,
   val syncBroadcaster: SyncBroadcaster,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
   val dispatcherProvider: DispatcherProvider,
@@ -108,7 +111,7 @@ constructor(
       appMainUiStateOf(
         navigationConfiguration =
           NavigationConfiguration(
-            sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "")!!,
+            preferenceDataStore.readOnce(PreferenceDataStore.APP_ID, "") ?: "",
           ),
       ),
     )
@@ -203,7 +206,10 @@ constructor(
   fun onEvent(event: AppMainEvent) {
     when (event) {
       is AppMainEvent.SwitchLanguage -> {
-        sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
+        // TODO: Writes an object type --->AppMainEvent
+        runBlocking { preferenceDataStore.write(PreferenceDataStore.LANG, event.language.tag) }
+
+       // sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
           setAppLocale(event.language.tag)
           getActivity()?.refresh()
@@ -227,10 +233,13 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         if (event.state is CurrentSyncJobStatus.Succeeded) {
-          sharedPreferencesHelper.write(
-            SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-            event.state.timestamp.toInstant().toEpochMilli().toString(),
-          )
+          // TODO: Writes an object type ---> OffsetDateTime
+          runBlocking {
+            preferenceDataStore.write(
+              PreferenceDataStore.LAST_SYNC_TIMESTAMP,
+              event.state.timestamp.toInstant().toEpochMilli().toString()
+            )
+          }
           retrieveAppMainUiState()
           viewModelScope.launch { retrieveAppMainUiState() }
         }
@@ -280,12 +289,15 @@ constructor(
       }
   }
 
+  // TODO : Read an object type ---> AppMainEvent
   private fun loadCurrentLanguage() =
-    Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
+    runBlocking {
+      Locale.forLanguageTag(
+        preferenceDataStore.read(PreferenceDataStore.currentLanguage()).firstOrNull()
           ?: Locale.ENGLISH.toLanguageTag(),
       )
-      .displayName
+        .displayName
+    }
 
   fun formatLastSyncTimestamp(timestamp: OffsetDateTime): String {
     val syncTimestampFormatter =
@@ -296,8 +308,9 @@ constructor(
     return if (parse == null) "" else simpleDateFormat.format(parse)
   }
 
+  // TODO: Reads an object type ---> OffsetDateTime
   fun retrieveLastSyncTimestamp(): String? =
-    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+    runBlocking { preferenceDataStore.read(PreferenceDataStore.LAST_SYNC_TIMESTAMP).firstOrNull() }
 
   fun schedulePeriodicSync() {
     viewModelScope.launch {
@@ -353,11 +366,12 @@ constructor(
     progressSyncJobStatus: SyncJobStatus.InProgress,
   ): Int {
     val totalRecordsOverall =
-      sharedPreferencesHelper.read(
-        SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
-          progressSyncJobStatus.syncOperation.name,
-        1L,
-      )
+      runBlocking {
+        preferenceDataStore.read(
+          PreferenceDataStore.syncProgress(progressSyncJobStatus)
+        ).firstOrNull()?:1L
+      }
+
     val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
     val currentProgress: Int
     val currentTotalRecords =
@@ -367,11 +381,12 @@ constructor(
             progressSyncJobStatus.completed
         totalRecordsOverall.toInt()
       } else {
-        sharedPreferencesHelper.write(
-          SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
-            progressSyncJobStatus.syncOperation.name,
-          progressSyncJobStatus.total.toLong(),
-        )
+        runBlocking {
+          preferenceDataStore.write(
+            PreferenceDataStore.syncProgress(progressSyncJobStatus),
+            progressSyncJobStatus.total.toLong()
+          )
+        }
         currentProgress = progressSyncJobStatus.completed
         progressSyncJobStatus.total
       }

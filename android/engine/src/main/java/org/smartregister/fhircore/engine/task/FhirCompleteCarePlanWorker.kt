@@ -22,6 +22,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ResourceType
@@ -30,11 +31,10 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.lastOffset
 import org.smartregister.fhircore.engine.util.getLastOffset
 
 @HiltWorker
@@ -45,7 +45,7 @@ constructor(
   @Assisted workerParams: WorkerParameters,
   val defaultRepository: DefaultRepository,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
   val fhirResourceUtil: FhirResourceUtil,
@@ -59,7 +59,9 @@ constructor(
       val batchSize = applicationConfiguration.taskBackgroundWorkerBatchSize.div(BATCH_SIZE_FACTOR)
 
       val lastOffset =
-        sharedPreferencesHelper.read(key = WORK_ID.lastOffset(), defaultValue = "0")!!.toInt()
+      preferenceDataStore.read(PreferenceDataStore.COMPLETE_CAREPLAN_WORKER_LAST_OFFSET).firstOrNull() ?: 0
+
+
 
       val carePlans = getCarePlans(batchSize = batchSize, lastOffset = lastOffset)
 
@@ -84,9 +86,9 @@ constructor(
       val updatedLastOffset =
         getLastOffset(items = carePlans, lastOffset = lastOffset, batchSize = batchSize)
 
-      sharedPreferencesHelper.write(
-        key = WORK_ID.lastOffset(),
-        value = updatedLastOffset.toString(),
+      preferenceDataStore.write(
+        key = PreferenceDataStore.COMPLETE_CAREPLAN_WORKER_LAST_OFFSET,
+        value = updatedLastOffset,
       )
       Result.success()
     }

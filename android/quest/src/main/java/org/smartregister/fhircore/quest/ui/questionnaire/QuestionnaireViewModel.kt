@@ -69,6 +69,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.CodingSystemUsage
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.isEditable
@@ -76,8 +77,6 @@ import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
@@ -112,20 +111,18 @@ constructor(
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   val transformSupportServices: TransformSupportServices,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val fhirOperator: FhirOperator,
   val fhirValidatorRequestHandlerProvider: Lazy<ResourceValidationRequestHandler>,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val configurationRegistry: ConfigurationRegistry,
 ) : ViewModel() {
   private val authenticatedOrganizationIds by lazy {
-    sharedPreferencesHelper.read<List<String>>(ResourceType.Organization.name)
+    preferenceDataStore.readOnce(PreferenceDataStore.ORGANIZATION_NAME, null)
   }
 
   private val practitionerId: String? by lazy {
-    sharedPreferencesHelper
-      .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
-      ?.extractLogicalIdUuid()
+    preferenceDataStore.readOnce(PreferenceDataStore.PRACTITIONER_ID, null)?.extractLogicalIdUuid()
   }
 
   private val _questionnaireProgressStateLiveData = MutableLiveData<QuestionnaireProgressState?>()
@@ -642,7 +639,7 @@ constructor(
     context: Context,
   ) =
     this?.apply {
-      appendOrganizationInfo(authenticatedOrganizationIds)
+      appendOrganizationInfo(authenticatedOrganizationIds?.split(","))
       appendPractitionerInfo(practitionerId)
       appendRelatedEntityLocation(questionnaireResponse, questionnaireConfig, context)
       updateLastUpdated()

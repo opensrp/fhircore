@@ -17,6 +17,11 @@
 package org.smartregister.fhircore.quest.app.fakes
 
 import android.app.Application
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.dataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltTestApplication
@@ -41,8 +46,8 @@ import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 
@@ -90,7 +95,7 @@ object Faker {
         ConfigurationRegistry(
           fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
-          sharedPreferencesHelper = mockk(),
+          preferenceDataStore = mockk(),
           dispatcherProvider = testDispatcherProvider,
           configService = configService,
           json = json,
@@ -110,11 +115,25 @@ object Faker {
     return configurationRegistry
   }
 
-  fun buildSharedPreferencesHelper() =
-    SharedPreferencesHelper(
-      ApplicationProvider.getApplicationContext<Application>(),
-      Gson(),
-    )
+  //Todo: How to instantiate this
+//  fun buildSharedPreferencesHelper() =
+//    SharedPreferencesHelper(
+//      ApplicationProvider.getApplicationContext<Application>(),
+//      Gson(),
+//    )
+
+//  val Context.dataStore by preferencesDataStore(name = "app_preferences")
+
+  
+//  fun buildPreferencesHelper(): PreferenceDataStore {
+//    val context = ApplicationProvider.getApplicationContext<Application>()
+//    return PreferenceDataStore(context, context.dataStore)
+//  }
+
+//  fun buildPreferenceDataStore(): DataStore<Preferences> {
+//    val context = ApplicationProvider.getApplicationContext<Application>()
+//    return context.dataStore
+//  }
 
   fun buildPatient(
     id: String = "sampleId",

@@ -38,6 +38,10 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
@@ -57,7 +61,7 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -81,8 +85,8 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Inject lateinit var preferenceDataStore: PreferenceDataStore
   lateinit var fhirEngine: FhirEngine
-  private var sharedPreferencesHelper: SharedPreferencesHelper
   private var configService: ConfigService
+//  private lateinit var preferenceDataStore: PreferenceDataStore
   private lateinit var syncBroadcaster: SyncBroadcaster
   private lateinit var userSettingViewModel: UserSettingViewModel
   private lateinit var accountAuthenticator: AccountAuthenticator
@@ -95,7 +99,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   private val navController = mockk<NavController>(relaxUnitFun = true)
 
   init {
-    sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
+//    preferenceDataStore = PreferenceDataStore(context = context, dataStore = mockk())
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
   }
@@ -106,7 +110,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     hiltRule.inject()
     accountAuthenticator = mockk(relaxUnitFun = true)
     secureSharedPreference = mockk()
-    sharedPreferencesHelper = mockk()
+    preferenceDataStore = mockk()
     fhirEngine = mockk(relaxUnitFun = true)
     syncBroadcaster =
       spyk(
@@ -127,7 +131,6 @@ class UserSettingViewModelTest : RobolectricTest() {
           syncBroadcaster = syncBroadcaster,
           accountAuthenticator = accountAuthenticator,
           secureSharedPreference = secureSharedPreference,
-          sharedPreferencesHelper = sharedPreferencesHelper,
           preferenceDataStore = preferenceDataStore,
           configurationRegistry = configurationRegistry,
           workManager = workManager,
@@ -221,25 +224,33 @@ class UserSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun loadSelectedLanguage() {
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, "en") } returns "fr"
-    Assert.assertEquals("French", userSettingViewModel.loadSelectedLanguage())
+  fun loadSelectedLanguage() = runTest {
+//    every { sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, "en") } returns "fr"
+//    Assert.assertEquals("French", userSettingViewModel.loadSelectedLanguage())
+
+    val langMock = preferenceDataStore.read(PreferenceDataStore.LANG).firstOrNull()
+    every { langMock } returns "fr"
+
+    val language = userSettingViewModel.loadSelectedLanguage().firstOrNull()
+
+    Assert.assertEquals("French", language)
     Shadows.shadowOf(Looper.getMainLooper()).idle()
-    verify { sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, "en") }
+    coVerify { preferenceDataStore.read(PreferenceDataStore.currentLanguage()).firstOrNull() }
   }
+
 
   @Test
   fun setLanguageShouldCallSharedPreferencesHelperWriteWithSelectedLanguageTagAndPostValue() {
     val language = Language("es", "Spanish")
     val userSettingsEvent = UserSettingsEvent.SwitchLanguage(language, context)
 
-    every { sharedPreferencesHelper.write(any(), any<String>()) } just runs
+    coEvery { preferenceDataStore.write(any(), any<String>()) } just runs
 
     userSettingViewModel.onEvent(userSettingsEvent)
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
-    verify { sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, "es") }
+    coVerify { preferenceDataStore.write(PreferenceDataStore.LANG, "es") }
 
     Assert.assertTrue(configurationRegistry.configCacheMap.isEmpty())
   }

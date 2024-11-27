@@ -117,13 +117,13 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
         DefaultRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
-          sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = mockk(),
           parser = parser,
           context = ApplicationProvider.getApplicationContext(),
+          preferenceDataStore = mockk(),
           contentCache = contentCache,
         ),
       )

@@ -25,12 +25,13 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.serialization.SerializationException
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import timber.log.Timber
 
 @Singleton
-class SharedPreferencesHelper
+class SharedPreferencesHelpe
 @Inject
 constructor(@ApplicationContext val context: Context, val gson: Gson) {
 

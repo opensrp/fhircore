@@ -97,6 +97,7 @@ import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
@@ -106,7 +107,6 @@ import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -132,9 +132,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
   @Inject lateinit var fhirValidatorRequestHandlerProvider: Lazy<ResourceValidationRequestHandler>
+
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   @Inject lateinit var configService: ConfigService
 
@@ -176,20 +176,26 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
-    // Write practitioner and organization to shared preferences
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.PRACTITIONER_ID.name,
-      practitionerDetails().fhirPractitionerDetails.practitionerId.valueToString(),
-    )
+    runBlocking {
+      preferenceDataStore.write(
+        PreferenceDataStore.PRACTITIONER_ID,
+        practitionerDetails().fhirPractitionerDetails.practitionerId.valueToString(),
+      )
 
-    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("105"))
+      preferenceDataStore.write(
+        key = PreferenceDataStore.ORGANIZATION_NAME,
+        value = ""
+      )
+    }
+
+//    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("105"))
 
     defaultRepository =
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferenceDataStore = preferenceDataStore,
           configurationRegistry = configurationRegistry,
           configService = configService,
           configRulesExecutor = configRulesExecutor,
@@ -216,7 +222,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           fhirCarePlanGenerator = fhirCarePlanGenerator,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
           transformSupportServices = mockk(),
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferenceDataStore = preferenceDataStore,
           fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
           fhirOperator = fhirOperator,
           fhirPathDataExtractor = fhirPathDataExtractor,
@@ -704,11 +710,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         fhirCarePlanGenerator = fhirCarePlanGenerator,
         resourceDataRulesExecutor = resourceDataRulesExecutor,
         transformSupportServices = mockk(),
-        sharedPreferencesHelper = sharedPreferencesHelper,
         fhirOperator = fhirOperator,
         fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
         configurationRegistry = configurationRegistry,
+        preferenceDataStore = preferenceDataStore,
       )
     val patientAgeLinkId = "patient-age"
     val newQuestionnaireId = "new-${questionnaireConfig.id}"
@@ -2008,7 +2014,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           fhirCarePlanGenerator = fhirCarePlanGenerator,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
           transformSupportServices = mockk(),
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferenceDataStore = preferenceDataStore,
           fhirOperator = fhirOperator,
           fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
           fhirPathDataExtractor = fhirPathDataExtractor,
@@ -2070,7 +2076,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           fhirCarePlanGenerator = fhirCarePlanGenerator,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
           transformSupportServices = mockk(),
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferenceDataStore = preferenceDataStore,
           fhirOperator = fhirOperator,
           fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
           fhirPathDataExtractor = fhirPathDataExtractor,
@@ -2145,7 +2151,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         fhirCarePlanGenerator = fhirCarePlanGenerator,
         resourceDataRulesExecutor = resourceDataRulesExecutor,
         transformSupportServices = mockk(),
-        sharedPreferencesHelper = sharedPreferencesHelper,
+        preferenceDataStore = preferenceDataStore,
         fhirOperator = fhirOperator,
         fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
@@ -2253,7 +2259,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         fhirCarePlanGenerator = fhirCarePlanGenerator,
         resourceDataRulesExecutor = resourceDataRulesExecutor,
         transformSupportServices = mockk(),
-        sharedPreferencesHelper = sharedPreferencesHelper,
+        preferenceDataStore = preferenceDataStore,
         fhirOperator = fhirOperator,
         fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,

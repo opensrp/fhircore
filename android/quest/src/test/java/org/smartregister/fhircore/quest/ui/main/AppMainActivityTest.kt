@@ -35,6 +35,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import kotlinx.coroutines.runBlocking
 import java.io.Serializable
 import java.time.OffsetDateTime
 import kotlinx.coroutines.test.runTest
@@ -46,6 +47,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -73,6 +75,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     appMainActivity = spyk(Robolectric.buildActivity(AppMainActivity::class.java).create().get())
+
     every { appMainActivity.eventBus } returns eventBus
   }
 
@@ -104,10 +107,12 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnSyncWithSyncStateFailedDoesNotUpdateTimestamp() {
     val viewModel = appMainActivity.appMainViewModel
-    viewModel.sharedPreferencesHelper.write(
-      SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-      "2022-05-19",
-    )
+    runBlocking {
+      viewModel.preferenceDataStore.write(
+        PreferenceDataStore.LAST_SYNC_TIMESTAMP,
+        "2022-05-19",
+      )
+    }
     val initialTimestamp = viewModel.appMainUiState.value.lastSyncTime
     val syncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now())
     appMainActivity.onSync(syncJobStatus)

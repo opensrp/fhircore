@@ -16,13 +16,13 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
+import androidx.datastore.preferences.core.stringPreferencesKey
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.sync.ResourceTag
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
 /** An interface that provides the application configurations. */
@@ -38,12 +38,14 @@ interface ConfigService {
    * Provide a list of [Coding] that represents [ResourceTag]. [Coding] can be directly appended to
    * a FHIR resource.
    */
-  fun provideResourceTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
+  suspend fun provideResourceTags(
+    preferenceDataStore: PreferenceDataStore
+  ): List<Coding> {
     val tags = mutableListOf<Coding>()
     defineResourceTags().forEach { strategy ->
       when (strategy.type) {
         ResourceType.Practitioner.name -> {
-          val id = sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+          val id = preferenceDataStore.readOnce(PreferenceDataStore.PRACTITIONER_ID)
           if (id.isNullOrBlank() || id.isEmpty()) {
             strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
           } else {
@@ -54,16 +56,32 @@ interface ConfigService {
         }
         APP_VERSION -> tags.add(strategy.tag.copy())
         else -> {
-          val ids = sharedPreferencesHelper.read<List<String>>(strategy.type)
-          if (ids.isNullOrEmpty()) {
+          // ToDO: This is an object type
+          val datastoreKey = stringPreferencesKey("key")
+
+          val ids = preferenceDataStore.readOnce(datastoreKey, defaultValue = null)
+          val idList = ids?.split(",")
+
+          if (idList.isNullOrEmpty()) {
             strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
           } else {
-            ids.forEach { id ->
+            idList.forEach { id ->
               strategy.tag.let { tag ->
                 tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
               }
             }
           }
+
+//            //sharedPreferencesHelper.read<List<String>>(strategy.type)
+//          if (ids.isNullOrEmpty()) {
+//            strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+//          } else {
+//            ids.forEach { id ->
+//              strategy.tag.let { tag ->
+//                tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
+//              }
+//            }
+//          }
         }
       }
     }

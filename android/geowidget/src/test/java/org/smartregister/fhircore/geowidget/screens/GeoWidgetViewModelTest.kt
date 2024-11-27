@@ -35,7 +35,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.Geometry
@@ -57,7 +57,9 @@ class GeoWidgetViewModelTest {
   @Inject lateinit var parser: IParser
 
   private lateinit var configurationRegistry: ConfigurationRegistry
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  private lateinit var preferenceDataStore: PreferenceDataStore
+
   private lateinit var geoWidgetViewModel: GeoWidgetViewModel
 
   @Before
@@ -65,7 +67,7 @@ class GeoWidgetViewModelTest {
     MockitoAnnotations.initMocks(this)
     geoWidgetViewModel = GeoWidgetViewModel()
     hiltRule.inject()
-    sharedPreferencesHelper = mockk()
+    preferenceDataStore = mockk()
     configurationRegistry = mockk()
   }
 

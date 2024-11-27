@@ -24,6 +24,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -45,9 +46,9 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MMM_DD_HH_MM_SS
 import org.smartregister.fhircore.engine.util.extension.countUnSyncedResources
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
@@ -71,7 +72,6 @@ constructor(
   val syncBroadcaster: SyncBroadcaster,
   val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val workManager: WorkManager,
   val dispatcherProvider: DispatcherProvider,
@@ -95,24 +95,29 @@ constructor(
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
   fun retrieveUserInfo() =
-    sharedPreferencesHelper.read<UserInfo>(
-      key = SharedPreferenceKey.USER_INFO.name,
-    )
+    runBlocking {
+      preferenceDataStore.read(
+        key = PreferenceDataStore.USER_INFO
+      ).firstOrNull()
+    }?.decodeJson<UserInfo>()
 
   fun practitionerLocation() =
-    sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_LOCATION.name, null)
+    preferenceDataStore.readOnce(PreferenceDataStore.PRACTITIONER_LOCATION, null)
 
   fun retrieveOrganization() =
-    sharedPreferencesHelper.read(SharedPreferenceKey.ORGANIZATION.name, null)
+    preferenceDataStore.readOnce(PreferenceDataStore.ORGANIZATION_NAME, null)
 
-  fun retrieveCareTeam() = sharedPreferencesHelper.read(SharedPreferenceKey.CARE_TEAM.name, null)
+  fun retrieveCareTeam() = preferenceDataStore.readOnce(PreferenceDataStore.CARE_TEAM_NAME, null)
 
-  fun retrieveDataMigrationVersion(): String = runBlocking {
-    (preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).firstOrNull() ?: 0).toString()
+  // TODO: Reads an object type ---> OffsetDateTime - DONE
+  fun retrieveDataMigrationVersion(): String =
+    runBlocking {
+    (preferenceDataStore.read(
+      PreferenceDataStore.MIGRATION_VERSION).firstOrNull() ?: 0).toString()
   }
 
-  fun retrieveLastSyncTimestamp(): String? =
-    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+  suspend fun retrieveLastSyncTimestamp(): String? =
+    preferenceDataStore.read(PreferenceDataStore.LAST_SYNC_TIMESTAMP).firstOrNull()
 
   fun enableMenuOption(settingOption: SettingsOptions) =
     applicationConfiguration.settingsScreenMenuOptions.contains(settingOption)
@@ -120,12 +125,31 @@ constructor(
   fun allowSwitchingLanguages() =
     enableMenuOption(SettingsOptions.SWITCH_LANGUAGES) && languages.size > 1
 
-  fun loadSelectedLanguage(): String =
-    Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
-          ?: Locale.ENGLISH.toLanguageTag(),
-      )
-      .displayName
+  // TODO: Reads an object type ---> AppMainEvent
+//  fun loadSelectedLanguage(): String =
+//
+//
+//      Locale.forLanguageTag(
+//        preferenceDataStore.read(PreferenceDataStore.currentLanguage()).firstOrNull()
+//          ?: Locale.ENGLISH.toLanguageTag(),
+//      ).displayName
+//    }
+
+  fun loadSelectedLanguage(): String = runBlocking {
+    val languageTag = preferenceDataStore.read(PreferenceDataStore.currentLanguage()).firstOrNull()
+      ?: Locale.ENGLISH.toLanguageTag()
+    Locale.forLanguageTag(languageTag).displayName
+  }.toString()
+
+
+
+//  fun loadSelectedLanguage(): String = runBlocking {
+//    val languageTag = preferenceDataStore.read(PreferenceDataStore.LANG).firstOrNull()
+//      ?: Locale.ENGLISH.toLanguageTag()
+//    Locale.forLanguageTag(languageTag).displayName
+//  }
+
+
 
   fun onEvent(event: UserSettingsEvent) {
     when (event) {
@@ -154,7 +178,8 @@ constructor(
         }
       }
       is UserSettingsEvent.SwitchLanguage -> {
-        sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
+        // TODO : Write an object type ---> AppMainEvent
+        runBlocking { preferenceDataStore.write(PreferenceDataStore.LANG, event.language.tag) }
         event.context.run {
           configurationRegistry.configCacheMap.clear()
           setAppLocale(event.language.tag)
@@ -195,11 +220,13 @@ constructor(
 
       withContext(dispatcherProvider.io()) { fhirEngine.clearDatabase() }
 
+      // TODO: The clear part of datastore should be within the authenticator --->
       accountAuthenticator.invalidateSession {
-        sharedPreferencesHelper.resetSharedPrefs()
+        preferenceDataStore.resetPreferences()
         secureSharedPreference.resetSharedPrefs()
         context.getActivity()?.launchActivityWithNoBackStackHistory<AppSettingActivity>()
       }
+      preferenceDataStore.clear()
     }
   }
 

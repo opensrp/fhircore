@@ -30,6 +30,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -44,6 +45,7 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
@@ -51,7 +53,6 @@ import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
@@ -67,7 +68,7 @@ class GeoWidgetLauncherViewModel
 constructor(
   val defaultRepository: DefaultRepository,
   val dispatcherProvider: DispatcherProvider,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   val configurationRegistry: ConfigurationRegistry,
   @ApplicationContext val context: Context,
@@ -325,9 +326,11 @@ constructor(
   }
 
   fun isFirstTime(): Boolean =
-    sharedPreferencesHelper
-      .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
-      .isNullOrEmpty() && applicationConfiguration.usePractitionerAssignedLocationOnSync
+    runBlocking {
+      preferenceDataStore
+        .read(PreferenceDataStore.LAST_SYNC_TIMESTAMP).firstOrNull()
+        .isNullOrEmpty() && applicationConfiguration.usePractitionerAssignedLocationOnSync
+    }
 
   fun getImageBitmap(reference: String) = runBlocking {
     reference.referenceToBitmap(defaultRepository.fhirEngine, decodedImageMap)

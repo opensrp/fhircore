@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.sync
 import android.content.Context
 import android.util.Log
 import androidx.compose.ui.state.ToggleableState
+import androidx.datastore.preferences.core.Preferences
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.Configuration
 import androidx.work.ListenableWorker
@@ -46,12 +47,12 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 class CustomSyncWorkerTest : RobolectricTest() {
@@ -67,7 +68,9 @@ class CustomSyncWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
 
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+//  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  private lateinit var preferenceDataStore: PreferenceDataStore
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
@@ -83,9 +86,12 @@ class CustomSyncWorkerTest : RobolectricTest() {
 
   @Test
   fun `should create sync worker with expected properties`() {
-    sharedPreferencesHelper =
-      SharedPreferencesHelper(ApplicationProvider.getApplicationContext(), Gson())
-    configurationRegistry = Faker.buildTestConfigurationRegistry(sharedPreferencesHelper)
+    preferenceDataStore =
+      PreferenceDataStore(ApplicationProvider.getApplicationContext(), dataStore = preferenceDataStore.dataStore)
+
+//    sharedPreferencesHelper =
+//      SharedPreferencesHelper(ApplicationProvider.getApplicationContext(), Gson())
+    configurationRegistry = Faker.buildTestConfigurationRegistry(preferenceDataStore)
 
     customSyncWorker =
       TestListenableWorkerBuilder<CustomSyncWorker>(
@@ -101,22 +107,35 @@ class CustomSyncWorkerTest : RobolectricTest() {
 
   @Test
   fun `should create sync worker with organization`() = runTest {
-    sharedPreferencesHelper =
-      SharedPreferencesHelper(ApplicationProvider.getApplicationContext(), Gson())
+    preferenceDataStore =
+      PreferenceDataStore(ApplicationProvider.getApplicationContext(), dataStore = preferenceDataStore.dataStore)
+
+//    sharedPreferencesHelper =
+//      SharedPreferencesHelper(ApplicationProvider.getApplicationContext(), Gson())
 
     val organizationId1 = "organization-id1"
     val organizationId2 = "organization-id2"
-    sharedPreferencesHelper.write(
-      ResourceType.Organization.name,
-      listOf(organizationId1, organizationId2),
+
+    preferenceDataStore.write(
+      PreferenceDataStore.ORGANIZATION_NAME,
+      organizationId1,
     )
+//    sharedPreferencesHelper.write(
+//      ResourceType.Organization.name,
+//      listOf(organizationId1, organizationId2),
+//    )
     val locationId = UUID.randomUUID().toString()
-    sharedPreferencesHelper.context.syncLocationIdsProtoStore.updateData {
+    preferenceDataStore.context.syncLocationIdsProtoStore.updateData {
       mapOf(
-        locationId to SyncLocationState(locationId, null, ToggleableState.On),
+        locationId to SyncLocationState(locationId, null, ToggleableState.On)
       )
     }
-    configurationRegistry = Faker.buildTestConfigurationRegistry(sharedPreferencesHelper)
+//    sharedPreferencesHelper.context.syncLocationIdsProtoStore.updateData {
+//      mapOf(
+//        locationId to SyncLocationState(locationId, null, ToggleableState.On),
+//      )
+//    }
+    configurationRegistry = Faker.buildTestConfigurationRegistry(preferenceDataStore)
 
     customSyncWorker =
       TestListenableWorkerBuilder<CustomSyncWorker>(
@@ -130,9 +149,9 @@ class CustomSyncWorkerTest : RobolectricTest() {
     Assert.assertEquals(ListenableWorker.Result.success(), expected)
   }
 
-  private fun writePrefs(key: String, value: String) {
-    if (::sharedPreferencesHelper.isInitialized) {
-      sharedPreferencesHelper.write(key, value)
+  private suspend fun writePrefs(key: Preferences.Key<String>, value: String) {
+    if (::preferenceDataStore.isInitialized) {
+      preferenceDataStore.write(key, value)
     }
   }
 

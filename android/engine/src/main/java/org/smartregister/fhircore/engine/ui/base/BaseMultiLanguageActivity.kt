@@ -16,15 +16,22 @@
 
 package org.smartregister.fhircore.engine.ui.base
 
+import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.lifecycle.lifecycleScope
+import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import java.lang.UnsupportedOperationException
 import java.util.Locale
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
 /**
@@ -33,7 +40,7 @@ import org.smartregister.fhircore.engine.util.extension.setAppLocale
  */
 abstract class BaseMultiLanguageActivity : AppCompatActivity() {
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   override fun onCreate(savedInstanceState: Bundle?) {
     inject()
@@ -43,14 +50,25 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
   }
 
   override fun attachBaseContext(baseContext: Context) {
-    val lang =
-      baseContext
-        .getSharedPreferences(SharedPreferencesHelper.PREFS_NAME, Context.MODE_PRIVATE)
-        .getString(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
-        ?: Locale.ENGLISH.toLanguageTag()
-    baseContext.setAppLocale(lang).run {
-      super.attachBaseContext(baseContext)
-      applyOverrideConfiguration(this)
+    val lang = runBlocking {
+      try {
+        preferenceDataStore.read(PreferenceDataStore.LANG).firstOrNull()
+      } catch (e: UninitializedPropertyAccessException) {
+        Locale.ENGLISH.toLanguageTag()
+      }
+    }
+//    val lang =
+//      runBlocking {
+//        preferenceDataStore = PreferenceDataStore(applicationContext, dataStore = preferenceDataStore.dataStore)
+//
+//        preferenceDataStore.read(PreferenceDataStore.LANG).firstOrNull()
+//          ?: Locale.ENGLISH.toLanguageTag()
+//      }
+    if (lang != null) {
+      baseContext.setAppLocale(lang).run {
+        super.attachBaseContext(baseContext)
+        applyOverrideConfiguration(this)
+      }
     }
   }
 

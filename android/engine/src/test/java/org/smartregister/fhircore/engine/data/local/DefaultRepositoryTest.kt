@@ -89,6 +89,7 @@ import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityCon
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.PATIENT_CONDITION_RESOLVED_CODE
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.PATIENT_CONDITION_RESOLVED_DISPLAY
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.SNOMED_SYSTEM
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
@@ -99,7 +100,6 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
@@ -123,6 +123,8 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var parser: IParser
 
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
+
   @Inject lateinit var contentCache: ContentCache
 
   @BindValue
@@ -132,25 +134,24 @@ class DefaultRepositoryTest : RobolectricTest() {
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private lateinit var dispatcherProvider: DefaultDispatcherProvider
-  private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var defaultRepository: DefaultRepository
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
+    preferenceDataStore = PreferenceDataStore(application, preferenceDataStore.dataStore)
     dispatcherProvider = DefaultDispatcherProvider()
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
         dispatcherProvider = dispatcherProvider,
-        sharedPreferencesHelper = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
         configService = configService,
         configRulesExecutor = configRulesExecutor,
         fhirPathDataExtractor = fhirPathDataExtractor,
         parser = parser,
         context = context,
+        preferenceDataStore = preferenceDataStore,
         contentCache = contentCache,
       )
   }
@@ -313,7 +314,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertEquals(system, firstTag.system)
 
     coEvery { fhirEngine.create(any()) } returns listOf(resource.id)
-    every { configService.provideResourceTags(sharedPreferenceHelper) } returns
+    coEvery { configService.provideResourceTags(preferenceDataStore) } returns
       listOf(coding, anotherCoding)
     runBlocking { defaultRepository.create(true, resource) }
 
@@ -558,13 +559,13 @@ class DefaultRepositoryTest : RobolectricTest() {
         DefaultRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
-          sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = context,
+          preferenceDataStore = mockk(),
           contentCache = contentCache,
         ),
       )
@@ -637,13 +638,13 @@ class DefaultRepositoryTest : RobolectricTest() {
         DefaultRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
-          sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = context,
+          preferenceDataStore = mockk(),
           contentCache = contentCache,
         ),
       )

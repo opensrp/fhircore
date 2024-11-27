@@ -20,6 +20,7 @@ import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
+import androidx.datastore.core.DataStore
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
@@ -41,6 +42,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import kotlinx.coroutines.flow.firstOrNull
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -60,6 +62,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.Language
@@ -70,7 +73,6 @@ import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragm
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.reformatDate
@@ -96,6 +98,8 @@ class AppMainViewModelTest : RobolectricTest() {
 
   @Inject lateinit var fhirEngine: FhirEngine
 
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
+
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
@@ -106,7 +110,6 @@ class AppMainViewModelTest : RobolectricTest() {
   private val registerRepository: RegisterRepository = mockk()
   private val application: Context = ApplicationProvider.getApplicationContext()
   private val syncBroadcaster: SyncBroadcaster = mockk(relaxed = true)
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   private lateinit var appMainViewModel: AppMainViewModel
 
   @Before
@@ -114,7 +117,7 @@ class AppMainViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
+//    sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
 
@@ -123,7 +126,7 @@ class AppMainViewModelTest : RobolectricTest() {
         AppMainViewModel(
           syncBroadcaster = syncBroadcaster,
           secureSharedPreference = secureSharedPreference,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferenceDataStore = preferenceDataStore,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
           dispatcherProvider = dispatcherProvider,
@@ -136,7 +139,7 @@ class AppMainViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnEventSwitchLanguage() {
+  fun testOnEventSwitchLanguage() = runTest {
     val appMainEvent =
       AppMainEvent.SwitchLanguage(
         Language("en", "English"),
@@ -145,7 +148,7 @@ class AppMainViewModelTest : RobolectricTest() {
 
     appMainViewModel.onEvent(appMainEvent)
 
-    Assert.assertEquals("en", sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, ""))
+    Assert.assertEquals("en", preferenceDataStore.read(PreferenceDataStore.LANG).firstOrNull())
 
     unmockkStatic(Activity::class)
   }

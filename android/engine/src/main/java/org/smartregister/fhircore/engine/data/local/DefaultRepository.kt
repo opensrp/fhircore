@@ -73,6 +73,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
@@ -85,7 +86,6 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -107,7 +107,7 @@ open class DefaultRepository
 constructor(
   open val fhirEngine: FhirEngine,
   open val dispatcherProvider: DispatcherProvider,
-  open val sharedPreferencesHelper: SharedPreferencesHelper,
+  open val preferenceDataStore: PreferenceDataStore,
   open val configurationRegistry: ConfigurationRegistry,
   open val configService: ConfigService,
   open val configRulesExecutor: ConfigRulesExecutor,
@@ -179,14 +179,17 @@ constructor(
     fhirEngine.create(*resource, isLocalOnly = true)
   }
 
-  private fun preProcessResources(addResourceTags: Boolean, vararg resource: Resource) {
+  private suspend fun preProcessResources(addResourceTags: Boolean, vararg resource: Resource) {
     resource.onEach { currentResource ->
       currentResource.apply {
         updateLastUpdated()
         generateMissingId()
       }
       if (addResourceTags) {
-        val tags = configService.provideResourceTags(sharedPreferencesHelper)
+        val tags =
+          configService.provideResourceTags(
+            preferenceDataStore = preferenceDataStore
+          )
         tags.forEach {
           val existingTag = currentResource.meta.getTag(it.system, it.code)
           if (existingTag == null) {

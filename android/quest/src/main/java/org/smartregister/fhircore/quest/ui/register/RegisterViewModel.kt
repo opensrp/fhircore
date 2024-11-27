@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -67,6 +68,7 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterFilterField
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
@@ -79,7 +81,6 @@ import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
@@ -95,7 +96,7 @@ class RegisterViewModel
 constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
@@ -721,14 +722,14 @@ constructor(
   }
 
   private fun isFirstTimeSync() =
-    sharedPreferencesHelper
-      .read(
-        SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-        null,
-      )
-      .isNullOrEmpty() &&
-      applicationConfiguration.usePractitionerAssignedLocationOnSync &&
-      _totalRecordsCount.longValue == 0L
+      runBlocking {
+          preferenceDataStore.read(
+              PreferenceDataStore.LAST_SYNC_TIMESTAMP
+          ).firstOrNull()
+              .isNullOrEmpty() &&
+                  applicationConfiguration.usePractitionerAssignedLocationOnSync &&
+                  _totalRecordsCount.longValue == 0L
+      }
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)

@@ -33,6 +33,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Task
@@ -44,10 +45,10 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.lastOffset
 
@@ -63,19 +64,25 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
   private lateinit var context: Context
   private val fhirEngine: FhirEngine = mockk()
   private val defaultRepository: DefaultRepository = mockk()
-  private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  private val preferenceDataStore: PreferenceDataStore = mockk()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
     context = ApplicationProvider.getApplicationContext()
-    every {
-      sharedPreferencesHelper.read(FhirTaskStatusUpdateWorker.WORK_ID.lastOffset(), "0")
-    } returns "100"
-    every {
-      sharedPreferencesHelper.write(FhirTaskStatusUpdateWorker.WORK_ID.lastOffset(), "101")
-    } just runs
+    coEvery {
+      preferenceDataStore.read(PreferenceDataStore.CAREPLAN_WORK_ID).firstOrNull()?.lastOffset()
+    }
+    coEvery {
+      preferenceDataStore.write(PreferenceDataStore.CAREPLAN_WORK_ID, "101")
+    }
+//    every {
+//      sharedPreferencesHelper.read(FhirTaskStatusUpdateWorker.WORK_ID.lastOffset(), "0")
+//    } returns "100"
+//    every {
+//      sharedPreferencesHelper.write(FhirTaskStatusUpdateWorker.WORK_ID.lastOffset(), "101")
+//    } just runs
     every { defaultRepository.fhirEngine } returns fhirEngine
 
     fhirResourceUtil =
@@ -104,7 +111,7 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         .setWorkerFactory(
           FhirTaskPlanWorkerFactory(
             fhirEngine,
-            sharedPreferencesHelper,
+            preferenceDataStore,
             configurationRegistry,
           ),
         )
@@ -130,15 +137,19 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         ),
         SearchResult(resource = Task().apply { status = Task.TaskStatus.RECEIVED }, null, null),
       )
-    every {
-      sharedPreferencesHelper.write(FhirTaskStatusUpdateWorker.WORK_ID.lastOffset(), "104")
+    coEvery {
+      preferenceDataStore.write(PreferenceDataStore.CAREPLAN_WORK_ID, "104")
     } just runs
+
+//    every {
+//      sharedPreferencesHelper.write(FhirTaskStatusUpdateWorker.WORK_ID.lastOffset(), "104")
+//    } just runs
     val worker =
       TestListenableWorkerBuilder<FhirTaskStatusUpdateWorker>(context)
         .setWorkerFactory(
           FhirTaskPlanWorkerFactory(
             fhirEngine,
-            sharedPreferencesHelper,
+            preferenceDataStore,
             configurationRegistry,
           ),
         )
@@ -162,7 +173,7 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         .setWorkerFactory(
           FhirTaskPlanWorkerFactory(
             fhirEngine,
-            sharedPreferencesHelper,
+            preferenceDataStore,
             configurationRegistry,
           ),
         )
@@ -182,7 +193,7 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         .setWorkerFactory(
           FhirTaskPlanWorkerFactory(
             fhirEngine,
-            sharedPreferencesHelper,
+            preferenceDataStore,
             configurationRegistry,
           ),
         )
@@ -206,7 +217,7 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         .setWorkerFactory(
           FhirTaskPlanWorkerFactory(
             fhirEngine,
-            sharedPreferencesHelper,
+            preferenceDataStore,
             configurationRegistry,
           ),
         )
@@ -232,7 +243,7 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         .setWorkerFactory(
           FhirTaskPlanWorkerFactory(
             fhirEngine,
-            sharedPreferencesHelper,
+            preferenceDataStore,
             configurationRegistry,
           ),
         )
@@ -258,7 +269,7 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         .setWorkerFactory(
           FhirTaskPlanWorkerFactory(
             fhirEngine,
-            sharedPreferencesHelper,
+            preferenceDataStore,
             configurationRegistry,
           ),
         )
@@ -284,7 +295,7 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         .setWorkerFactory(
           FhirTaskPlanWorkerFactory(
             fhirEngine,
-            sharedPreferencesHelper,
+            preferenceDataStore,
             configurationRegistry,
           ),
         )
@@ -314,7 +325,7 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         .setWorkerFactory(
           FhirTaskPlanWorkerFactory(
             fhirEngine,
-            sharedPreferencesHelper,
+            preferenceDataStore,
             configurationRegistry,
           ),
         )
@@ -344,7 +355,7 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         .setWorkerFactory(
           FhirTaskPlanWorkerFactory(
             fhirEngine,
-            sharedPreferencesHelper,
+            preferenceDataStore,
             configurationRegistry,
           ),
         )
@@ -357,7 +368,7 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
 
   inner class FhirTaskPlanWorkerFactory(
     val fhirEngine: FhirEngine,
-    val sharedPreferencesHelper: SharedPreferencesHelper,
+    val preferenceDataStore: PreferenceDataStore,
     val configurationRegistry: ConfigurationRegistry,
   ) : WorkerFactory() {
     override fun createWorker(

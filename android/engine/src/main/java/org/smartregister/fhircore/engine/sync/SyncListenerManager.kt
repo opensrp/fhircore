@@ -29,8 +29,8 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
 /**
@@ -43,9 +43,9 @@ class SyncListenerManager
 constructor(
   val configService: ConfigService,
   val configurationRegistry: ConfigurationRegistry,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
   @ApplicationContext val context: Context,
   val dispatcherProvider: DefaultDispatcherProvider,
+  val preferenceDataStore: PreferenceDataStore,
 ) {
 
   private val _onSyncListeners = mutableListOf<WeakReference<OnSyncListener>>()

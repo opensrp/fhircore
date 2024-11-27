@@ -21,6 +21,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
@@ -37,14 +38,13 @@ internal class PreferenceDataStoreTest : RobolectricTest() {
 
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  private lateinit var preferenceDataStore: PreferenceDataStore
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   private val keys = PreferenceDataStore.Keys
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    preferenceDataStore = PreferenceDataStore(testContext)
   }
 
   @Test

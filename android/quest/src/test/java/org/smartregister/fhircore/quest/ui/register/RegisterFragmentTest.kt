@@ -47,6 +47,7 @@ import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
@@ -69,6 +70,8 @@ class RegisterFragmentTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
+
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
@@ -88,7 +91,8 @@ class RegisterFragmentTest : RobolectricTest() {
         RegisterViewModel(
           registerRepository = mockk(relaxed = true),
           configurationRegistry = configurationRegistry,
-          sharedPreferencesHelper = Faker.buildSharedPreferencesHelper(),
+          preferenceDataStore = mockk(),
+//          preferenceDataStore = Faker.buildPreferencesHelper(),
           resourceDataRulesExecutor = mockk(),
           dispatcherProvider = dispatcherProvider,
         ),
