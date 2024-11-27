@@ -34,6 +34,7 @@ import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import org.apache.commons.jexl3.JexlEngine
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
@@ -78,6 +79,8 @@ class MeasureReportRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var contentCache: ContentCache
 
+  @Inject lateinit var jexlEngine: JexlEngine
+
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val fhirEngine: FhirEngine = mockk()
   private lateinit var measureReportConfiguration: MeasureReportConfiguration
@@ -104,6 +107,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           locationService = locationService,
           fhirContext = fhirContext,
           defaultRepository = defaultRepository,
+          jexlEngine = jexlEngine,
         ),
       )
     rulesExecutor = RulesExecutor(rulesFactory)

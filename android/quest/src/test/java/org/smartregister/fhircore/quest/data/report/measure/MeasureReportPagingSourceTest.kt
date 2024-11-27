@@ -32,6 +32,7 @@ import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import org.apache.commons.jexl3.JexlEngine
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -71,6 +72,8 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
 
   @Inject lateinit var fhirContext: FhirContext
 
+  @Inject lateinit var jexlEngine: JexlEngine
+
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val fhirEngine: FhirEngine = mockk()
   private val registerId = "register id"
@@ -96,6 +99,7 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
           locationService = locationService,
           fhirContext = fhirContext,
           defaultRepository = defaultRepository,
+          jexlEngine = jexlEngine,
         ),
       )
     rulesExecutor = RulesExecutor(rulesFactory)

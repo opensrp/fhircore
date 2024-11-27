@@ -66,7 +66,7 @@ class ProfileFragment : Fragment() {
         profileId,
         resourceId,
         resourceConfig,
-        params
+        params,
       )
     }
 
@@ -78,7 +78,7 @@ class ProfileFragment : Fragment() {
             profileId,
             resourceId,
             resourceConfig,
-            params
+            params,
           )
         }
         profileViewModel.refreshProfileDataLiveData.value = null
@@ -129,7 +129,7 @@ class ProfileFragment : Fragment() {
           profileId,
           resourceId,
           resourceConfig,
-          params
+          params,
         )
       }
 

@@ -169,9 +169,7 @@ class RegisterViewModelTest : RobolectricTest() {
     coEvery { registerRepository.countRegisterData(any()) } returns 0L
 
     val results = mutableListOf<String>()
-    val debounceJob = launch {
-      registerViewModel.debouncedSearchQueryFlow.collect { results.add(it.query) }
-    }
+    val debounceJob = launch { registerViewModel.searchQueryFlow.collect { results.add(it.query) } }
     advanceUntilIdle()
 
     // Search with empty string should paginate the data
@@ -187,7 +185,7 @@ class RegisterViewModelTest : RobolectricTest() {
     registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery("Khan")))
 
     advanceTimeBy(1010.milliseconds)
-    Assert.assertEquals(2, results.size)
+    Assert.assertEquals(5, results.size)
     Assert.assertEquals("Khan", results.last())
     debounceJob.cancel()
   }

@@ -141,7 +141,7 @@ constructor(
           .onFailure {
             Timber.e("Unable to render profile")
             _snackBarStateFlow.emit(
-              SnackBarMessageConfig(context.getString(R.string.error_rendering_profile))
+              SnackBarMessageConfig(context.getString(R.string.error_rendering_profile)),
             )
           }
       }

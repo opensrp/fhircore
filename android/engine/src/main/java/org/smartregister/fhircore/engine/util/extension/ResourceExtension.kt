@@ -551,8 +551,8 @@ fun Collection<RepositoryResourceData>.filterByFhirPathExpression(
   fhirPathDataExtractor: FhirPathDataExtractor,
   conditionalFhirPathExpressions: List<String>?,
   matchAll: Boolean,
-): List<RepositoryResourceData> {
-  if (conditionalFhirPathExpressions.isNullOrEmpty()) return this as List
+): Collection<RepositoryResourceData> {
+  if (conditionalFhirPathExpressions.isNullOrEmpty()) return this
   return this.filter { repositoryResourceData ->
     if (matchAll) {
       conditionalFhirPathExpressions.all {

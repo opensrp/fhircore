@@ -114,6 +114,7 @@ constructor(
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
   }
+  val searchQueryFlow: MutableSharedFlow<SearchQuery> = MutableSharedFlow()
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
   private val _currentSyncJobStatusFlow: MutableSharedFlow<CurrentSyncJobStatus?> =
@@ -121,11 +122,10 @@ constructor(
   private val decodedImageMap = mutableStateMapOf<String, Bitmap>()
   private val _totalRecordsCount = mutableLongStateOf(0L)
   private val _filteredRecordsCount = mutableLongStateOf(-1L)
-  private val _searchQueryFlow: MutableSharedFlow<SearchQuery> = MutableSharedFlow()
 
   init {
     viewModelScope.launch {
-      _searchQueryFlow
+      searchQueryFlow
         .debounce {
           val searchText = it.query
           when (searchText.length) {
@@ -208,7 +208,7 @@ constructor(
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
-        viewModelScope.launch { _searchQueryFlow.emit(event.searchQuery) }
+        viewModelScope.launch { searchQueryFlow.emit(event.searchQuery) }
       }
       is RegisterEvent.MoveToNextPage -> {
         currentPage.value = currentPage.value.plus(1)
