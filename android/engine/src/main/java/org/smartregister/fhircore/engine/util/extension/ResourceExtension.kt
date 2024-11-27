@@ -74,7 +74,6 @@ import timber.log.Timber
 
 const val REFERENCE = "reference"
 const val PARTOF = "part-of"
-private val fhirR4JsonParser = FhirContext.forR4Cached().getCustomJsonParser()
 
 fun Base?.valueToString(datePattern: String = "dd-MMM-yyyy"): String {
   return when {
@@ -115,10 +114,13 @@ fun Base?.valueToString(datePattern: String = "dd-MMM-yyyy"): String {
 fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
 
-fun Resource.encodeResourceToString(parser: IParser = fhirR4JsonParser): String =
-  parser.encodeResourceToString(this.copy())
+fun Resource.encodeResourceToString(
+  parser: IParser = FhirContext.forR4Cached().getCustomJsonParser(),
+): String = parser.encodeResourceToString(this.copy())
 
-fun StructureMap.encodeResourceToString(parser: IParser = fhirR4JsonParser): String =
+fun StructureMap.encodeResourceToString(
+  parser: IParser = FhirContext.forR4Cached().getCustomJsonParser(),
+): String =
   parser
     .encodeResourceToString(this)
     .replace("'months'", "\\\\'months\\\\'")
@@ -126,8 +128,9 @@ fun StructureMap.encodeResourceToString(parser: IParser = fhirR4JsonParser): Str
     .replace("'years'", "\\\\'years\\\\'")
     .replace("'weeks'", "\\\\'weeks\\\\'")
 
-fun <T> String.decodeResourceFromString(parser: IParser = fhirR4JsonParser): T =
-  parser.parseResource(this) as T
+fun <T> String.decodeResourceFromString(
+  parser: IParser = FhirContext.forR4Cached().getCustomJsonParser(),
+): T = parser.parseResource(this) as T
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   var extensionUpdateFrom = listOf<Extension>()
@@ -138,7 +141,7 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   if (this is Patient) {
     extension = this.extension
   }
-  val jsonParser = fhirR4JsonParser
+  val jsonParser = FhirContext.forR4Cached().getCustomJsonParser()
   val stringJson = encodeResourceToString(jsonParser)
   val originalResourceJson = JSONObject(stringJson)
 

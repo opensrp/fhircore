@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -52,6 +53,7 @@ constructor(
   override val fhirPathDataExtractor: FhirPathDataExtractor,
   override val parser: IParser,
   @ApplicationContext override val context: Context,
+  override val contentCache: ContentCache,
 ) :
   Repository,
   DefaultRepository(
@@ -64,6 +66,7 @@ constructor(
     fhirPathDataExtractor = fhirPathDataExtractor,
     parser = parser,
     context = context,
+    contentCache = contentCache,
   ) {
 
   override suspend fun loadRegisterData(
