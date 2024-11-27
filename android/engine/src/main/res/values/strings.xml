@@ -204,4 +204,6 @@
     <string name="apply_filter">APPLY FILTER</string>
     <string name="questionnaire_save_draft_title">Save draft changes</string>
     <string name="questionnaire_save_draft_message">Do you want to save draft changes?</string>
+    <string name="open_draft_changes_title">Open draft changes</string>
+    <string name="open_draft_changes_message">You can reopen a saved draft form to continue or delete it</string>
 </resources>

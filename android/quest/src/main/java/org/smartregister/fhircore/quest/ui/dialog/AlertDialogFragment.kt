@@ -22,6 +22,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
@@ -35,10 +36,8 @@ class AlertDialogFragment() : DialogFragment() {
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     return AlertDialogue.showThreeButtonAlert(
       context = requireContext(),
-      message =
-        org.smartregister.fhircore.engine.R.string
-          .questionnaire_in_progress_alert_back_pressed_message,
-      title = org.smartregister.fhircore.engine.R.string.questionnaire_alert_back_pressed_title,
+      message = org.smartregister.fhircore.engine.R.string.open_draft_changes_message,
+      title = org.smartregister.fhircore.engine.R.string.open_draft_changes_title,
       confirmButtonListener = {
         if (requireContext().getActivity() is QuestionnaireHandler) {
           (requireContext().getActivity() as QuestionnaireHandler).launchQuestionnaire(
@@ -54,8 +53,9 @@ class AlertDialogFragment() : DialogFragment() {
       neutralButtonText =
         org.smartregister.fhircore.engine.R.string.questionnaire_alert_neutral_button_title,
       negativeButtonListener = {
-        alertDialogViewModel.deleteDraft(alertDialogFragmentArgs.questionnaireConfig)
-        this.dismiss()
+        runBlocking {
+          alertDialogViewModel.deleteDraft(alertDialogFragmentArgs.questionnaireConfig)
+        }
       },
       negativeButtonText =
         org.smartregister.fhircore.engine.R.string.questionnaire_alert_delete_draft_button_title,

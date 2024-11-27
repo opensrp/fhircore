@@ -34,7 +34,7 @@ constructor(
   val defaultRepository: DefaultRepository,
   val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
-  fun deleteDraft(questionnaireConfig: QuestionnaireConfig?) {
+  suspend fun deleteDraft(questionnaireConfig: QuestionnaireConfig?) {
     if (
       questionnaireConfig == null ||
         questionnaireConfig.resourceIdentifier.isNullOrBlank() ||
