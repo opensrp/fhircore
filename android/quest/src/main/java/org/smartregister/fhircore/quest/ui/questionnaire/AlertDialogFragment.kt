@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.dialog
+package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.app.Dialog
 import android.os.Bundle
@@ -25,6 +25,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.quest.ui.dialog.AlertDialogFragmentArgs
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 
 @AndroidEntryPoint

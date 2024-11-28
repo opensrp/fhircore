@@ -63,6 +63,6 @@ enum class ApplicationWorkflow {
   /** A workflow to launch pdf generation */
   LAUNCH_PDF_GENERATION,
 
-  /** A workflow to launch delete draft */
-  LAUNCH_DELETE_DRAFT_FORM,
+  /** A workflow to launch delete draft questionnaires */
+  DELETE_DRAFT_QUESTIONNAIRE,
 }
