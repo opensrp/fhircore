@@ -20,25 +20,35 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.AuditEvent
+import org.hl7.fhir.r4.model.AuditEvent.AuditEventSourceComponent
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Flag
-import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseStatus
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
 @HiltViewModel
 class AlertDialogViewModel
 @Inject
 constructor(
   val defaultRepository: DefaultRepository,
-  val dispatcherProvider: DispatcherProvider,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
 ) : ViewModel() {
+
+  private val practitionerId: String? by lazy {
+    sharedPreferencesHelper
+      .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+      ?.extractLogicalIdUuid()
+  }
+
   suspend fun deleteDraft(questionnaireConfig: QuestionnaireConfig?) {
     if (
       questionnaireConfig == null ||
@@ -61,38 +71,42 @@ constructor(
       questionnaireResponse.status = QuestionnaireResponseStatus.STOPPED
       defaultRepository.update(questionnaireResponse)
       defaultRepository.addOrUpdate(
-        resource = createDeleteDraftFlag(questionnaireConfig, questionnaireResponse),
+        resource = createDeleteDraftAuditEvent(questionnaireConfig, questionnaireResponse),
       )
     }
   }
 
-  fun createDeleteDraftFlag(
+  fun createDeleteDraftAuditEvent(
     questionnaireConfig: QuestionnaireConfig,
     questionnaireResponse: QuestionnaireResponse,
-  ): Flag {
-    return Flag().apply {
-      subject =
-        questionnaireConfig.resourceType?.let {
-          questionnaireConfig.resourceIdentifier?.asReference(
-            it,
-          )
-        }
-      identifier =
+  ): AuditEvent {
+    return AuditEvent().apply {
+      entity =
         listOf(
-          Identifier().apply { value = questionnaireResponse.id },
+          AuditEvent.AuditEventEntityComponent().apply {
+            what = Reference(questionnaireResponse.id)
+          },
         )
-      status = Flag.FlagStatus.ACTIVE
-      code =
-        CodeableConcept().apply {
-          coding =
-            listOf(
-              Coding().apply {
-                system = FLAG_SYSTEM
-                code = FLAG_CODE
-                display = FLAG_DISPLAY
-              },
-            )
-          text = FLAG_TEXT
+      source =
+        AuditEventSourceComponent().apply {
+          observer =
+            questionnaireConfig.resourceType?.let {
+              questionnaireConfig.resourceIdentifier?.asReference(
+                it,
+              )
+            }
+        }
+      agent =
+        listOf(
+          AuditEvent.AuditEventAgentComponent().apply {
+            who = practitionerId?.asReference(ResourceType.Practitioner)
+          },
+        )
+      type =
+        Coding().apply {
+          system = AUDIT_EVENT_SYSTEM
+          code = AUDIT_EVENT_CODE
+          display = AUDIT_EVENT_DISPLAY
         }
       period =
         Period().apply {
@@ -103,9 +117,8 @@ constructor(
   }
 
   companion object {
-    const val FLAG_SYSTEM = "http://smartregister.org/"
-    const val FLAG_CODE = "delete_draft"
-    const val FLAG_DISPLAY = "Delete Draft"
-    const val FLAG_TEXT = "QR Draft has been deleted"
+    const val AUDIT_EVENT_SYSTEM = "http://smartregister.org/"
+    const val AUDIT_EVENT_CODE = "delete_draft"
+    const val AUDIT_EVENT_DISPLAY = "Delete Draft"
   }
 }
