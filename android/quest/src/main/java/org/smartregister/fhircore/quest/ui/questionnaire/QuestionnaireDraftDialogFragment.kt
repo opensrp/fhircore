@@ -25,14 +25,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.util.extension.getActivity
-import org.smartregister.fhircore.quest.ui.dialog.AlertDialogFragmentArgs
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 
 @AndroidEntryPoint
-class AlertDialogFragment() : DialogFragment() {
+class QuestionnaireDraftDialogFragment() : DialogFragment() {
 
-  private val alertDialogFragmentArgs by navArgs<AlertDialogFragmentArgs>()
-  private val alertDialogViewModel by viewModels<AlertDialogViewModel>()
+  private val questionnaireDraftDialogFragmentArgs by
+    navArgs<QuestionnaireDraftDialogFragmentArgs>()
+  private val alertDialogViewModel by viewModels<QuestionnaireDraftDialogViewModel>()
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     return AlertDialogue.showThreeButtonAlert(
@@ -43,7 +43,7 @@ class AlertDialogFragment() : DialogFragment() {
         if (requireContext().getActivity() is QuestionnaireHandler) {
           (requireContext().getActivity() as QuestionnaireHandler).launchQuestionnaire(
             context = requireContext().getActivity()!!.baseContext,
-            questionnaireConfig = alertDialogFragmentArgs.questionnaireConfig,
+            questionnaireConfig = questionnaireDraftDialogFragmentArgs.questionnaireConfig,
             actionParams = listOf(),
           )
         }
@@ -55,7 +55,7 @@ class AlertDialogFragment() : DialogFragment() {
         org.smartregister.fhircore.engine.R.string.questionnaire_alert_neutral_button_title,
       negativeButtonListener = {
         runBlocking {
-          alertDialogViewModel.deleteDraft(alertDialogFragmentArgs.questionnaireConfig)
+          alertDialogViewModel.deleteDraft(questionnaireDraftDialogFragmentArgs.questionnaireConfig)
         }
       },
       negativeButtonText =

@@ -72,7 +72,7 @@ sealed class MainNavigationScreen(
 
   data object AlertDialogFragment :
     MainNavigationScreen(
-      route = org.smartregister.fhircore.quest.R.id.alertDialogFragment,
+      route = org.smartregister.fhircore.quest.R.id.questionnaireDraftDialogFragment,
     )
 
   fun eventId(id: String) = route.toString() + "_" + id

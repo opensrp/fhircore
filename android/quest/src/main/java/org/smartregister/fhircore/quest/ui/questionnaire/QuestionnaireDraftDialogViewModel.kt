@@ -36,7 +36,7 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
 @HiltViewModel
-class AlertDialogViewModel
+class QuestionnaireDraftDialogViewModel
 @Inject
 constructor(
   val defaultRepository: DefaultRepository,
