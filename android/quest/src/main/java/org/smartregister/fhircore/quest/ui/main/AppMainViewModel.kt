@@ -34,14 +34,10 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.text.SimpleDateFormat
-import java.time.OffsetDateTime
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
-import javax.inject.Inject
-import kotlin.time.Duration
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -58,6 +54,9 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
+import org.smartregister.fhircore.engine.sync.CustomSyncState
+import org.smartregister.fhircore.engine.sync.CustomSyncWorker
+import org.smartregister.fhircore.engine.sync.CustomWorkerState
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
@@ -87,6 +86,14 @@ import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
+import timber.log.Timber
+import java.text.SimpleDateFormat
+import java.time.OffsetDateTime
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+import javax.inject.Inject
+import kotlin.time.Duration
 
 @HiltViewModel
 class AppMainViewModel
@@ -130,6 +137,32 @@ constructor(
 
   private val measureReportConfigurations: List<MeasureReportConfiguration> by lazy {
     configurationRegistry.retrieveConfigurations(ConfigType.MeasureReport)
+  }
+
+  private val _customSyncState = MutableStateFlow<CustomSyncState>(CustomSyncState.Idle)
+  val customSyncState: StateFlow<CustomSyncState> = _customSyncState.asStateFlow()
+
+  init {
+    observeWorkerSyncState()
+  }
+
+  private fun observeWorkerSyncState() {
+    viewModelScope.launch {
+      CustomWorkerState.workerState.collect { syncState ->
+        when (syncState) {
+            CustomSyncState.InProgress -> {
+                Timber.d("Custom Sync Worker InProgress")
+            }
+            CustomSyncState.Failed() -> {
+                Timber.d("Custom Sync Worker Failed")
+            }
+            CustomSyncState.Success -> {
+                Timber.d("Custom Sync Worker Finished")
+            }
+          else -> {}
+        }
+      }
+    }
   }
 
   fun retrieveAppMainUiState(refreshAll: Boolean = true) {

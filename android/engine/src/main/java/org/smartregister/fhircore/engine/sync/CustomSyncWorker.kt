@@ -20,6 +20,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.google.android.fhir.sync.concatParams
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -56,6 +57,7 @@ constructor(
               fetchResources(
                 gatewayModeHeaderValue = ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE,
                 url = url,
+                enableCustomSyncWorkerLogs = true
               )
             }
         }
