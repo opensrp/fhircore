@@ -531,7 +531,7 @@ constructor(
   suspend fun fetchResources(
     gatewayModeHeaderValue: String? = null,
     url: String,
-    enableCustomSyncWorkerLogs: Boolean = false
+    enableCustomSyncWorkerLogs: Boolean = false,
   ) {
     var currentPage = 0
     var totalProcessedResources = 0
@@ -545,24 +545,30 @@ constructor(
       Timber.d("Fetching page $currentPage with URL: $currentUrl")
       if (enableCustomSyncWorkerLogs) CustomWorkerState.postState(CustomSyncState.InProgress)
 
-      val resultBundle = runCatching {
-        if (gatewayModeHeaderValue.isNullOrEmpty()) {
-          fhirResourceDataSource.getResource(currentUrl)
-        } else {
-          fhirResourceDataSource.getResourceWithGatewayModeHeader(
-            gatewayModeHeaderValue,
-            currentUrl
-          )
-        }
-      }.onFailure { throwable ->
-        Timber.e("Error occurred while retrieving resource via URL $currentUrl", throwable)
-        if (enableCustomSyncWorkerLogs) CustomWorkerState.postState(CustomSyncState.Failed(throwable.localizedMessage))
-      }.getOrThrow()
+      val resultBundle =
+        runCatching {
+            if (gatewayModeHeaderValue.isNullOrEmpty()) {
+              fhirResourceDataSource.getResource(currentUrl)
+            } else {
+              fhirResourceDataSource.getResourceWithGatewayModeHeader(
+                gatewayModeHeaderValue,
+                currentUrl,
+              )
+            }
+          }
+          .onFailure { throwable ->
+            Timber.e("Error occurred while retrieving resource via URL $currentUrl", throwable)
+            if (enableCustomSyncWorkerLogs)
+              CustomWorkerState.postState(CustomSyncState.Failed(throwable.localizedMessage))
+          }
+          .getOrThrow()
 
       val fetchedResources = resultBundle.entry.size
       totalProcessedResources += fetchedResources
 
-      Timber.d("Page $currentPage fetched $fetchedResources resources. Total processed: $totalProcessedResources")
+      Timber.d(
+        "Page $currentPage fetched $fetchedResources resources. Total processed: $totalProcessedResources"
+      )
 
       // Check for the next page URL
       nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url
