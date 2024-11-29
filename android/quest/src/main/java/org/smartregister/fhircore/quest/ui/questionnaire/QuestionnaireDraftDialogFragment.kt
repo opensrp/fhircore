@@ -23,6 +23,8 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
+import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.base.AlertDialogButton
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
@@ -32,34 +34,48 @@ class QuestionnaireDraftDialogFragment() : DialogFragment() {
 
   private val questionnaireDraftDialogFragmentArgs by
     navArgs<QuestionnaireDraftDialogFragmentArgs>()
-  private val alertDialogViewModel by viewModels<QuestionnaireDraftDialogViewModel>()
+  private val questionnaireDraftDialogViewModel by viewModels<QuestionnaireDraftDialogViewModel>()
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     return AlertDialogue.showThreeButtonAlert(
       context = requireContext(),
       message = org.smartregister.fhircore.engine.R.string.open_draft_changes_message,
       title = org.smartregister.fhircore.engine.R.string.open_draft_changes_title,
-      confirmButtonListener = {
-        if (requireContext().getActivity() is QuestionnaireHandler) {
-          (requireContext().getActivity() as QuestionnaireHandler).launchQuestionnaire(
-            context = requireContext().getActivity()!!.baseContext,
-            questionnaireConfig = questionnaireDraftDialogFragmentArgs.questionnaireConfig,
-            actionParams = listOf(),
-          )
-        }
-      },
-      confirmButtonText =
-        org.smartregister.fhircore.engine.R.string.questionnaire_alert_open_draft_button_title,
-      neutralButtonListener = {},
-      neutralButtonText =
-        org.smartregister.fhircore.engine.R.string.questionnaire_alert_neutral_button_title,
-      negativeButtonListener = {
-        runBlocking {
-          alertDialogViewModel.deleteDraft(questionnaireDraftDialogFragmentArgs.questionnaireConfig)
-        }
-      },
-      negativeButtonText =
-        org.smartregister.fhircore.engine.R.string.questionnaire_alert_delete_draft_button_title,
+      confirmButton =
+        AlertDialogButton(
+          listener = {
+            if (requireContext().getActivity() is QuestionnaireHandler) {
+              (requireContext().getActivity() as QuestionnaireHandler).launchQuestionnaire(
+                context = requireContext().getActivity()!!.baseContext,
+                questionnaireConfig = questionnaireDraftDialogFragmentArgs.questionnaireConfig,
+                actionParams = listOf(),
+              )
+            }
+          },
+          text =
+            org.smartregister.fhircore.engine.R.string.questionnaire_alert_open_draft_button_title,
+          color = R.color.colorPrimary,
+        ),
+      neutralButton =
+        AlertDialogButton(
+          listener = {},
+          text =
+            org.smartregister.fhircore.engine.R.string.questionnaire_alert_neutral_button_title,
+        ),
+      negativeButton =
+        AlertDialogButton(
+          listener = {
+            runBlocking {
+              questionnaireDraftDialogViewModel.deleteDraft(
+                questionnaireDraftDialogFragmentArgs.questionnaireConfig,
+              )
+            }
+          },
+          text =
+            org.smartregister.fhircore.engine.R.string
+              .questionnaire_alert_delete_draft_button_title,
+          color = R.color.colorError,
+        ),
     )
   }
 }
