@@ -1,0 +1,77 @@
+# Performance tests
+
+This document covers standard methods to test the performance of your content-defined OpenSRP2 app. The performance of apps may vary signficantly based on how content is defined. These challenges are usually resolved by changing how content is written, without changing the functionality or user experience of the app.
+
+## Evaluate and optimize FHIR content
+
+1. Rules engine - review configs to optimize and remove unused rules and extensions
+2. Review how inter-form and inter-visit logic is implemented for opportunities to refactor and optimize data queries
+    - Potentially use *Forward include*, *Reverse include*, or other optimization procedures while fetching related Resources
+3. Triage and benchmark  Questionnaire population to reduce the time to load and save Questionnaires
+    - Optimize *Related Expressions*, written as FHIRPath, for calculations and prepopulation
+4. Triage and benchmark FHIRPath expressions evaluation and extensions
+
+### Check content performance in the Android FHIR SDK
+
+1. Triage and benchmark query performance for searches and data queries
+2. Triage and benchmark extraction of nested rules on StructureMaps
+
+## Profile critical user pathways
+
+### Procedure for Profiling
+
+When doing performance profiling it is important to consider the
+
+- Time and server resources it takes for each request type
+- Number of successes and errors on the endpoints
+    - Calculate the error rate
+- Server throughput/requests per second
+
+To compare profiling across time you will need to take into account, and hold constant where possible, the
+
+- Server specs and infrastructure configuration
+- Network conditions
+- Amount of data on the server at the time of testing.
+- Kind of request params on the request, e.g large page sizes versus no paging or small page size
+
+### Receiving responses from remote
+
+ Review the time and server resources it takes to respond to the following requests.
+
+- GET the Composition Resource after entering the App ID
+- GET the application configs defined in the Composition
+    - We request all the different resource types in a single request
+    - Eg we request all the Binary Resources, then all the Questionnaire Resources etc, producting queries like:
+        - `https://base_url/fhir/Binaries?id=uuid,uuid,uuid,uuid`
+        - `https://base_url/fhir/Questionnaires?id=uuid,uuid,uuid,uuid`
+- GET the Patient data. Here we can look at the following resources
+    - Patient Resource
+    - Group Resource
+    - Task Resource
+    - Observation Resource
+    - CarePlan Resource
+    - Location Resource
+    - Organization Resource
+    - CareTeam Resource
+    - Practitioner Resource
+    - MeasureReport Resource
+- POST a bundle containing the above resources
+- PUT a specific resource from the list above
+- PUT a bundle containing the above resources
+- Run the above tests on the custom FHIR endpoints
+    - Location Hierarchy
+    - Practitioner Details
+
+### Saving responses from remote
+
+Review the time and device resources it takes for the application to save responses from remote.
+
+- The time and device resources to save the Composition Resource after receiving the response from the server
+- The time and device resources to save the application configs defined in the Composition
+- The time and device resources to save the Patient data. Here we can look at 3 different resources
+    - Patient Resource
+    - Group Resource
+    - Task Resource
+    - Observation Resource
+    - CarePlan Resource
+    - MeasureReport Resource

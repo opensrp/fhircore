@@ -21,6 +21,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
@@ -56,6 +57,8 @@ class UserInsightScreenFragment : Fragment() {
             buildDate = userSettingViewModel.getBuildDate(),
             unsyncedResourcesFlow = userSettingViewModel.unsyncedResourcesMutableSharedFlow,
             navController = findNavController(),
+            showProgressIndicator =
+              userSettingViewModel.showProgressIndicatorFlow.collectAsState().value,
             onRefreshRequest = { userSettingViewModel.fetchUnsyncedResources() },
             dateFormat = userSettingViewModel.getDateFormat(),
           )

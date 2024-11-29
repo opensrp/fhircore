@@ -145,6 +145,7 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.slf4j.nop)
+  implementation(libs.fhir.sdk.common)
 
   // Shared dependencies
   api(libs.bundles.datastore.kt)
@@ -209,6 +210,7 @@ dependencies {
   api(libs.fhir.engine) {
     isTransitive = true
     exclude(group = "com.github.ben-manes.caffeine")
+    exclude(group = "com.google.android.fhir", module = "common")
   }
 
   // Annotation processors
