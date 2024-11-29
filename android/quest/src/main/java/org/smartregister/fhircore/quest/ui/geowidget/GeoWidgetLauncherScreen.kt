@@ -178,9 +178,9 @@ fun GeoWidgetLauncherScreen(
           contentAlignment = Alignment.Center,
         ) {
           LoaderDialog(
-            boxWidth = 50.dp,
-            boxHeight = 50.dp,
-            progressBarSize = 25.dp,
+            boxWidth = 150.dp,
+            boxHeight = 150.dp,
+            progressBarSize = 130.dp,
             showBackground = true,
             showLineSpinIndicator = true,
             showOverlay = false,
