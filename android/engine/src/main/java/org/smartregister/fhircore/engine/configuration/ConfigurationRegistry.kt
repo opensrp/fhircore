@@ -533,51 +533,46 @@ constructor(
     url: String,
     enableCustomSyncWorkerLogs: Boolean = false,
   ) {
-    var currentPage = 0
-    var totalProcessedResources = 0
+    runCatching {
+        if (enableCustomSyncWorkerLogs) {
+          Timber.d("Posting state: InProgress")
+          CustomWorkerState.postState(CustomSyncState.InProgress)
+        }
 
-    var nextPageUrl: String? = url
-    while (!nextPageUrl.isNullOrEmpty()) {
-      val currentUrl = nextPageUrl // Create an immutable reference for this iteration
-
-      currentPage++
-
-      Timber.d("Fetching page $currentPage with URL: $currentUrl")
-      if (enableCustomSyncWorkerLogs) CustomWorkerState.postState(CustomSyncState.InProgress)
-
-      val resultBundle =
-        runCatching {
-            if (gatewayModeHeaderValue.isNullOrEmpty()) {
-              fhirResourceDataSource.getResource(currentUrl)
-            } else {
-              fhirResourceDataSource.getResourceWithGatewayModeHeader(
-                gatewayModeHeaderValue,
-                currentUrl,
-              )
-            }
-          }
-          .onFailure { throwable ->
-            Timber.e("Error occurred while retrieving resource via URL $currentUrl", throwable)
-            if (enableCustomSyncWorkerLogs)
-              CustomWorkerState.postState(CustomSyncState.Failed(throwable.localizedMessage))
-          }
-          .getOrThrow()
-
-      val fetchedResources = resultBundle.entry.size
-      totalProcessedResources += fetchedResources
-
-      Timber.d(
-        "Page $currentPage fetched $fetchedResources resources. Total processed: $totalProcessedResources"
-      )
-
-      // Check for the next page URL
-      nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url
-
-      if (nextPageUrl.isNullOrEmpty()) {
-        Timber.d("No more pages to fetch. Fetching completed.")
-        if (enableCustomSyncWorkerLogs) CustomWorkerState.postState(CustomSyncState.Success)
+        Timber.d("Fetching page with URL: $url")
+        if (gatewayModeHeaderValue.isNullOrEmpty()) {
+          fhirResourceDataSource.getResource(url)
+        } else {
+          fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, url)
+        }
       }
-    }
+      .onFailure { throwable ->
+        Timber.e("Error occurred while retrieving resource via URL $url", throwable)
+        if (enableCustomSyncWorkerLogs) {
+          Timber.d("Posting state: Failed")
+          CustomWorkerState.postState(CustomSyncState.Failed(throwable.localizedMessage))
+        }
+        return // Exit on failure
+      }
+      .onSuccess { resultBundle ->
+        val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url
+
+        processResultBundleEntries(resultBundle.entry)
+
+        if (!nextPageUrl.isNullOrEmpty()) {
+          fetchResources(
+            gatewayModeHeaderValue = gatewayModeHeaderValue,
+            url = nextPageUrl,
+            enableCustomSyncWorkerLogs = enableCustomSyncWorkerLogs,
+          )
+        } else {
+          Timber.d("No more pages to fetch. Fetching completed.")
+          if (enableCustomSyncWorkerLogs) {
+            Timber.d("Posting state: Success")
+            CustomWorkerState.postState(CustomSyncState.Success)
+          }
+        }
+      }
   }
 
   private suspend fun processResultBundleEntries(

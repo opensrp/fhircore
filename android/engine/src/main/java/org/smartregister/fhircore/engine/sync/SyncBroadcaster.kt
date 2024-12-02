@@ -106,16 +106,24 @@ constructor(
     this.onEach { status ->
         syncListenerManager.onSyncListeners.forEach { onSyncListener ->
           Timber.d("fhir sync worker...")
-          onSyncListener.onSync(
-            if (status.lastSyncJobStatus != null) {
+
+          // Check if lastSyncJobStatus is not null and is of type Succeeded
+          val syncStatus =
+            if (status.lastSyncJobStatus as? LastSyncJobStatus.Succeeded != null) {
               CurrentSyncJobStatus.Succeeded(
-                (status.lastSyncJobStatus as LastSyncJobStatus).timestamp,
+                (status.lastSyncJobStatus as LastSyncJobStatus.Succeeded).timestamp,
               )
-            } else status.currentSyncJobStatus,
-          )
+            } else {
+              status.currentSyncJobStatus
+            }
+
+          onSyncListener.onSync(syncStatus)
         }
 
-        if (status.currentSyncJobStatus is CurrentSyncJobStatus.Succeeded) {
+        if (
+          status.currentSyncJobStatus is CurrentSyncJobStatus.Succeeded ||
+            status.lastSyncJobStatus is LastSyncJobStatus.Succeeded
+        ) {
           Timber.d("Periodic sync succeeded. Triggering CustomSyncWorker...")
           workManager.enqueue(
             OneTimeWorkRequestBuilder<CustomSyncWorker>()
