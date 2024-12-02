@@ -124,7 +124,7 @@ constructor(
     this.onEach {
         syncListenerManager.onSyncListeners.forEach { onSyncListener ->
           onSyncListener.onSync(
-            if (it.lastSyncJobStatus != null) {
+            if (it.lastSyncJobStatus as? LastSyncJobStatus.Succeeded != null) {
               CurrentSyncJobStatus.Succeeded((it.lastSyncJobStatus as LastSyncJobStatus).timestamp)
             } else it.currentSyncJobStatus,
           )

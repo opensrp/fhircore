@@ -21,7 +21,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.graphics.drawable.Icon
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.ForegroundInfo
@@ -29,8 +28,11 @@ import androidx.work.WorkerParameters
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.AcceptLocalConflictResolver
 import com.google.android.fhir.sync.ConflictResolver
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.FhirSyncWorker
+import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import com.google.android.fhir.sync.upload.HttpCreateMethod
 import com.google.android.fhir.sync.upload.HttpUpdateMethod
 import com.google.android.fhir.sync.upload.UploadStrategy
@@ -51,9 +53,13 @@ constructor(
   private val openSrpFhirEngine: FhirEngine,
   private val appTimeStampContext: AppTimeStampContext,
   private val configService: ConfigService,
-) : FhirSyncWorker(appContext, workerParams) {
+) : FhirSyncWorker(appContext, workerParams), OnSyncListener {
   private val notificationManager =
     appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+  init {
+    syncListenerManager.registerSyncListener(this)
+  }
 
   override fun getConflictResolver(): ConflictResolver = AcceptLocalConflictResolver
 
@@ -79,25 +85,63 @@ constructor(
     )
 
   override suspend fun getForegroundInfo(): ForegroundInfo {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      val channel =
-        NotificationChannel(
-          NotificationConstants.ChannelId.DATA_SYNC,
-          NotificationConstants.ChannelName.DATA_SYNC,
-          NotificationManager.IMPORTANCE_LOW,
-        )
-      notificationManager.createNotificationChannel(channel)
-    }
+    val channel =
+      NotificationChannel(
+        NotificationConstants.ChannelId.DATA_SYNC,
+        NotificationConstants.ChannelName.DATA_SYNC,
+        NotificationManager.IMPORTANCE_LOW,
+      )
+    notificationManager.createNotificationChannel(channel)
 
     val notification: Notification =
-      NotificationCompat.Builder(applicationContext, NotificationConstants.ChannelId.DATA_SYNC)
-        .setSmallIcon(R.drawable.ic_opensrp_small_logo)
-        .setLargeIcon(Icon.createWithResource(applicationContext, configService.getLauncherIcon()))
-        .setContentTitle(applicationContext.getString(R.string.syncing_initiated))
-        .setContentText(applicationContext.getString(R.string.percentage_progress, 0))
-        .setProgress(100, 0, true)
-        .build()
-
+      buildNotification(progress = 0, isSyncUpload = false, isInitial = true)
     return ForegroundInfo(NotificationConstants.NotificationId.DATA_SYNC, notification)
+  }
+
+  private fun getSyncProgress(completed: Int, total: Int) =
+    completed * 100 / if (total > 0) total else 1
+
+  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
+    when (syncJobStatus) {
+      is CurrentSyncJobStatus.Running -> {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
+          val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
+          val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
+          val progressPercentage =
+            getSyncProgress(inProgressSyncJob.completed, inProgressSyncJob.total)
+          updateNotificationProgress(progress = progressPercentage, isSyncUpload = isSyncUpload)
+        }
+      }
+      else -> {}
+    }
+  }
+
+  private fun buildNotification(
+    progress: Int,
+    isSyncUpload: Boolean,
+    isInitial: Boolean,
+  ): Notification {
+    return NotificationCompat.Builder(applicationContext, NotificationConstants.ChannelId.DATA_SYNC)
+      .setContentTitle(
+        applicationContext.getString(
+          if (isInitial) {
+            R.string.syncing_initiated
+          } else if (isSyncUpload) R.string.syncing_up else R.string.syncing_down,
+        ),
+      )
+      .setSmallIcon(R.drawable.ic_opensrp_small_logo)
+      .setLargeIcon(Icon.createWithResource(applicationContext, configService.getLauncherIcon()))
+      .setContentText(applicationContext.getString(R.string.percentage_progress, progress))
+      .setProgress(100, progress, progress == 0)
+      .setOngoing(true)
+      .build()
+  }
+
+  private fun updateNotificationProgress(progress: Int, isSyncUpload: Boolean) {
+    val notificationManager =
+      applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    val notification =
+      buildNotification(progress = progress, isSyncUpload = isSyncUpload, isInitial = false)
+    notificationManager.notify(NotificationConstants.NotificationId.DATA_SYNC, notification)
   }
 }

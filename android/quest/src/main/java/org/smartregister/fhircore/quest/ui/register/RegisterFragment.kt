@@ -16,9 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
-import android.app.NotificationManager
-import android.content.Context
-import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -35,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.testTag
-import androidx.core.app.NotificationCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -56,11 +52,9 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.NotificationConstants
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -198,30 +192,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
     syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
-  private fun updateNotificationProgress(progress: Int, isSyncUpload: Boolean) {
-    val notificationManager =
-      this.requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    val notification =
-      NotificationCompat.Builder(this.requireContext(), NotificationConstants.ChannelId.DATA_SYNC)
-        .setContentTitle(
-          this.requireContext()
-            .getString(if (isSyncUpload) R.string.syncing_up else R.string.syncing_down),
-        )
-        .setSmallIcon(R.drawable.ic_opensrp_small_logo)
-        .setLargeIcon(
-          Icon.createWithResource(
-            this.requireContext(),
-            org.smartregister.fhircore.quest.R.drawable.ic_launcher,
-          ),
-        )
-        .setContentText(this.requireContext().getString(R.string.percentage_progress, progress))
-        .setProgress(100, progress, progress == 0)
-        .setOngoing(true)
-        .build()
-
-    notificationManager.notify(NotificationConstants.NotificationId.DATA_SYNC, notification)
-  }
-
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
       is CurrentSyncJobStatus.Running -> {
@@ -230,7 +200,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
           val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
           val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
           lifecycleScope.launch {
-            updateNotificationProgress(progressPercentage, isSyncUpload)
             appMainViewModel.updateAppDrawerUIState(
               isSyncUpload = isSyncUpload,
               currentSyncJobStatus = syncJobStatus,
