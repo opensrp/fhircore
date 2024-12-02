@@ -1700,7 +1700,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       Assert.assertEquals("QuestionnaireResponse/qr1", latestQuestionnaireResponse?.id)
       Assert.assertEquals(
         "Encounter/encounter-id-1",
-        latestQuestionnaireResponse?.encounter?.reference
+        latestQuestionnaireResponse?.encounter?.reference,
       )
     }
 
