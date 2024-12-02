@@ -1651,12 +1651,17 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Test
   fun testSearchLatestQuestionnaireResponseShouldReturnLatestQuestionnaireResponse() =
     runTest(timeout = 90.seconds) {
+      val sampleEncounter =
+        Encounter().apply {
+          id = "encounter-id-1"
+          subject = patient.asReference()
+        }
       Assert.assertNull(
         defaultRepository.searchQuestionnaireResponse(
           resourceId = patient.logicalId,
           resourceType = ResourceType.Patient,
           questionnaireId = questionnaireConfig.id,
-          encounterId = null,
+          encounterId = sampleEncounter.id,
         ),
       )
 
@@ -1667,6 +1672,7 @@ class DefaultRepositoryTest : RobolectricTest() {
             meta.lastUpdated = Date()
             subject = patient.asReference()
             questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+            encounter = sampleEncounter.asReference()
           },
           QuestionnaireResponse().apply {
             id = "qr2"
@@ -1688,10 +1694,14 @@ class DefaultRepositoryTest : RobolectricTest() {
           resourceId = patient.logicalId,
           resourceType = ResourceType.Patient,
           questionnaireId = questionnaireConfig.id,
-          encounterId = null,
+          encounterId = sampleEncounter.id,
         )
       Assert.assertNotNull(latestQuestionnaireResponse)
       Assert.assertEquals("QuestionnaireResponse/qr1", latestQuestionnaireResponse?.id)
+      Assert.assertEquals(
+        "Encounter/encounter-id-1",
+        latestQuestionnaireResponse?.encounter?.reference
+      )
     }
 
   @Test
