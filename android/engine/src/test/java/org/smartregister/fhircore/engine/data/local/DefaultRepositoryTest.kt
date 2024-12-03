@@ -1705,7 +1705,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     }
 
   @Test
-  fun testSearchLatestQuestionnaireResponseWhenSaveDraftIsTueShouldReturnLatestQuestionnaireResponse() =
+  fun testSearchLatestQuestionnaireResponseWhenSaveDraftIsTrueShouldReturnLatestQuestionnaireResponse() =
     runTest(timeout = 90.seconds) {
       Assert.assertNull(
         defaultRepository.searchQuestionnaireResponse(
