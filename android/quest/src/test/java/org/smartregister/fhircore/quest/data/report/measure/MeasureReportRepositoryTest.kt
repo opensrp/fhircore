@@ -31,6 +31,8 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import javax.inject.Inject
+import kotlin.test.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.jexl3.JexlEngine
@@ -62,8 +64,6 @@ import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import javax.inject.Inject
-import kotlin.test.assertEquals
 
 @HiltAndroidTest
 class MeasureReportRepositoryTest : RobolectricTest() {
