@@ -44,6 +44,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
+import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
@@ -73,6 +74,10 @@ class MeasureReportRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var locationService: LocationService
 
+  @Inject lateinit var fhirContext: FhirContext
+
+  @Inject lateinit var contentCache: ContentCache
+
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val fhirEngine: FhirEngine = mockk()
   private lateinit var measureReportConfiguration: MeasureReportConfiguration
@@ -82,8 +87,6 @@ class MeasureReportRepositoryTest : RobolectricTest() {
   private lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   private lateinit var registerRepository: RegisterRepository
   private val parser = FhirContext.forR4Cached().newJsonParser()
-
-  @Inject lateinit var fhirContext: FhirContext
   private lateinit var defaultRepository: DefaultRepository
 
   @Before
@@ -121,6 +124,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           fhirPathDataExtractor = mockk(),
           parser = parser,
           context = ApplicationProvider.getApplicationContext(),
+          contentCache = contentCache,
         ),
       )
 
@@ -137,6 +141,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
         parser = parser,
         context = ApplicationProvider.getApplicationContext(),
         dispatcherProvider = dispatcherProvider,
+        contentCache = contentCache,
       )
   }
 
