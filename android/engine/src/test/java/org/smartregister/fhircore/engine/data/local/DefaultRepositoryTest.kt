@@ -65,6 +65,9 @@ import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Procedure
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseStatus
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
@@ -80,6 +83,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.event.EventTriggerCondition
@@ -106,6 +110,7 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
+import org.smartregister.fhircore.engine.util.extension.yesterday
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
@@ -134,6 +139,9 @@ class DefaultRepositoryTest : RobolectricTest() {
   private lateinit var dispatcherProvider: DefaultDispatcherProvider
   private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var defaultRepository: DefaultRepository
+  private lateinit var patient: Patient
+  private lateinit var questionnaireConfig: QuestionnaireConfig
+  private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
 
   @Before
   fun setUp() {
@@ -153,6 +161,25 @@ class DefaultRepositoryTest : RobolectricTest() {
         context = context,
         contentCache = contentCache,
       )
+    patient =
+      Faker.buildPatient().apply {
+        address =
+          listOf(
+            Address().apply {
+              city = "Mombasa"
+              country = "Kenya"
+            },
+          )
+      }
+    questionnaireConfig =
+      QuestionnaireConfig(
+        id = "e5155788-8831-4916-a3f5-486915ce34b211", // Same as ID in
+        // sample_patient_registration.json
+        title = "Patient registration",
+        type = "DEFAULT",
+      )
+
+    samplePatientRegisterQuestionnaire = Questionnaire().apply { id = questionnaireConfig.id }
   }
 
   @Test
@@ -1619,5 +1646,111 @@ class DefaultRepositoryTest : RobolectricTest() {
         defaultRepository.retrieveFlattenedSubLocations(location4.logicalId)
       Assert.assertEquals(2, location4SubLocations.size)
       Assert.assertEquals(location5.logicalId, location4SubLocations.last().logicalId)
+    }
+
+  @Test
+  fun testSearchLatestQuestionnaireResponseShouldReturnLatestQuestionnaireResponse() =
+    runTest(timeout = 90.seconds) {
+      val sampleEncounter =
+        Encounter().apply {
+          id = "encounter-id-1"
+          subject = patient.asReference()
+        }
+      Assert.assertNull(
+        defaultRepository.searchQuestionnaireResponse(
+          resourceId = patient.logicalId,
+          resourceType = ResourceType.Patient,
+          questionnaireId = questionnaireConfig.id,
+          encounterId = sampleEncounter.id,
+        ),
+      )
+
+      val questionnaireResponses =
+        listOf(
+          QuestionnaireResponse().apply {
+            id = "qr1"
+            meta.lastUpdated = Date()
+            subject = patient.asReference()
+            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+            encounter = sampleEncounter.asReference()
+          },
+          QuestionnaireResponse().apply {
+            id = "qr2"
+            meta.lastUpdated = yesterday()
+            subject = patient.asReference()
+            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+          },
+        )
+
+      // Add QuestionnaireResponse to database
+      fhirEngine.create(
+        patient,
+        samplePatientRegisterQuestionnaire,
+        *questionnaireResponses.toTypedArray(),
+      )
+
+      val latestQuestionnaireResponse =
+        defaultRepository.searchQuestionnaireResponse(
+          resourceId = patient.logicalId,
+          resourceType = ResourceType.Patient,
+          questionnaireId = questionnaireConfig.id,
+          encounterId = sampleEncounter.id,
+        )
+      Assert.assertNotNull(latestQuestionnaireResponse)
+      Assert.assertEquals("QuestionnaireResponse/qr1", latestQuestionnaireResponse?.id)
+      Assert.assertEquals(
+        "Encounter/encounter-id-1",
+        latestQuestionnaireResponse?.encounter?.reference,
+      )
+    }
+
+  @Test
+  fun testSearchLatestQuestionnaireResponseWhenSaveDraftIsTrueShouldReturnLatestQuestionnaireResponse() =
+    runTest(timeout = 90.seconds) {
+      Assert.assertNull(
+        defaultRepository.searchQuestionnaireResponse(
+          resourceId = patient.logicalId,
+          resourceType = ResourceType.Patient,
+          questionnaireId = questionnaireConfig.id,
+          encounterId = null,
+          questionnaireResponseStatus = QuestionnaireResponseStatus.INPROGRESS.toCode(),
+        ),
+      )
+
+      val questionnaireResponses =
+        listOf(
+          QuestionnaireResponse().apply {
+            id = "qr1"
+            meta.lastUpdated = Date()
+            subject = patient.asReference()
+            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+            status = QuestionnaireResponseStatus.INPROGRESS
+          },
+          QuestionnaireResponse().apply {
+            id = "qr2"
+            meta.lastUpdated = yesterday()
+            subject = patient.asReference()
+            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+            status = QuestionnaireResponseStatus.COMPLETED
+          },
+        )
+
+      // Add QuestionnaireResponse to database
+      fhirEngine.create(
+        patient,
+        samplePatientRegisterQuestionnaire,
+        *questionnaireResponses.toTypedArray(),
+      )
+
+      val latestQuestionnaireResponse =
+        defaultRepository.searchQuestionnaireResponse(
+          resourceId = patient.logicalId,
+          resourceType = ResourceType.Patient,
+          questionnaireId = questionnaireConfig.id,
+          encounterId = null,
+          questionnaireResponseStatus = QuestionnaireResponseStatus.INPROGRESS.toCode(),
+        )
+      Assert.assertNotNull(latestQuestionnaireResponse)
+      Assert.assertEquals("QuestionnaireResponse/qr1", latestQuestionnaireResponse?.id)
     }
 }
