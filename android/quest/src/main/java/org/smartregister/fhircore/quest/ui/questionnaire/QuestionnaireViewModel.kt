@@ -709,37 +709,37 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     questionnaireConfig: QuestionnaireConfig,
   ) {
-      val hasPages = questionnaireResponse.item.any { it.hasItem() }
-      val questionnaireHasAnswer =
-        questionnaireResponse.item.any {
-          if (!hasPages) {
-            it.answer.any { answerComponent -> answerComponent.hasValue() }
-          } else {
-            questionnaireResponse.item.any { page ->
-              page.item.any { pageItem ->
-                pageItem.answer.any { answerComponent -> answerComponent.hasValue() }
-              }
+    val hasPages = questionnaireResponse.item.any { it.hasItem() }
+    val questionnaireHasAnswer =
+      questionnaireResponse.item.any {
+        if (!hasPages) {
+          it.answer.any { answerComponent -> answerComponent.hasValue() }
+        } else {
+          questionnaireResponse.item.any { page ->
+            page.item.any { pageItem ->
+              pageItem.answer.any { answerComponent -> answerComponent.hasValue() }
             }
           }
         }
-      questionnaireResponse.questionnaire =
-        questionnaireConfig.id.asReference(ResourceType.Questionnaire).reference
-      if (
-        !questionnaireConfig.resourceIdentifier.isNullOrBlank() &&
-          questionnaireConfig.resourceType != null
-      ) {
-        questionnaireResponse.subject =
-          questionnaireConfig.resourceIdentifier!!.asReference(
-            questionnaireConfig.resourceType!!,
-          )
       }
-      if (questionnaireHasAnswer) {
-        questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
-        defaultRepository.addOrUpdate(
-          addMandatoryTags = true,
-          resource = questionnaireResponse,
+    questionnaireResponse.questionnaire =
+      questionnaireConfig.id.asReference(ResourceType.Questionnaire).reference
+    if (
+      !questionnaireConfig.resourceIdentifier.isNullOrBlank() &&
+        questionnaireConfig.resourceType != null
+    ) {
+      questionnaireResponse.subject =
+        questionnaireConfig.resourceIdentifier!!.asReference(
+          questionnaireConfig.resourceType!!,
         )
-      }
+    }
+    if (questionnaireHasAnswer) {
+      questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
+      defaultRepository.addOrUpdate(
+        addMandatoryTags = true,
+        resource = questionnaireResponse,
+      )
+    }
   }
 
   /**
