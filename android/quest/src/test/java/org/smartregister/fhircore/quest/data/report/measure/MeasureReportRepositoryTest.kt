@@ -89,16 +89,16 @@ class MeasureReportRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-  private val fhirEngine: FhirEngine = mockk()
   private lateinit var measureReportConfiguration: MeasureReportConfiguration
   private lateinit var measureReportRepository: MeasureReportRepository
-  private val registerId = "register id"
+  private lateinit var defaultRepository: DefaultRepository
   private lateinit var rulesFactory: RulesFactory
   private lateinit var rulesExecutor: RulesExecutor
   private lateinit var registerRepository: RegisterRepository
+  private val registerId = "register id"
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val fhirEngine: FhirEngine = mockk()
   private val parser = FhirContext.forR4Cached().newJsonParser()
-  private lateinit var defaultRepository: DefaultRepository
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
