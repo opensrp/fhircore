@@ -24,7 +24,9 @@ import com.google.android.fhir.sync.ParamMap
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
@@ -46,6 +48,7 @@ class AppSyncWorkerTest : RobolectricTest() {
     every { taskExecutor.serialTaskExecutor } returns mockk()
     every { workerParams.taskExecutor } returns taskExecutor
     coEvery { syncListenerManager.loadResourceSearchParams() } returns syncParams
+    every { syncListenerManager.registerSyncListener(any()) } just runs
 
     val appSyncWorker =
       AppSyncWorker(

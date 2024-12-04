@@ -36,12 +36,14 @@ import com.google.android.fhir.sync.SyncOperation
 import com.google.android.fhir.sync.upload.HttpCreateMethod
 import com.google.android.fhir.sync.upload.HttpUpdateMethod
 import com.google.android.fhir.sync.upload.UploadStrategy
+import com.ibm.icu.util.Calendar
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.util.NotificationConstants
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 
 @HiltWorker
 class AppSyncWorker
@@ -70,8 +72,23 @@ constructor(
     )
 
   override suspend fun doWork(): Result {
+    saveSyncStartTimestamp()
     setForeground(getForegroundInfo())
     return super.doWork()
+  }
+
+  private fun saveSyncStartTimestamp() {
+    syncListenerManager.sharedPreferencesHelper.write(
+      SharedPreferenceKey.SYNC_START_TIMESTAMP.name,
+      Calendar.getInstance().timeInMillis
+    )
+  }
+
+  private fun saveSyncEndTimestamp() {
+    syncListenerManager.sharedPreferencesHelper.write(
+      SharedPreferenceKey.SYNC_END_TIMESTAMP.name,
+      Calendar.getInstance().timeInMillis
+    )
   }
 
   override fun getFhirEngine(): FhirEngine = openSrpFhirEngine
@@ -112,6 +129,7 @@ constructor(
           updateNotificationProgress(progress = progressPercentage, isSyncUpload = isSyncUpload)
         }
       }
+      is CurrentSyncJobStatus.Succeeded -> saveSyncEndTimestamp()
       else -> {}
     }
   }

@@ -24,10 +24,12 @@ import com.google.android.fhir.sync.concatParams
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.net.UnknownHostException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.forEachAsync
 import retrofit2.HttpException
 import retrofit2.Response
 import timber.log.Timber
@@ -49,10 +51,10 @@ constructor(
           val (resourceSearchParams, _) = loadResourceSearchParams()
           Timber.i("Custom resource sync parameters $resourceSearchParams")
           resourceSearchParams
-            .asSequence()
+            .asIterable()
             .filter { it.value.isNotEmpty() }
             .map { "${it.key}?${it.value.concatParams()}" }
-            .forEach { url ->
+            .forEachAsync(Dispatchers.IO) { url ->
               fetchResources(
                 gatewayModeHeaderValue = ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE,
                 url = url,
