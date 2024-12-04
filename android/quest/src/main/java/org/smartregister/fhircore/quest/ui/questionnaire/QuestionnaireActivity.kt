@@ -315,7 +315,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           neutralButtonListener = { dialog -> dialog.dismiss() },
           neutralButtonText = R.string.no,
         )
-      } else processSubmission()
+      } else {
+        processSubmission()
+      }
     }
   }
 

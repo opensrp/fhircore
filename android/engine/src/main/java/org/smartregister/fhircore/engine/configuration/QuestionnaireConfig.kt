@@ -103,7 +103,8 @@ data class QuestionnaireConfig(
       linkIds = linkIds?.onEach { it.linkId.interpolate(computedValuesMap) },
       saveButtonText = saveButtonText?.interpolate(computedValuesMap),
       showSubmitAnywayButton = showSubmitAnywayButton.interpolate(computedValuesMap),
-      showSubmissionConfirmationDialog = showSubmissionConfirmationDialog.interpolate(computedValuesMap),
+      showSubmissionConfirmationDialog =
+        showSubmissionConfirmationDialog.interpolate(computedValuesMap),
     )
 }
 
