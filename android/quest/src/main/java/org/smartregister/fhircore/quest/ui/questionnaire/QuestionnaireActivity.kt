@@ -50,6 +50,7 @@ import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.domain.model.isSummary
+import org.smartregister.fhircore.engine.ui.base.AlertDialogButton
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -351,29 +352,40 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     if (questionnaireConfig.isReadOnly()) {
       finish()
     } else if (questionnaireConfig.saveDraft) {
-      AlertDialogue.showCancelAlert(
+      AlertDialogue.showThreeButtonAlert(
         context = this,
         message =
           org.smartregister.fhircore.engine.R.string
             .questionnaire_in_progress_alert_back_pressed_message,
         title = org.smartregister.fhircore.engine.R.string.questionnaire_alert_back_pressed_title,
-        confirmButtonListener = {
-          lifecycleScope.launch {
-            retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
-              viewModel.saveDraftQuestionnaire(questionnaireResponse, questionnaireConfig)
-              finish()
-            }
-          }
-        },
-        confirmButtonText =
-          org.smartregister.fhircore.engine.R.string
-            .questionnaire_alert_back_pressed_save_draft_button_title,
-        neutralButtonListener = {},
-        neutralButtonText =
-          org.smartregister.fhircore.engine.R.string.questionnaire_alert_neutral_button_title,
-        negativeButtonListener = { finish() },
-        negativeButtonText =
-          org.smartregister.fhircore.engine.R.string.questionnaire_alert_negative_button_title,
+        confirmButton =
+          AlertDialogButton(
+            listener = {
+              lifecycleScope.launch {
+                retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
+                  viewModel.saveDraftQuestionnaire(questionnaireResponse, questionnaireConfig)
+                  finish()
+                }
+              }
+            },
+            text =
+              org.smartregister.fhircore.engine.R.string
+                .questionnaire_alert_back_pressed_save_draft_button_title,
+            color = org.smartregister.fhircore.engine.R.color.colorPrimary,
+          ),
+        neutralButton =
+          AlertDialogButton(
+            listener = {},
+            text =
+              org.smartregister.fhircore.engine.R.string.questionnaire_alert_neutral_button_title,
+          ),
+        negativeButton =
+          AlertDialogButton(
+            listener = { finish() },
+            text =
+              org.smartregister.fhircore.engine.R.string.questionnaire_alert_negative_button_title,
+            color = org.smartregister.fhircore.engine.R.color.colorPrimary,
+          ),
       )
     } else {
       AlertDialogue.showConfirmAlert(
