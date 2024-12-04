@@ -20,6 +20,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
@@ -27,6 +28,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 @Module
 abstract class DispatcherModule {
 
+  @Singleton
   @Binds
   abstract fun bindDefaultDispatcherProvider(
     defaultDispatcherProvider: DefaultDispatcherProvider,

@@ -20,9 +20,12 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import com.google.android.fhir.datacapture.extensions.logicalId
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
+import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Resource
 import org.jeasy.rules.api.Facts
+import org.jeasy.rules.api.Rules
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.ListResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
@@ -33,23 +36,24 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 /**
- * This class is used to fire rules used to extract and manipulate data from FHIR resources.
+ * This class is used to execute rules used to extract and manipulate data from FHIR resources.
  *
  * NOTE: that the [Facts] object is not thread safe, each thread should have its own set of data to
  * work on. When used in multi-threaded environment may exhibit unexpected behavior and return wrong
- * results when rules are fired. Use the [ResourceDataRulesExecutor] in the same coroutine context
- * of the caller.
+ * results when rules are fired. Use the [RulesExecutor] in the same coroutine context of the
+ * caller.
  */
-class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
+@Singleton
+class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
   fun processResourceData(
     repositoryResourceData: RepositoryResourceData,
-    ruleConfigs: List<RuleConfig>,
+    rules: Rules,
     params: Map<String, String>?,
   ): ResourceData {
     val computedValuesMap =
       computeResourceDataRules(
-        ruleConfigs = ruleConfigs,
+        rules = rules,
         repositoryResourceData = repositoryResourceData,
         params = params ?: emptyMap(),
       )
@@ -97,16 +101,15 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
    * computation in a map; the name of the rule is used as the key.
    */
   fun computeResourceDataRules(
-    ruleConfigs: List<RuleConfig>,
+    rules: Rules,
     repositoryResourceData: RepositoryResourceData?,
     params: Map<String, String>,
-  ): Map<String, Any> {
-    return rulesFactory.fireRules(
-      rules = rulesFactory.generateRules(ruleConfigs),
+  ): Map<String, Any> =
+    rulesFactory.fireRules(
+      rules = rules,
       repositoryResourceData = repositoryResourceData,
       params = params,
     )
-  }
 
   private fun List<Resource>.mapToResourceData(
     listResourceConfig: ListResourceConfig,
@@ -122,7 +125,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
           addFirst(Pair(baseListResource, listResourceConfig.relatedResources))
         }
 
-      val listItemRelatedResources = mutableMapOf<String, List<Resource>>()
+      val listItemRelatedResources = ConcurrentHashMap<String, List<Resource>>()
       while (relatedResourcesQueue.isNotEmpty()) {
         val (currentResource, currentListResourceConfig) = relatedResourcesQueue.removeFirst()
         currentListResourceConfig.forEach { relatedListResourceConfig ->
@@ -171,12 +174,13 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
         }
       }
 
+      val rules = rulesFactory.generateRules(ruleConfigs)
       val listComputedValuesMap =
         computeResourceDataRules(
-          ruleConfigs = ruleConfigs,
+          rules = rules,
           repositoryResourceData =
             RepositoryResourceData(
-              resourceRulesEngineFactId = listResourceConfig.id,
+              resourceConfigId = listResourceConfig.id,
               resource = baseListResource,
               relatedResourcesMap = listItemRelatedResources,
             ),

@@ -328,7 +328,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
                   listener = { dialog -> dialog.dismiss() },
                 ),
             )
-          } else navHostFragment.navController.navigateUp()
+          } else {
+            navHostFragment.navController.navigateUp()
+          }
         }
       },
     )
