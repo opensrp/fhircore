@@ -17,12 +17,16 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.system.measureTimeMillis
+import org.apache.commons.jexl3.JexlEngine
 import org.hl7.fhir.r4.model.Resource
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rules
 import org.smartregister.fhircore.engine.BuildConfig
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.rulesengine.services.DateService
+import org.smartregister.fhircore.engine.util.extension.generateRules
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
@@ -31,16 +35,26 @@ import timber.log.Timber
  *
  * NOTE: that the [Facts] object is not thread safe, each thread should have its own set of data to
  * work on. When used in a multi-threaded environment it may exhibit unexpected behavior and return
- * incorrect results when rules are fired. Use the [ResourceDataRulesExecutor] in the same coroutine
+ * incorrect results when rules are fired. Use the [ConfigRulesExecutor] in the same coroutine
  * context of the caller.
  */
-class ConfigRulesExecutor @Inject constructor(val fhirPathDataExtractor: FhirPathDataExtractor) :
-  RulesListener() {
+@Singleton
+class ConfigRulesExecutor
+@Inject
+constructor(
+  val fhirPathDataExtractor: FhirPathDataExtractor,
+  val jexlEngine: JexlEngine,
+) : RulesListener() {
 
-  private var facts: Facts = Facts()
+  /** Compute configuration level [Rules] */
+  fun computeConfigRules(rules: Rules, baseResource: Resource?): Map<String, Any> =
+    fireRules(
+      rules = rules,
+      baseResource = baseResource,
+    )
 
-  fun fireRules(rules: Rules, baseResource: Resource? = null): Map<String, Any> {
-    facts =
+  private fun fireRules(rules: Rules, baseResource: Resource? = null): Map<String, Any> {
+    val facts =
       Facts().apply {
         put(FHIR_PATH, fhirPathDataExtractor)
         put(DATA, mutableMapOf<String, Any>())
@@ -57,6 +71,8 @@ class ConfigRulesExecutor @Inject constructor(val fhirPathDataExtractor: FhirPat
     }
     return facts.get(DATA) as Map<String, Any>
   }
+
+  fun generateRules(ruleConfigs: List<RuleConfig>): Rules = ruleConfigs.generateRules(jexlEngine)
 
   companion object {
     private const val DATE_SERVICE = "dateService"

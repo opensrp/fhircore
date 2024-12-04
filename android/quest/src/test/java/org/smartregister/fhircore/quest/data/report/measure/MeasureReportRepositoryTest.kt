@@ -20,6 +20,7 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -34,23 +35,27 @@ import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import org.apache.commons.jexl3.JexlEngine
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.formatDate
@@ -78,16 +83,22 @@ class MeasureReportRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var contentCache: ContentCache
 
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-  private val fhirEngine: FhirEngine = mockk()
+  @Inject lateinit var jexlEngine: JexlEngine
+
+  @Inject lateinit var configService: ConfigService
+
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
   private lateinit var measureReportConfiguration: MeasureReportConfiguration
   private lateinit var measureReportRepository: MeasureReportRepository
-  private val registerId = "register id"
-  private lateinit var rulesFactory: RulesFactory
-  private lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
-  private lateinit var registerRepository: RegisterRepository
-  private val parser = FhirContext.forR4Cached().newJsonParser()
   private lateinit var defaultRepository: DefaultRepository
+  private lateinit var rulesFactory: RulesFactory
+  private lateinit var rulesExecutor: RulesExecutor
+  private lateinit var registerRepository: RegisterRepository
+  private val registerId = "register id"
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val fhirEngine: FhirEngine = mockk()
+  private val parser = FhirContext.forR4Cached().newJsonParser()
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -104,9 +115,10 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           locationService = locationService,
           fhirContext = fhirContext,
           defaultRepository = defaultRepository,
+          jexlEngine = jexlEngine,
         ),
       )
-    resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)
+    rulesExecutor = RulesExecutor(rulesFactory)
 
     val appId = "appId"
     val id = "id"
@@ -117,9 +129,9 @@ class MeasureReportRepositoryTest : RobolectricTest() {
         RegisterRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
-          sharedPreferencesHelper = mockk(),
+          sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
-          configService = mockk(),
+          configService = configService,
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = mockk(),
           parser = parser,
@@ -131,9 +143,9 @@ class MeasureReportRepositoryTest : RobolectricTest() {
     measureReportRepository =
       MeasureReportRepository(
         fhirEngine = fhirEngine,
-        sharedPreferencesHelper = mockk(),
+        sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        configService = mockk(),
+        configService = configService,
         configRulesExecutor = mockk(),
         fhirOperator = fhirOperator,
         knowledgeManager = knowledgeManager,
@@ -211,15 +223,15 @@ class MeasureReportRepositoryTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testRetrieveSubjectsWithResultsNonEmptySubjectXFhirWithGroupUpdates() {
     val reportConfiguration = ReportConfiguration(subjectXFhirQuery = "Patient")
+    val resource = Group().apply { id = "grp1" }
     coEvery { fhirEngine.search<Group>(any()) } returns
-      listOf(SearchResult(resource = Group(), null, null))
+      listOf(SearchResult(resource = resource, null, null))
+    coEvery { fhirEngine.get(ResourceType.Group, resource.logicalId) } returns resource
     coEvery { fhirEngine.update(any<Group>()) } just runs
-
     runBlocking(Dispatchers.Default) {
       val data = measureReportRepository.fetchSubjects(reportConfiguration)
       assertEquals(1, data.size)
     }
-
     coVerify { fhirEngine.search<Patient>(any()) }
     coVerify { fhirEngine.update(any<Group>()) }
   }

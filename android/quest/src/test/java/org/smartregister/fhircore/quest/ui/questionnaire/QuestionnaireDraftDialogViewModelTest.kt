@@ -44,7 +44,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -65,7 +65,7 @@ class QuestionnaireDraftDialogViewModelTest : RobolectricTest() {
 
   @Inject lateinit var configService: ConfigService
 
-  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  @Inject lateinit var rulesExecutor: RulesExecutor
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 

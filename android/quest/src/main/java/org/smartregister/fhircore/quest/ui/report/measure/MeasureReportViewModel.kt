@@ -53,7 +53,7 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_D_MMM_YYYY_WITH_COMA
@@ -101,7 +101,7 @@ constructor(
   val registerRepository: RegisterRepository,
   val measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper,
   val defaultRepository: DefaultRepository,
-  val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  val rulesExecutor: RulesExecutor,
   private val measureReportRepository: MeasureReportRepository,
 ) : ViewModel() {
   private val _measureReportPopulationResultList: MutableList<MeasureReportPopulationResult> =
@@ -139,7 +139,7 @@ constructor(
           measureReportConfiguration = measureReportConfiguration,
           registerConfiguration = registerConfiguration,
           registerRepository = registerRepository,
-          resourceDataRulesExecutor = resourceDataRulesExecutor,
+          rulesExecutor = rulesExecutor,
         )
       }
       .flow
@@ -253,7 +253,7 @@ constructor(
                 measureReportConfiguration = measureReportConfig,
                 registerConfiguration = registerConfiguration,
                 registerRepository = registerRepository,
-                resourceDataRulesExecutor = resourceDataRulesExecutor,
+                rulesExecutor = rulesExecutor,
               ),
               measureReportSubjectViewDataMapper,
             )
