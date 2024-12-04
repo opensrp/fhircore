@@ -705,11 +705,10 @@ constructor(
    * This function saves [QuestionnaireResponse] as draft if any of the [QuestionnaireResponse.item]
    * has an answer.
    */
-  fun saveDraftQuestionnaire(
+  suspend fun saveDraftQuestionnaire(
     questionnaireResponse: QuestionnaireResponse,
     questionnaireConfig: QuestionnaireConfig,
   ) {
-    viewModelScope.launch {
       val hasPages = questionnaireResponse.item.any { it.hasItem() }
       val questionnaireHasAnswer =
         questionnaireResponse.item.any {
@@ -741,7 +740,6 @@ constructor(
           resource = questionnaireResponse,
         )
       }
-    }
   }
 
   /**
