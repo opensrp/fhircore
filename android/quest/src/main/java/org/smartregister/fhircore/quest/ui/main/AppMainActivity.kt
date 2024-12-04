@@ -52,6 +52,7 @@ import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
+import org.smartregister.fhircore.engine.ui.base.AlertDialogButton
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
@@ -318,8 +319,14 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
               title = getString(R.string.exit_app),
               message = getString(R.string.exit_app_message),
               cancellable = false,
-              confirmButtonListener = { finish() },
-              neutralButtonListener = { dialog -> dialog.dismiss() },
+              confirmButton =
+                AlertDialogButton(
+                  listener = { finish() },
+                ),
+              neutralButton =
+                AlertDialogButton(
+                  listener = { dialog -> dialog.dismiss() },
+                ),
             )
           } else {
             navHostFragment.navController.navigateUp()

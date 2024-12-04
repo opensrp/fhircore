@@ -63,6 +63,8 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
@@ -1334,6 +1336,48 @@ constructor(
       .search<Location>(search)
       .flatMap { it.revIncluded?.values?.flatten() ?: emptyList() }
       .map { it.logicalId }
+  }
+
+  /**
+   * This function searches and returns the latest [QuestionnaireResponse] for the given
+   * [resourceId] that was extracted from the [Questionnaire] identified as [questionnaireId].
+   * Returns null if non is found.
+   */
+  suspend fun searchQuestionnaireResponse(
+    resourceId: String,
+    resourceType: ResourceType,
+    questionnaireId: String,
+    encounterId: String?,
+    questionnaireResponseStatus: String? = null,
+  ): QuestionnaireResponse? {
+    val search =
+      Search(ResourceType.QuestionnaireResponse).apply {
+        filter(
+          QuestionnaireResponse.SUBJECT,
+          { value = resourceId.asReference(resourceType).reference },
+        )
+        filter(
+          QuestionnaireResponse.QUESTIONNAIRE,
+          { value = questionnaireId.asReference(ResourceType.Questionnaire).reference },
+        )
+        if (!encounterId.isNullOrBlank()) {
+          filter(
+            QuestionnaireResponse.ENCOUNTER,
+            {
+              value =
+                encounterId.extractLogicalIdUuid().asReference(ResourceType.Encounter).reference
+            },
+          )
+        }
+        if (!questionnaireResponseStatus.isNullOrBlank()) {
+          filter(
+            QuestionnaireResponse.STATUS,
+            { value = of(questionnaireResponseStatus) },
+          )
+        }
+      }
+    val questionnaireResponses: List<QuestionnaireResponse> = search(search)
+    return questionnaireResponses.maxByOrNull { it.meta.lastUpdated }
   }
 
   companion object {
