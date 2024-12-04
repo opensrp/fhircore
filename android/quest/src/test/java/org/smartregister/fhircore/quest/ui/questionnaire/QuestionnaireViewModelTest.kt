@@ -1376,102 +1376,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSearchLatestQuestionnaireResponseShouldReturnLatestQuestionnaireResponse() =
-    runTest(timeout = 90.seconds) {
-      Assert.assertNull(
-        questionnaireViewModel.searchQuestionnaireResponse(
-          resourceId = patient.logicalId,
-          resourceType = ResourceType.Patient,
-          questionnaireId = questionnaireConfig.id,
-          encounterId = null,
-        ),
-      )
-
-      val questionnaireResponses =
-        listOf(
-          QuestionnaireResponse().apply {
-            id = "qr1"
-            meta.lastUpdated = Date()
-            subject = patient.asReference()
-            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
-          },
-          QuestionnaireResponse().apply {
-            id = "qr2"
-            meta.lastUpdated = yesterday()
-            subject = patient.asReference()
-            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
-          },
-        )
-
-      // Add QuestionnaireResponse to database
-      fhirEngine.create(
-        patient,
-        samplePatientRegisterQuestionnaire,
-        *questionnaireResponses.toTypedArray(),
-      )
-
-      val latestQuestionnaireResponse =
-        questionnaireViewModel.searchQuestionnaireResponse(
-          resourceId = patient.logicalId,
-          resourceType = ResourceType.Patient,
-          questionnaireId = questionnaireConfig.id,
-          encounterId = null,
-        )
-      Assert.assertNotNull(latestQuestionnaireResponse)
-      Assert.assertEquals("QuestionnaireResponse/qr1", latestQuestionnaireResponse?.id)
-    }
-
-  @Test
-  fun testSearchLatestQuestionnaireResponseWhenSaveDraftIsTueShouldReturnLatestQuestionnaireResponse() =
-    runTest(timeout = 90.seconds) {
-      Assert.assertNull(
-        questionnaireViewModel.searchQuestionnaireResponse(
-          resourceId = patient.logicalId,
-          resourceType = ResourceType.Patient,
-          questionnaireId = questionnaireConfig.id,
-          encounterId = null,
-          questionnaireResponseStatus = QuestionnaireResponseStatus.INPROGRESS.toCode(),
-        ),
-      )
-
-      val questionnaireResponses =
-        listOf(
-          QuestionnaireResponse().apply {
-            id = "qr1"
-            meta.lastUpdated = Date()
-            subject = patient.asReference()
-            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
-            status = QuestionnaireResponseStatus.INPROGRESS
-          },
-          QuestionnaireResponse().apply {
-            id = "qr2"
-            meta.lastUpdated = yesterday()
-            subject = patient.asReference()
-            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
-            status = QuestionnaireResponseStatus.COMPLETED
-          },
-        )
-
-      // Add QuestionnaireResponse to database
-      fhirEngine.create(
-        patient,
-        samplePatientRegisterQuestionnaire,
-        *questionnaireResponses.toTypedArray(),
-      )
-
-      val latestQuestionnaireResponse =
-        questionnaireViewModel.searchQuestionnaireResponse(
-          resourceId = patient.logicalId,
-          resourceType = ResourceType.Patient,
-          questionnaireId = questionnaireConfig.id,
-          encounterId = null,
-          questionnaireResponseStatus = QuestionnaireResponseStatus.INPROGRESS.toCode(),
-        )
-      Assert.assertNotNull(latestQuestionnaireResponse)
-      Assert.assertEquals("QuestionnaireResponse/qr1", latestQuestionnaireResponse?.id)
-    }
-
-  @Test
   fun testRetrievePopulationResourcesReturnsListOfResourcesOrEmptyList() = runTest {
     val specimenId = "specimenId"
     val actionParameters =
@@ -1628,7 +1532,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
 
     coEvery {
-      questionnaireViewModel.searchQuestionnaireResponse(
+      defaultRepository.searchQuestionnaireResponse(
         resourceId = patient.logicalId,
         resourceType = ResourceType.Patient,
         questionnaireId = questionnaireConfig.id,
