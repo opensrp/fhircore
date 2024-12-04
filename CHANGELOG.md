@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   1. Added a new class (PdfGenerator) for generating PDF documents from HTML content using Android's WebView and PrintManager
   2. Introduced a new class (HtmlPopulator) to populate HTML templates with data from a Questionnaire Response
   3. Implemented functionality to launch PDF generation using a configuration setup
-- Added Save draft MVP functionality  
+- Added Save draft MVP functionality
+- Added Delete saved draft feature
 
 ## [1.1.0] - 2024-02-15
 

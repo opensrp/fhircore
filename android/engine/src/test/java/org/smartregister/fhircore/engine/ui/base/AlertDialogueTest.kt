@@ -53,10 +53,16 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       alertIntent = AlertIntent.ERROR,
       message = getString(R.string.questionnaire_alert_invalid_message),
       title = getString(R.string.questionnaire_alert_invalid_title),
-      confirmButtonText = R.string.questionnaire_alert_confirm_button_title,
-      confirmButtonListener = { confirmCalled.add(true) },
-      neutralButtonText = R.string.questionnaire_alert_ack_button_title,
-      neutralButtonListener = { neutralCalled.add(true) },
+      confirmButton =
+        AlertDialogButton(
+          text = R.string.questionnaire_alert_confirm_button_title,
+          listener = { confirmCalled.add(true) },
+        ),
+      neutralButton =
+        AlertDialogButton(
+          text = R.string.questionnaire_alert_ack_button_title,
+          listener = { neutralCalled.add(true) },
+        ),
       options = arrayOf(AlertDialogListItem("a", "A"), AlertDialogListItem("b", "B")),
     )
 
@@ -143,16 +149,25 @@ class AlertDialogueTest : ActivityRobolectricTest() {
 
   @Test
   fun testShowCancelAlertShowsWithCorrectData() {
-    AlertDialogue.showCancelAlert(
+    AlertDialogue.showThreeButtonAlert(
       context = context,
       message = R.string.questionnaire_in_progress_alert_back_pressed_message,
       title = R.string.questionnaire_alert_back_pressed_title,
-      confirmButtonListener = {},
-      confirmButtonText = R.string.questionnaire_alert_back_pressed_save_draft_button_title,
-      neutralButtonListener = {},
-      neutralButtonText = R.string.questionnaire_alert_back_pressed_button_title,
-      negativeButtonListener = {},
-      negativeButtonText = R.string.questionnaire_alert_negative_button_title,
+      confirmButton =
+        AlertDialogButton(
+          listener = {},
+          text = R.string.questionnaire_alert_back_pressed_save_draft_button_title,
+        ),
+      neutralButton =
+        AlertDialogButton(
+          listener = {},
+          text = R.string.questionnaire_alert_back_pressed_button_title,
+        ),
+      negativeButton =
+        AlertDialogButton(
+          listener = {},
+          text = R.string.questionnaire_alert_negative_button_title,
+        ),
     )
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 
