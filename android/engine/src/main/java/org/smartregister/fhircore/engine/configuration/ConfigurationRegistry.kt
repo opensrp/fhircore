@@ -59,6 +59,8 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
+import org.smartregister.fhircore.engine.sync.CustomSyncState
+import org.smartregister.fhircore.engine.sync.CustomWorkerState
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.KnowledgeManagerUtil
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -529,30 +531,48 @@ constructor(
   suspend fun fetchResources(
     gatewayModeHeaderValue: String? = null,
     url: String,
+    enableCustomSyncWorkerLogs: Boolean = false,
   ) {
-    val resultBundle =
-      runCatching {
-          if (gatewayModeHeaderValue.isNullOrEmpty()) {
-            fhirResourceDataSource.getResource(url)
-          } else {
-            fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, url)
+    runCatching {
+        if (enableCustomSyncWorkerLogs) {
+          Timber.d("Posting state: InProgress")
+          CustomWorkerState.postState(CustomSyncState.InProgress)
+        }
+
+        Timber.d("Fetching page with URL: $url")
+        if (gatewayModeHeaderValue.isNullOrEmpty()) {
+          fhirResourceDataSource.getResource(url)
+        } else {
+          fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, url)
+        }
+      }
+      .onFailure { throwable ->
+        Timber.e("Error occurred while retrieving resource via URL $url", throwable)
+        if (enableCustomSyncWorkerLogs) {
+          Timber.d("Posting state: Failed")
+          CustomWorkerState.postState(CustomSyncState.Failed(throwable.localizedMessage))
+        }
+        return // Exit on failure
+      }
+      .onSuccess { resultBundle ->
+        val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url
+
+        processResultBundleEntries(resultBundle.entry)
+
+        if (!nextPageUrl.isNullOrEmpty()) {
+          fetchResources(
+            gatewayModeHeaderValue = gatewayModeHeaderValue,
+            url = nextPageUrl,
+            enableCustomSyncWorkerLogs = enableCustomSyncWorkerLogs,
+          )
+        } else {
+          Timber.d("No more pages to fetch. Fetching completed.")
+          if (enableCustomSyncWorkerLogs) {
+            Timber.d("Posting state: Success")
+            CustomWorkerState.postState(CustomSyncState.Success)
           }
         }
-        .onFailure { throwable ->
-          Timber.e("Error occurred while retrieving resource via URL $url", throwable)
-        }
-        .getOrThrow()
-
-    val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url
-
-    processResultBundleEntries(resultBundle.entry)
-
-    if (!nextPageUrl.isNullOrEmpty()) {
-      fetchResources(
-        gatewayModeHeaderValue = gatewayModeHeaderValue,
-        url = nextPageUrl,
-      )
-    }
+      }
   }
 
   private suspend fun processResultBundleEntries(

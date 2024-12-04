@@ -1,0 +1,5 @@
+<resources>
+    <string name="no_found_locations_matching_text">No caregiver found matching text \"%1$s\"</string>
+    <string name="button_pagination_next">alpha</string>
+    <string name="button_pagination_previous">omega</string>
+</resources>
