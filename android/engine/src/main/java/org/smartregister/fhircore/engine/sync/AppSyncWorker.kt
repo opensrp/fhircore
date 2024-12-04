@@ -80,14 +80,14 @@ constructor(
   private fun saveSyncStartTimestamp() {
     syncListenerManager.sharedPreferencesHelper.write(
       SharedPreferenceKey.SYNC_START_TIMESTAMP.name,
-      Calendar.getInstance().timeInMillis
+      Calendar.getInstance().timeInMillis,
     )
   }
 
   private fun saveSyncEndTimestamp() {
     syncListenerManager.sharedPreferencesHelper.write(
       SharedPreferenceKey.SYNC_END_TIMESTAMP.name,
-      Calendar.getInstance().timeInMillis
+      Calendar.getInstance().timeInMillis,
     )
   }
 
