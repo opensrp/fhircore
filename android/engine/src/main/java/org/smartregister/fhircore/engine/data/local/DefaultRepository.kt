@@ -114,13 +114,8 @@ constructor(
   open val fhirPathDataExtractor: FhirPathDataExtractor,
   open val parser: IParser,
   @ApplicationContext open val context: Context,
+  open val contentCache: ContentCache,
 ) {
-
-  @Inject lateinit var contentCache: ContentCache
-
-  init {
-    DaggerDefaultRepositoryComponent.create().inject(this)
-  }
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? =
     fhirEngine.loadResource(resourceId)
@@ -262,6 +257,10 @@ constructor(
   suspend fun <R : Resource> update(resource: R) {
     resource.updateLastUpdated()
     fhirEngine.update(resource)
+  }
+
+  suspend fun applyDbTransaction(block: suspend () -> Unit) {
+    fhirEngine.withTransaction { block.invoke() }
   }
 
   suspend fun loadManagingEntity(group: Group) =
