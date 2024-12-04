@@ -69,10 +69,12 @@ constructor(
 
     if (questionnaireResponse != null) {
       questionnaireResponse.status = QuestionnaireResponseStatus.STOPPED
-      defaultRepository.update(questionnaireResponse)
-      defaultRepository.addOrUpdate(
-        resource = createDeleteDraftAuditEvent(questionnaireConfig, questionnaireResponse),
-      )
+      defaultRepository.applyDbTransaction {
+        defaultRepository.update(questionnaireResponse)
+        defaultRepository.addOrUpdate(
+          resource = createDeleteDraftAuditEvent(questionnaireConfig, questionnaireResponse),
+        )
+      }
     }
   }
 
