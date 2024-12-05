@@ -32,9 +32,11 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.apache.commons.jexl3.JexlEngine
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -89,12 +91,14 @@ class RulesFactoryTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var locationService: LocationService
+
+  @Inject lateinit var fhirContext: FhirContext
+
+  @Inject lateinit var jexlEngine: JexlEngine
   private val rulesEngine = mockk<DefaultRulesEngine>()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var rulesFactory: RulesFactory
   private lateinit var rulesEngineService: RulesFactory.RulesEngineService
-
-  @Inject lateinit var fhirContext: FhirContext
   private lateinit var defaultRepository: DefaultRepository
 
   @Before
@@ -111,6 +115,7 @@ class RulesFactoryTest : RobolectricTest() {
           dispatcherProvider = dispatcherProvider,
           locationService = locationService,
           fhirContext = fhirContext,
+          jexlEngine = jexlEngine,
           defaultRepository = defaultRepository,
         ),
       )
@@ -133,7 +138,7 @@ class RulesFactoryTest : RobolectricTest() {
   fun fireRulesCallsRulesEngineFireWithCorrectRulesAndFacts() {
     runTest {
       val baseResource = Faker.buildPatient()
-      val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
+      val relatedResourcesMap: ConcurrentHashMap<String, List<Resource>> = ConcurrentHashMap()
       val ruleConfig =
         RuleConfig(
           name = "patientName",
@@ -200,37 +205,47 @@ class RulesFactoryTest : RobolectricTest() {
             secondaryRepositoryResourceData =
               listOf(
                 RepositoryResourceData(
-                  resourceRulesEngineFactId = "commodities",
+                  resourceConfigId = "commodities",
                   resource = Group().apply { id = "Commodity1" },
                   relatedResourcesMap =
-                    mapOf(
-                      "stockObservations" to
+                    ConcurrentHashMap<String, List<Resource>>().apply {
+                      put(
+                        "stockObservations",
                         listOf(
                           Observation().apply { id = "Obsv1" },
                           Observation().apply { id = "Obsv2" },
                         ),
-                      "latestObservations" to
+                      )
+                      put(
+                        "latestObservations",
                         listOf(
                           Observation().apply { id = "Obsv3" },
                           Observation().apply { id = "Obsv4" },
                         ),
-                    ),
+                      )
+                    },
                   relatedResourcesCountMap =
-                    mapOf("stockCount" to listOf(RelatedResourceCount(count = 20))),
+                    ConcurrentHashMap<String, List<RelatedResourceCount>>().apply {
+                      put("stockCount", listOf(RelatedResourceCount(count = 20)))
+                    },
                 ),
                 RepositoryResourceData(
-                  resourceRulesEngineFactId = "commodities",
+                  resourceConfigId = "commodities",
                   resource = Group().apply { id = "Commodity2" },
                   relatedResourcesMap =
-                    mapOf(
-                      "stockObservations" to
+                    ConcurrentHashMap<String, List<Resource>>().apply {
+                      put(
+                        "stockObservations",
                         listOf(
                           Observation().apply { id = "Obsv6" },
                           Observation().apply { id = "Obsv7" },
                         ),
-                    ),
+                      )
+                    },
                   relatedResourcesCountMap =
-                    mapOf("stockCount" to listOf(RelatedResourceCount(count = 10))),
+                    ConcurrentHashMap<String, List<RelatedResourceCount>>().apply {
+                      put("stockCount", listOf(RelatedResourceCount(count = 10)))
+                    },
                 ),
               ),
           ),

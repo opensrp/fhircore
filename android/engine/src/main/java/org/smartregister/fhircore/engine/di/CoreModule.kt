@@ -35,6 +35,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.apache.commons.jexl3.JexlBuilder
+import org.apache.commons.jexl3.JexlEngine
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Resource
@@ -127,4 +129,21 @@ class CoreModule {
       .fhirContext(fhirContext)
       .knowledgeManager(knowledgeManager)
       .build()
+
+  @Singleton
+  @Provides
+  fun provideJexlEngine(): JexlEngine {
+    return JexlBuilder() // Expensive initialization
+      .namespaces(
+        mutableMapOf<String, Any>(
+          "Timber" to Timber,
+          "StringUtils" to Class.forName("org.apache.commons.lang3.StringUtils"),
+          "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils"),
+          "Math" to Class.forName("java.lang.Math"),
+        ),
+      )
+      .silent(false)
+      .strict(false)
+      .create()
+  }
 }

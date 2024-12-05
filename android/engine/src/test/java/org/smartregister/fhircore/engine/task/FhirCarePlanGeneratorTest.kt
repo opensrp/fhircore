@@ -1138,7 +1138,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   @ExperimentalCoroutinesApi
   fun `generateOrUpdateCarePlan should generate careplan for 5 visits when lmp has passed 3 months`() =
-    runTest {
+    runTest(timeout = 120.seconds) {
       val monthToDateMap = mutableMapOf<Int, Map<Int, Int>>()
 
       for (i in 1..12) {

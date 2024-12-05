@@ -71,6 +71,7 @@ constructor(
 ) : ViewModel() {
 
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
+  private val exceptionHandler = CoroutineExceptionHandler { _, exception -> Timber.e(exception) }
 
   val showProgressBar = MutableLiveData(false)
 
@@ -102,8 +103,6 @@ constructor(
       }
     }
   }
-
-  private val exceptionHandler = CoroutineExceptionHandler { _, exception -> Timber.e(exception) }
 
   private fun fetchRemoteConfigurations(appId: String?, context: Context) {
     viewModelScope.launch(exceptionHandler) {

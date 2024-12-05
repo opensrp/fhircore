@@ -120,7 +120,7 @@ constructor(
       }
 
       measureReport.forEach { report ->
-        // if report exists override instead of creating a new one
+        // if report exists  instead of creating a new one
         existing
           .find {
             it.measure == report.measure &&
@@ -196,7 +196,7 @@ constructor(
           val resource = searchResult.resource
           if (resource is Group && !resource.hasMember()) {
             resource.addMember(Group.GroupMemberComponent(resource.asReference()))
-            update(resource)
+            addOrUpdate(resource = resource)
           }
           "${resource.resourceType.name}/${resource.logicalId}"
         }

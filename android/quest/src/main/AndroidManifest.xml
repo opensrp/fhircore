@@ -28,6 +28,7 @@
         tools:replace="android:allowBackup,android:theme">
         <profileable
             android:shell="true"
+            android:enabled="true"
             tools:targetApi="29" />
 
         <meta-data

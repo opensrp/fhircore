@@ -67,6 +67,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SyncLocationState
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -79,6 +80,7 @@ private const val HOUSEHOLD_REGISTER_ID = "householdRegister"
 private const val GROUP_ID = "theGroup"
 private const val GROUP_MEMBERS = "groupMembers"
 private const val ALL_TASKS = "allTasks"
+private const val SUB_TASK = "subTask"
 private const val TASK_ID = "taskId"
 private const val PART_OF_TASK_ID = "partOfTaskId"
 private const val MEMBER_CARE_PLANS = "memberCarePlans"
@@ -108,6 +110,8 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var contentCache: ContentCache
 
+  @Inject lateinit var configRulesExecutor: ConfigRulesExecutor
+
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val patient = Faker.buildPatient(PATIENT_ID)
   private lateinit var registerRepository: RegisterRepository
@@ -123,7 +127,7 @@ class RegisterRepositoryTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
-          configRulesExecutor = mockk(),
+          configRulesExecutor = configRulesExecutor,
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
           context = ApplicationProvider.getApplicationContext(),
@@ -320,7 +324,7 @@ class RegisterRepositoryTest : RobolectricTest() {
   fun testLoadProfileDataWithForwardAndReverseIncludedResources() =
     runTest(timeout = 120.seconds) {
       val profileId = "profile"
-      every { registerRepository.retrieveProfileConfiguration(profileId, emptyMap()) } returns
+      val profileConfiguration =
         ProfileConfiguration(
           appId = "app",
           id = profileId,
@@ -341,6 +345,10 @@ class RegisterRepositoryTest : RobolectricTest() {
               ),
             ),
         )
+      configurationRegistry.configsJsonMap[profileId] = profileConfiguration.encodeJson()
+      configurationRegistry.configCacheMap[profileId] = profileConfiguration
+      every { registerRepository.retrieveProfileConfiguration(profileId, emptyMap()) } returns
+        profileConfiguration
 
       val group = createGroup(id = GROUP_ID, active = true, members = listOf(patient))
       val carePlan = createCarePlan(id = "carePlan", subject = patient.asReference())
@@ -387,16 +395,19 @@ class RegisterRepositoryTest : RobolectricTest() {
           profileId = profileId,
           resourceId = GROUP_ID,
           fhirResourceConfig = null,
-          paramsList = null,
+          paramsMap = null,
         )
-      Assert.assertTrue(repositoryResourceData.resource is Group)
-      Assert.assertEquals(GROUP_ID, repositoryResourceData.resource.logicalId)
-      Assert.assertTrue((repositoryResourceData.resource as Group).member.isNotEmpty())
+      val resource = repositoryResourceData?.resource
+      Assert.assertNotNull(resource)
+      Assert.assertTrue(resource is Group)
+      Assert.assertEquals(GROUP_ID, resource?.logicalId)
+      Assert.assertTrue((resource as Group).member.isNotEmpty())
 
       // Ensure the related resources were included
       val relatedResources = repositoryResourceData.relatedResourcesMap
       Assert.assertTrue(relatedResources.isNotEmpty())
       Assert.assertTrue(relatedResources.containsKey(GROUP_MEMBERS))
+      Assert.assertTrue(relatedResources.containsKey(SUB_TASK))
       Assert.assertTrue(relatedResources.containsKey(ALL_TASKS))
       Assert.assertTrue(relatedResources.containsKey(MEMBER_CARE_PLANS))
 
@@ -488,7 +499,7 @@ class RegisterRepositoryTest : RobolectricTest() {
                   relatedResources =
                     listOf(
                       ResourceConfig(
-                        id = ALL_TASKS, // Referenced task
+                        id = SUB_TASK, // Referenced task
                         resource = ResourceType.Task,
                         searchParameter = PART_OF,
                         isRevInclude = false,

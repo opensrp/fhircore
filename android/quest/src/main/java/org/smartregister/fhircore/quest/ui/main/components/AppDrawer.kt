@@ -365,9 +365,9 @@ private fun DefaultSyncStatus(
         },
       subTitleTextColor = SubtitleTextColor,
       endText =
-        if (appUiState.lastSyncTime.contains('('))
+        if (appUiState.lastSyncTime.contains('(')) {
           appUiState.lastSyncTime.substring(0, appUiState.lastSyncTime.indexOf('('))
-        else appUiState.lastSyncTime,
+        } else appUiState.lastSyncTime,
       endTextColor = if (allDataSynced) SubtitleTextColor else Color.Unspecified,
       padding = 0,
       showEndText = true,

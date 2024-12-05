@@ -202,7 +202,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
     coEvery {
       fhirResourceDataSource.getResource(
-        "List?_id=123456&_page=1&_count=${ConfigurationRegistry.DEFAULT_COUNT}"
+        "List?_id=123456&_page=1&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
       )
     } returns bundle
 
