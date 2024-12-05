@@ -311,10 +311,15 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           alertIntent = AlertIntent.CONFIRM,
           message = getString(R.string.questionnaire_submission_confirmation_message),
           title = getString(R.string.questionnaire_submission_confirmation_title),
-          confirmButtonListener = { processSubmission() },
-          confirmButtonText = R.string.yes,
-          neutralButtonListener = { dialog -> dialog.dismiss() },
-          neutralButtonText = R.string.no,
+          confirmButton =
+          AlertDialogButton(
+            listener = { processSubmission() },
+          ),
+          neutralButton =
+          AlertDialogButton(
+            text = R.string.no,
+            listener = { it.dismiss() },
+          ),
         )
       } else {
         processSubmission()
