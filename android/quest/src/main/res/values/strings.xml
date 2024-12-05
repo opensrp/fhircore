@@ -141,6 +141,7 @@
     <string name="all_locations_rendered"><b>All</b> the locations rendered successfully"</string>
     <string name="all_matching_locations_rendered"><b>%1$d </b> matching location(s) rendered successfully"</string>
     <string name="on_cancel_adding_location">Cancel adding location</string>
+    <string name="error_rendering_profile">Error rendering profile</string>
     <string name="questionnaire_submission_confirmation_message">Are you sure you want to submit?</string>
     <string name="questionnaire_submission_confirmation_title">You are about to submit</string>
 </resources>

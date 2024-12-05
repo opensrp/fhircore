@@ -73,7 +73,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.isEditable
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -110,7 +110,7 @@ constructor(
   val defaultRepository: DefaultRepository,
   val dispatcherProvider: DispatcherProvider,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
-  val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  val rulesExecutor: RulesExecutor,
   val transformSupportServices: TransformSupportServices,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val fhirOperator: FhirOperator,
@@ -571,7 +571,8 @@ constructor(
         !questionnaireConfig.resourceIdentifier.isNullOrEmpty() &&
         subjectType != null
     ) {
-      searchQuestionnaireResponse(
+      defaultRepository
+        .searchQuestionnaireResponse(
           resourceId = questionnaireConfig.resourceIdentifier!!,
           resourceType = questionnaireConfig.resourceType ?: subjectType,
           questionnaireId = questionnaire.logicalId,
@@ -899,7 +900,9 @@ constructor(
   private fun getStringRepresentation(base: Base): String =
     if (base.isResource) {
       FhirContext.forR4Cached().newJsonParser().encodeResourceToString(base as Resource)
-    } else base.toString()
+    } else {
+      base.toString()
+    }
 
   /**
    * This function generates CarePlans for the [QuestionnaireResponse.subject] using the configured
@@ -1064,48 +1067,6 @@ constructor(
     }
   }
 
-  /**
-   * This function searches and returns the latest [QuestionnaireResponse] for the given
-   * [resourceId] that was extracted from the [Questionnaire] identified as [questionnaireId].
-   * Returns null if non is found.
-   */
-  suspend fun searchQuestionnaireResponse(
-    resourceId: String,
-    resourceType: ResourceType,
-    questionnaireId: String,
-    encounterId: String?,
-    questionnaireResponseStatus: String? = null,
-  ): QuestionnaireResponse? {
-    val search =
-      Search(ResourceType.QuestionnaireResponse).apply {
-        filter(
-          QuestionnaireResponse.SUBJECT,
-          { value = resourceId.asReference(resourceType).reference },
-        )
-        filter(
-          QuestionnaireResponse.QUESTIONNAIRE,
-          { value = questionnaireId.asReference(ResourceType.Questionnaire).reference },
-        )
-        if (!encounterId.isNullOrBlank()) {
-          filter(
-            QuestionnaireResponse.ENCOUNTER,
-            {
-              value =
-                encounterId.extractLogicalIdUuid().asReference(ResourceType.Encounter).reference
-            },
-          )
-        }
-        if (!questionnaireResponseStatus.isNullOrBlank()) {
-          filter(
-            QuestionnaireResponse.STATUS,
-            { value = of(questionnaireResponseStatus) },
-          )
-        }
-      }
-    val questionnaireResponses: List<QuestionnaireResponse> = defaultRepository.search(search)
-    return questionnaireResponses.maxByOrNull { it.meta.lastUpdated }
-  }
-
   private suspend fun launchContextResources(
     subjectResourceType: ResourceType?,
     subjectResourceIdentifier: String?,
@@ -1149,7 +1110,10 @@ constructor(
     questionnaire.prepopulateWithComputedConfigValues(
       questionnaireConfig,
       actionParameters,
-      { resourceDataRulesExecutor.computeResourceDataRules(it, null, emptyMap()) },
+      {
+        val rules = rulesExecutor.rulesFactory.generateRules(it)
+        rulesExecutor.computeResourceDataRules(rules, null, emptyMap())
+      },
       { uniqueIdAssignmentConfig, computedValues ->
         // Extract ID from a Group, should be modified in future to support other resources
         uniqueIdResource =
@@ -1176,7 +1140,8 @@ constructor(
             questionnaireConfig.isReadOnly() ||
             questionnaireConfig.saveDraft)
       ) {
-        searchQuestionnaireResponse(
+        defaultRepository
+          .searchQuestionnaireResponse(
             resourceId = resourceIdentifier,
             resourceType = resourceType,
             questionnaireId = questionnaire.logicalId,
@@ -1186,6 +1151,7 @@ constructor(
           ?.let {
             QuestionnaireResponse().apply {
               id = it.id
+              status = it.status
               item = it.item.removeUnAnsweredItems()
               // Clearing the text prompts the SDK to re-process the content, which includes HTML
               clearText()

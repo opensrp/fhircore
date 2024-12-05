@@ -108,7 +108,9 @@ constructor(
           onSyncListener.onSync(
             if (it.lastSyncJobStatus != null) {
               CurrentSyncJobStatus.Succeeded((it.lastSyncJobStatus as LastSyncJobStatus).timestamp)
-            } else it.currentSyncJobStatus,
+            } else {
+              it.currentSyncJobStatus
+            },
           )
         }
       }

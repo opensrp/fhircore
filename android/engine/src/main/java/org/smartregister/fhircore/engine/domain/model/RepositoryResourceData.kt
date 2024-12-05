@@ -17,26 +17,27 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import androidx.compose.runtime.Stable
+import java.util.concurrent.ConcurrentHashMap
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 
 /**
  * This represent the outcome of a query performed via the Repository. The query performed can
  * either return a count or map of [Resource]'s (including nested resources flattened in the map).
- * The optional property [resourceRulesEngineFactId] that can be used as the key in the rules
- * factory facts map (each fact is represented as a key-value pair). The key for the
- * [relatedResourcesMap] will either be the configured unique id for representing the resource(s) in
- * Rules engine Facts map or the [ResourceType]. [secondaryRepositoryResourceData] returns a list of
- * independent resources (which may include nested resource(s)) that have NO relationship with the
- * base [resource].
+ * The optional property [resourceConfigId] can be used as the key in the rules factory facts map
+ * (each fact is represented as a key-value pair). The key for the [relatedResourcesMap] will either
+ * be the configured unique id for representing the resource(s) in Rules engine Facts map or the
+ * [ResourceType]. [secondaryRepositoryResourceData] returns a list of independent resources (which
+ * may include nested resource(s)) that have NO relationship with the base [resource].
  */
 @Stable
 data class RepositoryResourceData(
-  val resourceRulesEngineFactId: String? = null,
+  val resourceConfigId: String? = null,
   val resource: Resource,
-  val relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
-  val relatedResourcesCountMap: Map<String, List<RelatedResourceCount>> = emptyMap(),
-  val secondaryRepositoryResourceData: List<RepositoryResourceData>? = null,
+  val relatedResourcesMap: ConcurrentHashMap<String, List<Resource>> = ConcurrentHashMap(),
+  val relatedResourcesCountMap: ConcurrentHashMap<String, List<RelatedResourceCount>> =
+    ConcurrentHashMap(),
+  var secondaryRepositoryResourceData: List<RepositoryResourceData>? = null,
 )
 
 /**
