@@ -35,8 +35,6 @@ import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -102,7 +100,6 @@ constructor(
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
-  private val mutex = Mutex()
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -606,17 +603,15 @@ constructor(
      */
     try {
       if (resource is MetadataResource) {
-        mutex.withLock {
-          knowledgeManager.install(
-            KnowledgeManagerUtil.writeToFile(
-              context = context,
-              configService = configService,
-              metadataResource = resource,
-              subFilePath =
-                "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/${resource.resourceType}/${resource.idElement.idPart}.json",
-            ),
-          )
-        }
+        knowledgeManager.install(
+          KnowledgeManagerUtil.writeToFile(
+            context = context,
+            configService = configService,
+            metadataResource = resource,
+            subFilePath =
+              "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/${resource.resourceType}/${resource.idElement.idPart}.json",
+          ),
+        )
       }
     } catch (exception: Exception) {
       Timber.e(exception)
