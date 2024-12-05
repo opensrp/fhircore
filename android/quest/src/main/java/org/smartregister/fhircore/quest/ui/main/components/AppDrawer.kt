@@ -364,7 +364,10 @@ private fun DefaultSyncStatus(
           stringResource(org.smartregister.fhircore.engine.R.string.unsynced_data_present)
         },
       subTitleTextColor = SubtitleTextColor,
-      endText = appUiState.lastSyncTime.substring(0, appUiState.lastSyncTime.indexOf('(')),
+      endText =
+        if (appUiState.lastSyncTime.contains('('))
+          appUiState.lastSyncTime.substring(0, appUiState.lastSyncTime.indexOf('('))
+        else appUiState.lastSyncTime,
       endTextColor = if (allDataSynced) SubtitleTextColor else Color.Unspecified,
       padding = 0,
       showEndText = true,
