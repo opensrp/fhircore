@@ -131,7 +131,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     appMainActivity.onSync(stateSucceded)
 
     Assert.assertEquals(
-      viewModel.formatLastSyncTimestamp(timestamp = stateSucceded.timestamp),
+      viewModel.formatLastSyncTimestamp(timestamp = stateSucceded.timestamp) + " (0s)",
       viewModel.getSyncTime(),
     )
   }

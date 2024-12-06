@@ -20,6 +20,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.ServiceInfo
 import android.graphics.drawable.Icon
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
@@ -112,7 +113,11 @@ constructor(
 
     val notification: Notification =
       buildNotification(progress = 0, isSyncUpload = false, isInitial = true)
-    return ForegroundInfo(NotificationConstants.NotificationId.DATA_SYNC, notification)
+    return ForegroundInfo(
+      NotificationConstants.NotificationId.DATA_SYNC,
+      notification,
+      ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+    )
   }
 
   private fun getSyncProgress(completed: Int, total: Int) =
