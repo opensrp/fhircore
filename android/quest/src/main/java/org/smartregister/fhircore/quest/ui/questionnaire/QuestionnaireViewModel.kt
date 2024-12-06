@@ -31,7 +31,6 @@ import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValid
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.Lazy
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -82,7 +81,6 @@ import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
@@ -90,6 +88,7 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.getOrNull
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.packRepeatedGroups
 import org.smartregister.fhircore.engine.util.extension.prepopulateWithComputedConfigValues
@@ -839,24 +838,15 @@ constructor(
       bundle.addEntry(Bundle.BundleEntryComponent().setResource(basicResource))
     }
 
-    val libraryFilters =
-      questionnaire.cqfLibraryUrls().map {
-        val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.extractLogicalIdUuid()) }
-        apply
-      }
+    val cqfLibraryUrls = questionnaire.cqfLibraryUrls()
 
-    if (libraryFilters.isNotEmpty()) {
-      defaultRepository.fhirEngine
-        .batchedSearch<Library> {
-          filter(
-            Resource.RES_ID,
-            *libraryFilters.toTypedArray(),
-          )
-        }
-        .forEach { librarySearchResult ->
+    if (cqfLibraryUrls.isNotEmpty()) {
+      cqfLibraryUrls
+        .mapNotNull { defaultRepository.fhirEngine.getOrNull<Library>(it.extractLogicalIdUuid()) }
+        .forEach { libraryResource ->
           val result: Parameters =
             fhirOperator.evaluateLibrary(
-              librarySearchResult.resource.url,
+              libraryResource.url,
               subject.asReference().reference,
               null,
               bundle,
@@ -1039,7 +1029,6 @@ constructor(
         defaultRepository.removeGroup(
           groupId = groupId,
           isDeactivateMembers = deactivateMembers,
-          configComputedRuleValues = emptyMap(),
         )
       } catch (exception: Exception) {
         Timber.e(exception)
@@ -1059,7 +1048,6 @@ constructor(
           memberId = memberId,
           groupId = groupIdentifier,
           groupMemberResourceType = memberResourceType,
-          configComputedRuleValues = emptyMap(),
         )
       } catch (exception: Exception) {
         Timber.e(exception)
