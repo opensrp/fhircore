@@ -275,7 +275,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val appId = "theAppId"
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = Composition() }
 
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
@@ -298,7 +300,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = composition }
 
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
@@ -327,7 +331,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = composition }
 
     runTest {
@@ -407,11 +413,15 @@ class ConfigurationRegistryTest : RobolectricTest() {
       bundle
 
     coEvery {
-      fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=${ConfigurationRegistry.DEFAULT_COUNT}")
+      fhirResourceDataSource.getResource(
+        "$resourceKey?_id=$resourceId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns bundle
     coEvery { fhirResourceDataSource.getResource(any()) } returns bundle
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = composition }
 
     configRegistry.fhirEngine.create(composition)
@@ -425,7 +435,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
       "test-list-id",
       createdResourceArgumentSlot.filterIsInstance<ListResource>().first().id,
     )
-    coVerify { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=${ConfigurationRegistry.DEFAULT_COUNT}") }
+    coVerify {
+      fhirResourceDataSource.getResource(
+        "$resourceKey?_id=$resourceId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
+    }
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") }
   }
 
@@ -814,7 +828,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     runBlocking { fhirEngine.create(composition) }
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = composition }
 
     coEvery {
@@ -869,7 +885,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
     fhirEngine.create(composition)
 
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = composition }
 
     coEvery {
@@ -961,7 +979,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
       fhirEngine.create(composition)
 
       coEvery {
-        fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}")
+        fhirResourceDataSource.getResource(
+          "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+        )
       } returns Bundle().apply { addEntry().resource = composition }
 
       coEvery {
