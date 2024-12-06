@@ -114,10 +114,10 @@ fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
 
 fun Resource.encodeResourceToString(): String =
-  FhirContext.forR4Cached().getCustomJsonParser().encodeResourceToString(this.copy())
+  FhirContext.forR4().getCustomJsonParser().encodeResourceToString(this.copy())
 
 fun StructureMap.encodeResourceToString(): String =
-  FhirContext.forR4Cached()
+  FhirContext.forR4()
     .getCustomJsonParser()
     .encodeResourceToString(this)
     .replace("'months'", "\\\\'months\\\\'")
@@ -126,7 +126,7 @@ fun StructureMap.encodeResourceToString(): String =
     .replace("'weeks'", "\\\\'weeks\\\\'")
 
 fun <T> String.decodeResourceFromString(): T =
-  FhirContext.forR4Cached().getCustomJsonParser().parseResource(this) as T
+  FhirContext.forR4().getCustomJsonParser().parseResource(this) as T
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   var extensionUpdateFrom = listOf<Extension>()
@@ -141,7 +141,7 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   val originalResourceJson = JSONObject(stringJson)
 
   originalResourceJson.updateFrom(JSONObject(updatedResource.encodeResourceToString()))
-  return FhirContext.forR4Cached()
+  return FhirContext.forR4()
     .getCustomJsonParser()
     .parseResource(this::class.java, originalResourceJson.toString())
     .apply {
@@ -437,7 +437,7 @@ fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent
 }
 
 fun String.resourceClassType(): Class<out Resource> =
-  FhirContext.forR4Cached().getResourceDefinition(this).implementingClass as Class<out Resource>
+  FhirContext.forR4().getResourceDefinition(this).implementingClass as Class<out Resource>
 
 /**
  * A function that extracts only the UUID part of a resource logicalId.
