@@ -18,15 +18,11 @@ package org.smartregister.fhircore.geowidget.screens
 
 import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.parser.IParser
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
-import io.mockk.coEvery
 import io.mockk.mockk
-import io.mockk.spyk
 import java.util.UUID
 import javax.inject.Inject
 import org.junit.Assert
@@ -34,15 +30,11 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
@@ -65,52 +57,23 @@ class GeoWidgetViewModelTest {
   @Inject lateinit var parser: IParser
 
   private lateinit var configurationRegistry: ConfigurationRegistry
-
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
   private lateinit var geoWidgetViewModel: GeoWidgetViewModel
-
-  private lateinit var defaultRepository: DefaultRepository
-
-  private val fhirEngine = mockk<FhirEngine>()
-
-  private val configRulesExecutor: ConfigRulesExecutor = mockk()
-
-  private lateinit var viewModel: GeoWidgetViewModel
-
-  @Mock private lateinit var dispatcherProvider: DispatcherProvider
 
   @Before
   fun setUp() {
     MockitoAnnotations.initMocks(this)
-    viewModel = GeoWidgetViewModel()
+    geoWidgetViewModel = GeoWidgetViewModel()
     hiltRule.inject()
     sharedPreferencesHelper = mockk()
     configurationRegistry = mockk()
-    defaultRepository =
-      spyk(
-        DefaultRepository(
-          fhirEngine = fhirEngine,
-          dispatcherProvider = dispatcherProvider,
-          sharedPreferencesHelper = sharedPreferencesHelper,
-          configurationRegistry = configurationRegistry,
-          configService = configService,
-          configRulesExecutor = configRulesExecutor,
-          fhirPathDataExtractor = fhirPathDataExtractor,
-          parser = parser,
-          context = ApplicationProvider.getApplicationContext(),
-        ),
-      )
-    geoWidgetViewModel = spyk(GeoWidgetViewModel())
-
-    coEvery { defaultRepository.create(any()) } returns emptyList()
   }
 
   fun testMappingServicePointKeysToTypes() {
     val expectedMap = mutableMapOf<String, ServicePointType>()
     ServicePointType.entries.forEach { expectedMap[it.name.lowercase()] = it }
 
-    val result = viewModel.getServicePointKeyToType()
+    val result = geoWidgetViewModel.getServicePointKeyToType()
 
     Assert.assertEquals(expectedMap.size, result.size)
     expectedMap.forEach { (key, expectedValue) ->

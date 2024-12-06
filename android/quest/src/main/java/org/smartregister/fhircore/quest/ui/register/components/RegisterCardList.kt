@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.quest.ui.register.RegisterEvent
+import org.smartregister.fhircore.quest.ui.register.RegisterUiCountState
 import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 import timber.log.Timber
@@ -62,6 +63,7 @@ fun RegisterCardList(
   lazyListState: LazyListState,
   onEvent: (RegisterEvent) -> Unit,
   registerUiState: RegisterUiState,
+  registerUiCountState: RegisterUiCountState,
   currentPage: MutableState<Int>,
   showPagination: Boolean = false,
   onSearchByQrSingleResultAction: (ResourceData) -> Unit,
@@ -132,7 +134,7 @@ fun RegisterCardList(
           RegisterFooter(
             resultCount = pagingItems.itemCount,
             currentPage = currentPage.value.plus(1),
-            pagesCount = registerUiState.pagesCount,
+            pagesCount = registerUiCountState.pagesCount,
             previousButtonClickListener = { onEvent(RegisterEvent.MoveToPreviousPage) },
             nextButtonClickListener = { onEvent(RegisterEvent.MoveToNextPage) },
           )

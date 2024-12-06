@@ -61,17 +61,25 @@ class ProfileFragment : Fragment() {
     savedInstanceState: Bundle?,
   ): View {
     with(profileFragmentArgs) {
-      lifecycleScope.launch {
-        profileViewModel.run {
-          retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
-        }
-      }
+      profileViewModel.retrieveProfileUiState(
+        requireContext(),
+        profileId,
+        resourceId,
+        resourceConfig,
+        params,
+      )
     }
 
     profileViewModel.refreshProfileDataLiveData.observe(viewLifecycleOwner) {
       if (it == true) {
         with(profileFragmentArgs) {
-          profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
+          profileViewModel.retrieveProfileUiState(
+            requireContext(),
+            profileId,
+            resourceId,
+            resourceConfig,
+            params,
+          )
         }
         profileViewModel.refreshProfileDataLiveData.value = null
       }
@@ -116,7 +124,13 @@ class ProfileFragment : Fragment() {
       appMainViewModel.onQuestionnaireSubmission(this)
 
       with(profileFragmentArgs) {
-        profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
+        profileViewModel.retrieveProfileUiState(
+          requireContext(),
+          profileId,
+          resourceId,
+          resourceConfig,
+          params,
+        )
       }
 
       questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->

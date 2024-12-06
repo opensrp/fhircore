@@ -26,6 +26,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
+import org.apache.commons.jexl3.JexlEngine
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
@@ -41,16 +42,19 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 @HiltAndroidTest
 class ConfigRulesExecutorTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  private lateinit var configRulesExecutor: ConfigRulesExecutor
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  @Inject lateinit var jexlEngine: JexlEngine
+
+  private lateinit var configRulesExecutor: ConfigRulesExecutor
   private val rulesEngine = mockk<DefaultRulesEngine>()
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
-    configRulesExecutor = spyk(ConfigRulesExecutor(fhirPathDataExtractor))
+    configRulesExecutor = spyk(ConfigRulesExecutor(fhirPathDataExtractor, jexlEngine))
   }
 
   @Test
@@ -67,7 +71,7 @@ class ConfigRulesExecutorTest : RobolectricTest() {
     ReflectionHelpers.setField(configRulesExecutor, "rulesEngine", rulesEngine)
     every { rulesEngine.fire(any(), any()) } just runs
     val rules = configRulesExecutor.generateRules(ruleConfigs)
-    configRulesExecutor.fireRules(rules)
+    configRulesExecutor.computeConfigRules(rules, null)
     val factsSlot = slot<Facts>()
     val rulesSlot = slot<Rules>()
     verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
