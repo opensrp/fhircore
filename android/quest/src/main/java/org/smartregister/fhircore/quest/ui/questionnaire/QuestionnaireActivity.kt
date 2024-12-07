@@ -52,6 +52,7 @@ import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.domain.model.isSummary
 import org.smartregister.fhircore.engine.ui.base.AlertDialogButton
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -304,44 +305,66 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       QuestionnaireFragment.SUBMIT_REQUEST_KEY,
       this,
     ) { _, _ ->
-      lifecycleScope.launch {
-        val questionnaireResponse = retrieveQuestionnaireResponse()
+      if (questionnaireConfig.showSubmissionConfirmationDialog.toBooleanStrict()) {
+        AlertDialogue.showAlert(
+          context = this,
+          alertIntent = AlertIntent.CONFIRM,
+          message = getString(R.string.questionnaire_submission_confirmation_message),
+          title = getString(R.string.questionnaire_submission_confirmation_title),
+          confirmButton =
+            AlertDialogButton(
+              listener = { processSubmission() },
+            ),
+          neutralButton =
+            AlertDialogButton(
+              text = R.string.no,
+              listener = { it.dismiss() },
+            ),
+        )
+      } else {
+        processSubmission()
+      }
+    }
+  }
 
-        // Close questionnaire if opened in read only mode or if experimental
-        if (questionnaireConfig.isReadOnly() || questionnaire?.experimental == true) {
-          finish()
-        }
-        if (questionnaireResponse != null && questionnaire != null) {
-          viewModel.run {
-            setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
+  private fun processSubmission() {
+    lifecycleScope.launch {
+      val questionnaireResponse = retrieveQuestionnaireResponse()
 
-            if (currentLocation != null) {
-              questionnaireResponse.contained.add(
-                ResourceUtils.createFhirLocationFromGpsLocation(gpsLocation = currentLocation!!),
-              )
-            }
+      // Close questionnaire if opened in read only mode or if experimental
+      if (questionnaireConfig.isReadOnly() || questionnaire?.experimental == true) {
+        finish()
+      }
+      if (questionnaireResponse != null && questionnaire != null) {
+        viewModel.run {
+          setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
 
-            handleQuestionnaireSubmission(
-              questionnaire = questionnaire!!,
-              currentQuestionnaireResponse = questionnaireResponse,
-              questionnaireConfig = questionnaireConfig,
-              actionParameters = actionParameters,
-              context = this@QuestionnaireActivity,
-            ) { idTypes, questionnaireResponse ->
-              // Dismiss progress indicator dialog, submit result then finish activity
-              // TODO Ensure this dialog is dismissed even when an exception is encountered
-              setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
-              setResult(
-                Activity.RESULT_OK,
-                Intent().apply {
-                  putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
-                  putExtra(QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS, idTypes as Serializable)
-                  putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
-                  putExtra(ON_RESULT_TYPE, ActivityOnResultType.QUESTIONNAIRE.name)
-                },
-              )
-              finish()
-            }
+          if (currentLocation != null) {
+            questionnaireResponse.contained.add(
+              ResourceUtils.createFhirLocationFromGpsLocation(gpsLocation = currentLocation!!),
+            )
+          }
+
+          handleQuestionnaireSubmission(
+            questionnaire = questionnaire!!,
+            currentQuestionnaireResponse = questionnaireResponse,
+            questionnaireConfig = questionnaireConfig,
+            actionParameters = actionParameters,
+            context = this@QuestionnaireActivity,
+          ) { idTypes, questionnaireResponse ->
+            // Dismiss progress indicator dialog, submit result then finish activity
+            // TODO Ensure this dialog is dismissed even when an exception is encountered
+            setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
+            setResult(
+              Activity.RESULT_OK,
+              Intent().apply {
+                putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
+                putExtra(QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS, idTypes as Serializable)
+                putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
+                putExtra(ON_RESULT_TYPE, ActivityOnResultType.QUESTIONNAIRE.name)
+              },
+            )
+            finish()
           }
         }
       }

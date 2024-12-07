@@ -67,6 +67,7 @@ data class QuestionnaireConfig(
   val uniqueIdAssignment: UniqueIdAssignmentConfig? = null,
   val linkIds: List<LinkIdConfig>? = null,
   val showSubmitAnywayButton: String = "false",
+  val showSubmissionConfirmationDialog: String = "false",
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
@@ -102,6 +103,8 @@ data class QuestionnaireConfig(
       linkIds = linkIds?.onEach { it.linkId.interpolate(computedValuesMap) },
       saveButtonText = saveButtonText?.interpolate(computedValuesMap),
       showSubmitAnywayButton = showSubmitAnywayButton.interpolate(computedValuesMap),
+      showSubmissionConfirmationDialog =
+        showSubmissionConfirmationDialog.interpolate(computedValuesMap),
     )
 }
 
