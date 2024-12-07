@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.configuration.app
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.util.extension.DEFAULT_FORMAT_SDF_DD_MM_YYYY
@@ -28,7 +29,7 @@ data class ApplicationConfiguration(
   override var appId: String,
   override var configType: String = ConfigType.Application.name,
   val appTitle: String = "",
-  val remoteSyncPageSize: Int = 100,
+  val remoteSyncPageSize: Int = ConfigurationRegistry.DEFAULT_COUNT,
   val languages: List<String> = listOf("en"),
   val useDarkTheme: Boolean = false,
   val syncInterval: Long = 15,

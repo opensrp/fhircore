@@ -43,6 +43,7 @@ import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Composition.SectionComponent
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Reference
@@ -274,7 +275,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val appId = "theAppId"
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = Composition() }
 
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
@@ -297,7 +300,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = composition }
 
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
@@ -326,7 +331,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = composition }
 
     runTest {
@@ -406,11 +413,15 @@ class ConfigurationRegistryTest : RobolectricTest() {
       bundle
 
     coEvery {
-      fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200")
+      fhirResourceDataSource.getResource(
+        "$resourceKey?_id=$resourceId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns bundle
     coEvery { fhirResourceDataSource.getResource(any()) } returns bundle
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = composition }
 
     configRegistry.fhirEngine.create(composition)
@@ -424,7 +435,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
       "test-list-id",
       createdResourceArgumentSlot.filterIsInstance<ListResource>().first().id,
     )
-    coVerify { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200") }
+    coVerify {
+      fhirResourceDataSource.getResource(
+        "$resourceKey?_id=$resourceId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
+    }
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") }
   }
 
@@ -800,7 +815,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         link.add(
           Bundle.BundleLinkComponent().apply {
             relation = PAGINATION_NEXT
-            url = "List?_id=46464&_page=2&_count=200"
+            url = "List?_id=46464&_page=2&_count=${ConfigurationRegistry.DEFAULT_COUNT}"
           },
         )
       }
@@ -813,13 +828,15 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     runBlocking { fhirEngine.create(composition) }
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = composition }
 
     coEvery {
       fhirResourceDataSource.getResourceWithGatewayModeHeader(
         "list-entries",
-        "List?_id=46464&_page=1&_count=200",
+        "List?_id=46464&_page=1&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
       )
     } returns bundle
 
@@ -862,19 +879,21 @@ class ConfigurationRegistryTest : RobolectricTest() {
         section = compositionSections
       }
 
-    val nextPageUrl = "List?_id=46464&_page=2&_count=200"
+    val nextPageUrl = "List?_id=46464&_page=2&_count=${ConfigurationRegistry.DEFAULT_COUNT}"
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
     fhirEngine.create(composition)
 
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = composition }
 
     coEvery {
       fhirResourceDataSource.getResourceWithGatewayModeHeader(
         "list-entries",
-        "List?_id=46464&_page=1&_count=200",
+        "List?_id=46464&_page=1&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
       )
     } returns
       Bundle().apply {
@@ -901,7 +920,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
     coEvery {
       fhirResourceDataSource.getResource(
-        "List?_id=46464&_page=1&_count=200",
+        "List?_id=46464&_page=1&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
       )
     }
     coEvery {
@@ -960,13 +979,15 @@ class ConfigurationRegistryTest : RobolectricTest() {
       fhirEngine.create(composition)
 
       coEvery {
-        fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+        fhirResourceDataSource.getResource(
+          "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+        )
       } returns Bundle().apply { addEntry().resource = composition }
 
       coEvery {
         fhirResourceDataSource.getResourceWithGatewayModeHeader(
           "list-entries",
-          "List?_id=46464&_page=1&_count=200",
+          "List?_id=46464&_page=1&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
         )
       } returns
         Bundle().apply {
@@ -1006,17 +1027,18 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
       assertEquals(4, requestPathArgumentSlot.size)
 
-      assertEquals("Bundle/the-commodities-bundle-id", requestPathArgumentSlot.first().id)
-      assertEquals(ResourceType.Bundle, requestPathArgumentSlot.first().resourceType)
+      val bundles = requestPathArgumentSlot.filterIsInstance<Bundle>().first()
+      assertEquals("Bundle/the-commodities-bundle-id", bundles.id)
+      assertEquals(ResourceType.Bundle, bundles.resourceType)
 
-      assertEquals("Group/1000001", requestPathArgumentSlot.second().id)
-      assertEquals(ResourceType.Group, requestPathArgumentSlot.second().resourceType)
+      val groups = requestPathArgumentSlot.filterIsInstance<Group>()
+      assertEquals(2, groups.size)
+      assertTrue(groups.any { it.id == "Group/1000001" })
+      assertTrue(groups.any { it.id == "Group/2000001" })
 
-      assertEquals("Group/2000001", requestPathArgumentSlot[2].id)
-      assertEquals(ResourceType.Group, requestPathArgumentSlot[2].resourceType)
-
-      assertEquals("composition-id-1", requestPathArgumentSlot.last().id)
-      assertEquals(ResourceType.Composition, requestPathArgumentSlot.last().resourceType)
+      val compositions = requestPathArgumentSlot.filterIsInstance<Composition>().first()
+      assertEquals("composition-id-1", compositions.id)
+      assertEquals(ResourceType.Composition, compositions.resourceType)
     }
 
   @Test

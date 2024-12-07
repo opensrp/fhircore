@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.engine.util
 
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Launch a new coroutine for each map iteration using async. From
@@ -26,18 +28,24 @@ import kotlinx.coroutines.coroutineScope
  *
  * @param A the type of elements in the iterable
  * @param B the type of elements returned by the function
+ * @param dispatcher dispatcher that creates the async coroutine
  * @param f the function to apply to the elements
  * @return the resulting list after apply *f* to the elements of the iterable
  */
-suspend fun <A, B> Iterable<A>.pmap(f: suspend (A) -> B): Iterable<B> = coroutineScope {
-  map { async { f(it) } }.awaitAll()
-}
+suspend fun <A, B> Iterable<A>.pmap(dispatcher: CoroutineDispatcher, f: suspend (A) -> B): List<B> =
+  coroutineScope {
+    map { async(dispatcher) { f(it) } }.awaitAll()
+  }
 
 /**
- * Launch a new coroutine for each loop iteration using async.
+ * Launch a new coroutine for each loop iteration using launch and the specified Dispatcher for
+ * computationaly intensive tasks.
  *
  * @param T the type of elements in the iterable
+ * @param dispatcher dispatcher that creates the async coroutine
+ * @param action the function to apply to the elements
  */
-suspend fun <T> Iterable<T>.forEachAsync(action: suspend (T) -> Unit): Unit = coroutineScope {
-  forEach { async { action(it) } }
-}
+suspend fun <T> Iterable<T>.forEachAsync(
+  dispatcher: CoroutineDispatcher,
+  action: suspend (T) -> Unit,
+): Unit = coroutineScope { forEach { launch(dispatcher) { action(it) } } }

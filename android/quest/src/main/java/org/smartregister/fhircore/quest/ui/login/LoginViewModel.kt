@@ -22,6 +22,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
@@ -31,7 +32,9 @@ import io.sentry.Sentry
 import io.sentry.protocol.User
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 import org.hl7.fhir.r4.model.ResourceType
@@ -405,10 +408,12 @@ constructor(
   private fun writeUserInfo(
     userInfo: UserInfo?,
   ) {
-    sharedPreferences.write(
-      key = SharedPreferenceKey.USER_INFO.name,
-      value = userInfo,
-    )
+    CoroutineScope(dispatcherProvider.io()).launch {
+      sharedPreferences.write(
+        key = SharedPreferenceKey.USER_INFO.name,
+        value = userInfo,
+      )
+    }
   }
 
   fun writePractitionerDetailsToShredPref(
@@ -459,6 +464,11 @@ constructor(
       OneTimeWorkRequestBuilder<ConfigDownloadWorker>()
         .setConstraints(
           Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+        )
+        .setBackoffCriteria(
+          BackoffPolicy.LINEAR,
+          10,
+          TimeUnit.SECONDS,
         )
         .build(),
     )

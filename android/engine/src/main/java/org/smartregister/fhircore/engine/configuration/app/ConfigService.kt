@@ -34,6 +34,9 @@ interface ConfigService {
   /** Define a list of [ResourceTag] for the application. */
   fun defineResourceTags(): List<ResourceTag>
 
+  /** Return the App's launcher icon for use in notifications */
+  fun getLauncherIcon(): Int
+
   /**
    * Provide a list of [Coding] that represents [ResourceTag]. [Coding] can be directly appended to
    * a FHIR resource.

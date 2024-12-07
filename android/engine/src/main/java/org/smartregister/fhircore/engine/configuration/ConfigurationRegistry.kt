@@ -34,8 +34,7 @@ import java.util.PropertyResourceBundle
 import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -76,6 +75,7 @@ import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSecti
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
+import org.smartregister.fhircore.engine.util.forEachAsync
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import retrofit2.HttpException
 import timber.log.Timber
@@ -100,7 +100,6 @@ constructor(
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
-  private val mutex = Mutex()
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -431,7 +430,7 @@ constructor(
             } else {
               val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
-              chunkedResourceIdList.forEach { sectionComponents ->
+              chunkedResourceIdList.forEachAsync(Dispatchers.IO) { sectionComponents ->
                 Timber.d(
                   "Fetching config resource ${entry.key}: with ids ${
                                         sectionComponents.joinToString(
@@ -592,34 +591,30 @@ constructor(
    * Note
    */
   suspend fun <R : Resource> addOrUpdate(resource: R) {
-    withContext(dispatcherProvider.io()) {
-      try {
-        createOrUpdateRemote(resource)
-      } catch (sqlException: SQLException) {
-        Timber.e(sqlException)
-      }
+    try {
+      createOrUpdateRemote(resource)
+    } catch (sqlException: SQLException) {
+      Timber.e(sqlException)
+    }
 
-      /**
-       * Knowledge manager [MetadataResource]s install. Here we install all resources types of
-       * [MetadataResource] as per FHIR Spec.This supports future use cases as well
-       */
-      try {
-        if (resource is MetadataResource) {
-          mutex.withLock {
-            knowledgeManager.install(
-              KnowledgeManagerUtil.writeToFile(
-                context = context,
-                configService = configService,
-                metadataResource = resource,
-                subFilePath =
-                  "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/${resource.resourceType}/${resource.idElement.idPart}.json",
-              ),
-            )
-          }
-        }
-      } catch (exception: Exception) {
-        Timber.e(exception)
+    /**
+     * Knowledge manager [MetadataResource]s install. Here we install all resources types of
+     * [MetadataResource] as per FHIR Spec.This supports future use cases as well
+     */
+    try {
+      if (resource is MetadataResource) {
+        knowledgeManager.install(
+          KnowledgeManagerUtil.writeToFile(
+            context = context,
+            configService = configService,
+            metadataResource = resource,
+            subFilePath =
+              "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/${resource.resourceType}/${resource.idElement.idPart}.json",
+          ),
+        )
       }
+    } catch (exception: Exception) {
+      Timber.e(exception)
     }
   }
 
@@ -632,13 +627,11 @@ constructor(
    * @param resources vararg of resources
    */
   suspend fun createOrUpdateRemote(vararg resources: Resource) {
-    return withContext(dispatcherProvider.io()) {
-      resources.onEach {
-        it.updateLastUpdated()
-        it.generateMissingId()
-      }
-      fhirEngine.create(*resources, isLocalOnly = true)
+    resources.onEach {
+      it.updateLastUpdated()
+      it.generateMissingId()
     }
+    fhirEngine.create(*resources, isLocalOnly = true)
   }
 
   @VisibleForTesting fun isNonProxy(): Boolean = _isNonProxy
@@ -711,7 +704,7 @@ constructor(
           }
       }
     } else {
-      sectionComponentEntry.value.forEach {
+      sectionComponentEntry.value.forEachAsync(Dispatchers.IO) {
         fetchResources(
           gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE,
           url =
@@ -750,7 +743,7 @@ constructor(
                   it.system.contentEquals(organizationResourceTag?.tag?.system, ignoreCase = true)
                 }
                 ?.code
-            COUNT -> appConfig.remoteSyncPageSize.toString()
+            COUNT -> DEFAULT_COUNT.toString()
             else -> paramExpression
           }?.let { paramExpression?.replace(paramLiteral, it) }
 
@@ -801,7 +794,7 @@ constructor(
     const val MANIFEST_PROCESSOR_BATCH_SIZE = 20
     const val ORGANIZATION = "organization"
     const val TYPE_REFERENCE_DELIMITER = "/"
-    const val DEFAULT_COUNT = 200
+    const val DEFAULT_COUNT = 1000
     const val PAGINATION_NEXT = "next"
     const val RESOURCES_PATH = "resources/"
     const val SYNC_LOCATION_IDS = "_syncLocations"

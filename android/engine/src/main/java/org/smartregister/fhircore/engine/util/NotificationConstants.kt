@@ -16,24 +16,18 @@
 
 package org.smartregister.fhircore.engine.util
 
-enum class SharedPreferenceKey {
-  APP_ID,
-  LAST_SYNC_TIMESTAMP,
-  LANG,
-  PRACTITIONER_ID,
-  PRACTITIONER_DETAILS,
-  PRACTITIONER_LOCATION_HIERARCHIES,
-  PRACTITIONER_LOCATION,
-  PRACTITIONER_LOCATION_ID,
-  LOGIN_CREDENTIAL_KEY,
-  LOGIN_PIN_KEY,
-  LOGIN_PIN_SALT,
-  LAST_OFFSET,
-  USER_INFO,
-  CARE_TEAM,
-  ORGANIZATION,
-  GEO_LOCATION,
-  SELECTED_LOCATION_ID,
-  SYNC_START_TIMESTAMP,
-  SYNC_END_TIMESTAMP,
+/** This class has method to help track, manage Notifications identifiers */
+object NotificationConstants {
+
+  object NotificationId {
+    const val DATA_SYNC = 1
+  }
+
+  object ChannelId {
+    const val DATA_SYNC = "channel_id_datasync"
+  }
+
+  object ChannelName {
+    const val DATA_SYNC = "Data sync"
+  }
 }

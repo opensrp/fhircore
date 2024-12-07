@@ -65,7 +65,7 @@ class UserSettingScreenTest {
       .onNodeWithText(activity.getString(R.string.clear_database_message))
       .assertDoesNotExist()
 
-    composeRule.onNodeWithText("Manual Sync").assertExists()
+    composeRule.onNodeWithText("Manual sync").assertExists()
 
     composeRule.onNodeWithText("Log out").assertExists()
   }
