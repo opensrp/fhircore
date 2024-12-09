@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   3. Implemented functionality to launch PDF generation using a configuration setup
 - Added Save draft MVP functionality
 - Added Delete saved draft feature
+- Add configurable confirmation dialog on form submission
 
 ## [1.1.0] - 2024-02-15
 
