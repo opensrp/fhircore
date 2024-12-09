@@ -53,8 +53,6 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
 
   private var configuration: DataCaptureConfig? = null
 
-  private var fhirServerHost: URL? = null
-
   override fun onCreate() {
     super.onCreate()
     if (BuildConfig.DEBUG) {

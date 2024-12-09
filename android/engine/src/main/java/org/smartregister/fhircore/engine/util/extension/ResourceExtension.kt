@@ -547,11 +547,11 @@ suspend fun Task.updateDependentTaskDueDate(
  * to be a boolean otherwise the [toBoolean] function will evaluate to false and hence return an
  * empty list.
  */
-fun List<RepositoryResourceData>.filterByFhirPathExpression(
+fun Collection<RepositoryResourceData>.filterByFhirPathExpression(
   fhirPathDataExtractor: FhirPathDataExtractor,
   conditionalFhirPathExpressions: List<String>?,
   matchAll: Boolean,
-): List<RepositoryResourceData> {
+): Collection<RepositoryResourceData> {
   if (conditionalFhirPathExpressions.isNullOrEmpty()) return this
   return this.filter { repositoryResourceData ->
     if (matchAll) {

@@ -33,7 +33,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.integration.Faker
@@ -70,7 +70,7 @@ class MeasureReportResultScreenTest {
 
   @Inject lateinit var defaultRepository: DefaultRepository
 
-  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  @Inject lateinit var rulesExecutor: RulesExecutor
 
   @Inject lateinit var measureReportRepository: MeasureReportRepository
 
@@ -87,7 +87,7 @@ class MeasureReportResultScreenTest {
         registerRepository,
         measureReportSubjectViewDataMapper,
         defaultRepository,
-        resourceDataRulesExecutor,
+        rulesExecutor,
         measureReportRepository,
       )
   }

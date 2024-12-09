@@ -250,12 +250,12 @@ constructor(
   }
 
   suspend fun closeFhirResources() {
-    val appRegistry =
+    val applicationConfiguration =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
         ConfigType.Application,
       )
 
-    appRegistry.eventWorkflows
+    applicationConfiguration.eventWorkflows
       .filter { it.eventType == EventType.RESOURCE_CLOSURE }
       .forEach { eventWorkFlow ->
         eventWorkFlow.eventResources.forEach { eventResource ->
