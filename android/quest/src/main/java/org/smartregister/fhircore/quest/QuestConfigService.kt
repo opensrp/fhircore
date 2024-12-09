@@ -39,6 +39,8 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
       accountType = BuildConfig.APPLICATION_ID,
     )
 
+  override fun getLauncherIcon() = R.drawable.ic_launcher
+
   override fun defineResourceTags() =
     listOf(
       ResourceTag(

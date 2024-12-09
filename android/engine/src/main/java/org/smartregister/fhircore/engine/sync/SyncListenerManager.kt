@@ -73,6 +73,15 @@ constructor(
     }
   }
 
+  fun registerSyncListener(onSyncListener: OnSyncListener) {
+    if (_onSyncListeners.find { it.get() == onSyncListener } == null) {
+      _onSyncListeners.add(WeakReference(onSyncListener))
+      Timber.w("${onSyncListener::class.simpleName} registered to receive sync state events")
+    }
+
+    _onSyncListeners.removeIf { it.get() == null }
+  }
+
   /**
    * This function removes [onSyncListener] from the list of registered [OnSyncListener]'s to stop
    * receiving sync state events.

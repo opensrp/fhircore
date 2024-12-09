@@ -196,19 +196,22 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery {
       fhirResourceService.getResourceWithGatewayModeHeader(
         ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE,
-        "List?_id=123456&_page=1&_count=200",
+        "List?_id=123456&_page=1&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
       )
     } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
-    coEvery { fhirResourceDataSource.getResource("List?_id=123456&_page=1&_count=200") } returns
-      bundle
+    coEvery {
+      fhirResourceDataSource.getResource(
+        "List?_id=123456&_page=1&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
+    } returns bundle
 
     configurationRegistry.fetchNonWorkflowConfigResources()
 
     coVerify {
       fhirResourceService.getResourceWithGatewayModeHeader(
         ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE,
-        "List?_id=123456&_page=1&_count=200",
+        "List?_id=123456&_page=1&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
       )
     }
     coVerify { configurationRegistry.addOrUpdate(any()) }

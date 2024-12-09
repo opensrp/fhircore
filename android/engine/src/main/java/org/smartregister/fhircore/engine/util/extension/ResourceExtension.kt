@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
@@ -114,23 +113,20 @@ fun Base?.valueToString(datePattern: String = "dd-MMM-yyyy"): String {
 fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
 
-fun Resource.encodeResourceToString(
-  parser: IParser = FhirContext.forR4Cached().getCustomJsonParser(),
-): String = parser.encodeResourceToString(this.copy())
+fun Resource.encodeResourceToString(): String =
+  FhirContext.forR4().getCustomJsonParser().encodeResourceToString(this.copy())
 
-fun StructureMap.encodeResourceToString(
-  parser: IParser = FhirContext.forR4Cached().getCustomJsonParser(),
-): String =
-  parser
+fun StructureMap.encodeResourceToString(): String =
+  FhirContext.forR4()
+    .getCustomJsonParser()
     .encodeResourceToString(this)
     .replace("'months'", "\\\\'months\\\\'")
     .replace("'days'", "\\\\'days\\\\'")
     .replace("'years'", "\\\\'years\\\\'")
     .replace("'weeks'", "\\\\'weeks\\\\'")
 
-fun <T> String.decodeResourceFromString(
-  parser: IParser = FhirContext.forR4Cached().getCustomJsonParser(),
-): T = parser.parseResource(this) as T
+fun <T> String.decodeResourceFromString(): T =
+  FhirContext.forR4().getCustomJsonParser().parseResource(this) as T
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   var extensionUpdateFrom = listOf<Extension>()
@@ -141,38 +137,40 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   if (this is Patient) {
     extension = this.extension
   }
-  val jsonParser = FhirContext.forR4Cached().getCustomJsonParser()
-  val stringJson = encodeResourceToString(jsonParser)
+  val stringJson = encodeResourceToString()
   val originalResourceJson = JSONObject(stringJson)
 
-  originalResourceJson.updateFrom(JSONObject(updatedResource.encodeResourceToString(jsonParser)))
-  return jsonParser.parseResource(this::class.java, originalResourceJson.toString()).apply {
-    val meta = this.meta
-    val metaUpdateFrom = this@updateFrom.meta
-    if ((meta == null || meta.isEmpty)) {
-      if (metaUpdateFrom != null) {
-        this.meta = metaUpdateFrom
-        this.meta.tag = metaUpdateFrom.tag
-      }
-    } else {
-      val setOfTags = mutableSetOf<Coding>()
-      setOfTags.addAll(meta.tag)
-      setOfTags.addAll(metaUpdateFrom.tag)
-      this.meta.tag = setOfTags.distinctBy { it.code + it.system }
-    }
-    if (this is Patient && this@updateFrom is Patient && updatedResource is Patient) {
-      if (extension.isEmpty()) {
-        if (extensionUpdateFrom.isNotEmpty()) {
-          this.extension = extensionUpdateFrom
+  originalResourceJson.updateFrom(JSONObject(updatedResource.encodeResourceToString()))
+  return FhirContext.forR4()
+    .getCustomJsonParser()
+    .parseResource(this::class.java, originalResourceJson.toString())
+    .apply {
+      val meta = this.meta
+      val metaUpdateFrom = this@updateFrom.meta
+      if ((meta == null || meta.isEmpty)) {
+        if (metaUpdateFrom != null) {
+          this.meta = metaUpdateFrom
+          this.meta.tag = metaUpdateFrom.tag
         }
       } else {
-        val setOfExtension = mutableSetOf<Extension>()
-        setOfExtension.addAll(extension)
-        setOfExtension.addAll(extensionUpdateFrom)
-        this.extension = setOfExtension.distinct()
+        val setOfTags = mutableSetOf<Coding>()
+        setOfTags.addAll(meta.tag)
+        setOfTags.addAll(metaUpdateFrom.tag)
+        this.meta.tag = setOfTags.distinctBy { it.code + it.system }
+      }
+      if (this is Patient && this@updateFrom is Patient && updatedResource is Patient) {
+        if (extension.isEmpty()) {
+          if (extensionUpdateFrom.isNotEmpty()) {
+            this.extension = extensionUpdateFrom
+          }
+        } else {
+          val setOfExtension = mutableSetOf<Extension>()
+          setOfExtension.addAll(extension)
+          setOfExtension.addAll(extensionUpdateFrom)
+          this.extension = setOfExtension.distinct()
+        }
       }
     }
-  }
 }
 
 @Throws(JSONException::class)
@@ -439,7 +437,7 @@ fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent
 }
 
 fun String.resourceClassType(): Class<out Resource> =
-  FhirContext.forR4Cached().getResourceDefinition(this).implementingClass as Class<out Resource>
+  FhirContext.forR4().getResourceDefinition(this).implementingClass as Class<out Resource>
 
 /**
  * A function that extracts only the UUID part of a resource logicalId.

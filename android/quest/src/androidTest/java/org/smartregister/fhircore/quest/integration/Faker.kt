@@ -189,6 +189,8 @@ object Faker {
             ),
           )
         }
+
+        override fun getLauncherIcon(): Int = 0
       }
 
     val json = Json {
