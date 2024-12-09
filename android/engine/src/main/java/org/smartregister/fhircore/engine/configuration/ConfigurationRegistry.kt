@@ -265,16 +265,18 @@ constructor(
         addOrUpdate(localCompositionResource)
 
         localCompositionResource.run {
-          val iconConfigs =
-            retrieveCompositionSections().filter {
-              it.focus.hasIdentifier() && isIconConfig(it.focus.identifier.value)
-            }
-          if (iconConfigs.isNotEmpty()) {
-            val ids = iconConfigs.joinToString(DEFAULT_STRING_SEPARATOR) { it.focus.extractId() }
+          val configsToProcess =
+            retrieveCompositionSections()
+              .flatMap { section ->
+                section.entry.ifEmpty { listOfNotNull(section.focus.takeIf { it.hasIdentifier() }) }
+              }
+              .filter { it.hasReferenceElement() && it.hasIdentifier() }
+
+          val ids = configsToProcess.joinToString(DEFAULT_STRING_SEPARATOR) { it.extractId() }
+
+          if (ids.isNotEmpty()) {
             fhirResourceDataSource
-              .getResource(
-                "${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT",
-              )
+              .getResource("${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT")
               .entry
               .forEach { addOrUpdate(it.resource) }
           }
@@ -337,7 +339,26 @@ constructor(
         }
       }
     } else {
+      // Process composition sections
       composition.retrieveCompositionSections().forEach {
+        // Check .entry first
+        it.entry.forEach { entry ->
+          if (entry.hasReferenceElement() && entry.hasIdentifier()) {
+            val configIdentifier = entry.identifier.value
+            val referenceResourceType = entry.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
+            if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
+              val extractedId = entry.extractId()
+              try {
+                val configBinary = fhirEngine.get<Binary>(extractedId)
+                configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
+              } catch (resourceNotFoundException: ResourceNotFoundException) {
+                Timber.e("Missing Binary file with ID :$extractedId")
+                withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
+              }
+            }
+          }
+        }
+        // If .entry doesn't provide the necessary data, fallback to .focus
         if (it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier()) {
           val configIdentifier = it.focus.identifier.value
           val referenceResourceType = it.focus.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
@@ -439,13 +460,30 @@ constructor(
                                         )
                                     }",
                 )
-                fetchResources(
-                  resourceType = entry.key,
-                  resourceIdList =
-                    sectionComponents.map { sectionComponent ->
-                      sectionComponent.focus.extractId()
-                    },
-                )
+
+                // Check .entry first, fallback to .focus if necessary
+                sectionComponents.forEach { sectionComponent ->
+                  // Prioritize .entry for resource extraction
+                  sectionComponent.entry.forEach { entry ->
+                    if (entry.hasReferenceElement() && entry.hasIdentifier()) {
+                      val resourceId = entry.extractId()
+                      fetchResources(
+                        resourceType = entry.reference.substringBefore(TYPE_REFERENCE_DELIMITER),
+                        resourceIdList = listOf(resourceId),
+                      )
+                    }
+                  }
+
+                  // Fallback to .focus if .entry doesn't provide valid reference or identifier
+                  if (sectionComponent.hasFocus() && sectionComponent.focus.hasReferenceElement()) {
+                    val resourceId = sectionComponent.focus.extractId()
+                    fetchResources(
+                      resourceType =
+                        sectionComponent.focus.reference.substringBefore(TYPE_REFERENCE_DELIMITER),
+                      resourceIdList = listOf(resourceId),
+                    )
+                  }
+                }
               }
             }
           }
@@ -686,37 +724,61 @@ constructor(
   private suspend fun processCompositionListResources(
     sectionComponentEntry: Map.Entry<String, List<Composition.SectionComponent>>,
   ) {
+    val resourceType = sectionComponentEntry.key
+    val sectionComponents = sectionComponentEntry.value
+
     if (isNonProxy()) {
-      val chunkedResourceIdList = sectionComponentEntry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
-      chunkedResourceIdList.forEach {
-        fetchResources(
-            resourceType = sectionComponentEntry.key,
-            resourceIdList = it.map { sectionComponent -> sectionComponent.focus.extractId() },
-          )
-          .entry
-          .forEach { bundleEntryComponent ->
-            when (bundleEntryComponent.resource) {
-              is ListResource -> {
-                addOrUpdate(bundleEntryComponent.resource)
-                val list = bundleEntryComponent.resource as ListResource
-                list.entry.forEach { listEntryComponent ->
-                  val resourceKey =
-                    listEntryComponent.item.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
-                  val resourceId = listEntryComponent.item.reference.extractLogicalIdUuid()
-                  val listResourceUrlPath = "$resourceKey?$ID=$resourceId&_count=$DEFAULT_COUNT"
-                  fetchResources(gatewayModeHeaderValue = null, url = listResourceUrlPath)
-                }
+      val chunkedSections = sectionComponents.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+      chunkedSections.forEach { chunk ->
+        try {
+          val resourceIds =
+            chunk
+              .flatMap { section ->
+                // Include IDs from .entry and .focus
+                section.entry.mapNotNull { it.extractId() } +
+                  listOfNotNull(section.focus.extractId())
               }
+              .distinct()
+
+          val fetchedResources =
+            fetchResources(resourceType = resourceType, resourceIdList = resourceIds)
+
+          fetchedResources.entry.forEach { bundleEntry ->
+            when (val resource = bundleEntry.resource) {
+              is ListResource -> processListResource(resource)
             }
           }
+        } catch (exception: Exception) {
+          Timber.e("Error processing non-proxy resources for type $resourceType: $exception")
+        }
       }
     } else {
-      sectionComponentEntry.value.forEach {
-        fetchResources(
-          gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE,
-          url =
-            "${sectionComponentEntry.key}?$ID=${it.focus.extractId()}&_page=1&_count=$DEFAULT_COUNT",
-        )
+      sectionComponents.forEach { section ->
+        try {
+          // Process .entry and .focus for gateway mode
+          val resourceIds =
+            section.entry.mapNotNull { it.extractId() } + listOfNotNull(section.focus.extractId())
+          resourceIds.forEach { resourceId ->
+            val url = "$resourceType?$ID=$resourceId&_page=1&_count=$DEFAULT_COUNT"
+            fetchResources(gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE, url = url)
+          }
+        } catch (exception: Exception) {
+          Timber.e("Error processing proxy resources for type $resourceType: $exception")
+        }
+      }
+    }
+  }
+
+  private suspend fun processListResource(listResource: ListResource) {
+    addOrUpdate(listResource)
+    listResource.entry.forEach { listEntry ->
+      val reference = listEntry.item.reference
+      val resourceKey = reference.substringBefore(TYPE_REFERENCE_DELIMITER)
+      val resourceId = reference.extractLogicalIdUuid()
+
+      if (resourceKey.isNotEmpty() && resourceId.isNotEmpty()) {
+        val listResourceUrlPath = "$resourceKey?$ID=$resourceId&_count=$DEFAULT_COUNT"
+        fetchResources(gatewayModeHeaderValue = null, url = listResourceUrlPath)
       }
     }
   }
