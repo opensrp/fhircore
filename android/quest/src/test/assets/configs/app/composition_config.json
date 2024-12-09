@@ -14,19 +14,39 @@
   "type": {
     "coding": [
       {
-        "system": "http://snomed.info/sct",
-        "code": "1156600005",
+        "system": "http://loinc.org",
+        "code": "11503-0",
         "display": "Device setting parameter"
       }
     ]
   },
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "1156600005",
+          "display": "Device setting parameter"
+        }
+      ]
+    }
+  ],
+  "author": [
+    {
+      "reference": "Practitioner/76f11bf7-0323-429f-bc7c-481f2f29fc51"
+    }
+  ],
   "date": "2022-07-28",
   "title": "Device configurations",
   "confidentiality": "L",
   "section": [
     {
       "title": "Application configuration",
-      "focus": {
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Application configuration details</div>"
+      },
+      "entry": {
         "reference": "Binary/11111111",
         "identifier": {
           "value": "application"
@@ -36,7 +56,11 @@
     },
     {
       "title": "Sync configuration",
-      "focus": {
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Sync configuration</div>"
+      },
+      "entry": {
         "reference": "Binary/11111112",
         "identifier": {
           "value": "sync"
@@ -46,7 +70,11 @@
     },
     {
       "title": "Navigation configuration",
-      "focus": {
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Navigation configuration</div>"
+      },
+      "entry": {
         "reference": "Binary/11111114",
         "identifier": {
           "value": "navigation"
@@ -56,11 +84,19 @@
     },
     {
       "title": "Register configurations",
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Register configurations</div>"
+      },
       "mode": "working",
       "section": [
         {
           "title": "Household register configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Household Configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/11111115",
             "identifier": {
               "value": "householdRegister"
@@ -69,7 +105,11 @@
         },
         {
           "title": "Task register configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Task configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/11111116",
             "identifier": {
               "value": "taskRegister"
@@ -78,7 +118,11 @@
         },
         {
           "title": "ANC register configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">ANC register configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/11111117",
             "identifier": {
               "value": "ancRegister"
@@ -89,11 +133,19 @@
     },
     {
       "title": "Translation configurations",
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Translation configuration</div>"
+      },
       "mode": "working",
       "section": [
         {
           "title": "Translation English",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Translation English</div>"
+          },
+          "entry": {
             "reference": "Binary/21111111",
             "identifier": {
               "value": "strings"
@@ -102,7 +154,11 @@
         },
         {
           "title": "Translation Swahili",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Translation Swahili</div>"
+          },
+          "entry": {
             "reference": "Binary/21111112",
             "identifier": {
               "value": "strings_sw"
@@ -111,7 +167,11 @@
         },
         {
           "title": "Translation French",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Translation French</div>"
+          },
+          "entry": {
             "reference": "Binary/21111113",
             "identifier": {
               "value": "strings_fr"
@@ -122,7 +182,11 @@
     },
     {
       "title": "Measure reports configuration",
-      "focus": {
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Measure reports configuration</div>"
+      },
+      "entry": {
         "reference": "Binary/11111118",
         "identifier": {
           "value": "measureReport"
@@ -132,11 +196,19 @@
     },
     {
       "title": "Profile configurations",
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Profile configurations</div>"
+      },
       "mode": "working",
       "section": [
         {
           "title": "Household profile configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Household profile configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/11111119",
             "identifier": {
               "value": "householdProfile"
@@ -145,7 +217,11 @@
         },
         {
           "title": "Default profile configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Default profile configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/11111120",
             "identifier": {
               "value": "defaultProfile"
@@ -156,12 +232,20 @@
     },
     {
       "title": "Icon configurations",
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Icon configurations</div>"
+      },
       "mode": "working",
       "section": [
         {
           "title": "Icon households",
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Icon households</div>"
+          },
           "mode": "working",
-          "focus": {
+          "entry": {
             "reference": "Binary/144177",
             "identifier": {
               "value": "ic_households"
@@ -170,8 +254,12 @@
         },
         {
           "title": "Icon pregnant",
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Icon pregnant</div>"
+          },
           "mode": "working",
-          "focus": {
+          "entry": {
             "reference": "Binary/145193",
             "identifier": {
               "value": "ic_pregnant"
