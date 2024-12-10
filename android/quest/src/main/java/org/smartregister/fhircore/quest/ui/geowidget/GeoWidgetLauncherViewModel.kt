@@ -171,6 +171,7 @@ constructor(
           }
         }
 
+      _isSyncing.postValue(false)
       geoJsonFeatures.postValue(features)
 
       Timber.w(
@@ -202,30 +203,11 @@ constructor(
           ),
         )
       } else {
-        val message =
-          if (searchText.isNullOrBlank()) {
-            context.getString(R.string.all_locations_rendered)
-          } else {
-            context.getString(R.string.all_matching_locations_rendered, locationsCount)
-          }
-        emitSnackBarState(
-          SnackBarMessageConfig(
-            message = message,
-            actionLabel = context.getString(org.smartregister.fhircore.engine.R.string.ok),
-            duration = SnackbarDuration.Short,
-          ),
-        )
-      }
-
-      // Account for missing locations
-      if (locationsCount == 0) {
-        if (!searchText.isNullOrBlank()) {
+        if (locationsCount == 0) {
           val message =
-            context.getString(
-              R.string.no_found_locations_matching_text,
-              searchText,
-            )
-          Timber.w(message)
+            if (!searchText.isNullOrBlank()) {
+              context.getString(R.string.no_found_locations_matching_text, searchText)
+            } else context.getString(R.string.no_locations_to_render)
           emitSnackBarState(
             SnackBarMessageConfig(
               message = message,
@@ -233,12 +215,22 @@ constructor(
               duration = SnackbarDuration.Long,
             ),
           )
+          Timber.w(message)
         } else {
-          SnackBarMessageConfig(
-            message = context.getString(R.string.no_locations_to_render),
-            actionLabel = context.getString(org.smartregister.fhircore.engine.R.string.ok),
-            duration = SnackbarDuration.Long,
+          val message =
+            if (searchText.isNullOrBlank()) {
+              context.getString(R.string.all_locations_rendered)
+            } else {
+              context.getString(R.string.all_matching_locations_rendered, locationsCount)
+            }
+          emitSnackBarState(
+            SnackBarMessageConfig(
+              message = message,
+              actionLabel = context.getString(org.smartregister.fhircore.engine.R.string.ok),
+              duration = SnackbarDuration.Short,
+            ),
           )
+          Timber.w(message)
         }
       }
     }
