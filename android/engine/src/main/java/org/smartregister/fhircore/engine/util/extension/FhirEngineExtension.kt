@@ -127,3 +127,11 @@ suspend inline fun <reified R : Resource> FhirEngine.batchedSearch(
   search.init()
   return this.batchedSearch<R>(search)
 }
+
+suspend inline fun <reified R : Resource> FhirEngine.getOrNull(id: String): R? {
+  return try {
+    get<R>(id)
+  } catch (e: ResourceNotFoundException) {
+    null
+  }
+}

@@ -97,6 +97,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.getOrNull
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.extension.updateFrom
@@ -273,23 +274,9 @@ constructor(
 
   suspend fun loadManagingEntity(group: Group) =
     group.managingEntity?.let { reference ->
-      fhirEngine
-        .batchedSearch<RelatedPerson> {
-          filter(RelatedPerson.RES_ID, { value = of(reference.extractId()) })
-        }
-        .map { it.resource }
-        .firstOrNull()
-        ?.let { relatedPerson ->
-          fhirEngine
-            .batchedSearch<Patient> {
-              filter(
-                Patient.RES_ID,
-                { value = of(relatedPerson.patient.extractId()) },
-              )
-            }
-            .map { it.resource }
-            .firstOrNull()
-        }
+      fhirEngine.getOrNull<RelatedPerson>(reference.extractId())?.let { relatedPerson ->
+        fhirEngine.getOrNull<Patient>(relatedPerson.patient.extractId())
+      }
     }
 
   suspend fun changeManagingEntity(
@@ -345,20 +332,11 @@ constructor(
   suspend fun removeGroup(
     groupId: String,
     isDeactivateMembers: Boolean?,
-    configComputedRuleValues: Map<String, Any>,
   ) {
     loadResource<Group>(groupId)?.let { group ->
       if (!group.active) throw IllegalStateException("Group already deleted")
       group.managingEntity
-        ?.let { reference ->
-          searchResourceFor<RelatedPerson>(
-            token = RelatedPerson.RES_ID,
-            subjectType = ResourceType.RelatedPerson,
-            subjectId = reference.extractId(),
-            configComputedRuleValues = configComputedRuleValues,
-          )
-        }
-        ?.firstOrNull()
+        ?.let { reference -> fhirEngine.getOrNull<RelatedPerson>(reference.extractId()) }
         ?.let { relatedPerson -> delete(relatedPerson) }
 
       group.apply {
@@ -385,7 +363,6 @@ constructor(
     memberId: String,
     groupId: String?,
     groupMemberResourceType: ResourceType?,
-    configComputedRuleValues: Map<String, Any>,
   ) {
     val fhirResource: Resource? =
       try {
@@ -404,15 +381,7 @@ constructor(
       if (groupId != null) {
         loadResource<Group>(groupId)?.let { group ->
           group.managingEntity
-            ?.let { reference ->
-              searchResourceFor<RelatedPerson>(
-                token = RelatedPerson.RES_ID,
-                subjectType = ResourceType.RelatedPerson,
-                subjectId = reference.extractId(),
-                configComputedRuleValues = configComputedRuleValues,
-              )
-            }
-            ?.firstOrNull()
+            ?.let { reference -> fhirEngine.getOrNull<RelatedPerson>(reference.extractId()) }
             ?.let { relatedPerson ->
               if (relatedPerson.patient.id.extractLogicalIdUuid() == memberId) {
                 delete(relatedPerson)
