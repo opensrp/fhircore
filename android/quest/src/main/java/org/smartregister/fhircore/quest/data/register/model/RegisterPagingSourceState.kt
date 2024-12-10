@@ -16,8 +16,11 @@
 
 package org.smartregister.fhircore.quest.data.register.model
 
+import org.jeasy.rules.api.Rules
+
 data class RegisterPagingSourceState(
   val registerId: String,
   val currentPage: Int = 0,
   val loadAll: Boolean = false,
+  val rules: Rules,
 )

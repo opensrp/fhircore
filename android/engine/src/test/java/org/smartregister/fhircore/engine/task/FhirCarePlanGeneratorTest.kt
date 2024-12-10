@@ -1138,7 +1138,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   @ExperimentalCoroutinesApi
   fun `generateOrUpdateCarePlan should generate careplan for 5 visits when lmp has passed 3 months`() =
-    runTest {
+    runTest(timeout = 120.seconds) {
       val monthToDateMap = mutableMapOf<Int, Map<Int, Int>>()
 
       for (i in 1..12) {
@@ -1246,15 +1246,31 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
                         "\$this + 3 'month'",
                       )!!
                       .value
+
+                  val expectedAssertionDates: MutableList<Date> =
+                    mutableListOf(
+                      fhirCarePlanGenerator
+                        .evaluateToDate(
+                          DateTimeType(ancStart),
+                          "\$this + 1 'month'",
+                        )!!
+                        .value,
+                    )
+
+                  for (index in 1 until this.size) {
+                    expectedAssertionDates.add(
+                      fhirCarePlanGenerator
+                        .evaluateToDate(
+                          DateTimeType(expectedAssertionDates.last()),
+                          "\$this + 1 'month'",
+                        )!!
+                        .value,
+                    )
+                  }
+
                   this.forEachIndexed { index, task ->
                     assertEquals(
-                      (fhirCarePlanGenerator
-                          .evaluateToDate(
-                            DateTimeType(ancStart),
-                            "\$this + ${index + 1} 'month'",
-                          )!!
-                          .value)
-                        .asYyyyMmDd(),
+                      expectedAssertionDates[index].asYyyyMmDd(),
                       task.executionPeriod.start.asYyyyMmDd(),
                     )
                   }

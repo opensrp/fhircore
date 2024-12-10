@@ -16,19 +16,25 @@ This excludes forms such as "register client" or "register household".
 - A health care worker is doing a household visit and providing care to multiple household members. They want the ability to start a workflow and switch to another workflow without losing their data
 - A health care worker is required to collect data in both the app and on paper. They start a form in the app, but are under time pressure, so they fill out the paper form and plan to enter the data in the app later
 
-
+The save draft functionality can be configured using the `LAUNCH_QUESTIONNAIRE` or the `DELETE_DRAFT_QUESTIONNAIRE` workflow.
 The configuration is done on the `QuestionnaireConfig`.
 The sample below demonstrates the configs that are required in order to save a form as a draft
 
 ```json
 {
-  "questionnaire": {
-    "id": "add-family-member",
-    "title": "Add Family Member",
-    "resourceIdentifier": "sample-house-id",
-    "resourceType": "Group",
-    "saveDraft": true
-  }
+  "actions": [
+    {
+      "trigger": "ON_CLICK",
+      "workflow": "LAUNCH_QUESTIONNAIRE",
+      "questionnaire": {
+        "id": "add-family-member",
+        "title": "Add Family Member",
+        "resourceIdentifier": "sample-house-id",
+        "resourceType": "Group",
+        "saveDraft": true
+      }
+    }
+  ]
 }
 ```
 ## Config properties
@@ -41,15 +47,107 @@ resourceIdentifier | Unique ID String for the subject of the form             | 
 resourceType | The String representation of the resource type for the subject of the form | yes             |          |
 saveDraft | Flag that determines whether the form can be saved as a draft | yes             |    false      |
 
-## UI/UX workflow
+### UI/UX workflow for saving a form as draft
 When the form is opened, with the configurations in place, the save as draft functionality is triggered when the user clicks on the close button (X) at the top left of the screen.
 A dialog appears with 3 buttons i.e `Save as draft`, `Discard changes` and `Cancel`.
 
 The table below details what each of the buttons does.
 
-### Alert dialog buttons descriptions
+#### Alert dialog buttons descriptions
 |Button | Description |
 |--|--|:--:|:--:|
 Save as draft | Saves user input as a draft |
 Discard changes | Dismisses user input, and closes the form without saving the draft. |
 Cancel | Dismisses the dialog so that the user can continue interacting with the form |
+
+## Launching save draft from DELETE_DRAFT_QUESTIONNAIRE workflow
+The save draft functionality works the same as described above when launched using the `DELETE_DRAFT_QUESTIONNAIRE` workflow.
+The workflow adds another dialog that allows the user to either open or delete the draft.
+The sample below demonstrates the configs that are required in order to save a form as a draft and also delete the draft.
+```json
+{
+  "actions": [
+    {
+      "trigger": "ON_CLICK",
+      "workflow": "DELETE_DRAFT_QUESTIONNAIRE",
+      "questionnaire": {
+        "id": "add-family-member",
+        "title": "Add Family Member",
+        "resourceIdentifier": "sample-house-id",
+        "resourceType": "Group",
+        "saveDraft": true
+      }
+    }
+  ]
+}
+```
+
+### UI/UX workflow for deleting a draft form
+When the `DELETE_DRAFT_QUESTIONNAIRE` workflow is configured, a dialog appears when the call to action is triggered.
+The dialog has 3 buttons i.e `Open draft`, `Delete draft` and `Cancel`.
+
+The table below details what each of the buttons does.
+
+|Button | Description |
+|:--|:--|
+Open draft | Opens the questionnaire pre-filled with the saved draft changes |
+Delete draft | Does a soft delete of the draft i.e update the status of the `QuestionnaireResponse` to `stopped` |
+Cancel | Dismisses the dialog             |
+
+### Propagating deletes to other devices
+Since the devices work offline, there is a chance that a draft that has been deleted on device A could have some local changes on a device B.
+Due to the way conflict resolution works, at the moment, when device B syncs the changes that indicate the draft has been deleted will not reflect on device B.
+With this in mind, Event Management is used to update the deleted drafts in the background.
+
+The following is a sample config that would be added to the `application_config.json`
+```
+{
+  "eventWorkflows": [
+    {
+      "eventType": "RESOURCE_CLOSURE",
+      "triggerConditions": [
+      ],
+      "eventResources": [
+        {
+          "id": "draftFormToBeClosed",
+          "resource": "AuditEvent",
+          "dataQueries": [
+            {
+              "paramName": "type",
+              "filterCriteria": [
+                {
+                  "dataType": "CODE",
+                  "value": {
+                    "system": "http://smartregister.org/",
+                    "code": "delete_draft"
+                  }
+                }
+              ]
+            }
+          ],
+          "relatedResources": [
+            {
+              "resource": "QuestionnaireResponse",
+              "searchParameter": "entity",
+              "isRevInclude": false
+            }
+          ]
+        }
+      ],
+      "updateValues": [
+        {
+          "jsonPathExpression": "QuestionnaireResponse.status",
+          "value": "stopped",
+          "resourceType": "QuestionnaireResponse"
+        }
+      ],
+      "resourceFilterExpressions": []
+    }
+  ]
+}
+```
+
+An `AuditEvent` resource is used to keep track of deleted drafts. It has a reference to the `QuestionnaireResponse` in the `entity` field.
+The event management functionality fetches all the `AuditEvents` that have the `type` = `delete_draft`.
+Then fetches the related `QuestionnaireResponses` by doing a forward include search on the `QuestionnaireResponse.entity` field.
+The status for the retrieved `QuestionnaireResponses` is then updated to `stopped` i.e the draft is soft deleted.

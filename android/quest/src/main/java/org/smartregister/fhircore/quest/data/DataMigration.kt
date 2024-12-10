@@ -30,6 +30,7 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.jeasy.rules.api.Rules
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.migration.DataMigrationConfiguration
@@ -37,8 +38,7 @@ import org.smartregister.fhircore.engine.configuration.migration.MigrationConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
-import org.smartregister.fhircore.engine.domain.model.RuleConfig
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.filterByFhirPathExpression
@@ -64,7 +64,7 @@ constructor(
   val preferenceDataStore: PreferenceDataStore,
   val parser: IParser,
   val dispatcherProvider: DispatcherProvider,
-  val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  val rulesExecutor: RulesExecutor,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val eventBus: EventBus,
   @ApplicationContext val context: Context,
@@ -155,13 +155,16 @@ constructor(
         val resourceFilterExpression = migrationConfig.resourceFilterExpression
         val repositoryResourceDataList =
           defaultRepository
-            .searchResourcesRecursively(
-              filterByRelatedEntityLocationMetaTag = false,
-              filterActiveResources = null,
+            .searchNestedResources(
+              baseResourceIds = null,
               fhirResourceConfig = migrationConfig.resourceConfig,
-              configRules = null,
-              secondaryResourceConfigs = null,
+              configComputedRuleValues = emptyMap(),
+              activeResourceFilters = emptyList(),
+              filterByRelatedEntityLocationMetaTag = false,
+              currentPage = null,
+              pageSize = null,
             )
+            .values
             .filterByFhirPathExpression(
               fhirPathDataExtractor = fhirPathDataExtractor,
               conditionalFhirPathExpressions =
@@ -172,14 +175,14 @@ constructor(
         repositoryResourceDataList.forEach { repositoryResourceData ->
           val resource = repositoryResourceData.resource
           val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
-
+          val rules = rulesExecutor.rulesFactory.generateRules(migrationConfig.rules)
           val updatedResourceDocument =
             jsonParse.apply {
               migrationConfig.updateValues.forEach { updateExpression ->
                 // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
                 val value =
                   computeValueRule(
-                    rules = migrationConfig.rules,
+                    rules = rules,
                     repositoryResourceData = repositoryResourceData,
                     computedValueKey = updateExpression.computedValueKey,
                   )
@@ -234,13 +237,13 @@ constructor(
   }
 
   private fun computeValueRule(
-    rules: List<RuleConfig>?,
+    rules: Rules,
     repositoryResourceData: RepositoryResourceData,
     computedValueKey: String,
   ): Any? {
-    return resourceDataRulesExecutor
+    return rulesExecutor
       .computeResourceDataRules(
-        ruleConfigs = rules ?: emptyList(),
+        rules = rules,
         repositoryResourceData = repositoryResourceData,
         params = emptyMap(),
       )[computedValueKey]

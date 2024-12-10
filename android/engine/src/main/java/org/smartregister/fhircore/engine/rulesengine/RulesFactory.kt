@@ -30,9 +30,11 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.apache.commons.jexl3.JexlEngine
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Resource
@@ -63,6 +65,7 @@ import org.smartregister.fhircore.engine.util.extension.extractBirthDate
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.generateRules
 import org.smartregister.fhircore.engine.util.extension.isOverDue
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
@@ -71,6 +74,7 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import timber.log.Timber
 
+@Singleton
 class RulesFactory
 @Inject
 constructor(
@@ -80,10 +84,14 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val locationService: LocationService,
   val fhirContext: FhirContext,
+  val jexlEngine: JexlEngine,
   val defaultRepository: DefaultRepository,
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
-  private var facts: Facts = Facts()
+
+  @get:Synchronized @set:Synchronized private var facts: Facts = Facts()
+
+  fun generateRules(ruleConfigs: List<RuleConfig>): Rules = ruleConfigs.generateRules(jexlEngine)
 
   /**
    * This function executes the actions defined in the [Rule] s generated from the provided list of
@@ -92,11 +100,13 @@ constructor(
    * [RepositoryResourceData.relatedResourcesCountMap]. All related resources of same type are
    * flattened in a map for ease of usage in the rule engine.
    */
+  @Synchronized
   fun fireRules(
     rules: Rules,
     repositoryResourceData: RepositoryResourceData?,
     params: Map<String, String>,
   ): Map<String, Any> {
+    facts.clear() // Reset current facts
     facts =
       Facts().apply {
         put(FHIR_PATH, fhirPathDataExtractor)
@@ -108,14 +118,14 @@ constructor(
     if (repositoryResourceData != null) {
       with(repositoryResourceData) {
         facts.apply {
-          put(resourceRulesEngineFactId ?: resource.resourceType.name, resource)
+          put(resourceConfigId ?: resource.resourceType.name, resource)
           relatedResourcesMap.addToFacts(this)
           relatedResourcesCountMap.addToFacts(this)
 
           // Populate the facts map with secondary resource data flatten base and related
           // resources
           secondaryRepositoryResourceData
-            ?.groupBy { it.resourceRulesEngineFactId ?: it.resource.resourceType.name }
+            ?.groupBy { it.resourceConfigId ?: it.resource.resourceType.name }
             ?.forEach { entry -> put(entry.key, entry.value.map { it.resource }) }
 
           secondaryRepositoryResourceData?.forEach { repoResourceData ->
@@ -139,6 +149,26 @@ constructor(
         }
       }
     }
+    if (BuildConfig.DEBUG) {
+      val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+      Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+    } else {
+      rulesEngine.fire(rules, facts)
+    }
+    return facts.get(DATA) as Map<String, Any>
+  }
+
+  fun fireRules(rules: Rules, baseResource: Resource? = null): Map<String, Any> {
+    facts.clear() // Reset current facts
+    facts =
+      Facts().apply {
+        put(FHIR_PATH, fhirPathDataExtractor)
+        put(DATA, mutableMapOf<String, Any>())
+        put(DATE_SERVICE, DateService)
+        if (baseResource != null) {
+          put(baseResource.resourceType.name, baseResource)
+        }
+      }
     if (BuildConfig.DEBUG) {
       val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
       Timber.d("Rule executed in $timeToFireRules millisecond(s)")
@@ -574,7 +604,7 @@ constructor(
      * [fhirPathExpression] to a list separated by the [separator]
      *
      * e.g for a provided list of Patients we can extract a string containing the family names using
-     * the [Patient.name.family] as the [fhirpathExpression] and [ | ] as the [separator] the
+     * the 'Patient.name.family' as the [fhirPathExpression] and [ | ] as the [separator] the
      * returned string would be [John | Jane | James]
      */
     @JvmOverloads
@@ -713,8 +743,8 @@ constructor(
               set(idPath, resource.id.replace("#", ""))
             }
           }
-        } catch (e: PathNotFoundException) {
-          Timber.e(e, "Path $path not found")
+        } catch (pathNotFoundException: PathNotFoundException) {
+          Timber.e(pathNotFoundException, "Path $path not found")
           jsonParse
         }
 

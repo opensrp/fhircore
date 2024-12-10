@@ -26,8 +26,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -36,9 +36,9 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.compose.AndroidFragment
 import androidx.fragment.compose.rememberFragmentState
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
-import kotlinx.coroutines.flow.StateFlow
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
@@ -74,10 +74,10 @@ fun GeoWidgetLauncherScreen(
   launchQuestionnaire: (QuestionnaireConfig, GeoJsonFeature, Context) -> Unit,
   decodeImage: ((String) -> Bitmap?)?,
   onAppMainEvent: (AppMainEvent) -> Unit,
-  isSyncing: StateFlow<Boolean>,
+  isSyncing: LiveData<Boolean>,
 ) {
   val context = LocalContext.current
-  val syncing by isSyncing.collectAsState()
+  val syncing by isSyncing.observeAsState()
 
   Scaffold(
     topBar = {
@@ -171,15 +171,15 @@ fun GeoWidgetLauncherScreen(
           observerGeoJsonFeatures(geoJsonFeatures)
         }
       }
-      if (syncing) {
+      if (syncing == true) {
         Box(
           modifier =
             Modifier.fillMaxSize().padding(16.dp).pointerInput(Unit) { detectTapGestures {} },
           contentAlignment = Alignment.Center,
         ) {
           LoaderDialog(
-            boxWidth = 150.dp,
-            boxHeight = 150.dp,
+            boxWidth = 100.dp,
+            boxHeight = 100.dp,
             progressBarSize = 130.dp,
             showBackground = true,
             showLineSpinIndicator = true,

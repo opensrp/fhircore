@@ -133,8 +133,8 @@ private fun LoaderContent(
             if (showLineSpinIndicator) {
               LineSpinFadeLoaderProgressIndicator(
                 color = Color.White,
-                lineLength = 8f,
-                innerRadius = 12f,
+                lineLength = 12f,
+                innerRadius = 16f,
               )
             } else {
               CircularProgressIndicator(
