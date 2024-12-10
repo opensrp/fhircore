@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -119,6 +120,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         val scaffoldState = rememberScaffoldState()
         val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
         val appDrawerUIState = appMainViewModel.appDrawerUiState.value
+        val customSyncState = appMainViewModel.customSyncState.collectAsState().value
         val openDrawer: (Boolean) -> Unit = { open: Boolean ->
           coroutineScope.launch {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
@@ -192,6 +194,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                 appDrawerUIState = appDrawerUIState,
                 clearMapLiveData = geoWidgetLauncherViewModel.clearMapLiveData,
                 geoJsonFeatures = geoWidgetLauncherViewModel.geoJsonFeatures,
+                customSyncState = customSyncState,
                 launchQuestionnaire = geoWidgetLauncherViewModel::launchQuestionnaire,
                 decodeImage = geoWidgetLauncherViewModel::getImageBitmap,
                 onAppMainEvent = appMainViewModel::onEvent,
@@ -222,12 +225,11 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
           )
         }
       }
-      is CurrentSyncJobStatus.Succeeded,
-      is CurrentSyncJobStatus.Failed, -> {
+      is CurrentSyncJobStatus.Succeeded -> {
         appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
-        if (syncJobStatus is CurrentSyncJobStatus.Succeeded) {
-          geoWidgetLauncherViewModel.onEvent(GeoWidgetEvent.ClearMap)
-        }
+      }
+      is CurrentSyncJobStatus.Failed -> {
+        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
         geoWidgetLauncherViewModel.onEvent(
           GeoWidgetEvent.RetrieveFeatures(
             geoWidgetConfig = geoWidgetConfiguration,

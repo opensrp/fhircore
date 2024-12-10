@@ -20,10 +20,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 object CustomWorkerState {
-    private val _workerState = MutableStateFlow<CustomSyncState>(CustomSyncState.Idle)
-    val workerState: StateFlow<CustomSyncState> = _workerState
+  private val _workerState = MutableStateFlow<CustomSyncState>(CustomSyncState.Idle)
+  val workerState: StateFlow<CustomSyncState> = _workerState
 
-    fun postState(state: CustomSyncState) {
-        _workerState.value = state
-    }
+  fun postState(state: CustomSyncState) {
+    _workerState.value = state
+  }
 }

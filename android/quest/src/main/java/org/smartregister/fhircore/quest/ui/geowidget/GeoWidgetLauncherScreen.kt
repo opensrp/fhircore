@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
+import org.smartregister.fhircore.engine.sync.CustomSyncState
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
@@ -62,6 +63,7 @@ fun GeoWidgetLauncherScreen(
   appDrawerUIState: AppDrawerUIState,
   clearMapLiveData: MutableLiveData<Boolean>,
   geoJsonFeatures: MutableLiveData<List<GeoJsonFeature>>,
+  customSyncState: CustomSyncState = CustomSyncState.Idle,
   launchQuestionnaire: (QuestionnaireConfig, GeoJsonFeature, Context) -> Unit,
   decodeImage: ((String) -> Bitmap?)?,
   onAppMainEvent: (AppMainEvent) -> Unit,
@@ -114,6 +116,7 @@ fun GeoWidgetLauncherScreen(
         appDrawerUIState = appDrawerUIState,
         onAppMainEvent = onAppMainEvent,
         openDrawer = openDrawer,
+        customSyncState = customSyncState,
       )
     },
   ) { innerPadding ->
