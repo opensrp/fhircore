@@ -195,6 +195,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                 launchQuestionnaire = geoWidgetLauncherViewModel::launchQuestionnaire,
                 decodeImage = geoWidgetLauncherViewModel::getImageBitmap,
                 onAppMainEvent = appMainViewModel::onEvent,
+                isSyncing = geoWidgetLauncherViewModel.isSyncing,
               )
             }
           }
