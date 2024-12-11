@@ -30,7 +30,7 @@ class ParallelUtilTest {
   @Test
   fun testPmapExecutesAgainstAllMembersOfIterable() {
     runBlocking(Dispatchers.Default) {
-      val output = testIterable.pmap { it + 1 }.toList()
+      val output = testIterable.pmap(Dispatchers.Default) { it + 1 }.toList()
       Assert.assertTrue(output == listOf(2, 3, 4))
     }
   }
@@ -40,7 +40,7 @@ class ParallelUtilTest {
     val timeDelayInMillis: Long = 100
     runBlocking(Dispatchers.Default) {
       val time = measureTimeMillis {
-        (1..100).pmap {
+        (1..100).pmap(Dispatchers.Default) {
           delay(timeDelayInMillis)
           it * 2
         }
@@ -58,7 +58,7 @@ class ParallelUtilTest {
     // fail sometimes.
     val output = mutableSetOf<Int>()
     runBlocking(Dispatchers.Default) {
-      val result = testIterable.forEachAsync { output.add(it + 1) }
+      val result = testIterable.forEachAsync(Dispatchers.Default) { output.add(it + 1) }
       Assert.assertNotEquals(output, testIterable)
       Assert.assertSame(Unit.javaClass, result.javaClass)
     }
@@ -69,7 +69,7 @@ class ParallelUtilTest {
     val timeDelayInMillis: Long = 100
     runBlocking(Dispatchers.Default) {
       val time = measureTimeMillis {
-        (1..100).forEachAsync {
+        (1..100).forEachAsync(Dispatchers.Default) {
           delay(timeDelayInMillis)
           it * 2
         }

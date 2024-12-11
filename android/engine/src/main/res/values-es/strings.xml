@@ -23,8 +23,8 @@
     <string name="logout_user">Cerrar sesión como %1$s</string>
     <string name="sync_completed">Sincronización completa</string>
     <string name="syncing">Sincronización</string>
-    <string name="syncing_up">Sincronizando</string>
-    <string name="syncing_down">Sincronizando</string>
+    <string name="syncing_up">Sincronizando&#8230;</string>
+    <string name="syncing_down">Sincronizando&#8230;</string>
     <string name="syncing_initiated">Sincronización iniciada&#8230;</string>
     <string name="sync_failed">Error de sincronización. Verifique la conexión a Internet o vuelva a intentarlo más tarde</string>
     <string name="sync_completed_with_errors"> Sincronización completada con errores. Reintentando…</string>
