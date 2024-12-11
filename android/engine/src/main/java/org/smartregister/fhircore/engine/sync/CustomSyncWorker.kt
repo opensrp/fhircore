@@ -49,7 +49,7 @@ constructor(
           val (resourceSearchParams, _) = loadResourceSearchParams()
           Timber.i("Custom resource sync parameters $resourceSearchParams")
           resourceSearchParams
-            .asSequence()
+            .asIterable()
             .filter { it.value.isNotEmpty() }
             .map { "${it.key}?${it.value.concatParams()}" }
             .forEach { url ->

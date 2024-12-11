@@ -148,6 +148,9 @@ constructor(
           return@launch
         }
 
+        // Save composition
+        defaultRepository.createRemote(false, compositionResource)
+
         compositionResource
           .retrieveCompositionSections()
           .asSequence()
@@ -190,8 +193,6 @@ constructor(
             }
           }
 
-        // Save composition after fetching all the referenced section resources
-        defaultRepository.createRemote(false, compositionResource)
         Timber.d("Done fetching application configurations remotely")
         loadConfigurations(context)
       } catch (unknownHostException: UnknownHostException) {
