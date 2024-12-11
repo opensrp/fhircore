@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.5.2">
 <title data-rh="true">Save form as draft | OpenSRP Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://opensrp.github.io/engineering/app/configuring/forms/save-form-as-draft"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Save form as draft | OpenSRP Documentation"><meta data-rh="true" name="description" content="This is support for saving a form, that is in progress, as a draft."><meta data-rh="true" property="og:description" content="This is support for saving a form, that is in progress, as a draft."><link data-rh="true" rel="icon" href="/img/opensrp-favicon.png"><link data-rh="true" rel="canonical" href="https://opensrp.github.io/engineering/app/configuring/forms/save-form-as-draft"><link data-rh="true" rel="alternate" href="https://opensrp.github.io/engineering/app/configuring/forms/save-form-as-draft" hreflang="en"><link data-rh="true" rel="alternate" href="https://opensrp.github.io/engineering/app/configuring/forms/save-form-as-draft" hreflang="x-default"><link data-rh="true" rel="preconnect" href="https://OE0COOL9QP-dsn.algolia.net" crossorigin="anonymous"><link rel="search" type="application/opensearchdescription+xml" title="OpenSRP Documentation" href="/opensearch.xml"><link rel="stylesheet" href="/assets/css/styles.5a017294.css">
-<script src="/assets/js/runtime~main.b18733c3.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.c012f930.js" defer="defer"></script>
 <script src="/assets/js/main.07c7940d.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -31,11 +31,7 @@ The sample below demonstrates the configs that are required in order to save a f
 A dialog appears with 3 buttons i.e <code>Save as draft</code>, <code>Discard changes</code> and <code>Cancel</code>.</p>
 <p>The table below details what each of the buttons does.</p>
 <h4 class="anchor anchorWithStickyNavbar_LWe7" id="alert-dialog-buttons-descriptions">Alert dialog buttons descriptions<a href="#alert-dialog-buttons-descriptions" class="hash-link" aria-label="Direct link to Alert dialog buttons descriptions" title="Direct link to Alert dialog buttons descriptions">​</a></h4>
-<p>|Button | Description |
-|--|--|:--:|:--:|
-Save as draft | Saves user input as a draft |
-Discard changes | Dismisses user input, and closes the form without saving the draft. |
-Cancel | Dismisses the dialog so that the user can continue interacting with the form |</p>
+<table><thead><tr><th style="text-align:left">Button</th><th style="text-align:left">Description</th></tr></thead><tbody><tr><td style="text-align:left">Save as draft</td><td style="text-align:left">Saves user input as a draft</td></tr><tr><td style="text-align:left">Discard changes</td><td style="text-align:left">Dismisses user input, and closes the form without saving the draft</td></tr><tr><td style="text-align:left">Cancel</td><td style="text-align:left">Dismisses the dialog so that the user can continue interacting with the form</td></tr></tbody></table>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="launching-save-draft-from-delete_draft_questionnaire-workflow">Launching save draft from DELETE_DRAFT_QUESTIONNAIRE workflow<a href="#launching-save-draft-from-delete_draft_questionnaire-workflow" class="hash-link" aria-label="Direct link to Launching save draft from DELETE_DRAFT_QUESTIONNAIRE workflow" title="Direct link to Launching save draft from DELETE_DRAFT_QUESTIONNAIRE workflow">​</a></h2>
 <p>The save draft functionality works the same as described above when launched using the <code>DELETE_DRAFT_QUESTIONNAIRE</code> workflow.
 The workflow adds another dialog that allows the user to either open or delete the draft.
