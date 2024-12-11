@@ -123,7 +123,7 @@ class AppDrawerTest {
   fun testAppDrawerRendersNavBottomSectionCorrectly() {
     setContent("")
     composeTestRule
-      .onNodeWithText("Manual Sync", useUnmergedTree = true)
+      .onNodeWithText("Manual sync", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
   }

@@ -187,7 +187,7 @@ class AppMainViewModelTest : RobolectricTest() {
       ),
     )
     Assert.assertEquals(
-      appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp),
+      "${appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp)} (0s)",
       appMainViewModel.getSyncTime(),
     )
     coVerify { appMainViewModel.retrieveAppMainUiState() }
@@ -325,7 +325,7 @@ class AppMainViewModelTest : RobolectricTest() {
     every { appMainViewModel.applicationConfiguration.dateFormat } returns "yyyy-MM-dd HH:mm:ss"
     val syncTime = appMainViewModel.getSyncTime()
     val expectedFormattedDate =
-      formatDate(mockTimestamp.toLong(), appMainViewModel.applicationConfiguration.dateFormat)
+      "${formatDate(mockTimestamp.toLong(), appMainViewModel.applicationConfiguration.dateFormat)} (0s)"
     Assert.assertEquals(expectedFormattedDate, syncTime)
   }
 
@@ -341,7 +341,7 @@ class AppMainViewModelTest : RobolectricTest() {
         currentFormat = SYNC_TIMESTAMP_OUTPUT_FORMAT,
         desiredFormat = appMainViewModel.applicationConfiguration.dateFormat,
       )
-    Assert.assertEquals(expectedReformattedDate, syncTime)
+    Assert.assertEquals("$expectedReformattedDate (0s)", syncTime)
   }
 
   @Test

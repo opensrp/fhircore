@@ -23,8 +23,8 @@
     <string name="logout_user">Se déconnecter en tant que %1$s</string>
     <string name="sync_completed">Synchronisation terminée</string>
     <string name="syncing">Synchronisation</string>
-    <string name="syncing_up" >Synchronisation</string>
-    <string name="syncing_down" >Synchronisation en cours</string>
+    <string name="syncing_up" >Synchronisation&#8230;</string>
+    <string name="syncing_down" >Synchronisation en cours&#8230;</string>
     <string name="syncing_initiated">Synchronisation initiée&#8230;</string>
     <string name="sync_failed">La synchronisation a échoué. Vérifier la connexion internet ou réessayer plus tard</string>
     <string name="sync_completed_with_errors">La synchronisation s\'est terminée avec des erreurs. Réessayer...</string>
