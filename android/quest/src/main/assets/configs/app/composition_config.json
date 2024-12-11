@@ -14,19 +14,39 @@
   "type": {
     "coding": [
       {
-        "system": "http://snomed.info/sct",
-        "code": "1156600005",
+        "system": "https://loinc.org",
+        "code": "11503-0",
         "display": "Device setting parameter"
       }
     ]
   },
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "1156600005",
+          "display": "Device setting parameter"
+        }
+      ]
+    }
+  ],
+  "author": [
+    {
+      "reference": "Practitioner/76f11bf7-0323-429f-bc7c-481f2f29fc51"
+    }
+  ],
   "date": "2022-09-16",
   "title": "Device configurations",
   "confidentiality": "L",
   "section": [
     {
       "title": "Application configuration",
-      "focus": {
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Application configuration details</div>"
+      },
+      "entry": {
         "reference": "Binary/4755546c-e61f-43bb-b599-5cad230a3d529e",
         "identifier": {
           "value": "application"
@@ -36,7 +56,11 @@
     },
     {
       "title": "Sync configuration",
-      "focus": {
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Synchronization settings and details</div>"
+      },
+      "entry": {
         "reference": "Binary/a982504f-8d8b-4151-abc6-0063793500d4e",
         "identifier": {
           "value": "sync"
@@ -46,7 +70,11 @@
     },
     {
       "title": "Navigation configuration",
-      "focus": {
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Navigation settings and map configurations</div>"
+      },
+      "entry": {
         "reference": "Binary/d7ce0167-ee6a-4f8f-b644-50b0242513239e",
         "identifier": {
           "value": "navigation"
@@ -56,11 +84,19 @@
     },
     {
       "title": "Register configurations",
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Register configuration</div>"
+      },
       "mode": "working",
       "section": [
         {
           "title": "Household register configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Household register configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/7ebbbf4e-c783-42f2-998d-3c6bdde5c0c6e",
             "identifier": {
               "value": "householdRegister"
@@ -69,7 +105,11 @@
         },
         {
           "title": "ANC register configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">ANC register configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/e64815e6-56c1-4200-b2a6-6ec13eedfec3e",
             "identifier": {
               "value": "ancRegister"
@@ -78,7 +118,11 @@
         },
         {
           "title": "Child register configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Child register configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/7a68f458-9402-4c07-be62-feb85d341c17e",
             "identifier": {
               "value": "childRegister"
@@ -87,7 +131,11 @@
         },
         {
           "title": "Task register configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Task register configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/bbf28ade-5bc5-11ed-9b6a-0242ac120090e",
             "identifier": {
               "value": "taskRegister"
@@ -96,7 +144,11 @@
         },
         {
           "title": "CMNTD register configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">CMNTD register configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/d90ae75b-b180-45c0-ab57-24dc6c885cc1e",
             "identifier": {
               "value": "cmntdRegister"
@@ -105,7 +157,11 @@
         },
         {
           "title": "FP register configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">FP register configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/7d0ce69f-22c2-4829-90b4-c0aadebdffbae",
             "identifier": {
               "value": "fpRegister"
@@ -114,7 +170,11 @@
         },
         {
           "title": "HIV register configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">HIV register configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/faa1688d-98fa-4954-9889-6c2bdf4d4e57e",
             "identifier": {
               "value": "hivRegister"
@@ -123,7 +183,11 @@
         },
         {
           "title": "Mental Health register configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Mental Health register configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/ba22490f-d24b-43d0-b6f4-f5af474bbf05e",
             "identifier": {
               "value": "mentalHealthRegister"
@@ -132,7 +196,11 @@
         },
         {
           "title": "PNC register configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">PNC register configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/9aa6bbb6-df76-42a4-bdbe-72dc197378cae",
             "identifier": {
               "value": "pncRegister"
@@ -141,7 +209,11 @@
         },
         {
           "title": "Sick Child register configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Sick Child register configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/079a2120-e802-4445-95ac-59511751a4c0e",
             "identifier": {
               "value": "sickChildRegister"
@@ -150,7 +222,11 @@
         },
         {
           "title": "TB register configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">TB register configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/2ac6ec4f-1a29-4d85-a015-06db9c1b82d9e",
             "identifier": {
               "value": "tbRegister"
@@ -161,11 +237,19 @@
     },
     {
       "title": "Profile configurations",
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Profile configurations</div>"
+      },
       "mode": "working",
       "section": [
         {
           "title": "Household profile configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Household Profile configurations</div>"
+          },
+          "entry": {
             "reference": "Binary/bbb3c2b0-51c9-44e9-9674-7d311ad5f859e",
             "identifier": {
               "value": "householdProfile"
@@ -174,7 +258,11 @@
         },
         {
           "title": "Default profile configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Default profile configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/34b709f3-e8a1-44e9-867a-714b68bb1367e",
             "identifier": {
               "value": "defaultProfile"
@@ -183,7 +271,11 @@
         },
         {
           "title": "Other Registers profile configuration",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Other registers profile configuration</div>"
+          },
+          "entry": {
             "reference": "Binary/a6d69650-4806-4bb1-bd2b-a60fa18418a0e",
             "identifier": {
               "value": "otherRegistersProfile"
@@ -194,11 +286,19 @@
     },
     {
       "title": "Translation configurations",
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Translation configurations</div>"
+      },
       "mode": "working",
       "section": [
         {
           "title": "Translation English",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Translation English</div>"
+          },
+          "entry": {
             "reference": "Binary/c6757818-25c8-4e51-ba51-0c9dd882cbbbe",
             "identifier": {
               "value": "strings"
@@ -207,7 +307,11 @@
         },
         {
           "title": "Translation Swahili",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Translation Swahili</div>"
+          },
+          "entry": {
             "reference": "Binary/eee5f9c1-49f6-4b18-b088-8a52689a79d8e",
             "identifier": {
               "value": "strings_sw"
@@ -216,7 +320,11 @@
         },
         {
           "title": "Translation French",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Translation French</div>"
+          },
+          "entry": {
             "reference": "Binary/43e6c036-bb83-481e-8ffd-f8fdb7ee54a0e",
             "identifier": {
               "value": "strings_fr"
@@ -227,11 +335,19 @@
     },
     {
       "title": "Questionnaires",
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Questionnaires</div>"
+      },
       "mode": "working",
       "section": [
         {
           "title": "Add household",
-          "focus": {
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">Add household questionnaire</div>"
+          },
+          "entry": {
             "reference": "Questionnaire/f210a832-857f-49e6-93f5-399eec4f4edb",
             "identifier": {
               "value": "household-registration"
