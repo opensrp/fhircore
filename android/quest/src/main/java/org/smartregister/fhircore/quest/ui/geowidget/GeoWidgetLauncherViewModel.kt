@@ -27,6 +27,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -56,7 +57,6 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.util.extensions.referenceToBitmap
 import timber.log.Timber
-import javax.inject.Inject
 
 @HiltViewModel
 class GeoWidgetLauncherViewModel
