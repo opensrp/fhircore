@@ -1,14 +1,15 @@
+
 import android.databinding.tool.ext.capitalizeUS
 import com.android.build.api.variant.FilterConfiguration.FilterType
 import io.sentry.android.gradle.extensions.InstrumentationFeature
 import io.sentry.android.gradle.instrumentation.logcat.LogcatLevel
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.FileReader
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.json.JSONArray
-import org.json.JSONObject
 
 plugins {
   `jacoco-report`
@@ -116,8 +117,8 @@ android {
     }
 
     getByName("release") {
-      isMinifyEnabled = true
-      isShrinkResources = true
+      isMinifyEnabled = false
+      isShrinkResources = false
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro",
