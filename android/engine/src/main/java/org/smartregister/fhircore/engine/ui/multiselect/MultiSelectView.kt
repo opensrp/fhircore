@@ -46,6 +46,7 @@ fun <T> ColumnScope.MultiSelectView(
   rootTreeNode: TreeNode<T>,
   syncLocationStateMap: MutableMap<String, SyncLocationState>,
   depth: Int = 0,
+  onChecked: () -> Unit,
   content: @Composable (TreeNode<T>) -> Unit,
 ) {
   val collapsedState = remember { mutableStateOf(false) }
@@ -55,6 +56,7 @@ fun <T> ColumnScope.MultiSelectView(
     depth = depth,
     content = content,
     collapsedState = collapsedState,
+    onChecked = onChecked,
   )
   if (collapsedState.value) {
     rootTreeNode.children.forEach {
@@ -63,18 +65,20 @@ fun <T> ColumnScope.MultiSelectView(
         syncLocationStateMap = syncLocationStateMap,
         depth = depth + 16,
         content = content,
+        onChecked = onChecked,
       )
     }
   }
 }
 
 @Composable
-fun <T> MultiSelectCheckbox(
+private fun <T> MultiSelectCheckbox(
   syncLocationStateMap: MutableMap<String, SyncLocationState>,
   currentTreeNode: TreeNode<T>,
   depth: Int,
   content: @Composable (TreeNode<T>) -> Unit,
   collapsedState: MutableState<Boolean>,
+  onChecked: () -> Unit,
 ) {
   val checked = remember { mutableStateOf(false) }
   Column {
@@ -134,19 +138,12 @@ fun <T> MultiSelectCheckbox(
             parent = parent.parent
           }
 
-          // Select all the nested checkboxes
-          val treeNodeArrayDeque = ArrayDeque(currentTreeNode.children)
-
-          while (treeNodeArrayDeque.isNotEmpty()) {
-            val currentNode = treeNodeArrayDeque.removeFirst()
-            syncLocationStateMap[currentNode.id] =
-              SyncLocationState(
-                currentNode.id,
-                currentNode.parent?.id,
-                ToggleableState(checked.value),
-              )
-            currentNode.children.forEach { treeNodeArrayDeque.addLast(it) }
-          }
+          updateNestedCheckboxState(
+            currentTreeNode = currentTreeNode,
+            syncLocationStateMap = syncLocationStateMap,
+            checked = checked.value,
+          )
+          onChecked()
         },
         modifier = Modifier.padding(0.dp),
         colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colors.primary),
@@ -154,5 +151,28 @@ fun <T> MultiSelectCheckbox(
       )
       content(currentTreeNode)
     }
+  }
+}
+
+/**
+ * This function selects/deselects all the children for the [currentTreeNode] based on the value for
+ * the [checked] parameter. The states for the [MultiSelectCheckbox] is updated in the
+ * [syncLocationStateMap].
+ */
+fun <T> updateNestedCheckboxState(
+  currentTreeNode: TreeNode<T>,
+  syncLocationStateMap: MutableMap<String, SyncLocationState>,
+  checked: Boolean,
+) {
+  val treeNodeArrayDeque = ArrayDeque(currentTreeNode.children)
+  while (treeNodeArrayDeque.isNotEmpty()) {
+    val currentNode = treeNodeArrayDeque.removeFirst()
+    syncLocationStateMap[currentNode.id] =
+      SyncLocationState(
+        locationId = currentNode.id,
+        parentLocationId = currentNode.parent?.id,
+        toggleableState = ToggleableState(checked),
+      )
+    currentNode.children.forEach { treeNodeArrayDeque.addLast(it) }
   }
 }

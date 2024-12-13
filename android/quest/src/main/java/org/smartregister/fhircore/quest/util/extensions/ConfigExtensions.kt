@@ -164,7 +164,7 @@ fun ActionConfig.handleClickEvent(
           args = args,
           navOptions =
             navController.currentDestination?.id?.let {
-              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
+              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack != false)
             },
         )
       }
@@ -199,7 +199,7 @@ fun ActionConfig.handleClickEvent(
           args = args,
           navOptions =
             navController.currentDestination?.id?.let {
-              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
+              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack != false)
             },
         )
       }
@@ -235,6 +235,15 @@ fun ActionConfig.handleClickEvent(
       val interpolatedPdfConfig = pdfConfig.interpolate(computedValuesMap)
       val appCompatActivity = (navController.context as AppCompatActivity)
       PdfLauncherFragment.launch(appCompatActivity, interpolatedPdfConfig.encodeJson())
+    }
+    ApplicationWorkflow.DELETE_DRAFT_QUESTIONNAIRE -> {
+      val questionnaireConfigInterpolated =
+        actionConfig.questionnaire?.interpolate(computedValuesMap)
+      val args =
+        bundleOf(
+          NavigationArg.QUESTIONNAIRE_CONFIG to questionnaireConfigInterpolated,
+        )
+      navController.navigate(MainNavigationScreen.AlertDialogFragment.route, args)
     }
     else -> return
   }

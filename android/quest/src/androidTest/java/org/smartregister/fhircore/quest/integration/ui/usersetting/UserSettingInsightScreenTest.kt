@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.integration.ui.usersetting
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -30,6 +31,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.extension.DEFAULT_FORMAT_SDF_DD_MM_YYYY
+import org.smartregister.fhircore.quest.ui.usersetting.CIRCULAR_PROGRESS_INDICATOR
 import org.smartregister.fhircore.quest.ui.usersetting.INSIGHT_UNSYNCED_DATA
 import org.smartregister.fhircore.quest.ui.usersetting.UserSettingInsightScreen
 
@@ -100,8 +102,19 @@ class UserSettingInsightScreenTest {
     composeRule.onNodeWithTag(INSIGHT_UNSYNCED_DATA).assertDoesNotExist()
   }
 
+  @Test
+  fun testProgressIndicatorShowWhenFetchingTheData() {
+    val unsyncedResources = emptyList<Pair<String, Int>>()
+    initComposable(
+      unsyncedResourcesFlow = MutableStateFlow(unsyncedResources),
+      showProgressIndicator = true,
+    )
+    composeRule.onNodeWithTag(CIRCULAR_PROGRESS_INDICATOR).assertExists().assertIsDisplayed()
+  }
+
   private fun initComposable(
     unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>> = MutableSharedFlow(),
+    showProgressIndicator: Boolean = false,
   ) {
     scenario.onActivity { activity ->
       activity.setContent {
@@ -118,6 +131,7 @@ class UserSettingInsightScreenTest {
           buildDate = "29 jan 2023",
           unsyncedResourcesFlow = unsyncedResourcesFlow,
           navController = rememberNavController(),
+          showProgressIndicator = showProgressIndicator,
           onRefreshRequest = {},
           dateFormat = DEFAULT_FORMAT_SDF_DD_MM_YYYY,
         )

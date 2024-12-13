@@ -122,7 +122,7 @@ class ProfileFragmentTest : RobolectricTest() {
       TestNavHostController(mainActivity).apply { setGraph(R.navigation.application_nav_graph) }
 
     // Simulate the returned value of loadProfile
-    coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
+    coEvery { registerRepository.loadProfileData(any(), any(), paramsMap = emptyMap()) } returns
       RepositoryResourceData(resource = Faker.buildPatient())
     mainActivity.supportFragmentManager.run {
       commitNow { add(profileFragment, ProfileFragment::class.java.simpleName) }
@@ -155,10 +155,11 @@ class ProfileFragmentTest : RobolectricTest() {
 
     coVerify {
       profileViewModel.retrieveProfileUiState(
+        context = ApplicationProvider.getApplicationContext(),
         profileId = "defaultProfile",
         resourceId = "sampleId",
-        any(),
-        any(),
+        fhirResourceConfig = any(),
+        paramsList = any(),
       )
     }
     coVerify { profileViewModel.emitSnackBarState(snackBarMessageConfig) }
@@ -190,10 +191,11 @@ class ProfileFragmentTest : RobolectricTest() {
 
     coVerify {
       profileViewModel.retrieveProfileUiState(
+        context = ApplicationProvider.getApplicationContext(),
         profileId = "defaultProfile",
         resourceId = "sampleId",
-        any(),
-        any(),
+        fhirResourceConfig = any(),
+        paramsList = any(),
       )
     }
   }

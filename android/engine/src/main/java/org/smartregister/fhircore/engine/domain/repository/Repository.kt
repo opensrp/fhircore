@@ -16,10 +16,8 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
-import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
-import org.smartregister.fhircore.engine.domain.model.ResourceData
 
 /** This class provides common functionalities used in the register */
 interface Repository {
@@ -27,7 +25,7 @@ interface Repository {
   /**
    * This function loads the desired register configuration using the provided [registerId]. The
    * data query extracted from the retrieved configuration is used to filter the register data (FHIR
-   * resources wrapped in [ResourceData]
+   * resources wrapped in [RepositoryResourceData]
    */
   suspend fun loadRegisterData(
     currentPage: Int,
@@ -56,6 +54,6 @@ interface Repository {
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
-    paramsList: Array<ActionParameter>?,
+    paramsMap: Map<String, String>? = emptyMap(),
   ): RepositoryResourceData?
 }

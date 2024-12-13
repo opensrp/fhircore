@@ -39,10 +39,10 @@ import java.time.OffsetDateTime
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -57,8 +57,8 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.domain.model.LauncherType
+import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.sync.CustomSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
@@ -78,6 +78,7 @@ import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.reformatDate
 import org.smartregister.fhircore.engine.util.extension.refresh
+import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.tryParse
@@ -187,8 +188,27 @@ constructor(
         }
     }
 
+    val syncStart = sharedPreferencesHelper.read(SharedPreferenceKey.SYNC_START_TIMESTAMP.name, 0)
+    val syncEnd = sharedPreferencesHelper.read(SharedPreferenceKey.SYNC_END_TIMESTAMP.name, 0)
+
+    result += " (${getTimeDifference(syncStart,syncEnd)})"
+
     // Return the result (either formatted time in millis or re-formatted backward-compatible date).
     return result
+  }
+
+  private fun getTimeDifference(startTime: Long, endTime: Long): String {
+    val diffInMillis = endTime - startTime
+
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(diffInMillis) % 60
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(diffInMillis) % 60
+    val hours = TimeUnit.MILLISECONDS.toHours(diffInMillis)
+
+    return when {
+      hours > 0 -> "${hours}h ${minutes}m ${seconds}s"
+      minutes > 0 -> "${minutes}m ${seconds}s"
+      else -> "${seconds}s"
+    }
   }
 
   fun countRegisterData() {
@@ -409,7 +429,9 @@ constructor(
       if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
         if (
           applicationConfiguration.usePractitionerAssignedLocationOnSync ||
-            context.syncLocationIdsProtoStore.data.firstOrNull()?.isNotEmpty() == true
+            context
+              .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA)
+              .isNotEmpty()
         ) {
           schedulePeriodicSync()
         }

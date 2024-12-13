@@ -145,7 +145,9 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.slf4j.nop)
+  implementation(libs.fhir.sdk.common)
 
+  // Shared dependencies
   api(libs.bundles.datastore.kt)
   api(libs.bundles.navigation)
   api(libs.bundles.materialicons)
@@ -157,8 +159,6 @@ dependencies {
   api(libs.bundles.okhttp3)
   api(libs.bundles.paging)
   api(libs.ui)
-
-  // Shared dependencies
   api(libs.glide)
   api(libs.knowledge) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   api(libs.p2p.lib)
@@ -166,7 +166,6 @@ dependencies {
   api(libs.fhir.common.utils) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   api(libs.runtime.livedata)
   api(libs.foundation)
-  api(libs.fhir.common.utils)
   api(libs.kotlinx.serialization.json)
   api(libs.work.runtime.ktx)
   api(libs.prettytime)
@@ -197,6 +196,7 @@ dependencies {
     exclude(group = "com.google.android.fhir", module = "engine")
     exclude(group = "org.smartregister", module = "engine")
     exclude(group = "com.github.ben-manes.caffeine")
+    exclude(group = "com.google.android.fhir", module = "knowledge")
   }
   api(libs.contrib.barcode) {
     isTransitive = true
@@ -210,8 +210,8 @@ dependencies {
   }
   api(libs.fhir.engine) {
     isTransitive = true
-    exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.github.ben-manes.caffeine")
+    exclude(group = "com.google.android.fhir", module = "common")
   }
 
   // Annotation processors

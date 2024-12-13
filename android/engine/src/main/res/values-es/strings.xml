@@ -23,8 +23,8 @@
     <string name="logout_user">Cerrar sesión como %1$s</string>
     <string name="sync_completed">Sincronización completa</string>
     <string name="syncing">Sincronización</string>
-    <string name="syncing_up">Sincronizando</string>
-    <string name="syncing_down">Sincronizando</string>
+    <string name="syncing_up">Sincronizando&#8230;</string>
+    <string name="syncing_down">Sincronizando&#8230;</string>
     <string name="syncing_initiated">Sincronización iniciada&#8230;</string>
     <string name="sync_failed">Error de sincronización. Verifique la conexión a Internet o vuelva a intentarlo más tarde</string>
     <string name="sync_completed_with_errors"> Sincronización completada con errores. Reintentando…</string>
@@ -55,6 +55,7 @@
     <string name="syncing_retry">Reintentar sincronización</string>
     <string name="syncing_in_progress">Sincronización en curso</string>
     <string name="loading">Cargando</string>
+    <string name="loading_ellipsis">Cargando…</string>
     <string name="error_logging_out">Mensaje de error al cerrar sesión: %1$s</string>
     <string name="cannot_logout_user">No se puede cerrar sesión: ya se ha cerrado sesión o el dispositivo está desconectado.</string>
     <string name="error_loading_config_http_error">No se pudo cargar la configuración. Inténtalo de nuevo más tarde</string>

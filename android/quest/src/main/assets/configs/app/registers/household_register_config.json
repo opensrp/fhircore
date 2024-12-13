@@ -95,6 +95,26 @@
             ]
           }
         ]
+      },
+      {
+        "id": "overdueTasks",
+        "resource": "Task",
+        "searchParameter": "subject",
+        "resultAsCount": true,
+        "dataQueries": [
+          {
+            "paramName": "status",
+            "filterCriteria": [
+              {
+                "dataType": "CODE",
+                "value": {
+                  "system": "http://hl7.org/fhir/task-status",
+                  "code": "failed"
+                }
+              }
+            ]
+          }
+        ]
       }
     ]
   },

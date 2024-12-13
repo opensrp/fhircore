@@ -240,7 +240,7 @@ jobs:
  
       - name: Spotless check quest application
         run: ./gradlew -PlocalPropertiesFile=local.properties :quest:spotlessCheck --stacktrace :quest:ktlintCheck --stacktrace
-        working-directory: android 
+        working-directory: android
       
       - name: Load AVD cache
         uses: actions/cache@v4
