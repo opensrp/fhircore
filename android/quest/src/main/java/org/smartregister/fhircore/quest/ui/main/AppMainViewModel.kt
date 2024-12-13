@@ -39,6 +39,7 @@ import java.time.OffsetDateTime
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlinx.coroutines.async
@@ -222,8 +223,27 @@ constructor(
         }
     }
 
+    val syncStart = sharedPreferencesHelper.read(SharedPreferenceKey.SYNC_START_TIMESTAMP.name, 0)
+    val syncEnd = sharedPreferencesHelper.read(SharedPreferenceKey.SYNC_END_TIMESTAMP.name, 0)
+
+    result += " (${getTimeDifference(syncStart,syncEnd)})"
+
     // Return the result (either formatted time in millis or re-formatted backward-compatible date).
     return result
+  }
+
+  private fun getTimeDifference(startTime: Long, endTime: Long): String {
+    val diffInMillis = endTime - startTime
+
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(diffInMillis) % 60
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(diffInMillis) % 60
+    val hours = TimeUnit.MILLISECONDS.toHours(diffInMillis)
+
+    return when {
+      hours > 0 -> "${hours}h ${minutes}m ${seconds}s"
+      minutes > 0 -> "${minutes}m ${seconds}s"
+      else -> "${seconds}s"
+    }
   }
 
   fun countRegisterData() {
