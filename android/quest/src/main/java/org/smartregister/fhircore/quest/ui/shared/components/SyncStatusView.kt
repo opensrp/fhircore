@@ -339,57 +339,39 @@ fun SyncStatusView(
         }
       }
     }
-    if (isFailed && !minimized) {
-      Text(
-        text = stringResource(org.smartregister.fhircore.engine.R.string.retry),
-        modifier = Modifier.padding(start = 16.dp).clickable { onRetry() },
-        color = MaterialTheme.colors.primary,
-        fontWeight = FontWeight.SemiBold,
-      )
-    } else if (currentSyncJobStatus is CurrentSyncJobStatus.Running && !minimized) {
-      Text(
-        text = stringResource(org.smartregister.fhircore.engine.R.string.cancel),
-        modifier = Modifier.padding(start = 16.dp).clickable { onCancel() },
-        color = MaterialTheme.colors.primary,
-        fontWeight = FontWeight.SemiBold,
-      )
 
-      Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(start = 16.dp),
-      ) {
-        if (currentSyncJobStatus is CurrentSyncJobStatus.Running) {
-          LineSpinFadeLoaderProgressIndicator(
-            color = Color.White,
-            lineLength = 8f,
-            innerRadius = 12f,
-          )
-        }
-        if (
-          (currentSyncJobStatus is CurrentSyncJobStatus.Failed ||
-            currentSyncJobStatus is CurrentSyncJobStatus.Running) && !minimized
-        ) {
-          Text(
-            text =
-              stringResource(
-                if (currentSyncJobStatus is CurrentSyncJobStatus.Failed) {
-                  org.smartregister.fhircore.engine.R.string.retry
-                } else {
-                  org.smartregister.fhircore.engine.R.string.cancel
-                },
-              ),
-            modifier =
-              Modifier.padding(start = 16.dp).clickable {
-                if (currentSyncJobStatus is CurrentSyncJobStatus.Failed) {
-                  onRetry()
-                } else {
-                  onCancel()
-                }
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      modifier = Modifier.padding(start = 16.dp),
+    ) {
+      if (currentSyncJobStatus is CurrentSyncJobStatus.Running) {
+        LineSpinFadeLoaderProgressIndicator(
+          color = Color.White,
+          lineLength = 8f,
+          innerRadius = 12f,
+        )
+      }
+      if ((isFailed || currentSyncJobStatus is CurrentSyncJobStatus.Running) && !minimized) {
+        Text(
+          text =
+            stringResource(
+              if (currentSyncJobStatus is CurrentSyncJobStatus.Failed) {
+                org.smartregister.fhircore.engine.R.string.retry
+              } else {
+                org.smartregister.fhircore.engine.R.string.cancel
               },
-            color = MaterialTheme.colors.primary,
-            fontWeight = FontWeight.SemiBold,
-          )
-        }
+            ),
+          modifier =
+            Modifier.padding(start = 16.dp).clickable {
+              if (currentSyncJobStatus is CurrentSyncJobStatus.Failed) {
+                onRetry()
+              } else {
+                onCancel()
+              }
+            },
+          color = MaterialTheme.colors.primary,
+          fontWeight = FontWeight.SemiBold,
+        )
       }
     }
   }
@@ -419,6 +401,7 @@ fun SyncStatusSucceededPreview() {
       SyncStatusView(
         isSyncUpload = false,
         currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
+        customSyncState = CustomSyncState.Success,
       )
     }
   }
