@@ -79,7 +79,12 @@ fun Image(
   decodeImage: ((String) -> Bitmap?)?,
 ) {
   val imageConfig = imageProperties.imageConfig
-  val colorTint = tint ?: imageProperties.imageConfig?.color.parseColor()
+  val colorTint = tint ?:
+    imageProperties.tint
+    ?.takeIf { it.isNotEmpty() }
+    ?.parseColor()
+    ?: imageProperties.imageConfig?.color?.parseColor()
+    ?: Color.White // Default color fallback1234
   val context = LocalContext.current
   if (imageConfig != null) {
     if (imageProperties.text != null) {
@@ -231,8 +236,8 @@ fun ImagePreview() {
     modifier = Modifier,
     imageProperties =
       ImageProperties(
-        imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk"),
-        backgroundColor = "dangerColor",
+        imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk", color = "white"),
+        backgroundColor = "successColor",
         size = 80,
         shape = ImageShape.CIRCLE,
       ),
