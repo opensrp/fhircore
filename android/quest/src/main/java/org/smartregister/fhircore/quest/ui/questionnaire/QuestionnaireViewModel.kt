@@ -73,6 +73,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.isEditable
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
+import org.smartregister.fhircore.engine.domain.model.isSummary
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -1136,6 +1137,7 @@ constructor(
           !resourceIdentifier.isNullOrEmpty() &&
           (questionnaireConfig.isEditable() ||
             questionnaireConfig.isReadOnly() ||
+            questionnaireConfig.isSummary() ||
             questionnaireConfig.saveDraft)
       ) {
         defaultRepository
