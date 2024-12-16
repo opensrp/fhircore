@@ -52,6 +52,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -1079,5 +1080,191 @@ class ConfigurationRegistryTest : RobolectricTest() {
       assertNotNull(questionnaire)
       assertEquals(questionnaireId, questionnaire.logicalId)
     }
+  }
+//  @Test
+//  fun testPopulateConfigurationsMapWithAllFocus() = runTest {
+//    val composition = Composition().apply {
+//      section = listOf(
+//        SectionComponent().apply {
+//          focus = Reference().apply {
+//            identifier = Identifier().apply { value = "focus-1" }
+//            reference = "ResourceType/1"
+//          }
+//        },
+//        SectionComponent().apply {
+//          focus = Reference().apply {
+//            identifier = Identifier().apply { value = "focus-2" }
+//            reference = "ResourceType/2"
+//          }
+//        }
+//      )
+//    }
+//
+//    configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
+//
+//    println("ConfigsJsonMap: ${configRegistry.configsJsonMap}")
+//
+//    assertTrue("focus-1 should be in configsJsonMap", configRegistry.configsJsonMap.containsKey("focus-1"))
+//    assertTrue("focus-2 should be in configsJsonMap", configRegistry.configsJsonMap.containsKey("focus-2"))
+//  }
+//
+//  @Test
+//  fun testPopulateConfigurationsMapWithAllEntry() = runTest {
+//    val composition = Composition().apply {
+//      section = listOf(
+//        SectionComponent().apply {
+//          entry = listOf(
+//            Reference().apply {
+//              identifier = Identifier().apply { value = "entry-1" }
+//              reference = "ResourceType/1"
+//            }
+//          )
+//        },
+//        SectionComponent().apply {
+//          entry = listOf(
+//            Reference().apply {
+//              identifier = Identifier().apply { value = "entry-2" }
+//              reference = "ResourceType/2"
+//            }
+//          )
+//        }
+//      )
+//    }
+//
+//    configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
+//
+//    println("ConfigsJsonMap: ${configRegistry.configsJsonMap}")
+//
+//    assertTrue("entry-1 should be in configsJsonMap", configRegistry.configsJsonMap.containsKey("entry-1"))
+//    assertTrue("entry-2 should be in configsJsonMap", configRegistry.configsJsonMap.containsKey("entry-2"))
+//  }
+//
+//  @Test
+//  fun testPopulateConfigurationsMapWithBothFocusAndEntryInSameSection() = runTest {
+//    val composition = Composition().apply {
+//      section = listOf(
+//        SectionComponent().apply {
+//          focus = Reference().apply {
+//            identifier = Identifier().apply { value = "focus-1" }
+//            reference = "ResourceType/1"
+//          }
+//          entry = listOf(
+//            Reference().apply {
+//              identifier = Identifier().apply { value = "entry-1" }
+//              reference = "ResourceType/2"
+//            }
+//          )
+//        }
+//      )
+//    }
+//
+//    configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
+//
+//    println("ConfigsJsonMap: ${configRegistry.configsJsonMap}")
+//
+//    assertTrue("focus-1 should be in configsJsonMap", configRegistry.configsJsonMap.containsKey("focus-1"))
+//    assertFalse("entry-1 should not be in configsJsonMap", configRegistry.configsJsonMap.containsKey("entry-1"))
+//  }
+//
+//  @Test
+//  fun testFetchNonWorkflowConfigResourcesWithAllEntry() = runTest {
+//    val appId = "app-id"
+//    val composition = Composition().apply {
+//      identifier = Identifier().apply { value = appId }
+//      section = listOf(
+//        SectionComponent().apply {
+//          entry = listOf(
+//            Reference().apply {
+//              identifier = Identifier().apply { value = "entry-1" }
+//              reference = "ResourceType/1"
+//            }
+//          )
+//        }
+//      )
+//    }
+//
+//    configRegistry.fetchNonWorkflowConfigResources()
+//
+//    println("ConfigsJsonMap: ${configRegistry.configsJsonMap}")
+//
+//    assertTrue("entry-1 should be in configsJsonMap", configRegistry.configsJsonMap.containsKey("entry-1"))
+//  }
+//
+//  @Test
+//  fun testFetchNonWorkflowConfigResourcesWithBothFocusAndEntryInSameSection() = runTest {
+//    val appId = "app-id"
+//    val composition = Composition().apply {
+//      identifier = Identifier().apply { value = appId }
+//      section = listOf(
+//        SectionComponent().apply {
+//          focus = Reference().apply {
+//            identifier = Identifier().apply { value = "focus-1" }
+//            reference = "ResourceType/1"
+//          }
+//          entry = listOf(
+//            Reference().apply {
+//              identifier = Identifier().apply { value = "entry-1" }
+//              reference = "ResourceType/2"
+//            }
+//          )
+//        }
+//      )
+//    }
+//
+//    configRegistry.fetchNonWorkflowConfigResources()
+//
+//    println("ConfigsJsonMap: ${configRegistry.configsJsonMap}")
+//
+//    assertTrue("focus-1 should be in configsJsonMap", configRegistry.configsJsonMap.containsKey("focus-1"))
+//    assertFalse("entry-1 should not be in configsJsonMap", configRegistry.configsJsonMap.containsKey("entry-1"))
+//  }
+
+
+  @Test
+  fun testFetchNonWorkflowConfigResourcesWithNoFocusOrEntry() = runTest {
+    val appId = "app-id"
+    val composition = Composition().apply {
+      identifier = Identifier().apply { value = appId }
+      section = listOf(SectionComponent()) // Neither focus nor entry
+    }
+
+    configRegistry.fetchNonWorkflowConfigResources()
+
+    // Validate no crash occurs and configsJsonMap remains empty
+    assertTrue(configRegistry.configsJsonMap.isEmpty())
+  }
+
+  @Test
+  fun testPopulateConfigurationsMapWithNeitherFocusNorEntry() = runTest {
+    val composition = Composition().apply {
+      section = listOf(SectionComponent())
+    }
+
+    configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
+
+    assertTrue(configRegistry.configsJsonMap.isEmpty())
+  }
+
+  @Test
+  fun testFetchNonWorkflowConfigResourcesWithAllFocus() = runTest {
+    val appId = "app-id"
+    val composition = Composition().apply {
+      identifier = Identifier().apply { value = appId }
+      section = listOf(
+        SectionComponent().apply {
+          focus = Reference().apply {
+            identifier = Identifier().apply { value = "focus-1" }
+            reference = "ResourceType/1"
+          }
+        }
+      )
+    }
+
+    coEvery { fhirResourceDataSource.getResource(any()) } returns Bundle().apply {
+      addEntry().resource = composition
+    }
+
+    configRegistry.fetchNonWorkflowConfigResources()
+
   }
 }
