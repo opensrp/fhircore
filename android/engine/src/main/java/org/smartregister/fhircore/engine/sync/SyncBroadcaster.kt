@@ -120,10 +120,7 @@ constructor(
           onSyncListener.onSync(syncStatus)
         }
 
-        if (
-          status.currentSyncJobStatus is CurrentSyncJobStatus.Succeeded ||
-            status.lastSyncJobStatus is LastSyncJobStatus.Succeeded
-        ) {
+        if (status.lastSyncJobStatus is LastSyncJobStatus.Succeeded) {
           Timber.d("Periodic sync succeeded. Triggering CustomSyncWorker...")
           workManager.enqueue(
             OneTimeWorkRequestBuilder<CustomSyncWorker>()
