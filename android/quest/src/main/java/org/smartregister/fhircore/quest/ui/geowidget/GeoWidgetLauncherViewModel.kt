@@ -75,6 +75,9 @@ constructor(
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
 
+  private val _isSyncing = MutableLiveData(false)
+  val isSyncing: LiveData<Boolean> = _isSyncing
+
   private val _noLocationFoundDialog = MutableLiveData<Boolean>()
   val noLocationFoundDialog: LiveData<Boolean>
     get() = _noLocationFoundDialog
@@ -98,6 +101,7 @@ constructor(
     searchText: String?,
   ) {
     viewModelScope.launch {
+      _isSyncing.postValue(true)
       val (locationsWithCoordinates, locationsWithoutCoordinates) =
         defaultRepository
           .searchNestedResources(
@@ -159,13 +163,15 @@ constructor(
         } else {
           registerData.filter { geoJsonFeature: GeoJsonFeature ->
             geoWidgetConfig.topScreenSection?.searchBar?.computedRules?.any { ruleName ->
-              // if ruleName not found in map return {-1}; check always return false hence no data
+              // if ruleName not found in map return {-1}; check always return false hence no
+              // data
               val value = geoJsonFeature.properties[ruleName]?.toString() ?: "{-1}"
               value.contains(other = searchText, ignoreCase = true)
             } == true
           }
         }
 
+      _isSyncing.postValue(false)
       geoJsonFeatures.postValue(features)
 
       Timber.w(
@@ -197,30 +203,11 @@ constructor(
           ),
         )
       } else {
-        val message =
-          if (searchText.isNullOrBlank()) {
-            context.getString(R.string.all_locations_rendered)
-          } else {
-            context.getString(R.string.all_matching_locations_rendered, locationsCount)
-          }
-        emitSnackBarState(
-          SnackBarMessageConfig(
-            message = message,
-            actionLabel = context.getString(org.smartregister.fhircore.engine.R.string.ok),
-            duration = SnackbarDuration.Short,
-          ),
-        )
-      }
-
-      // Account for missing locations
-      if (locationsCount == 0) {
-        if (!searchText.isNullOrBlank()) {
+        if (locationsCount == 0) {
           val message =
-            context.getString(
-              R.string.no_found_locations_matching_text,
-              searchText,
-            )
-          Timber.w(message)
+            if (!searchText.isNullOrBlank()) {
+              context.getString(R.string.no_found_locations_matching_text, searchText)
+            } else context.getString(R.string.no_locations_to_render)
           emitSnackBarState(
             SnackBarMessageConfig(
               message = message,
@@ -228,12 +215,22 @@ constructor(
               duration = SnackbarDuration.Long,
             ),
           )
+          Timber.w(message)
         } else {
-          SnackBarMessageConfig(
-            message = context.getString(R.string.no_locations_to_render),
-            actionLabel = context.getString(org.smartregister.fhircore.engine.R.string.ok),
-            duration = SnackbarDuration.Long,
+          val message =
+            if (searchText.isNullOrBlank()) {
+              context.getString(R.string.all_locations_rendered)
+            } else {
+              context.getString(R.string.all_matching_locations_rendered, locationsCount)
+            }
+          emitSnackBarState(
+            SnackBarMessageConfig(
+              message = message,
+              actionLabel = context.getString(org.smartregister.fhircore.engine.R.string.ok),
+              duration = SnackbarDuration.Short,
+            ),
           )
+          Timber.w(message)
         }
       }
     }
