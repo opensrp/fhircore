@@ -56,6 +56,7 @@ constructor(
               fetchResources(
                 gatewayModeHeaderValue = ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE,
                 url = url,
+                enableCustomSyncWorkerLogs = true,
               )
             }
         }

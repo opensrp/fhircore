@@ -61,6 +61,7 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
+import org.smartregister.fhircore.engine.sync.CustomSyncState
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -100,6 +101,7 @@ fun RegisterScreen(
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
+  customSyncState: CustomSyncState = CustomSyncState.Idle,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   decodeImage: ((String) -> Bitmap?)?,
 ) {
@@ -166,6 +168,7 @@ fun RegisterScreen(
         appDrawerUIState = appDrawerUIState,
         onAppMainEvent = onAppMainEvent,
         openDrawer = openDrawer,
+        customSyncState = customSyncState,
       )
     },
   ) { innerPadding ->

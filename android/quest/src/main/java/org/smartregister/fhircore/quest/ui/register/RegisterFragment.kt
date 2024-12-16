@@ -102,6 +102,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
         val scope = rememberCoroutineScope()
         val scaffoldState = rememberScaffoldState()
         val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
+        val customSyncState = appMainViewModel.customSyncState.collectAsState().value
         val openDrawer: (Boolean) -> Unit = { open: Boolean ->
           scope.launch {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
@@ -172,6 +173,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 registerUiState = registerViewModel.registerUiState.value,
                 registerUiCountState = registerViewModel.registerUiCountState.value,
                 appDrawerUIState = appMainViewModel.appDrawerUiState.value,
+                customSyncState = customSyncState,
                 onAppMainEvent = { appMainViewModel.onEvent(it) },
                 searchQuery = searchViewModel.searchQuery,
                 currentPage = registerViewModel.currentPage,
