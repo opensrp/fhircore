@@ -1138,7 +1138,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   @ExperimentalCoroutinesApi
   fun `generateOrUpdateCarePlan should generate careplan for 5 visits when lmp has passed 3 months`() =
-    runTest {
+    runTest(timeout = 120.seconds) {
       val monthToDateMap = mutableMapOf<Int, Map<Int, Int>>()
 
       for (i in 1..12) {
@@ -2190,7 +2190,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         defaultRepository.addOrUpdate(addMandatoryTags = true, capture(dependentTaskSlot))
       } just runs
       opv0.updateDependentTaskDueDate(defaultRepository)
-      println("AA - ${dependentTaskSlot.captured.encodeResourceToString(jsonParser)}")
+      println("AA - ${dependentTaskSlot.captured.encodeResourceToString()}")
       assertEquals(
         Date.from(Instant.parse("2021-11-20T00:00:00Z")),
         dependentTaskSlot.captured.executionPeriod.start,

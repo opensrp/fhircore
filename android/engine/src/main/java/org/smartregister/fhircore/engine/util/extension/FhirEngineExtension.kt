@@ -32,6 +32,8 @@ import org.hl7.fhir.r4.model.RelatedArtifact
 import org.hl7.fhir.r4.model.Resource
 import timber.log.Timber
 
+private const val PAGE_SIZE = 100
+
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
   return try {
     this.get(resourceId)
@@ -97,23 +99,26 @@ suspend fun FhirEngine.countUnSyncedResources() =
     .eachCount()
     .map { it.key to it.value }
 
-suspend fun <R : Resource> FhirEngine.batchedSearch(search: Search) =
+suspend fun <R : Resource> FhirEngine.batchedSearch(search: Search): List<SearchResult<R>> {
+  val pageSize = PAGE_SIZE
   if (search.count != null) {
-    this.search<R>(search)
-  } else {
-    val result = mutableListOf<SearchResult<R>>()
-    var offset = search.from ?: 0
-    val pageCount = 100
-    do {
-      search.from = offset
-      search.count = pageCount
-      val searchResults = this.search<R>(search)
-      result += searchResults
-      offset += searchResults.size
-    } while (searchResults.size == pageCount)
-
-    result
+    return this.search(search)
   }
+
+  val result = mutableListOf<SearchResult<R>>()
+  var offset = search.from ?: 0
+  do {
+    val paginatedSearch =
+      search.apply {
+        search.from = offset
+        search.count = pageSize
+      }
+    val searchResults = this.search<R>(paginatedSearch)
+    result.addAll(searchResults)
+    offset += searchResults.size
+  } while (searchResults.size == pageSize)
+  return result
+}
 
 suspend inline fun <reified R : Resource> FhirEngine.batchedSearch(
   init: Search.() -> Unit,

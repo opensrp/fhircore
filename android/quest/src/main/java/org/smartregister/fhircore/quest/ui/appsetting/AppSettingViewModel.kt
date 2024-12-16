@@ -69,6 +69,7 @@ constructor(
 ) : ViewModel() {
 
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
+  private val exceptionHandler = CoroutineExceptionHandler { _, exception -> Timber.e(exception) }
 
   val showProgressBar = MutableLiveData(false)
 
@@ -100,8 +101,6 @@ constructor(
       }
     }
   }
-
-  private val exceptionHandler = CoroutineExceptionHandler { _, exception -> Timber.e(exception) }
 
   private fun fetchRemoteConfigurations(appId: String?, context: Context) {
     viewModelScope.launch(exceptionHandler) {
@@ -149,6 +148,9 @@ constructor(
           return@launch
         }
 
+        // Save composition
+        defaultRepository.createRemote(false, compositionResource)
+
         compositionResource
           .retrieveCompositionSections()
           .asSequence()
@@ -191,8 +193,6 @@ constructor(
             }
           }
 
-        // Save composition after fetching all the referenced section resources
-        defaultRepository.createRemote(false, compositionResource)
         Timber.d("Done fetching application configurations remotely")
         loadConfigurations(context)
       } catch (unknownHostException: UnknownHostException) {

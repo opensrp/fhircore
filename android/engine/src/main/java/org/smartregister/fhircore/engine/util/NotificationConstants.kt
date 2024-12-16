@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.di
+package org.smartregister.fhircore.engine.util
 
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.DispatcherProvider
+/** This class has method to help track, manage Notifications identifiers */
+object NotificationConstants {
 
-@InstallIn(SingletonComponent::class)
-@Module
-abstract class DispatcherModule {
+  object NotificationId {
+    const val DATA_SYNC = 1
+  }
 
-  @Singleton
-  @Binds
-  abstract fun bindDefaultDispatcherProvider(
-    defaultDispatcherProvider: DefaultDispatcherProvider,
-  ): DispatcherProvider
+  object ChannelId {
+    const val DATA_SYNC = "channel_id_datasync"
+  }
+
+  object ChannelName {
+    const val DATA_SYNC = "Data sync"
+  }
 }

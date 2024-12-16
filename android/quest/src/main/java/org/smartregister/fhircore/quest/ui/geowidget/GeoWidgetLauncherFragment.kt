@@ -53,6 +53,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
+import org.smartregister.fhircore.engine.ui.base.AlertDialogButton
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -194,6 +195,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                 launchQuestionnaire = geoWidgetLauncherViewModel::launchQuestionnaire,
                 decodeImage = geoWidgetLauncherViewModel::getImageBitmap,
                 onAppMainEvent = appMainViewModel::onEvent,
+                isSyncing = geoWidgetLauncherViewModel.isSyncing,
               )
             }
           }
@@ -271,15 +273,21 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
           alertIntent = AlertIntent.INFO,
           message = geoWidgetConfiguration.noResults?.message!!,
           title = geoWidgetConfiguration.noResults?.title!!,
-          confirmButtonListener = {
-            geoWidgetConfiguration.noResults
-              ?.actionButton
-              ?.actions
-              ?.handleClickEvent(findNavController())
-          },
-          confirmButtonText = R.string.positive_button_location_set,
+          confirmButton =
+            AlertDialogButton(
+              listener = {
+                geoWidgetConfiguration.noResults
+                  ?.actionButton
+                  ?.actions
+                  ?.handleClickEvent(findNavController())
+              },
+              text = R.string.positive_button_location_set,
+            ),
           cancellable = true,
-          neutralButtonListener = {},
+          neutralButton =
+            AlertDialogButton(
+              listener = {},
+            ),
         )
       }
     }

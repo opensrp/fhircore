@@ -20,8 +20,8 @@
     <string name="logout_user">Keluar sebagai %1$s</string>
     <string name="sync_completed">Sinkronisasi selesai</string>
     <string name="syncing">Sinkronisasi</string>
-    <string name="syncing_up" >Menyinkronkan</string>
-    <string name="syncing_down" >Menyinkronkan</string>
+    <string name="syncing_up" >Menyinkronkan&#8230;</string>
+    <string name="syncing_down" >Menyinkronkan&#8230;</string>
     <string name="syncing_initiated">Sinkronisasi dimulai&#8230;</string>
     <string name="sync_failed">Sinkronisasi gagal. Periksa koneksi internet atau coba lagi nanti</string>
     <string name="sync_completed_with_errors">Sinkronisasi selesai dengan kesalahan. Mencoba lagi…</string>

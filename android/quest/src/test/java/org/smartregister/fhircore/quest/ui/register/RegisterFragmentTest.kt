@@ -89,7 +89,7 @@ class RegisterFragmentTest : RobolectricTest() {
           registerRepository = mockk(relaxed = true),
           configurationRegistry = configurationRegistry,
           sharedPreferencesHelper = Faker.buildSharedPreferencesHelper(),
-          resourceDataRulesExecutor = mockk(),
+          rulesExecutor = mockk(),
           dispatcherProvider = dispatcherProvider,
         ),
       )
