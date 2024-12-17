@@ -37,6 +37,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
@@ -335,16 +336,15 @@ constructor(
       }
     } else {
       composition.retrieveCompositionSections().forEach { sectionComponent ->
+        val referenceResourceType = sectionComponent.focus.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
         if (sectionComponent.hasFocus() && sectionComponent.focus.hasReferenceElement() && sectionComponent.focus.hasIdentifier()) {
           val configIdentifier = sectionComponent.focus.identifier.value
-          val referenceResourceType = sectionComponent.focus.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
-          addBinaryToConfigsJsonMap(referenceResourceType, configIdentifier, sectionComponent, configsLoadedCallback)
+          addBinaryToConfigsJsonMap(referenceResourceType, configIdentifier, sectionComponent.focus, configsLoadedCallback)
         }
         if (sectionComponent.hasEntry() && sectionComponent.entry.isNotEmpty()){ 
           sectionComponent.entry.forEach{ entryReference ->
             val configIdentifier = entryReference.identifier.value
-            val referenceResourceType = entryReference.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
-            addBinaryToConfigsJsonMap(referenceResourceType, configIdentifier, sectionComponent, configsLoadedCallback)
+            addBinaryToConfigsJsonMap(referenceResourceType, configIdentifier, entryReference, configsLoadedCallback)
           }
         }
       }
@@ -355,13 +355,13 @@ constructor(
   private suspend fun addBinaryToConfigsJsonMap(
     referenceResourceType: String,
     configIdentifier: String,
-    sectionComponent: Composition.SectionComponent,
+    entryReference: Reference,
     configsLoadedCallback: (Boolean) -> Unit
   ) {
     if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
-      val extractedId = sectionComponent.focus.extractId()
+      val extractedId = entryReference.identifier
       try {
-        val configBinary = fhirEngine.get<Binary>(extractedId)
+        val configBinary = fhirEngine.get<Binary>(extractedId.toString())
         configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         Timber.e("Missing Binary file with ID :$extractedId")
