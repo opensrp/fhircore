@@ -139,7 +139,7 @@ fun TopScreenSection(
       modifier =
         modifier
           .fillMaxWidth()
-          .padding(horizontal = 16.dp, vertical = 16.dp)
+          .padding(horizontal = 12.dp, vertical = 16.dp)
           .testTag(
             TITLE_ROW_TEST_TAG,
           ),
@@ -161,7 +161,7 @@ fun TopScreenSection(
         )
         Text(
           text = title,
-          fontSize = 20.sp,
+          fontSize = 19.sp,
           color = Color.White,
           modifier = modifier.padding(start = 16.dp).testTag(TOP_ROW_TEXT_TEST_TAG),
         )
