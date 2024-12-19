@@ -161,7 +161,7 @@ fun TopScreenSection(
         )
         Text(
           text = title,
-          fontSize = 20.sp,
+          fontSize = 19.sp,
           color = Color.White,
           modifier = modifier.padding(start = 16.dp).testTag(TOP_ROW_TEXT_TEST_TAG),
         )
