@@ -488,6 +488,7 @@ dependencies {
   implementation(libs.androidx.fragment.compose)
   implementation(libs.bundles.cameraX)
   implementation(libs.log4j)
+  implementation(libs.google.cloud.speech)
 
   // Annotation processors
   kapt(libs.hilt.compiler)
