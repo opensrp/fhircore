@@ -1085,10 +1085,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun testFetchNonWorkflowConfigResourcesWithNoFocusOrEntry() = runTest {
     val appId = "app-id"
-    val composition = Composition().apply {
-      identifier = Identifier().apply { value = appId }
-      section = listOf(SectionComponent()) // Neither focus nor entry
-    }
+    val composition =
+      Composition().apply {
+        identifier = Identifier().apply { value = appId }
+        section = listOf(SectionComponent()) // Neither focus nor entry
+      }
 
     configRegistry.fetchNonWorkflowConfigResources()
 
@@ -1098,9 +1099,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testPopulateConfigurationsMapWithNeitherFocusNorEntry() = runTest {
-    val composition = Composition().apply {
-      section = listOf(SectionComponent())
-    }
+    val composition = Composition().apply { section = listOf(SectionComponent()) }
 
     configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
 
@@ -1110,23 +1109,24 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun testFetchNonWorkflowConfigResourcesWithAllFocus() = runTest {
     val appId = "app-id"
-    val composition = Composition().apply {
-      identifier = Identifier().apply { value = appId }
-      section = listOf(
-        SectionComponent().apply {
-          focus = Reference().apply {
-            identifier = Identifier().apply { value = "focus-1" }
-            reference = "ResourceType/1"
-          }
-        }
-      )
-    }
+    val composition =
+      Composition().apply {
+        identifier = Identifier().apply { value = appId }
+        section =
+          listOf(
+            SectionComponent().apply {
+              focus =
+                Reference().apply {
+                  identifier = Identifier().apply { value = "focus-1" }
+                  reference = "ResourceType/1"
+                }
+            },
+          )
+      }
 
-    coEvery { fhirResourceDataSource.getResource(any()) } returns Bundle().apply {
-      addEntry().resource = composition
-    }
+    coEvery { fhirResourceDataSource.getResource(any()) } returns
+      Bundle().apply { addEntry().resource = composition }
 
     configRegistry.fetchNonWorkflowConfigResources()
-
   }
 }
