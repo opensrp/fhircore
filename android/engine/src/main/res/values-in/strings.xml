@@ -1,9 +1,12 @@
 <resources>
     <string name="manual_sync">Sinkronisasi manual</string>
+    <string name="sync">Sinkronkan</string>
     <string name="language">Bahasa</string>
     <string name="logout_as_user">Keluar sebagai </string>
     <string name="show_overdue">Tampilkan yang terlambat</string>
     <string name="search_hint">Cari nama atau nomor ID</string>
+    <string name="search">Cari nama</string>
+    <string name="sync_data">SINKRONKAN DATA</string>
     <string name="scan_bar_code">PINDAI BARCODE</string>
     <string name="empty_client_list_message_title">Tidak Ada Hasil</string>
     <string name="empty_client_list_message_details">Maaf, kami tidak dapat menemukan klien dengan nama atau nomor ID tersebut</string>
@@ -65,12 +68,15 @@
     <string name="questionnaire_in_progress_alert_back_pressed_message">Apakah Anda yakin ingin membuang jawabannya?</string>
     <string name="questionnaire_alert_back_pressed_title">Buang perubahan</string>
     <string name="questionnaire_alert_back_pressed_button_title">Buang</string>
-    <string name="questionnaire_alert_back_pressed_save_draft_button_title">Simpan sebagian draf</string>
+    <string name="questionnaire_alert_back_pressed_save_draft_button_title">Simpan sebagai draf</string>
     <string name="questionnaire_alert_neutral_button_title">Batal</string>
+    <string name="questionnaire_alert_negative_button_title">Batalkan Perubahan</string>
     <string name="questionnaire_alert_confirm_button_title">Ya</string>
     <string name="questionnaire_alert_invalid_message">Detail yang diberikan mengalami kesalahan validasi. Atasi kesalahan dan kirim lagi</string>
     <string name="questionnaire_alert_invalid_title">Validasi Gagal</string>
     <string name="questionnaire_alert_ack_button_title">OK</string>
+    <string name="questionnaire_alert_open_draft_button_title">Buka draf</string>
+    <string name="questionnaire_alert_delete_draft_button_title">Hapus draf</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="forgot_password">Lupa Password</string>
@@ -123,6 +129,7 @@
     <string name="upcoming_services">PELAYANAN SELANJUTNYA</string>
     <string name="service_card">KARTU PELAYANAN</string>
     <string name="other_patients">Pasien lainnya</string>
+    <string name="select_location">Pilih lokasi</string>
     <string name="responses">RESPONS (%1$s)</string>
     <string name="multi_user_login_attempt">Mencoba masuk dengan pengguna lain</string>
     <string name="please_wait">Mohon tunggu...</string>
@@ -144,6 +151,7 @@
     <string name="weeks">Pekan/minggu</string>
     <string name="days">Hari</string>
     <string name="initializing">Menginisiasi pengaturan &#8230;</string>
+    <string name="initializing_application">Initializing application &#8230;</string>
     <string name="username_sample" translatable="false">e.g JohnDoe</string>
     <string name="percentage_progress" translatable="false">%1$d%%</string>
     <string name="error_occurred">Ada yang salah...</string>
@@ -157,6 +165,7 @@
     <string name="device_info">Info perangkat</string>
     <string name="refresh">Muat ulang</string>
     <string name="unsynced_resources">Resources Tidak Disinkronkan</string>
+    <string name="all_resources_synced">Semua data telah tersinkronisasi</string>
     <string name="synced_statistics">Statistik Tersinkronisasi</string>
     <string name="all_data_synced">Semua data disinkronkan</string>
     <string name="invalid_offline_login_state">Diperlukan pengaturan pengguna. Aktifkan koneksi internet Anda</string>
@@ -175,4 +184,25 @@
     <string name="device_date">Tanggal</string>
     <string name="device">Perangkat</string>
     <string name="data_migration_version">Versi migrasi data</string>
+    <string name="ok">Oke</string>
+    <string name="add">TAMBAH</string>
+    <string name="data_migration_started">Memulai migrasi data dari versi %1$d</string>
+    <string name="data_migration_completed">Data aplikasi berhasil dimigrasikan ke versi %1$d</string>
+    <string name="help">Bantu</string>
+    <string name="no_data">Tidak ada data yang disetel</string>
+    <string name="sync_complete">Sinkronisasi selesai</string>
+    <string name="sync_error">Kesalahan sinkronisasi</string>
+    <string name="minutes_remaining">Menghitung sisa waktu dalam menit…</string>
+    <string name="sync_up_inprogress">%1$d%% Sinkronisasi ke atas…</string>
+    <string name="sync_down_inprogress">%1$d%% Sinkronisasi ke bawah…</string>
+    <string name="retry">COBA LAGI</string>
+    <string name="unsynced_data_present">Ada beberapa data yang belum tersinkronisasi</string>
+    <string name="missing_supervisor_contact">Kontak supervisor hilang atau nomor telepon yang diberikan tidak valid</string>
+    <string name="apply_filter">TERAPKAN FILTER</string>
+    <string name="questionnaire_save_draft_title">Simpan perubahan draf</string>
+    <string name="questionnaire_save_draft_message">Apakah Anda ingin menyimpan perubahan draf?</string>
+    <string name="open_draft_changes_title">Buka perubahan draf</string>
+    <string name="open_draft_changes_message">Anda dapat membuka kembali formulir draf yang disimpan untuk melanjutkan atau menghapusnya</string>
+    <string name="button_pagination_next">Berikutnya</string>
+    <string name="button_pagination_previous">Sebelumnya</string>
 </resources>
