@@ -336,13 +336,13 @@ constructor(
       }
     } else {
       composition.retrieveCompositionSections().forEach { sectionComponent ->
-        val referenceResourceType =
-          sectionComponent.focus.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
         if (
           sectionComponent.hasFocus() &&
             sectionComponent.focus.hasReferenceElement() &&
             sectionComponent.focus.hasIdentifier()
         ) {
+          val referenceResourceType =
+            sectionComponent.focus.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
           val configIdentifier = sectionComponent.focus.identifier.value
           addBinaryToConfigsJsonMap(
             referenceResourceType,
@@ -353,6 +353,8 @@ constructor(
         }
         if (sectionComponent.hasEntry() && sectionComponent.entry.isNotEmpty()) {
           sectionComponent.entry.forEach { entryReference ->
+            val referenceResourceType =
+              entryReference.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
             val configIdentifier = entryReference.identifier.value
             addBinaryToConfigsJsonMap(
               referenceResourceType,

@@ -24,6 +24,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.get
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -618,7 +619,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     } returns Binary().apply { content = ByteArray(0) }
     runTest { configRegistry.loadConfigurations(appId, context) }
 
-    Assert.assertFalse(configRegistry.configsJsonMap.isEmpty())
+    assertFalse(configRegistry.configsJsonMap.isEmpty())
   }
 
   @Test
@@ -1098,7 +1099,16 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
-  fun testPopulateConfigurationsMapWithNeitherFocusNorEntry() = runBlocking {
+  fun testPopulateConfigurationsMapWithNeitherFocusNorEntry() = runTest {
+    val composition = Composition()
+
+    configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
+
+    assertTrue(configRegistry.configsJsonMap.isEmpty())
+  }
+
+  @Test
+  fun testPopulateConfigurationsMapWithAllFocus() = runTest {
     val composition =
       Composition().apply {
         section =
@@ -1106,23 +1116,71 @@ class ConfigurationRegistryTest : RobolectricTest() {
             SectionComponent().apply {
               focus =
                 Reference().apply {
-                  reference = "Questionnaire/1"
-                  identifier = Identifier().apply { value = "firstQuestionnaire" }
+                  reference = "Binary/1"
+                  identifier = Identifier().apply { value = "resource1" }
                 }
+            },
+          )
+      }
+
+    coEvery { fhirEngine.get<Binary>(any()) } returns Binary().apply { content = ByteArray(0) }
+    configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
+    assertEquals(1, configRegistry.configsJsonMap.size)
+    assertTrue(configRegistry.configsJsonMap.containsKey("resource1"))
+  }
+
+  @Test
+  fun testPopulateConfigurationsMapWithAllEntry() = runTest {
+    val composition =
+      Composition().apply {
+        section =
+          listOf(
+            SectionComponent().apply {
               entry =
                 listOf(
                   Reference().apply {
-                    reference = "Questionnaire/2"
-                    identifier = Identifier().apply { value = "secondQuestionnaire" }
+                    reference = "Binary/2"
+                    identifier = Identifier().apply { value = "resource2" }
                   },
                 )
             },
           )
       }
 
+    coEvery { fhirEngine.get<Binary>(any()) } returns Binary().apply { content = ByteArray(0) }
     configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
+    assertEquals(1, configRegistry.configsJsonMap.size)
+    assertTrue(configRegistry.configsJsonMap.containsKey("resource2"))
+  }
 
-    assertTrue(configRegistry.configsJsonMap.isEmpty())
+  @Test
+  fun testPopulateConfigurationsMapWithFocusAndEntry() = runTest {
+    val composition =
+      Composition().apply {
+        section =
+          listOf(
+            SectionComponent().apply {
+              focus =
+                Reference().apply {
+                  reference = "Binary/1"
+                  identifier = Identifier().apply { value = "resource1" }
+                }
+              entry =
+                listOf(
+                  Reference().apply {
+                    reference = "Binary/2"
+                    identifier = Identifier().apply { value = "resource2" }
+                  },
+                )
+            },
+          )
+      }
+
+    coEvery { fhirEngine.get<Binary>(any()) } returns Binary().apply { content = ByteArray(0) }
+    configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
+    assertEquals(2, configRegistry.configsJsonMap.size)
+    assertTrue(configRegistry.configsJsonMap.containsKey("resource1"))
+    assertTrue(configRegistry.configsJsonMap.containsKey("resource2"))
   }
 
   @Test
@@ -1172,6 +1230,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirResourceDataSource.getResource(any()) } returns
       Bundle().apply { addEntry().resource = composition }
 
-    configRegistry.fetchNonWorkflowConfigResources()
+    //    configRegistry.fetchNonWorkflowConfigResources()
+    configRegistry.populateConfigurationsMap(context, composition, true, "app-id") {}
+
+    assertEquals(1, configRegistry.configsJsonMap.size)
   }
 }
