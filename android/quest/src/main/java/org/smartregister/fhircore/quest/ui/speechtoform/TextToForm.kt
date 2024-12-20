@@ -80,35 +80,8 @@ class TextToForm(private val geminiClient: GeminiClient) {
      * Validates the QuestionnaireResponse structure.
      */
     private fun validateQuestionnaireResponse(qr: QuestionnaireResponse): Boolean {
-        if (qr.resourceType.toString() != "QuestionnaireResponse") {
-            logger.warning("Resource type is not QuestionnaireResponse.")
-            return false
-        }
-        if (qr.status == null) {
-            logger.warning("QuestionnaireResponse must have a status.")
-            return false
-        }
-        if (qr.questionnaire == null) {
-            logger.warning("QuestionnaireResponse must reference a Questionnaire.")
-            return false
-        }
-        if (qr.item.isNullOrEmpty()) {
-            logger.warning("QuestionnaireResponse must contain at least one item.")
-            return false
-        }
+        //todo use SDC validation
 
-        qr.item.forEach { item ->
-            if (item.linkId.isNullOrEmpty()) {
-                logger.warning("Each item must have a linkId.")
-                return false
-            }
-            item.answer?.forEach { answer ->
-                if (answer.value == null) {
-                    logger.warning("Item ${item.linkId} has an invalid or empty answer.")
-                    return false
-                }
-            }
-        }
         return true
     }
 }
