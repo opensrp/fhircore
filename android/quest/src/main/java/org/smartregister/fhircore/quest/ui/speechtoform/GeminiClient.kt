@@ -5,7 +5,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONObject
 import java.io.IOException
 
-class GeminiApiClient(private val apiKey: String) {
+class GeminiClient(private val apiKey: String) {
     private val client = OkHttpClient()
     private val baseUrl = "https://generativeai.googleapis.com/v1/models/gemini-1.5-flash:generateContent"
 
