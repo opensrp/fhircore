@@ -37,7 +37,6 @@ import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
@@ -47,6 +46,7 @@ import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
@@ -336,15 +336,30 @@ constructor(
       }
     } else {
       composition.retrieveCompositionSections().forEach { sectionComponent ->
-        val referenceResourceType = sectionComponent.focus.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
-        if (sectionComponent.hasFocus() && sectionComponent.focus.hasReferenceElement() && sectionComponent.focus.hasIdentifier()) {
+        val referenceResourceType =
+          sectionComponent.focus.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
+        if (
+          sectionComponent.hasFocus() &&
+            sectionComponent.focus.hasReferenceElement() &&
+            sectionComponent.focus.hasIdentifier()
+        ) {
           val configIdentifier = sectionComponent.focus.identifier.value
-          addBinaryToConfigsJsonMap(referenceResourceType, configIdentifier, sectionComponent.focus, configsLoadedCallback)
+          addBinaryToConfigsJsonMap(
+            referenceResourceType,
+            configIdentifier,
+            sectionComponent.focus,
+            configsLoadedCallback,
+          )
         }
-        if (sectionComponent.hasEntry() && sectionComponent.entry.isNotEmpty()){ 
-          sectionComponent.entry.forEach{ entryReference ->
+        if (sectionComponent.hasEntry() && sectionComponent.entry.isNotEmpty()) {
+          sectionComponent.entry.forEach { entryReference ->
             val configIdentifier = entryReference.identifier.value
-            addBinaryToConfigsJsonMap(referenceResourceType, configIdentifier, entryReference, configsLoadedCallback)
+            addBinaryToConfigsJsonMap(
+              referenceResourceType,
+              configIdentifier,
+              entryReference,
+              configsLoadedCallback,
+            )
           }
         }
       }
@@ -356,7 +371,7 @@ constructor(
     referenceResourceType: String,
     configIdentifier: String,
     entryReference: Reference,
-    configsLoadedCallback: (Boolean) -> Unit
+    configsLoadedCallback: (Boolean) -> Unit,
   ) {
     if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
       val extractedId = entryReference.identifier
@@ -428,26 +443,27 @@ constructor(
       val compositionResource = fetchRemoteCompositionByAppId(parsedAppId)
       compositionResource?.let { composition ->
         val compositionSections = composition.retrieveCompositionSections()
-        val sectionComponentMap = mutableMapOf<String,MutableList<Composition.SectionComponent>>()
-          compositionSections.forEach { sectionComponent ->
-            if ( sectionComponent.hasFocus() && sectionComponent.focus.hasReferenceElement()){
-            val key = sectionComponent.focus.reference.substringBefore(
-              delimiter = TYPE_REFERENCE_DELIMITER,
-               missingDelimiterValue = "",
-            )
-             sectionComponentMap.getOrPut(key){ mutableListOf() }.apply { add(sectionComponent) }
-           }
-            if ( sectionComponent.hasEntry() && sectionComponent.entry.isNotEmpty()){
-             sectionComponent.entry.forEach {
-               val key = it.reference.substringBefore(
-                 delimiter = TYPE_REFERENCE_DELIMITER,
+        val sectionComponentMap = mutableMapOf<String, MutableList<Composition.SectionComponent>>()
+        compositionSections.forEach { sectionComponent ->
+          if (sectionComponent.hasFocus() && sectionComponent.focus.hasReferenceElement()) {
+            val key =
+              sectionComponent.focus.reference.substringBefore(
+                delimiter = TYPE_REFERENCE_DELIMITER,
                 missingDelimiterValue = "",
               )
-                sectionComponentMap.getOrPut(key){ mutableListOf() }.apply { add(sectionComponent) }
-              }
-            }
-
+            sectionComponentMap.getOrPut(key) { mutableListOf() }.apply { add(sectionComponent) }
           }
+          if (sectionComponent.hasEntry() && sectionComponent.entry.isNotEmpty()) {
+            sectionComponent.entry.forEach {
+              val key =
+                it.reference.substringBefore(
+                  delimiter = TYPE_REFERENCE_DELIMITER,
+                  missingDelimiterValue = "",
+                )
+              sectionComponentMap.getOrPut(key) { mutableListOf() }.apply { add(sectionComponent) }
+            }
+          }
+        }
 
         processCompositionSectionComponent(sectionComponentMap)
 
@@ -459,8 +475,11 @@ constructor(
     }
   }
 
-  private suspend fun processCompositionSectionComponent(sectionComponentMap: Map<String,List<Composition.SectionComponent>>){
-    sectionComponentMap.filter { entry -> entry.key in FILTER_RESOURCE_LIST }
+  private suspend fun processCompositionSectionComponent(
+    sectionComponentMap: Map<String, List<Composition.SectionComponent>>,
+  ) {
+    sectionComponentMap
+      .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
       .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
         if (entry.key == ResourceType.List.name) {
           processCompositionListResources(entry)
@@ -470,17 +489,15 @@ constructor(
           chunkedResourceIdList.forEach { sectionComponents ->
             Timber.d(
               "Fetching config resource ${entry.key}: with ids ${
-                sectionComponents.joinToString(
-                  ",",
-                )
-              }",
+                                sectionComponents.joinToString(
+                                    ",",
+                                )
+                            }",
             )
             fetchResources(
               resourceType = entry.key,
               resourceIdList =
-              sectionComponents.map { sectionComponent ->
-                sectionComponent.focus.extractId()
-              },
+                sectionComponents.map { sectionComponent -> sectionComponent.focus.extractId() },
             )
           }
         }
