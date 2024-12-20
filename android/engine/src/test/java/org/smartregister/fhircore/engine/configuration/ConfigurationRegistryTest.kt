@@ -1098,8 +1098,27 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
-  fun testPopulateConfigurationsMapWithNeitherFocusNorEntry() = runTest {
-    val composition = Composition().apply { section = listOf(SectionComponent()) }
+  fun testPopulateConfigurationsMapWithNeitherFocusNorEntry() = runBlocking {
+    val composition =
+      Composition().apply {
+        section =
+          listOf(
+            SectionComponent().apply {
+              focus =
+                Reference().apply {
+                  reference = "Questionnaire/1"
+                  identifier = Identifier().apply { value = "firstQuestionnaire" }
+                }
+              entry =
+                listOf(
+                  Reference().apply {
+                    reference = "Questionnaire/2"
+                    identifier = Identifier().apply { value = "secondQuestionnaire" }
+                  },
+                )
+            },
+          )
+      }
 
     configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
 
@@ -1120,6 +1139,32 @@ class ConfigurationRegistryTest : RobolectricTest() {
                   identifier = Identifier().apply { value = "focus-1" }
                   reference = "ResourceType/1"
                 }
+            },
+          )
+      }
+
+    coEvery { fhirResourceDataSource.getResource(any()) } returns
+      Bundle().apply { addEntry().resource = composition }
+
+    configRegistry.fetchNonWorkflowConfigResources()
+  }
+
+  @Test
+  fun testFetchNonWorkflowConfigResourcesWithAllEntry() = runTest {
+    val appId = "app-id"
+    val composition =
+      Composition().apply {
+        identifier = Identifier().apply { value = appId }
+        section =
+          listOf(
+            SectionComponent().apply {
+              entry =
+                listOf(
+                  Reference().apply {
+                    identifier = Identifier().apply { value = "focus-1" }
+                    reference = "ResourceType/1"
+                  },
+                )
             },
           )
       }
