@@ -1139,6 +1139,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
               entry =
                 listOf(
                   Reference().apply {
+                    reference = "Binary/1"
+                    identifier = Identifier().apply { value = "resource1" }
+                  },
+                  Reference().apply {
                     reference = "Binary/2"
                     identifier = Identifier().apply { value = "resource2" }
                   },
@@ -1149,7 +1153,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     coEvery { fhirEngine.get<Binary>(any()) } returns Binary().apply { content = ByteArray(0) }
     configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
-    assertEquals(1, configRegistry.configsJsonMap.size)
+    assertEquals(2, configRegistry.configsJsonMap.size)
+    assertTrue(configRegistry.configsJsonMap.containsKey("resource1"))
     assertTrue(configRegistry.configsJsonMap.containsKey("resource2"))
   }
 
@@ -1181,58 +1186,5 @@ class ConfigurationRegistryTest : RobolectricTest() {
     assertEquals(2, configRegistry.configsJsonMap.size)
     assertTrue(configRegistry.configsJsonMap.containsKey("resource1"))
     assertTrue(configRegistry.configsJsonMap.containsKey("resource2"))
-  }
-
-  @Test
-  fun testFetchNonWorkflowConfigResourcesWithAllFocus() = runTest {
-    val appId = "app-id"
-    val composition =
-      Composition().apply {
-        identifier = Identifier().apply { value = appId }
-        section =
-          listOf(
-            SectionComponent().apply {
-              focus =
-                Reference().apply {
-                  identifier = Identifier().apply { value = "focus-1" }
-                  reference = "ResourceType/1"
-                }
-            },
-          )
-      }
-
-    coEvery { fhirResourceDataSource.getResource(any()) } returns
-      Bundle().apply { addEntry().resource = composition }
-
-    configRegistry.fetchNonWorkflowConfigResources()
-  }
-
-  @Test
-  fun testFetchNonWorkflowConfigResourcesWithAllEntry() = runTest {
-    val appId = "app-id"
-    val composition =
-      Composition().apply {
-        identifier = Identifier().apply { value = appId }
-        section =
-          listOf(
-            SectionComponent().apply {
-              entry =
-                listOf(
-                  Reference().apply {
-                    identifier = Identifier().apply { value = "focus-1" }
-                    reference = "ResourceType/1"
-                  },
-                )
-            },
-          )
-      }
-
-    coEvery { fhirResourceDataSource.getResource(any()) } returns
-      Bundle().apply { addEntry().resource = composition }
-
-    //    configRegistry.fetchNonWorkflowConfigResources()
-    configRegistry.populateConfigurationsMap(context, composition, true, "app-id") {}
-
-    assertEquals(1, configRegistry.configsJsonMap.size)
   }
 }

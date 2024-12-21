@@ -341,24 +341,14 @@ constructor(
             sectionComponent.focus.hasReferenceElement() &&
             sectionComponent.focus.hasIdentifier()
         ) {
-          val referenceResourceType =
-            sectionComponent.focus.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
-          val configIdentifier = sectionComponent.focus.identifier.value
           addBinaryToConfigsJsonMap(
-            referenceResourceType,
-            configIdentifier,
             sectionComponent.focus,
             configsLoadedCallback,
           )
         }
         if (sectionComponent.hasEntry() && sectionComponent.entry.isNotEmpty()) {
           sectionComponent.entry.forEach { entryReference ->
-            val referenceResourceType =
-              entryReference.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
-            val configIdentifier = entryReference.identifier.value
             addBinaryToConfigsJsonMap(
-              referenceResourceType,
-              configIdentifier,
               entryReference,
               configsLoadedCallback,
             )
@@ -370,13 +360,13 @@ constructor(
   }
 
   private suspend fun addBinaryToConfigsJsonMap(
-    referenceResourceType: String,
-    configIdentifier: String,
     entryReference: Reference,
     configsLoadedCallback: (Boolean) -> Unit,
   ) {
+    val configIdentifier = entryReference.identifier.value
+    val referenceResourceType = entryReference.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
     if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
-      val extractedId = entryReference.identifier
+      val extractedId = entryReference.extractId()
       try {
         val configBinary = fhirEngine.get<Binary>(extractedId.toString())
         configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
