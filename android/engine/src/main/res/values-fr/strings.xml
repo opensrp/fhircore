@@ -24,8 +24,8 @@
     <string name="sync_completed">Synchronisation terminée</string>
     <string name="syncing">Synchronisation</string>
     <string name="syncing_up" >Synchronisation&#8230;</string>
-    <string name="syncing_down" >Synchronisation en cours&#8230;</string>
-    <string name="syncing_initiated">Synchronisation initiée&#8230;</string>
+    <string name="syncing_down" >Synchronisation&#8230;</string>
+    <string name="syncing_initiated">Synchronisation initiée&#8230 ;</string>
     <string name="sync_failed">La synchronisation a échoué. Vérifier la connexion internet ou réessayer plus tard</string>
     <string name="sync_completed_with_errors">La synchronisation s\'est terminée avec des erreurs. Réessayer...</string>
     <string name="sync_unauthorised">La synchronisation a échoué car les informations d\'authentification ne sont pas valides.</string>
@@ -55,7 +55,7 @@
     <string name="syncing_retry">Réessayer la synchronisation</string>
     <string name="syncing_in_progress">Synchronisation en cours</string>
     <string name="loading">Chargement</string>
-    <string name="loading_ellipsis">Chargement…</string>
+    <string name="loading_ellipsis">Chargement</string>
     <string name="error_logging_out">Message d\'erreur de déconnexion %1$s</string>
     <string name="cannot_logout_user">Impossible de se déconnecter : Déjà déconnecté ou l\'appareil est hors ligne.</string>
     <string name="error_loading_config_http_error">Impossible de charger la configuration. Veuillez réessayer plus tard</string>
@@ -75,6 +75,8 @@
     <string name="questionnaire_alert_invalid_message">Des erreurs de validation ont été détectées. Corrigez les erreurs et soumettez à nouveau.</string>
     <string name="questionnaire_alert_invalid_title">Échec de la validation</string>
     <string name="questionnaire_alert_ack_button_title">D\'ACCORD</string>
+    <string name="questionnaire_alert_open_draft_button_title">Projet ouvert</string>
+    <string name="questionnaire_alert_delete_draft_button_title">Supprimer le projet</string>
     <string name="username">Nom d\'utilisateur</string>
     <string name="password">Mot de passe</string>
     <string name="forgot_password">Mot de passe oublié</string>
@@ -136,7 +138,7 @@
     <string name="weeks">Semaine(s)</string>
     <string name="days">Jour(s)</string>
     <string name="initializing">Initialisation des paramètres &#8230;</string>
-    <string name="initializing_application">Initialisation de l\'application &#8230;</string>
+    <string name="initializing_application">Initialisation de l\'application &#8230 ;</string>
     <string name="error_occurred">Quelque chose a mal tourné...</string>
     <string name="insights">Insights</string>
     <string name="contact_help">Contacter l\'aide</string>
@@ -184,4 +186,6 @@
     <string name="apply_filter">APPLIQUER LE FILLTRE</string>
     <string name="questionnaire_save_draft_title">Enregistrer les modifications du brouillon</string>
     <string name="questionnaire_save_draft_message">Voulez-vous enregistrer les modifications du brouillon ?</string>
+    <string name="open_draft_changes_title">Modifications du projet en cours</string>
+    <string name="open_draft_changes_message">Vous pouvez rouvrir un projet de formulaire enregistré pour le poursuivre ou le supprimer</string>
 </resources>
