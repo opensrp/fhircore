@@ -1159,6 +1159,33 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
+  fun testPopulateConfigurationsMapWithEntryMissingId() = runTest {
+    val composition =
+      Composition().apply {
+        section =
+          listOf(
+            SectionComponent().apply {
+              entry =
+                listOf(
+                  Reference().apply {
+                    reference = "Binary/1"
+                  },
+                  Reference().apply {
+                    reference = "Binary/2"
+                    identifier = Identifier().apply { value = "resource2" }
+                  },
+                )
+            },
+          )
+      }
+
+    coEvery { fhirEngine.get<Binary>(any()) } returns Binary().apply { content = ByteArray(0) }
+    configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
+    assertEquals(1, configRegistry.configsJsonMap.size)
+    assertTrue(configRegistry.configsJsonMap.containsKey("resource2"))
+  }
+
+  @Test
   fun testPopulateConfigurationsMapWithFocusAndEntry() = runTest {
     val composition =
       Composition().apply {

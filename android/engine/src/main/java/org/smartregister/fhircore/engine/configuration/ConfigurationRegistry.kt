@@ -348,10 +348,12 @@ constructor(
         }
         if (sectionComponent.hasEntry() && sectionComponent.entry.isNotEmpty()) {
           sectionComponent.entry.forEach { entryReference ->
-            addBinaryToConfigsJsonMap(
-              entryReference,
-              configsLoadedCallback,
-            )
+            if (entryReference.hasReferenceElement() && entryReference.hasIdentifier()) {
+              addBinaryToConfigsJsonMap(
+                entryReference,
+                configsLoadedCallback,
+              )
+            }
           }
         }
       }
