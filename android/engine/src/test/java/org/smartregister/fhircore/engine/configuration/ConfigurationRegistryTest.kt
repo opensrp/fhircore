@@ -1167,9 +1167,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
             SectionComponent().apply {
               entry =
                 listOf(
-                  Reference().apply {
-                    reference = "Binary/1"
-                  },
+                  Reference().apply { reference = "Binary/1" },
                   Reference().apply {
                     reference = "Binary/2"
                     identifier = Identifier().apply { value = "resource2" }

@@ -336,11 +336,7 @@ constructor(
       }
     } else {
       composition.retrieveCompositionSections().forEach { sectionComponent ->
-        if (
-          sectionComponent.hasFocus() &&
-            sectionComponent.focus.hasReferenceElement() &&
-            sectionComponent.focus.hasIdentifier()
-        ) {
+        if (sectionComponent.hasFocus()) {
           addBinaryToConfigsJsonMap(
             sectionComponent.focus,
             configsLoadedCallback,
@@ -348,12 +344,10 @@ constructor(
         }
         if (sectionComponent.hasEntry() && sectionComponent.entry.isNotEmpty()) {
           sectionComponent.entry.forEach { entryReference ->
-            if (entryReference.hasReferenceElement() && entryReference.hasIdentifier()) {
-              addBinaryToConfigsJsonMap(
-                entryReference,
-                configsLoadedCallback,
-              )
-            }
+            addBinaryToConfigsJsonMap(
+              entryReference,
+              configsLoadedCallback,
+            )
           }
         }
       }
@@ -365,16 +359,18 @@ constructor(
     entryReference: Reference,
     configsLoadedCallback: (Boolean) -> Unit,
   ) {
-    val configIdentifier = entryReference.identifier.value
-    val referenceResourceType = entryReference.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
-    if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
-      val extractedId = entryReference.extractId()
-      try {
-        val configBinary = fhirEngine.get<Binary>(extractedId.toString())
-        configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
-      } catch (resourceNotFoundException: ResourceNotFoundException) {
-        Timber.e("Missing Binary file with ID :$extractedId")
-        withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
+    if (entryReference.hasReferenceElement() && entryReference.hasIdentifier()) {
+      val configIdentifier = entryReference.identifier.value
+      val referenceResourceType = entryReference.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
+      if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
+        val extractedId = entryReference.extractId()
+        try {
+          val configBinary = fhirEngine.get<Binary>(extractedId.toString())
+          configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
+        } catch (resourceNotFoundException: ResourceNotFoundException) {
+          Timber.e("Missing Binary file with ID :$extractedId")
+          withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
+        }
       }
     }
   }
