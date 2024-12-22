@@ -32,6 +32,7 @@ fhir-sdk-engine = "1.1.0-preview2-SNAPSHOT"
 fhir-sdk-knowledge = "0.1.0-alpha03-preview5-rc2-SNAPSHOT"
 fhir-sdk-workflow = "0.1.0-alpha04-preview10-rc1-SNAPSHOT"
 fragment-ktx = "1.8.3"
+generativeai = "0.9.0"
 glide = "4.16.0"
 googleCloudSpeech = "2.5.2"
 gradle = "8.3.2"
@@ -129,6 +130,7 @@ fhir-sdk-common = { group = "org.smartregister", name = "common", version.ref = 
 foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "compose-ui" }
 fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragment-ktx" }
 fragment-testing = { group = "androidx.fragment", name = "fragment-testing", version.ref = "fragment-ktx" }
+generativeai = { module = "com.google.ai.client.generativeai:generativeai", version.ref = "generativeai" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 gms-play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 google-cloud-speech = { module = "com.google.cloud:google-cloud-speech", version.ref = "googleCloudSpeech" }
