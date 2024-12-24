@@ -1195,7 +1195,7 @@
                   "name": "patientHeightObservations",
                   "condition": "true",
                   "actions": [
-                    "data.put('patientHeightObservations', service.filterResources(Observation, \"Observation.code.coding.code = '1153637007' \"))"
+                    "data.put('patientHeightObservations', service.filterResources(Observation, \"Observation.code.coding.where(code = '1153637007').exists() \"))"
                   ]
                 },
                 {
@@ -1203,7 +1203,7 @@
                   "condition": "true",
                   "priority": 2,
                   "actions": [
-                    "data.put('patientHeight', size(data.get('patientHeightObservations')) > 0 ? fhirPath.extractValue(data.get('patientHeightObservations').get(0), \"Observation.value\") : 0)"
+                    "data.put('patientHeight', size(data.get('patientHeightObservations')) > 0 ? fhirPath.extractValue(data.get('patientHeightObservations').get(0), \"Observation.value.value\") : 0)"
                   ]
                 },
                 {
@@ -1211,7 +1211,7 @@
                   "condition": "true",
                   "priority": 2,
                   "actions": [
-                    "data.put('patientWeightObservations', service.filterResources(Observation, \"Observation.code.coding.code = '27113001' \"))"
+                    "data.put('patientWeightObservations', service.filterResources(Observation, \"Observation.code.coding.where(code = '27113001').exists() \"))"
                   ]
                 },
                 {
@@ -1219,7 +1219,7 @@
                   "condition": "true",
                   "priority": 3,
                   "actions": [
-                    "data.put('patientWeight', size(data.get('patientWeightObservations')) > 0 ? fhirPath.extractValue(data.get('patientWeightObservations').get(0), \"Observation.value\") : 0)"
+                    "data.put('patientWeight', size(data.get('patientWeightObservations')) > 0 ? fhirPath.extractValue(data.get('patientWeightObservations').get(0), \"Observation.value.value\") : 0)"
                   ]
                 },
                 {

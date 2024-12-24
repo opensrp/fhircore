@@ -108,7 +108,7 @@ constructor(
       appMainUiStateOf(
         navigationConfiguration =
           NavigationConfiguration(
-            sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "app/debug")!!,
+            sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "")!!,
           ),
       ),
     )

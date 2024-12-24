@@ -43,7 +43,14 @@
       {
         "id": "totalEncounters",
         "resource": "Encounter",
-        "searchParameter": "subject"
+        "searchParameter": "subject",
+        "sortConfigs": [
+          {
+            "paramName": "period",
+            "dataType": "DATE",
+            "order": "DESCENDING"
+          }
+        ]
       },
       {
         "id": "totalObservations",
@@ -358,11 +365,35 @@
       ]
     },
     {
+      "name": "patientGravidaObservations",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('patientGravidaObservations', service.filterResources(totalObservations, \"Observation.code.coding.where(code = '161732006').exists() \"))"
+      ]
+    },
+    {
+      "name": "patientGravidaCount",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('patientGravidaCount', size(data.get('patientGravidaObservations')) > 0 ? fhirPath.extractValue(data.get('patientGravidaObservations').get(0), \"Observation.value.value\") : 0)"
+      ]
+    },
+    {
+      "name": "patientHeightObservations",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('patientHeightObservations', service.filterResources(totalObservations, \"Observation.code.coding.where(code = '1153637007').exists() \"))"
+      ]
+    },
+    {
       "name": "patientHeight",
       "condition": "true",
       "priority": 3,
       "actions": [
-        "data.put('patientHeight', fhirPath.extractValue(service.filterResources(totalObservations, \"Observation.code.coding.code = '1153637007' \").get(0), \"Observation.value\"))"
+        "data.put('patientHeight', size(data.get('patientHeightObservations')) > 0 ? fhirPath.extractValue(data.get('patientHeightObservations').get(0), \"Observation.value.value\") : 0)"
       ]
     },
     {
@@ -370,7 +401,7 @@
       "condition": "true",
       "priority": 2,
       "actions": [
-        "data.put('patientWeightObservations', service.filterResources(totalObservations, \"Observation.code.coding.code = '27113001' \"))"
+        "data.put('patientWeightObservations', service.filterResources(totalObservations, \"Observation.code.coding.where(code = '27113001').exists() \"))"
       ]
     },
     {
@@ -378,7 +409,7 @@
       "condition": "true",
       "priority": 3,
       "actions": [
-        "data.put('patientWeight', size(data.get('patientWeightObservations')) > 0 ? fhirPath.extractValue(data.get('patientWeightObservations').get(0), \"Observation.value\") : 0)"
+        "data.put('patientWeight', size(data.get('patientWeightObservations')) > 0 ? fhirPath.extractValue(data.get('patientWeightObservations').get(0), \"Observation.value.value\") : 0)"
       ]
     },
     {
@@ -390,11 +421,18 @@
       ]
     },
     {
+      "name": "bracAncVisits",
+      "condition": "true",
+      "actions": [
+        "data.put('bracAncVisits', service.filterResources(totalEncounters, \"Encounter.type[0].coding.code = 'anc-contact-in-brac' \"))"
+      ]
+    },
+    {
       "name": "noOfBracAncVisit",
       "condition": "true",
-      "priority": 3,
+      "priority": 2,
       "actions": [
-        "data.put('noOfBracAncVisit', size(service.filterResources(totalEncounters, \"Encounter.type[0].coding.code = 'anc-contact-in-brac' \")))"
+        "data.put('noOfBracAncVisit', size(data.get('bracAncVisits')))"
       ]
     },
     {
@@ -417,7 +455,7 @@
       "condition": "true",
       "priority": 3,
       "actions": [
-        "data.put('isLastPncVisitPast24Hours', data.get('noOfBracPncVisit') > 0 ? fhirPath.extractValue(service.filterResources(totalEncounters, \"Encounter.type[0].coding.code = 'pnc-contact-in-brac' \").get(0), \"Encounter.period.start < now() - 24 'hours'\") : true)"
+        "data.put('isLastPncVisitPast24Hours', data.get('noOfBracPncVisit') > 0 ? fhirPath.extractValue(data.get('bracPncVisits').get(0), \"Encounter.period.start < now() - 24 'hours'\") : true)"
       ]
     },
     {
@@ -597,7 +635,7 @@
       "condition": "true",
       "priority": 4,
       "actions": [
-        "data.put('pncFollowupTaskName', (data.get('noOfBracPncVisit') == 0 ? '1st' : data.get('noOfBracPncVisit') == 1 ? '2nd' : data.get('noOfBracPncVisit') == 2 ? '3rd' : '4th') + ' PNC Follow Up Visit')"
+        "data.put('pncFollowupTaskName', (data.get('noOfBracPncVisit') == 0 ? '১ম' : data.get('noOfBracPncVisit') == 1 ? '২য়' : data.get('noOfBracPncVisit') == 2 ? '৩য়' : '৪র্থ') + ' প্রসবোত্তর পরিচর্যা')"
       ]
     },
     {
@@ -1460,6 +1498,13 @@
                               "dataType": "INTEGER",
                               "key": "noOfBracAncVisit",
                               "value": "@{noOfBracAncVisit}"
+                            },
+                            {
+                              "paramType": "PREPOPULATE",
+                              "linkId": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+                              "dataType": "INTEGER",
+                              "key": "patientGravidaCount",
+                              "value": "@{patientGravidaCount}"
                             },
                             {
                               "paramType": "PREPOPULATE",

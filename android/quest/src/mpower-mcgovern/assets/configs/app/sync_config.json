@@ -41,6 +41,42 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
+        "name": "location",
+        "code": "partof",
+        "base": [
+          "Location"
+        ],
+        "type": "token",
+        "expression": "#location"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "mode",
+        "code": "mode",
+        "base": [
+          "LocationHierarchy"
+        ],
+        "type": "special",
+        "expression": "list"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "LocationHierarchy"
+        ],
+        "type": "special",
+        "expression": "44"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
         "name": "_id",
         "code": "_id",
         "base": [
@@ -58,8 +94,7 @@
           "Measure",
           "MeasureReport",
           "Flag",
-          "List",
-          "Location"
+          "List"
         ]
       }
     },
@@ -109,7 +144,8 @@
           "Measure",
           "MeasureReport",
           "Flag",
-          "List"
+          "List",
+          "Location"
         ],
         "type": "token",
         "expression": "#count"

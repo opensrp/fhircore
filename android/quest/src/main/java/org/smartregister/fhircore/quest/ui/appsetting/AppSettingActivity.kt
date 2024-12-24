@@ -66,7 +66,7 @@ class AppSettingActivity : AppCompatActivity() {
       }
     }
     val existingAppId =
-      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "app/debug")?.trimEnd()
+      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
 
     // If app exists load the configs otherwise fetch from the server
     if (!existingAppId.isNullOrEmpty()) {

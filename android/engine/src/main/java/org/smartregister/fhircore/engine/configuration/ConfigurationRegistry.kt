@@ -410,7 +410,7 @@ constructor(
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources() {
     configCacheMap.clear()
-    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "app/debug")?.let { appId ->
+    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val compositionResource = fetchRemoteCompositionByAppId(parsedAppId)
       compositionResource?.let { composition ->
@@ -746,6 +746,8 @@ constructor(
     val fhirResourceSearchParams = mutableMapOf<ResourceType, MutableMap<String, String>>()
     val organizationResourceTag =
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
+    val locationResourceTag =
+      configService.defineResourceTags().find { it.type == ResourceType.Location.name }
     val mandatoryTags = configService.provideResourceTags(sharedPreferencesHelper)
 
     val locationIds = context.retrieveRelatedEntitySyncLocationIds()
@@ -762,6 +764,12 @@ constructor(
               mandatoryTags
                 .firstOrNull {
                   it.system.contentEquals(organizationResourceTag?.tag?.system, ignoreCase = true)
+                }
+                ?.code
+            LOCATION ->
+              mandatoryTags
+                .firstOrNull {
+                  it.system.contentEquals(locationResourceTag?.tag?.system, ignoreCase = true)
                 }
                 ?.code
             COUNT -> appConfig.remoteSyncPageSize.toString()
@@ -814,6 +822,7 @@ constructor(
     const val ID = "_id"
     const val MANIFEST_PROCESSOR_BATCH_SIZE = 20
     const val ORGANIZATION = "organization"
+    const val LOCATION = "location"
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val DEFAULT_COUNT = 200
     const val PAGINATION_NEXT = "next"
