@@ -160,7 +160,7 @@ fun ActionableButton(
         }
       if (buttonProperties.startIcon != null) {
         Image(
-          imageProperties = ImageProperties(imageConfig = buttonProperties.startIcon, size = 16),
+          imageProperties = ImageProperties(imageConfig = buttonProperties.startIcon, size = buttonProperties.statusIconSize),
           tint = iconTintColor,
           resourceData = resourceData,
           navController = navController,
@@ -180,7 +180,7 @@ fun ActionableButton(
             },
           contentDescription = null,
           tint = iconTintColor,
-          modifier = Modifier.size(16.dp),
+          modifier = Modifier.size(buttonProperties.statusIconSize.dp),
         )
       }
       Text(
