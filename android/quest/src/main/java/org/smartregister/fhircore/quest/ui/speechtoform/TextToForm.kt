@@ -17,13 +17,14 @@
 package org.smartregister.fhircore.quest.ui.speechtoform
 
 import ca.uhn.fhir.interceptor.model.RequestPartitionId.fromJson
+import com.google.ai.client.generativeai.GenerativeModel
 import java.io.File
 import java.util.logging.Logger
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.json.JSONObject
 
-class TextToForm(private val geminiClient: GeminiClient) {
+class TextToForm(private val generativeModel: GenerativeModel) {
 
   private val logger = Logger.getLogger(TextToForm::class.java.name)
 
@@ -34,15 +35,15 @@ class TextToForm(private val geminiClient: GeminiClient) {
    * @param questionnaire The FHIR Questionnaire to base the response on.
    * @return The generated and validated QuestionnaireResponse or null if generation fails.
    */
-  fun generateQuestionnaireResponse(
+  suspend fun generateQuestionnaireResponse(
     transcriptFile: File,
     questionnaire: Questionnaire,
   ): QuestionnaireResponse? {
     val transcript = transcriptFile.readText()
-    val prompt = buildPrompt(transcript, questionnaire)
+    val prompt = promptTemplate(transcript, questionnaire)
 
     logger.info("Sending request to Gemini...")
-    val generatedText = geminiClient.generateContent(prompt)
+    val generatedText = generativeModel.generateContent(prompt).text
 
     val questionnaireResponseJson = extractJsonBlock(generatedText) ?: return null
 
@@ -62,21 +63,23 @@ class TextToForm(private val geminiClient: GeminiClient) {
   }
 
   /** Builds the prompt for the Gemini model. */
-  private fun buildPrompt(transcript: String, questionnaire: Questionnaire): String {
+  private fun promptTemplate(transcript: String, questionnaire: Questionnaire): String {
     return """
-            Using the following transcript of a conversation between a nurse and a patient:
-            
-            $transcript
-            
-            Generate an HL7 FHIR QuestionnaireResponse as if they had entered that information into the following FHIR Questionnaire:
-            
-            $questionnaire
-            """
+      You are a scribe created to turn conversational text into structure HL7 FHIR output. Below
+      you will see the text Transcript of a conversation between a nurse and a patient within
+      <transcript> XML tags and an HL7 FHIR Questionnaire within <questionnaire> XML tags. Your job
+      is to convert the text in Transcript into a new HL7 FHIR QuestionnaireResponse as if the
+      information in Transcript had been entered directly into the FHIR Questionniare. Only output
+      the FHIR QuestionnaireResponse as JSON and nothing else.
+      <transcript>$transcript</transcript>
+      <questionnaire>$questionnaire</questionnaire>
+      """
       .trimIndent()
   }
 
   /** Extracts the JSON block from the generated text. */
-  private fun extractJsonBlock(responseText: String): String? {
+  private fun extractJsonBlock(responseText: String?): String? {
+    if (responseText == null) return null
     val start = responseText.indexOf("```json")
     if (start == -1) return null
     val end = responseText.indexOf("```", start + 7)

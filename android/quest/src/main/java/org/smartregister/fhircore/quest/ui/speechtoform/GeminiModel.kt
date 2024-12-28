@@ -22,10 +22,10 @@ import com.google.ai.client.generativeai.type.HarmCategory
 import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.generationConfig
 
-class GeminiClient(private val apiKey: String) {
+class GeminiModel(private val apiKey: String) {
   // model usage
   // https://developer.android.com/ai/google-ai-client-sdk
-  private val model =
+  val model =
     GenerativeModel(
       modelName = "gemini-1.5-flash-001",
       // todo actually add the API key

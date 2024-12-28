@@ -35,7 +35,7 @@ class SpeechToForm(
    * @param questionnaire The FHIR Questionnaire used to generate the response.
    * @return The generated QuestionnaireResponse, or null if the process fails.
    */
-  fun processAudioToQuestionnaireResponse(
+  suspend fun processAudioToQuestionnaireResponse(
     audioFile: File,
     questionnaire: Questionnaire,
   ): QuestionnaireResponse? {
