@@ -16,36 +16,17 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
-import org.apache.commons.jexl3.JexlBuilder
-import org.apache.commons.jexl3.JexlEngine
 import org.apache.commons.jexl3.JexlException
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.RuleListener
-import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
-import org.jeasy.rules.jexl.JexlRule
 import org.smartregister.fhircore.engine.BuildConfig
-import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import timber.log.Timber
 
 abstract class RulesListener : RuleListener {
   protected val rulesEngine: DefaultRulesEngine =
     DefaultRulesEngine().also { it.registerRuleListener(this) }
-  private val jexlEngine: JexlEngine by lazy {
-    JexlBuilder()
-      .namespaces(
-        mutableMapOf<String, Any>(
-          "Timber" to Timber,
-          "StringUtils" to Class.forName("org.apache.commons.lang3.StringUtils"),
-          "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils"),
-          "Math" to Class.forName("java.lang.Math"),
-        ),
-      )
-      .silent(false)
-      .strict(false)
-      .create()
-  }
 
   override fun beforeEvaluate(rule: Rule, facts: Facts): Boolean = true
 
@@ -81,32 +62,8 @@ abstract class RulesListener : RuleListener {
 
   fun Map<String, List<*>>.addToFacts(facts: Facts) = this.forEach { facts.put(it.key, it.value) }
 
-  fun generateRules(ruleConfigs: List<RuleConfig>): Rules =
-    Rules(
-      ruleConfigs
-        .map { ruleConfig ->
-          val customRule: JexlRule =
-            JexlRule(jexlEngine)
-              .name(ruleConfig.name)
-              .description(ruleConfig.description)
-              .priority(ruleConfig.priority)
-              .`when`(ruleConfig.condition.ifEmpty { TRUE })
-
-          for (action in ruleConfig.actions) {
-            try {
-              customRule.then(action)
-            } catch (jexlException: JexlException) {
-              Timber.e(jexlException)
-              continue // Skip action when an error occurs to avoid app force close
-            }
-          }
-          customRule
-        }
-        .toSet(),
-    )
-
   companion object {
-    private const val TRUE = "true"
+    const val TRUE = "true"
     const val DATA = "data"
     const val FHIR_PATH = "fhirPath"
   }

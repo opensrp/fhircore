@@ -351,7 +351,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       ToolBarHomeNavigation.NAVIGATE_BACK,
       slotBundle.captured.getSerializable(NavigationArg.TOOL_BAR_HOME_NAVIGATION),
     )
-    Assert.assertFalse(navOptions.captured.isPopUpToInclusive())
+    Assert.assertTrue(navOptions.captured.isPopUpToInclusive())
     Assert.assertTrue(navOptions.captured.shouldLaunchSingleTop())
   }
 
@@ -682,13 +682,15 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       val decodedImageMap = mutableStateMapOf<String, Bitmap>()
       withContext(dispatcherProvider.io()) {
         defaultRepository.create(addResourceTags = true, binaryImage)
-        navigationMenuConfigs.resourceReferenceToBitMap(
-          fhirEngine = fhirEngine,
-          decodedImageMap = decodedImageMap,
-        )
+        navigationMenuConfigs.forEach {
+          it.referenceToBitmap(
+            fhirEngine = fhirEngine,
+            decodedImageMap = decodedImageMap,
+          )
+        }
+        Assert.assertTrue(decodedImageMap.isNotEmpty())
+        Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
       }
-      Assert.assertTrue(decodedImageMap.isNotEmpty())
-      Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))
     }
 
   @Test
@@ -697,10 +699,12 @@ class ConfigExtensionsKtTest : RobolectricTest() {
     val decodedImageMap = mutableStateMapOf<String, Bitmap>()
     withContext(Dispatchers.IO) {
       defaultRepository.create(addResourceTags = true, binaryImage)
-      navigationMenuConfigs.resourceReferenceToBitMap(
-        fhirEngine = fhirEngine,
-        decodedImageMap = decodedImageMap,
-      )
+      navigationMenuConfigs.forEach {
+        it.referenceToBitmap(
+          fhirEngine = fhirEngine,
+          decodedImageMap = decodedImageMap,
+        )
+      }
     }
     Assert.assertTrue(decodedImageMap.isNotEmpty())
     Assert.assertTrue(decodedImageMap.containsKey("d60ff460-7671-466a-93f4-c93a2ebf2077"))

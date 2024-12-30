@@ -57,6 +57,7 @@ import timber.log.Timber
 class NetworkModule {
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
 
+  @Singleton
   @Provides
   @NoAuthorizationOkHttpClientQualifier
   fun provideAuthOkHttpClient() =
@@ -80,6 +81,7 @@ class NetworkModule {
       .callTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .build()
 
+  @Singleton
   @Provides
   @WithAuthorizationOkHttpClientQualifier
   fun provideOkHttpClient(
@@ -160,6 +162,7 @@ class NetworkModule {
       .retryOnConnectionFailure(false) // Avoid silent retries sometimes before token is provided
       .build()
 
+  @Singleton
   @Provides
   fun provideGson(): Gson =
     GsonBuilder()
@@ -167,7 +170,9 @@ class NetworkModule {
       .registerTypeAdapter(TimeZone::class.java, TimeZoneTypeAdapter().nullSafe())
       .create()
 
-  @Provides fun provideParser(): IParser = FhirContext.forR4Cached().getCustomJsonParser()
+  @Singleton
+  @Provides
+  fun provideParser(): IParser = FhirContext.forR4Cached().getCustomJsonParser()
 
   @Provides
   @Singleton
@@ -178,6 +183,7 @@ class NetworkModule {
     useAlternativeNames = true
   }
 
+  @Singleton
   @Provides
   @AuthenticationRetrofit
   fun provideAuthRetrofit(
@@ -192,6 +198,7 @@ class NetworkModule {
       .build()
 
   @OptIn(ExperimentalSerializationApi::class)
+  @Singleton
   @Provides
   @KeycloakRetrofit
   fun provideKeycloakRetrofit(
@@ -205,6 +212,7 @@ class NetworkModule {
       .addConverterFactory(json.asConverterFactory(JSON_MEDIA_TYPE))
       .build()
 
+  @Singleton
   @Provides
   @RegularRetrofit
   fun provideRegularRetrofit(
@@ -220,15 +228,18 @@ class NetworkModule {
       .addConverterFactory(GsonConverterFactory.create(gson))
       .build()
 
+  @Singleton
   @Provides
   fun provideOauthService(
     @AuthenticationRetrofit retrofit: Retrofit,
   ): OAuthService = retrofit.create(OAuthService::class.java)
 
+  @Singleton
   @Provides
   fun provideKeycloakService(@KeycloakRetrofit retrofit: Retrofit): KeycloakService =
     retrofit.create(KeycloakService::class.java)
 
+  @Singleton
   @Provides
   fun provideFhirResourceService(@RegularRetrofit retrofit: Retrofit): FhirResourceService =
     retrofit.create(FhirResourceService::class.java)

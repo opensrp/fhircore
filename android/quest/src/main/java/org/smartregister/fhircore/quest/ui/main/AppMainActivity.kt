@@ -56,6 +56,7 @@ import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
+import org.smartregister.fhircore.engine.ui.base.AlertDialogButton
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.parcelable
@@ -339,16 +340,39 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           )
           updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
         }
-      is CurrentSyncJobStatus.Running ->
-        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
-          val isSyncUpload =
-            (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
-              SyncOperation.UPLOAD
-          if (isSyncUpload) {
-            appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+      else -> {
+        // Do Nothing
+      }
+    }
+  }
+
+  private fun overrideOnBackPressListener() {
+    onBackPressedDispatcher.addCallback(
+      object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+          val navHostFragment =
+            (supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment)
+          if (navHostFragment.childFragmentManager.backStackEntryCount == 0) {
+            AlertDialogue.showAlert(
+              this@AppMainActivity,
+              alertIntent = AlertIntent.CONFIRM,
+              title = getString(R.string.exit_app),
+              message = getString(R.string.exit_app_message),
+              cancellable = false,
+              confirmButton =
+                AlertDialogButton(
+                  listener = { finish() },
+                ),
+              neutralButton =
+                AlertDialogButton(
+                  listener = { dialog -> dialog.dismiss() },
+                ),
+            )
+          } else {
+            navHostFragment.navController.navigateUp()
           }
         }
-      else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
-    }
+      },
+    )
   }
 }

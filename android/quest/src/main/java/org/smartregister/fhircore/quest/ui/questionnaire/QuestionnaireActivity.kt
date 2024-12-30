@@ -50,7 +50,9 @@ import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.domain.model.isSummary
+import org.smartregister.fhircore.engine.ui.base.AlertDialogButton
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -217,59 +219,53 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   }
 
   private fun renderQuestionnaire() {
+    if (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) != null) return
+
     lifecycleScope.launch {
-      var questionnaireFragment: QuestionnaireFragment? = null
-      if (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) == null) {
-        viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(true))
-        with(viewBinding) {
-          questionnaireToolbar.apply {
-            setNavigationIcon(R.drawable.ic_cancel)
-            setNavigationOnClickListener { handleBackPress() }
-          }
-          questionnaireTitle.apply { text = questionnaireConfig.title }
-          clearAll.apply {
-            visibility = if (questionnaireConfig.showClearAll) View.VISIBLE else View.GONE
-            setOnClickListener { questionnaireFragment?.clearAllAnswers() }
-          }
-        }
+      viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(true))
 
-        questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig)
+      viewBinding.questionnaireToolbar.setNavigationIcon(R.drawable.ic_cancel)
+      viewBinding.questionnaireToolbar.setNavigationOnClickListener { handleBackPress() }
+      viewBinding.questionnaireTitle.text = questionnaireConfig.title
+      viewBinding.clearAll.visibility =
+        if (questionnaireConfig.showClearAll) View.VISIBLE else View.GONE
 
-        try {
-          val questionnaireFragmentBuilder =
-            buildQuestionnaireFragment(
-              questionnaire = questionnaire!!,
-              questionnaireConfig = questionnaireConfig,
-            )
+      questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig)
 
-          questionnaireFragment = questionnaireFragmentBuilder.build()
-          supportFragmentManager.commit {
-            setReorderingAllowed(true)
-            add(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
-          }
-
-          registerFragmentResultListener()
-        } catch (nullPointerException: NullPointerException) {
-          showToast(getString(R.string.questionnaire_not_found))
-          finish()
-        } finally {
-          viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
-        }
+      if (questionnaire == null) {
+        showToast(getString(R.string.questionnaire_not_found))
+        finish()
+        return@launch
       }
+      if (questionnaire!!.subjectType.isNullOrEmpty()) {
+        val subjectRequiredMessage = getString(R.string.missing_subject_type)
+        showToast(subjectRequiredMessage)
+        Timber.e(subjectRequiredMessage)
+        finish()
+        return@launch
+      }
+
+      val questionnaireFragment =
+        getQuestionnaireFragmentBuilder(
+            questionnaire = questionnaire!!,
+            questionnaireConfig = questionnaireConfig,
+          )
+          .build()
+      viewBinding.clearAll.setOnClickListener { questionnaireFragment.clearAllAnswers() }
+      supportFragmentManager.commit {
+        setReorderingAllowed(true)
+        add(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
+      }
+      registerFragmentResultListener()
+
+      viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
     }
   }
 
-  private suspend fun buildQuestionnaireFragment(
+  private suspend fun getQuestionnaireFragmentBuilder(
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig,
   ): QuestionnaireFragment.Builder {
-    if (questionnaire.subjectType.isNullOrEmpty()) {
-      val subjectRequiredMessage = getString(R.string.missing_subject_type)
-      showToast(subjectRequiredMessage)
-      Timber.e(subjectRequiredMessage)
-      finish()
-    }
-
     val (questionnaireResponse, launchContextResources) =
       viewModel.populateQuestionnaire(questionnaire, this.questionnaireConfig, actionParameters)
 
@@ -284,6 +280,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       .showAsterisk(this.questionnaireConfig.showRequiredTextAsterisk)
       .showRequiredText(this.questionnaireConfig.showRequiredText)
       .setIsReadOnly(questionnaireConfig.isSummary())
+      .setShowSubmitAnywayButton(questionnaireConfig.showSubmitAnywayButton.toBooleanStrict())
       .apply {
         if (questionnaireResponse != null) {
           questionnaireResponse
@@ -308,44 +305,66 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       QuestionnaireFragment.SUBMIT_REQUEST_KEY,
       this,
     ) { _, _ ->
-      lifecycleScope.launch {
-        val questionnaireResponse = retrieveQuestionnaireResponse()
+      if (questionnaireConfig.showSubmissionConfirmationDialog.toBooleanStrict()) {
+        AlertDialogue.showAlert(
+          context = this,
+          alertIntent = AlertIntent.CONFIRM,
+          message = getString(R.string.questionnaire_submission_confirmation_message),
+          title = getString(R.string.questionnaire_submission_confirmation_title),
+          confirmButton =
+            AlertDialogButton(
+              listener = { processSubmission() },
+            ),
+          neutralButton =
+            AlertDialogButton(
+              text = R.string.no,
+              listener = { it.dismiss() },
+            ),
+        )
+      } else {
+        processSubmission()
+      }
+    }
+  }
 
-        // Close questionnaire if opened in read only mode or if experimental
-        if (questionnaireConfig.isReadOnly() || questionnaire?.experimental == true) {
-          finish()
-        }
-        if (questionnaireResponse != null && questionnaire != null) {
-          viewModel.run {
-            setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
+  private fun processSubmission() {
+    lifecycleScope.launch {
+      val questionnaireResponse = retrieveQuestionnaireResponse()
 
-            if (currentLocation != null) {
-              questionnaireResponse.contained.add(
-                ResourceUtils.createFhirLocationFromGpsLocation(gpsLocation = currentLocation!!),
-              )
-            }
+      // Close questionnaire if opened in read only mode or if experimental
+      if (questionnaireConfig.isReadOnly() || questionnaire?.experimental == true) {
+        finish()
+      }
+      if (questionnaireResponse != null && questionnaire != null) {
+        viewModel.run {
+          setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
 
-            handleQuestionnaireSubmission(
-              questionnaire = questionnaire!!,
-              currentQuestionnaireResponse = questionnaireResponse,
-              questionnaireConfig = questionnaireConfig,
-              actionParameters = actionParameters,
-              context = this@QuestionnaireActivity,
-            ) { idTypes, questionnaireResponse ->
-              // Dismiss progress indicator dialog, submit result then finish activity
-              // TODO Ensure this dialog is dismissed even when an exception is encountered
-              setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
-              setResult(
-                Activity.RESULT_OK,
-                Intent().apply {
-                  putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
-                  putExtra(QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS, idTypes as Serializable)
-                  putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
-                  putExtra(ON_RESULT_TYPE, ActivityOnResultType.QUESTIONNAIRE.name)
-                },
-              )
-              finish()
-            }
+          if (currentLocation != null) {
+            questionnaireResponse.contained.add(
+              ResourceUtils.createFhirLocationFromGpsLocation(gpsLocation = currentLocation!!),
+            )
+          }
+
+          handleQuestionnaireSubmission(
+            questionnaire = questionnaire!!,
+            currentQuestionnaireResponse = questionnaireResponse,
+            questionnaireConfig = questionnaireConfig,
+            actionParameters = actionParameters,
+            context = this@QuestionnaireActivity,
+          ) { idTypes, questionnaireResponse ->
+            // Dismiss progress indicator dialog, submit result then finish activity
+            // TODO Ensure this dialog is dismissed even when an exception is encountered
+            setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
+            setResult(
+              Activity.RESULT_OK,
+              Intent().apply {
+                putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
+                putExtra(QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS, idTypes as Serializable)
+                putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
+                putExtra(ON_RESULT_TYPE, ActivityOnResultType.QUESTIONNAIRE.name)
+              },
+            )
+            finish()
           }
         }
       }
@@ -356,25 +375,48 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     if (questionnaireConfig.isReadOnly()) {
       finish()
     } else if (questionnaireConfig.saveDraft) {
-      AlertDialogue.showCancelAlert(
+      AlertDialogue.showThreeButtonAlert(
         context = this,
         message =
           org.smartregister.fhircore.engine.R.string
             .questionnaire_in_progress_alert_back_pressed_message,
         title = org.smartregister.fhircore.engine.R.string.questionnaire_alert_back_pressed_title,
-        confirmButtonListener = {
-          lifecycleScope.launch {
-            retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
-              viewModel.saveDraftQuestionnaire(questionnaireResponse)
-            }
-          }
-        },
-        confirmButtonText =
-          org.smartregister.fhircore.engine.R.string
-            .questionnaire_alert_back_pressed_save_draft_button_title,
-        neutralButtonListener = { finish() },
-        neutralButtonText =
-          org.smartregister.fhircore.engine.R.string.questionnaire_alert_back_pressed_button_title,
+        confirmButton =
+          AlertDialogButton(
+            listener = {
+              lifecycleScope.launch {
+                retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
+                  viewModel.saveDraftQuestionnaire(questionnaireResponse, questionnaireConfig)
+                  setResult(
+                    Activity.RESULT_OK,
+                    Intent().apply {
+                      putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
+                      putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
+                      putExtra(ON_RESULT_TYPE, ActivityOnResultType.QUESTIONNAIRE.name)
+                    },
+                  )
+                  finish()
+                }
+              }
+            },
+            text =
+              org.smartregister.fhircore.engine.R.string
+                .questionnaire_alert_back_pressed_save_draft_button_title,
+            color = org.smartregister.fhircore.engine.R.color.colorPrimary,
+          ),
+        neutralButton =
+          AlertDialogButton(
+            listener = {},
+            text =
+              org.smartregister.fhircore.engine.R.string.questionnaire_alert_neutral_button_title,
+          ),
+        negativeButton =
+          AlertDialogButton(
+            listener = { finish() },
+            text =
+              org.smartregister.fhircore.engine.R.string.questionnaire_alert_negative_button_title,
+            color = org.smartregister.fhircore.engine.R.color.colorPrimary,
+          ),
       )
     } else {
       AlertDialogue.showConfirmAlert(

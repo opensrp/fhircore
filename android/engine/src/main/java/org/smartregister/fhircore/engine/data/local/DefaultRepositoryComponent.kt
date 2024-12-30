@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.geowidget.screens
+package org.smartregister.fhircore.engine.data.local
 
-import androidx.appcompat.app.AppCompatActivity
-import dagger.hilt.android.AndroidEntryPoint
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import dagger.Component
+import javax.inject.Singleton
+import org.smartregister.fhircore.engine.di.DispatcherModule
 
-@ExcludeFromJacocoGeneratedReport
-@AndroidEntryPoint
-class GeoWidgetTestActivity : AppCompatActivity()
+@Singleton
+@Component(modules = [DispatcherModule::class])
+interface DefaultRepositoryComponent {
+  fun inject(defaultRepository: DefaultRepository)
+}

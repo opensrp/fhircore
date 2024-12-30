@@ -30,42 +30,73 @@ import dagger.hilt.components.SingletonComponent
 import java.io.File
 import java.io.FileInputStream
 import javax.inject.Singleton
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.apache.commons.jexl3.JexlBuilder
+import org.apache.commons.jexl3.JexlEngine
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.utils.FHIRPathEngine
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.util.KnowledgeManagerUtil
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import timber.log.Timber
 
 @InstallIn(SingletonComponent::class)
 @Module
 class CoreModule {
 
+  @OptIn(DelicateCoroutinesApi::class)
   @Singleton
   @Provides
   fun provideWorkerContextProvider(@ApplicationContext context: Context): SimpleWorkerContext =
     SimpleWorkerContext().apply {
-      setExpansionProfile(Parameters())
-      isCanRunWithoutTerminology = true
-      context.filesDir
-        .resolve(ConfigurationRegistry.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER)
-        .list()
-        ?.forEach { resourceFolder ->
+      GlobalScope.launch {
+        withContext(Dispatchers.IO) {
+          setExpansionProfile(Parameters())
+          isCanRunWithoutTerminology = true
           context.filesDir
-            .resolve("${ConfigurationRegistry.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/$resourceFolder")
+            .resolve(KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER)
             .list()
-            ?.forEach { file ->
-              cacheResource(
-                FhirContext.forR4Cached()
-                  .newJsonParser()
-                  .parseResource(
-                    FileInputStream(
-                      File(context.filesDir.resolve("km/$resourceFolder/$file").toString()),
-                    ),
-                  ) as Resource,
-              )
+            ?.forEach { resourceFolder ->
+              context.filesDir
+                .resolve(
+                  "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/$resourceFolder",
+                )
+                .list()
+                ?.forEach { file ->
+                  try {
+                    cacheResource(
+                      FhirContext.forR4Cached()
+                        .newJsonParser()
+                        .parseResource(
+                          FileInputStream(
+                            File(
+                              context.filesDir
+                                .resolve(
+                                  "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/$resourceFolder/$file",
+                                )
+                                .toString(),
+                            ),
+                          ),
+                        ) as Resource,
+                    )
+                  } catch (e: Exception) {
+                    Timber.e(
+                      "EXCEPTION PROCESSING ${context.filesDir
+                                                .resolve(
+                                                    "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/$resourceFolder/$file",
+                                                )}",
+                    )
+                    Timber.e(e)
+                  }
+                }
             }
         }
+      }
     }
 
   @Singleton
@@ -98,4 +129,21 @@ class CoreModule {
       .fhirContext(fhirContext)
       .knowledgeManager(knowledgeManager)
       .build()
+
+  @Singleton
+  @Provides
+  fun provideJexlEngine(): JexlEngine {
+    return JexlBuilder() // Expensive initialization
+      .namespaces(
+        mutableMapOf<String, Any>(
+          "Timber" to Timber,
+          "StringUtils" to Class.forName("org.apache.commons.lang3.StringUtils"),
+          "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils"),
+          "Math" to Class.forName("java.lang.Math"),
+        ),
+      )
+      .silent(false)
+      .strict(false)
+      .create()
+  }
 }

@@ -1,0 +1,122 @@
+# Infrastructure setup
+
+This page provides recommendations when setting up a production deployment. 
+
+## Environments for building and deploying
+
+We recommend setting up independent environments for
+
+1. Staging: for testing and validting in progress changes
+1. Preview: for demoing and training on stable releases
+1. Production: for serving live traffic
+ 
+## Hardware requirements
+
+### Server specifications
+
+#### Operating system
+
+- Ubuntu (latest LTS version)
+
+#### 11 Virtual Machines
+
+- 1 Analytics node (DBT, Airbyte)
+    - 4 CPU cores
+    - 8 GB RAM
+    - 500 GB HD
+- 1 Load Balancer node
+    - 4 CPU cores
+    - 4 GB RAM
+    - 100 GB HD
+- 3 Primary nodes
+    - 4 CPU cores
+    - 8 GB RAM
+    - 500 GB HD
+- 4 Worker Nodes
+    - 8 CPU cores
+    - 32 GB RAM
+    - 500 GB HD
+- 1 NFS server for backups
+    - 4 CPU cores
+    - 8GB RAM
+    - 1TB HD
+- 1 Database server for PostgreSQL and Redis
+    - 4 CPU cores
+    - 8GB RAM
+    - 1TB HD
+
+We recommend 5 TB of external storage attached to the NFS server to hold PostgreSQL data backups.
+
+In addition to on-site backups, we recommend that partners provide additional off-site backups of operational databases for worst-case primary data center failure.
+
+### Network configurations
+
+- 1 public IP address must be provisioned for the load balancer node.
+- Stable high-speed internet connection
+    - Minimum upstream 20 mb/s, downstream 20 mb/s.
+    - All servers must have an internet connection during the setup phase.
+- Servers must be able to connect with the official distribution repositories.
+- Domains
+    - All web-facing services must have a distinct DNS address. (More details on the services below.)
+    - All domains used must point to the load balancer node's public IP.
+    - We suggest using [Let's Encrypt](https://letsencrypt.org/) to issue certificates unless specified otherwise.
+        - If Let's Encrypt is not used, certificates and private keys of the CSR (Certificate Signing Request) must be provided and manually added to the cluster.
+- Access to the servers
+    - SSH access
+        - Whitelisting a bastion server to access the load balancer node.
+        - The load balancer node should be able to access all the servers mentioned above.
+    - Firewall  configurations (You can ignore the below if the servers will be provided without port restrictions)
+        - Kubernetes configuration ports have to be open on the following servers.
+            - Cluster nodes (Both primary and worker nodes)
+                - Allow incoming/outgoing traffic between cluster nodes on all ports.
+                - Allow incoming traffic on port 22 from the load balancer node.
+                - Allow incoming/outgoing traffic on ports 2049 and 111 from/to the NFS server.
+            - Load balancer Node
+                - Allow incoming/outgoing on ports 80 and 443 from/to external traffic (internet).
+                - Allow incoming traffic on port 22 from Ona’s bastion host.
+                - Allow outgoing traffic from port 22 to cluster nodes and database and NFS server.
+            - Database Server
+                - Allow incoming traffic on port 22 from the load balancer node.
+                - Allow incoming/outgoing traffic on port 5432(postgres) and 6379(redis) to/from cluster nodes.
+            - NFS Server
+                - Allow incoming traffic on port 22 from the load balancer node.
+                - Allow incoming/outgoing traffic on port 2049 and 111 to/from cluster nodes.
+
+### Services/applications to be set up
+
+We recommend hosting the following services on the above-defined cluster:
+1. HAPI FHIR Server - Transactional FHIR health data store
+1. FHIR Info Gateway - Route authorization manager
+1. Keycloak - User identity and authentication manager
+1. FHIR Web - Admin Dashboard
+1. Superset - Visualization and dashboard platform
+1. Airbyte - Data transfer pipeline manager
+1. DBT - Analytics data query manager
+1. Data warehouse - Analytics data warehouse in Postgres
+1. Application monitoring - must be on different infrastructure
+    1. Sentry
+    1. Prometheus
+    1. Grafana
+    1. Graylog
+
+
+## Keycloak Oauth2 clients
+
+We use [Keycloak](https://www.keycloak.org/) as our IAM server that stores users, groups, and the access roles of those groups. Before starting the set up of the Keycloak Oauth clients ensure the `Service Account` Role is **disabled**.  
+_Separate_ OAuth clients should be configured for the ETL Pipes/Analytics and the FHIR Web systems.
+
+### Android client
+Enable **Direct Access Grant only** - This client should be configured as a `Public` client. To fetch a token you will not need the client secret. 
+This will use the `Resource Credentials/Password` Grant type. 
+
+:::danger
+Do not store any sensitive data like _password credentials_ or _secrets_ in your production APK e.g. in the `local.properties` file.
+:::
+
+### FHIR Web client
+Enable **Client Authentication** and enable **Standard flow**. _Implicit flow should only be used for local dev testing - it can be configured for stage and maybe preview but NOT production._. 
+This will use the `Authorization Code` Grant type
+
+### Data pipelines/Analytics client
+Enable **Client Authentication** and enable **Service Account Roles**. 
+This will use the `Client Credentials` Grant type.

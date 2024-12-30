@@ -24,6 +24,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.get
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -43,14 +44,16 @@ import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Composition.SectionComponent
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -70,6 +73,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.KnowledgeManagerUtil
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getPayload
@@ -273,7 +277,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val appId = "theAppId"
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = Composition() }
 
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
@@ -296,7 +302,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = composition }
 
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
@@ -325,7 +333,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = composition }
 
     runTest {
@@ -405,11 +415,15 @@ class ConfigurationRegistryTest : RobolectricTest() {
       bundle
 
     coEvery {
-      fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200")
+      fhirResourceDataSource.getResource(
+        "$resourceKey?_id=$resourceId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns bundle
     coEvery { fhirResourceDataSource.getResource(any()) } returns bundle
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = composition }
 
     configRegistry.fhirEngine.create(composition)
@@ -423,7 +437,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
       "test-list-id",
       createdResourceArgumentSlot.filterIsInstance<ListResource>().first().id,
     )
-    coVerify { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200") }
+    coVerify {
+      fhirResourceDataSource.getResource(
+        "$resourceKey?_id=$resourceId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
+    }
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") }
   }
 
@@ -601,7 +619,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     } returns Binary().apply { content = ByteArray(0) }
     runTest { configRegistry.loadConfigurations(appId, context) }
 
-    Assert.assertFalse(configRegistry.configsJsonMap.isEmpty())
+    assertFalse(configRegistry.configsJsonMap.isEmpty())
   }
 
   @Test
@@ -799,7 +817,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         link.add(
           Bundle.BundleLinkComponent().apply {
             relation = PAGINATION_NEXT
-            url = "List?_id=46464&_page=2&_count=200"
+            url = "List?_id=46464&_page=2&_count=${ConfigurationRegistry.DEFAULT_COUNT}"
           },
         )
       }
@@ -812,13 +830,15 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     runBlocking { fhirEngine.create(composition) }
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = composition }
 
     coEvery {
       fhirResourceDataSource.getResourceWithGatewayModeHeader(
         "list-entries",
-        "List?_id=46464&_page=1&_count=200",
+        "List?_id=46464&_page=1&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
       )
     } returns bundle
 
@@ -861,19 +881,21 @@ class ConfigurationRegistryTest : RobolectricTest() {
         section = compositionSections
       }
 
-    val nextPageUrl = "List?_id=46464&_page=2&_count=200"
+    val nextPageUrl = "List?_id=46464&_page=2&_count=${ConfigurationRegistry.DEFAULT_COUNT}"
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
     fhirEngine.create(composition)
 
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      fhirResourceDataSource.getResource(
+        "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+      )
     } returns Bundle().apply { addEntry().resource = composition }
 
     coEvery {
       fhirResourceDataSource.getResourceWithGatewayModeHeader(
         "list-entries",
-        "List?_id=46464&_page=1&_count=200",
+        "List?_id=46464&_page=1&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
       )
     } returns
       Bundle().apply {
@@ -900,7 +922,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
     coEvery {
       fhirResourceDataSource.getResource(
-        "List?_id=46464&_page=1&_count=200",
+        "List?_id=46464&_page=1&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
       )
     }
     coEvery {
@@ -959,13 +981,15 @@ class ConfigurationRegistryTest : RobolectricTest() {
       fhirEngine.create(composition)
 
       coEvery {
-        fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+        fhirResourceDataSource.getResource(
+          "Composition?identifier=theAppId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
+        )
       } returns Bundle().apply { addEntry().resource = composition }
 
       coEvery {
         fhirResourceDataSource.getResourceWithGatewayModeHeader(
           "list-entries",
-          "List?_id=46464&_page=1&_count=200",
+          "List?_id=46464&_page=1&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
         )
       } returns
         Bundle().apply {
@@ -1005,28 +1029,36 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
       assertEquals(4, requestPathArgumentSlot.size)
 
-      assertEquals("Bundle/the-commodities-bundle-id", requestPathArgumentSlot.first().id)
-      assertEquals(ResourceType.Bundle, requestPathArgumentSlot.first().resourceType)
+      val bundles = requestPathArgumentSlot.filterIsInstance<Bundle>().first()
+      assertEquals("Bundle/the-commodities-bundle-id", bundles.id)
+      assertEquals(ResourceType.Bundle, bundles.resourceType)
 
-      assertEquals("Group/1000001", requestPathArgumentSlot.second().id)
-      assertEquals(ResourceType.Group, requestPathArgumentSlot.second().resourceType)
+      val groups = requestPathArgumentSlot.filterIsInstance<Group>()
+      assertEquals(2, groups.size)
+      assertTrue(groups.any { it.id == "Group/1000001" })
+      assertTrue(groups.any { it.id == "Group/2000001" })
 
-      assertEquals("Group/2000001", requestPathArgumentSlot[2].id)
-      assertEquals(ResourceType.Group, requestPathArgumentSlot[2].resourceType)
-
-      assertEquals("composition-id-1", requestPathArgumentSlot.last().id)
-      assertEquals(ResourceType.Composition, requestPathArgumentSlot.last().resourceType)
+      val compositions = requestPathArgumentSlot.filterIsInstance<Composition>().first()
+      assertEquals("composition-id-1", compositions.id)
+      assertEquals(ResourceType.Composition, compositions.resourceType)
     }
 
   @Test
   fun writeToFileWithMetadataResourceWithNameShouldCreateFileWithResourceName() {
     val parser = fhirContext.newJsonParser()
-    val resource = Faker.buildPatient()
-    val resultFile = configRegistry.writeToFile(resource)
+    val resource = StructureMap().apply { id = "structuremap-id-1" }
+    val resultFile =
+      KnowledgeManagerUtil.writeToFile(
+        configService = configService,
+        metadataResource = resource,
+        context = context,
+        subFilePath =
+          "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/${resource.resourceType}/${resource.idElement.idPart}.json",
+      )
     assertNotNull(resultFile)
     assertEquals(
       resource.logicalId,
-      (parser.parseResource(resultFile.readText()) as Patient).logicalId,
+      (parser.parseResource(resultFile.readText()) as StructureMap).logicalId,
     )
   }
 
@@ -1049,5 +1081,135 @@ class ConfigurationRegistryTest : RobolectricTest() {
       assertNotNull(questionnaire)
       assertEquals(questionnaireId, questionnaire.logicalId)
     }
+  }
+
+  @Test
+  fun testFetchNonWorkflowConfigResourcesWithNoFocusOrEntry() = runTest {
+    val appId = "app-id"
+    val composition =
+      Composition().apply {
+        identifier = Identifier().apply { value = appId }
+        section = listOf(SectionComponent()) // Neither focus nor entry
+      }
+
+    configRegistry.fetchNonWorkflowConfigResources()
+
+    // Validate no crash occurs and configsJsonMap remains empty
+    assertTrue(configRegistry.configsJsonMap.isEmpty())
+  }
+
+  @Test
+  fun testPopulateConfigurationsMapWithNeitherFocusNorEntry() = runTest {
+    val composition = Composition()
+
+    configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
+
+    assertTrue(configRegistry.configsJsonMap.isEmpty())
+  }
+
+  @Test
+  fun testPopulateConfigurationsMapWithAllFocus() = runTest {
+    val composition =
+      Composition().apply {
+        section =
+          listOf(
+            SectionComponent().apply {
+              focus =
+                Reference().apply {
+                  reference = "Binary/1"
+                  identifier = Identifier().apply { value = "resource1" }
+                }
+            },
+          )
+      }
+
+    coEvery { fhirEngine.get<Binary>(any()) } returns Binary().apply { content = ByteArray(0) }
+    configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
+    assertEquals(1, configRegistry.configsJsonMap.size)
+    assertTrue(configRegistry.configsJsonMap.containsKey("resource1"))
+  }
+
+  @Test
+  fun testPopulateConfigurationsMapWithAllEntry() = runTest {
+    val composition =
+      Composition().apply {
+        section =
+          listOf(
+            SectionComponent().apply {
+              entry =
+                listOf(
+                  Reference().apply {
+                    reference = "Binary/1"
+                    identifier = Identifier().apply { value = "resource1" }
+                  },
+                  Reference().apply {
+                    reference = "Binary/2"
+                    identifier = Identifier().apply { value = "resource2" }
+                  },
+                )
+            },
+          )
+      }
+
+    coEvery { fhirEngine.get<Binary>(any()) } returns Binary().apply { content = ByteArray(0) }
+    configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
+    assertEquals(2, configRegistry.configsJsonMap.size)
+    assertTrue(configRegistry.configsJsonMap.containsKey("resource1"))
+    assertTrue(configRegistry.configsJsonMap.containsKey("resource2"))
+  }
+
+  @Test
+  fun testPopulateConfigurationsMapWithEntryMissingId() = runTest {
+    val composition =
+      Composition().apply {
+        section =
+          listOf(
+            SectionComponent().apply {
+              entry =
+                listOf(
+                  Reference().apply { reference = "Binary/1" },
+                  Reference().apply {
+                    reference = "Binary/2"
+                    identifier = Identifier().apply { value = "resource2" }
+                  },
+                )
+            },
+          )
+      }
+
+    coEvery { fhirEngine.get<Binary>(any()) } returns Binary().apply { content = ByteArray(0) }
+    configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
+    assertEquals(1, configRegistry.configsJsonMap.size)
+    assertTrue(configRegistry.configsJsonMap.containsKey("resource2"))
+  }
+
+  @Test
+  fun testPopulateConfigurationsMapWithFocusAndEntry() = runTest {
+    val composition =
+      Composition().apply {
+        section =
+          listOf(
+            SectionComponent().apply {
+              focus =
+                Reference().apply {
+                  reference = "Binary/1"
+                  identifier = Identifier().apply { value = "resource1" }
+                }
+              entry =
+                listOf(
+                  Reference().apply {
+                    reference = "Binary/2"
+                    identifier = Identifier().apply { value = "resource2" }
+                  },
+                )
+            },
+          )
+      }
+
+    coEvery { fhirEngine.get<Binary>(any()) } returns Binary().apply { content = ByteArray(0) }
+    configRegistry.populateConfigurationsMap(context, composition, false, "app-id") {}
+    assertEquals(2, configRegistry.configsJsonMap.size)
+    assertTrue(configRegistry.configsJsonMap.containsKey("resource1"))
+    assertTrue(configRegistry.configsJsonMap.containsKey("resource2"))
   }
 }

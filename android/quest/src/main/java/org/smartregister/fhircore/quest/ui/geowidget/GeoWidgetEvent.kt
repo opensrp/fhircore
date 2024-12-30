@@ -20,8 +20,10 @@ import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfig
 import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 
 sealed class GeoWidgetEvent {
-  data class SearchFeatures(
-    val searchQuery: SearchQuery = SearchQuery.emptyText,
+  data object ClearMap : GeoWidgetEvent()
+
+  data class RetrieveFeatures(
     val geoWidgetConfig: GeoWidgetConfiguration,
+    val searchQuery: SearchQuery = SearchQuery.emptyText,
   ) : GeoWidgetEvent()
 }

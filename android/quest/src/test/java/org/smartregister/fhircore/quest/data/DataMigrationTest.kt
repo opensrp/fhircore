@@ -71,7 +71,7 @@ class DataMigrationTest : RobolectricTest() {
 
   @Test
   fun testMigrateShouldUpdateResources() =
-    runTest(timeout = 45.seconds) {
+    runTest(timeout = 60.seconds) {
       // Create patient to be updated
       defaultRepository.create(addResourceTags = true, patient)
       dataMigration.migrate(

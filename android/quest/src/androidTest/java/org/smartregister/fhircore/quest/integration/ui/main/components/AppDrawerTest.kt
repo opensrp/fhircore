@@ -123,7 +123,7 @@ class AppDrawerTest {
   fun testAppDrawerRendersNavBottomSectionCorrectly() {
     setContent("")
     composeTestRule
-      .onNodeWithText("Manual Sync", useUnmergedTree = true)
+      .onNodeWithText("Manual sync", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
   }
@@ -184,6 +184,7 @@ class AppDrawerTest {
         appVersionPair = Pair(1, "0.0.1"),
         onCountUnSyncedResources = {},
         unSyncedResourceCount = remember { mutableIntStateOf(0) },
+        decodeImage = null,
       )
     }
   }

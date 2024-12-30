@@ -43,6 +43,12 @@ enum class AlertIntent {
 
 data class AlertDialogListItem(val key: String, val value: String)
 
+data class AlertDialogButton(
+  val listener: ((d: DialogInterface) -> Unit)? = null,
+  @StringRes val text: Int? = null,
+  val color: Int? = null,
+)
+
 object AlertDialogue {
   private val ITEMS_LIST_KEY = "alert_dialog_items_list"
 
@@ -51,10 +57,9 @@ object AlertDialogue {
     alertIntent: AlertIntent,
     message: CharSequence,
     title: String? = null,
-    confirmButtonListener: ((d: DialogInterface) -> Unit)? = null,
-    @StringRes confirmButtonText: Int = R.string.questionnaire_alert_confirm_button_title,
-    neutralButtonListener: ((d: DialogInterface) -> Unit)? = null,
-    @StringRes neutralButtonText: Int = R.string.questionnaire_alert_neutral_button_title,
+    confirmButton: AlertDialogButton? = null,
+    neutralButton: AlertDialogButton? = null,
+    negativeButton: AlertDialogButton? = null,
     cancellable: Boolean = false,
     options: Array<AlertDialogListItem>? = null,
   ): AlertDialog {
@@ -65,19 +70,48 @@ object AlertDialogue {
           setView(view)
           title?.let { setTitle(it) }
           setCancelable(cancellable)
-          neutralButtonListener?.let {
-            setNeutralButton(neutralButtonText) { d, _ -> neutralButtonListener.invoke(d) }
+          neutralButton?.listener?.let {
+            setNeutralButton(
+              neutralButton.text ?: R.string.questionnaire_alert_neutral_button_title,
+            ) { d, _ ->
+              neutralButton.listener.invoke(d)
+            }
           }
-          confirmButtonListener?.let {
-            setPositiveButton(confirmButtonText) { d, _ -> confirmButtonListener.invoke(d) }
+          confirmButton?.listener?.let {
+            setPositiveButton(
+              confirmButton.text ?: R.string.questionnaire_alert_confirm_button_title,
+            ) { d, _ ->
+              confirmButton.listener.invoke(d)
+            }
+          }
+          negativeButton?.listener?.let {
+            setNegativeButton(
+              negativeButton.text ?: R.string.questionnaire_alert_negative_button_title,
+            ) { d, _ ->
+              negativeButton.listener.invoke(d)
+            }
           }
           options?.run { setSingleChoiceItems(options.map { it.value }.toTypedArray(), -1, null) }
         }
         .show()
 
+    val neutralButtonColor = neutralButton?.color ?: R.color.grey_text_color
     dialog
       .getButton(AlertDialog.BUTTON_NEUTRAL)
-      .setTextColor(ContextCompat.getColor(context, R.color.grey_text_color))
+      .setTextColor(ContextCompat.getColor(context, neutralButtonColor))
+
+    if (confirmButton?.color != null) {
+      dialog
+        .getButton(AlertDialog.BUTTON_POSITIVE)
+        .setTextColor(ContextCompat.getColor(context, confirmButton.color))
+    }
+
+    if (negativeButton?.color != null) {
+      dialog
+        .getButton(AlertDialog.BUTTON_NEGATIVE)
+        .setTextColor(ContextCompat.getColor(context, negativeButton.color))
+    }
+
     dialog.findViewById<View>(R.id.pr_circular)?.apply {
       if (alertIntent == AlertIntent.PROGRESS) {
         this.show()
@@ -110,8 +144,11 @@ object AlertDialogue {
       alertIntent = AlertIntent.INFO,
       message = message,
       title = title,
-      confirmButtonListener = confirmButtonListener,
-      confirmButtonText = confirmButtonText,
+      confirmButton =
+        AlertDialogButton(
+          listener = confirmButtonListener,
+          text = confirmButtonText,
+        ),
     )
   }
 
@@ -121,8 +158,11 @@ object AlertDialogue {
       alertIntent = AlertIntent.ERROR,
       message = message,
       title = title,
-      confirmButtonListener = { d -> d.dismiss() },
-      confirmButtonText = R.string.questionnaire_alert_ack_button_title,
+      confirmButton =
+        AlertDialogButton(
+          listener = { d -> d.dismiss() },
+          text = R.string.questionnaire_alert_ack_button_title,
+        ),
     )
   }
 
@@ -155,23 +195,28 @@ object AlertDialogue {
       alertIntent = AlertIntent.CONFIRM,
       message = context.getString(message),
       title = title?.let { context.getString(it) },
-      confirmButtonListener = confirmButtonListener,
-      confirmButtonText = confirmButtonText,
-      neutralButtonListener = { d -> d.dismiss() },
-      neutralButtonText = R.string.questionnaire_alert_neutral_button_title,
+      confirmButton =
+        AlertDialogButton(
+          listener = confirmButtonListener,
+          text = confirmButtonText,
+        ),
+      neutralButton =
+        AlertDialogButton(
+          listener = { d -> d.dismiss() },
+          text = R.string.questionnaire_alert_neutral_button_title,
+        ),
       cancellable = false,
       options = options?.toTypedArray(),
     )
   }
 
-  fun showCancelAlert(
+  fun showThreeButtonAlert(
     context: Context,
     @StringRes message: Int,
     @StringRes title: Int? = null,
-    confirmButtonListener: ((d: DialogInterface) -> Unit),
-    @StringRes confirmButtonText: Int,
-    neutralButtonListener: ((d: DialogInterface) -> Unit),
-    @StringRes neutralButtonText: Int,
+    confirmButton: AlertDialogButton? = null,
+    neutralButton: AlertDialogButton? = null,
+    negativeButton: AlertDialogButton? = null,
     cancellable: Boolean = true,
     options: List<AlertDialogListItem>? = null,
   ): AlertDialog {
@@ -180,10 +225,9 @@ object AlertDialogue {
       alertIntent = AlertIntent.CONFIRM,
       message = context.getString(message),
       title = title?.let { context.getString(it) },
-      confirmButtonListener = confirmButtonListener,
-      confirmButtonText = confirmButtonText,
-      neutralButtonListener = neutralButtonListener,
-      neutralButtonText = neutralButtonText,
+      confirmButton = confirmButton,
+      neutralButton = neutralButton,
+      negativeButton = negativeButton,
       cancellable = cancellable,
       options = options?.toTypedArray(),
     )

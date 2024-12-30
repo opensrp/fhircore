@@ -93,7 +93,6 @@ import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
-import org.smartregister.fhircore.quest.ui.pin.CIRCULAR_PROGRESS_INDICATOR
 
 const val RESET_DATABASE_DIALOG = "resetDatabaseDialog"
 const val USER_SETTING_ROW_LOGOUT = "userSettingRowLogout"
@@ -406,7 +405,7 @@ fun UserSettingScreen(
 
         Text(
           color = contentColor,
-          fontSize = 16.sp,
+          fontSize = 12.sp,
           text = stringResource(id = R.string.last_sync, lastSyncTime ?: ""),
           modifier =
             modifier.padding(bottom = 12.dp, top = 2.dp).align(Alignment.CenterHorizontally),

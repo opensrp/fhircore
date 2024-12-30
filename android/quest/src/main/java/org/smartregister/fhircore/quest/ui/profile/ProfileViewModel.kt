@@ -16,9 +16,12 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import android.content.Context
+import android.graphics.Bitmap
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -30,8 +33,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -46,7 +49,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -55,9 +58,8 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
-import org.smartregister.fhircore.quest.util.extensions.decodeImageResourcesToBitmap
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
-import org.smartregister.fhircore.quest.util.extensions.resourceReferenceToBitMap
+import org.smartregister.fhircore.quest.util.extensions.referenceToBitmap
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
@@ -69,7 +71,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
   val fhirPathDataExtractor: FhirPathDataExtractor,
-  val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  val rulesExecutor: RulesExecutor,
 ) : ViewModel() {
 
   val refreshProfileDataLiveData = MutableLiveData<Boolean?>(null)
@@ -80,77 +82,68 @@ constructor(
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
   private lateinit var profileConfiguration: ProfileConfiguration
+  private val decodedImageMap = mutableStateMapOf<String, Bitmap>()
+  private val listResourceDataMap = SnapshotStateMap<String, SnapshotStateList<ResourceData>>()
 
-  private val listResourceDataStateMap =
-    mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
-
-  /**
-   * This function retrieves an image that was synced from the backend as a [Binary] resource, the
-   * content of the Binary resource is a base64 encoding of the actual image. The encoded imaged is
-   * then transformed into bitmap for use in an Image Composable (returns null if the referenced
-   * resource doesn't exist)
-   */
-  suspend fun decodeBinaryResourceIconsToBitmap(profileId: String) {
-    val profileConfig =
-      configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
-        configId = profileId,
-        configType = ConfigType.Profile,
-      )
-    withContext(dispatcherProvider.io()) {
-      profileConfig.overFlowMenuItems
-        .asSequence()
-        .filter { it.icon != null && !it.icon?.reference.isNullOrBlank() }
-        .mapNotNull { it.icon!!.reference }
-        .resourceReferenceToBitMap(
-          fhirEngine = registerRepository.fhirEngine,
-          decodedImageMap = configurationRegistry.decodedImageMap,
-        )
-    }
-  }
-
-  suspend fun retrieveProfileUiState(
+  fun retrieveProfileUiState(
+    context: Context,
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
     paramsList: Array<ActionParameter>? = emptyArray(),
   ) {
-    if (resourceId.isNotEmpty()) {
-      val repositoryResourceData =
-        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
-      val paramsMap: Map<String, String> = paramsList.toParamDataMap()
-      val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
-      val resourceData =
-        resourceDataRulesExecutor
-          .processResourceData(
-            repositoryResourceData = repositoryResourceData,
-            ruleConfigs = profileConfigs.rules,
-            params = paramsMap,
-          )
-          .copy(listResourceDataMap = listResourceDataStateMap)
+    viewModelScope.launch {
+      if (resourceId.isNotBlank()) {
+        kotlin
+          .runCatching {
+            val paramsMap = paramsList.toParamDataMap()
+            val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
+            val repositoryResourceData =
+              registerRepository.loadProfileData(
+                profileId = profileId,
+                resourceId = resourceId,
+                fhirResourceConfig = fhirResourceConfig,
+                paramsMap = paramsMap,
+              ) ?: throw IllegalStateException("Unable to render profile")
 
-      profileUiState.value =
-        ProfileUiState(
-          resourceData = resourceData,
-          profileConfiguration = profileConfigs,
-          snackBarTheme = applicationConfiguration.snackBarTheme,
-          showDataLoadProgressIndicator = false,
-          decodedImageMap = configurationRegistry.decodedImageMap,
-        )
+            val rules = rulesExecutor.rulesFactory.generateRules(profileConfiguration.rules)
+            val resourceData =
+              rulesExecutor
+                .processResourceData(
+                  repositoryResourceData = repositoryResourceData,
+                  params = paramsMap,
+                  rules = rules,
+                )
+                .copy(listResourceDataMap = listResourceDataMap)
 
-      profileConfigs.views.retrieveListProperties().forEach { listProperties ->
-        resourceDataRulesExecutor.processListResourceData(
-          listProperties = listProperties,
-          relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
-          computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
-          listResourceDataStateMap = listResourceDataStateMap,
-        )
-      }
+            profileUiState.value =
+              ProfileUiState(
+                resourceData = resourceData,
+                profileConfiguration = profileConfiguration,
+                snackBarTheme = applicationConfiguration.snackBarTheme,
+                showDataLoadProgressIndicator = false,
+              )
 
-      withContext(dispatcherProvider.io()) {
-        profileConfigs.views.decodeImageResourcesToBitmap(
-          fhirEngine = registerRepository.fhirEngine,
-          decodedImageMap = configurationRegistry.decodedImageMap,
-        )
+            profileConfiguration.views.retrieveListProperties().forEach { listProperties ->
+              rulesExecutor.processListResourceData(
+                listProperties = listProperties,
+                relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
+                computedValuesMap =
+                  if (paramsMap.isNotEmpty()) {
+                    resourceData.computedValuesMap.plus(
+                      paramsMap.toList(),
+                    )
+                  } else resourceData.computedValuesMap,
+                listResourceDataStateMap = listResourceDataMap,
+              )
+            }
+          }
+          .onFailure {
+            Timber.e("Unable to render profile")
+            _snackBarStateFlow.emit(
+              SnackBarMessageConfig(context.getString(R.string.error_rendering_profile)),
+            )
+          }
       }
     }
   }
@@ -159,7 +152,6 @@ constructor(
     profileId: String,
     paramsMap: Map<String, String>?,
   ): ProfileConfiguration {
-    // Ensures profile configuration is initialized once
     if (!::profileConfiguration.isInitialized) {
       profileConfiguration =
         configurationRegistry.retrieveConfiguration(ConfigType.Profile, profileId, paramsMap)
@@ -175,26 +167,24 @@ constructor(
     when (event) {
       is ProfileEvent.OverflowMenuClick -> {
         val actions = event.overflowMenuItemConfig?.actions
-        viewModelScope.launch {
-          actions?.run {
-            find { actionConfig ->
-                actionConfig
-                  .interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
-                  .workflow
-                  ?.let { workflow -> ApplicationWorkflow.valueOf(workflow) } ==
-                  ApplicationWorkflow.CHANGE_MANAGING_ENTITY
-              }
-              ?.let {
-                changeManagingEntity(
-                  event = event,
-                  managingEntity =
-                    it
-                      .interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
-                      .managingEntity,
-                )
-              }
-            handleClickEvent(navController = event.navController, resourceData = event.resourceData)
-          }
+        actions?.run {
+          find { actionConfig ->
+              actionConfig
+                .interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
+                .workflow
+                ?.let { workflow -> ApplicationWorkflow.valueOf(workflow) } ==
+                ApplicationWorkflow.CHANGE_MANAGING_ENTITY
+            }
+            ?.let {
+              changeManagingEntity(
+                event = event,
+                managingEntity =
+                  it
+                    .interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
+                    .managingEntity,
+              )
+            }
+          handleClickEvent(navController = event.navController, resourceData = event.resourceData)
         }
       }
       is ProfileEvent.OnChangeManagingEntity -> {
@@ -291,5 +281,9 @@ constructor(
         }
       }
     }
+  }
+
+  fun getImageBitmap(reference: String) = runBlocking {
+    reference.referenceToBitmap(registerRepository.fhirEngine, decodedImageMap)
   }
 }

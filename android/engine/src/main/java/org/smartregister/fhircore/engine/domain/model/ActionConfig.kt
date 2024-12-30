@@ -35,7 +35,7 @@ data class ActionConfig(
   val workflow: String? = null,
   val id: String? = null,
   val display: String? = null,
-  val rules: List<RuleConfig>? = null,
+  val rules: List<RuleConfig> = emptyList(),
   val questionnaire: QuestionnaireConfig? = null,
   val managingEntity: ManagingEntityConfig? = null,
   val params: List<ActionParameter> = emptyList(),
