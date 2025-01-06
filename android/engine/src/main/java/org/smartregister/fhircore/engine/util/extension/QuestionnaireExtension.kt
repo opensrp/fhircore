@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.isEditable
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
+import org.smartregister.fhircore.engine.domain.model.isSummary
 import org.smartregister.fhircore.engine.util.castToType
 
 fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
@@ -298,10 +299,11 @@ suspend fun Questionnaire.prepopulateUniqueIdAssignment(
  * Determines the [QuestionnaireResponse.Status] depending on the [saveDraft] and [isEditable]
  * values contained in the [QuestionnaireConfig]
  *
- * returns [COMPLETED] when [isEditable] is [true] returns [INPROGRESS] when [saveDraft] is [true]
+ * returns [COMPLETED] when [isEditable] or [isSummary] is [true] returns [INPROGRESS] when
+ * [saveDraft] is [true]
  */
 fun QuestionnaireConfig.questionnaireResponseStatus(): String? {
-  return if (this.isEditable()) {
+  return if (this.isEditable() || this.isSummary()) {
     QuestionnaireResponseStatus.COMPLETED.toCode()
   } else if (this.saveDraft) {
     QuestionnaireResponseStatus.INPROGRESS.toCode()
