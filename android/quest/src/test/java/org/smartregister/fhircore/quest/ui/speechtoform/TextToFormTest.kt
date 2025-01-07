@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2025 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,48 +17,49 @@
 package org.smartregister.fhircore.quest.ui.speechtoform
 
 import com.google.ai.client.generativeai.GenerativeModel
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.unmockkAll
+import java.io.File
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Questionnaire
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import java.io.File
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 class TextToFormTest {
 
-    private lateinit var textToForm: TextToForm
-    private lateinit var mockGenerativeModel: GenerativeModel
+  private lateinit var textToForm: TextToForm
+  private lateinit var mockGenerativeModel: GenerativeModel
 
-    @Before
-    fun setUp() {
-        // Initialize the TextToForm instance and mock dependencies
-        mockGenerativeModel = mockk(relaxed = true)
-        textToForm = TextToForm(mockGenerativeModel)
-    }
+  @Before
+  fun setUp() {
+    // Initialize the TextToForm instance and mock dependencies
+    mockGenerativeModel = mockk(relaxed = true)
+    textToForm = TextToForm(mockGenerativeModel)
+  }
 
-    @After
-    fun tearDown() {
-        unmockkAll()
-    }
+  @After
+  fun tearDown() {
+    unmockkAll()
+  }
 
-    @Test
-    fun generateQuestionnaireResponseShouldReturnQuestionnaireResponse() {
-        val mockTranscriptFile = mockk<File>(relaxed = true)
-        val mockQuestionnaire = mockk<Questionnaire>(relaxed = true)
-        val mockResponseJson = "{'id': '123'}" // Mock JSON response
+  @Test
+  fun generateQuestionnaireResponseShouldReturnQuestionnaireResponse() = runTest {
+    val mockTranscriptFile = mockk<File>(relaxed = true)
+    val mockQuestionnaire = mockk<Questionnaire>(relaxed = true)
+    val mockResponseJson = "{'id': '123'}" // Mock JSON response
 
-        every { mockTranscriptFile.readText() } returns "This is a test transcript."
-        every { mockGenerativeModel.generateContent(any()) } returns mockk {
-            every { text } returns "```json\n$mockResponseJson\n```"
-        }
+    every { mockTranscriptFile.readText() } returns "This is a test transcript."
+    coEvery { mockGenerativeModel.generateContent(any(String::class)) } returns
+      mockk { every { text } returns "```json\n$mockResponseJson\n```" }
 
-        val result = textToForm.generateQuestionnaireResponse(mockTranscriptFile, mockQuestionnaire)
+    val result = textToForm.generateQuestionnaireResponse(mockTranscriptFile, mockQuestionnaire)
 
-        assertNotNull(result, "QuestionnaireResponse should not be null")
-        assertEquals("123", result.id, "QuestionnaireResponse ID should match")
-    }
+    assertNotNull(result, "QuestionnaireResponse should not be null")
+    assertEquals("123", result.id, "QuestionnaireResponse ID should match")
+  }
 }
-
