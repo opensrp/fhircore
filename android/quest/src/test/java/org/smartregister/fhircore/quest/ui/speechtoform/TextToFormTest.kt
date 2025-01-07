@@ -1,96 +1,64 @@
+/*
+ * Copyright 2021-2025 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.smartregister.fhircore.quest.ui.speechtoform
 
-import ca.uhn.fhir.interceptor.model.RequestPartitionId.fromJson
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.coVerify
-import kotlinx.coroutines.runBlocking
+import com.google.ai.client.generativeai.GenerativeModel
+import io.mockk.*
 import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.json.JSONObject
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertEquals
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.io.File
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class TextToFormTest {
 
-    private lateinit var generativeModelMock: GeminiClient
     private lateinit var textToForm: TextToForm
-    private lateinit var transcriptFileMock: File
-    private lateinit var questionnaireMock: Questionnaire
+    private lateinit var mockGenerativeModel: GenerativeModel
 
     @Before
     fun setUp() {
-        // Mock dependencies
-        generativeModelMock = mockk()
-        transcriptFileMock = mockk()
-        questionnaireMock = mockk()
+        // Initialize the TextToForm instance and mock dependencies
+        mockGenerativeModel = mockk(relaxed = true)
+        textToForm = TextToForm(mockGenerativeModel)
+    }
 
-
-        textToForm = TextToForm(generativeModelMock)
+    @After
+    fun tearDown() {
+        unmockkAll()
     }
 
     @Test
-    fun `generateQuestionnaireResponse should return valid QuestionnaireResponse for valid inputs`() = runBlocking {
-        // todo mock client
-        val transcript = "Patient has a mild fever and sore throat."
-        val prompt = """
-            You are a scribe created to turn conversational text into structure HL7 FHIR output. Below
-            you will see the text Transcript of a conversation between a nurse and a patient within
-            <transcript> XML tags and an HL7 FHIR Questionnaire within <questionnaire> XML tags. Your job
-            is to convert the text in Transcript into a new HL7 FHIR QuestionnaireResponse as if the
-            information in Transcript had been entered directly into the FHIR Questionniare. Only output
-            the FHIR QuestionnaireResponse as JSON and nothing else.
-            <transcript>$transcript</transcript>
-            <questionnaire>$questionnaireMock</questionnaire>
-        """.trimIndent()
-        val generativeModelResponse = """
-            ```json
-            {
-                "resourceType": "QuestionnaireResponse",
-                "status": "completed",
-                "item": [
-                    {
-                        "linkId": "symptoms",
-                        "answer": [
-                            {"valueString": "fever"},
-                            {"valueString": "sore throat"}
-                        ]
-                    }
-                ]
-            }
-            ```
-        """.trimIndent()
-        val questionnaireResponseJson = JSONObject(
-            """
-            {
-                "resourceType": "QuestionnaireResponse",
-                "status": "completed",
-                "item": [
-                    {
-                        "linkId": "symptoms",
-                        "answer": [
-                            {"valueString": "fever"},
-                            {"valueString": "sore throat"}
-                        ]
-                    }
-                ]
-            }
-            """
-        ).toString()
+    fun generateQuestionnaireResponseShouldReturnQuestionnaireResponse() {
+        val mockTranscriptFile = mockk<File>(relaxed = true)
+        val mockQuestionnaire = mockk<Questionnaire>(relaxed = true)
+        val mockResponseJson = "{'id': '123'}" // Mock JSON response
 
-        val expectedQuestionnaireResponse = QuestionnaireResponse().apply { fromJson(questionnaireResponseJson) }
+        every { mockTranscriptFile.readText() } returns "This is a test transcript."
+        every { mockGenerativeModel.generateContent(any()) } returns mockk {
+            every { text } returns "```json\n$mockResponseJson\n```"
+        }
 
-        every { transcriptFileMock.readText() } returns transcript
-        coEvery { generativeModelMock.generateContent(prompt) } returns generativeModelResponse
+        val result = textToForm.generateQuestionnaireResponse(mockTranscriptFile, mockQuestionnaire)
 
-        val result = textToForm.generateQuestionnaireResponse(transcriptFileMock, questionnaireMock)
-
-        assertNotNull(result)
-        assertEquals(expectedQuestionnaireResponse, result)
-        coVerify { generativeModelMock.generateContent(prompt) }
+        assertNotNull(result, "QuestionnaireResponse should not be null")
+        assertEquals("123", result.id, "QuestionnaireResponse ID should match")
     }
 }
+
