@@ -137,7 +137,7 @@
     <string name="error_rendering_profile">Erreur de rendu du profil</string>
     <string name="questionnaire_submission_confirmation_message">Êtes-vous sûr de vouloir soumettre?</string>
     <string name="questionnaire_submission_confirmation_title">Vous êtes sur le point de soumettre</string>
-    
+
     <!-- SDK SDC Strings -->
 
     <!-- 1. The following sections include strings used for the questionnaire UI -->
