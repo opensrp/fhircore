@@ -62,7 +62,13 @@ class TextToForm(private val generativeModel: GenerativeModel) {
     }
   }
 
-  /** Builds the prompt for the Gemini model. */
+  /**
+   * Builds the prompt for the Gemini model.
+   *
+   * @param transcript The text transcript of the conversation.
+   * @param questionnaire The FHIR Questionnaire to base the response on.
+   * @return The prompt string to be sent to the Gemini model.
+   */
   private fun promptTemplate(transcript: String, questionnaire: Questionnaire): String {
     return """
       You are a scribe created to turn conversational text into structure HL7 FHIR output. Below
@@ -77,7 +83,12 @@ class TextToForm(private val generativeModel: GenerativeModel) {
       .trimIndent()
   }
 
-  /** Extracts the JSON block from the generated text. */
+  /**
+   * Extracts the JSON block from the generated text.
+   *
+   * @param responseText The text response from the Gemini model.
+   * @return The extracted JSON string or null if extraction fails.
+   */
   private fun extractJsonBlock(responseText: String?): String? {
     if (responseText == null) return null
     val start = responseText.indexOf("```json")
@@ -86,13 +97,23 @@ class TextToForm(private val generativeModel: GenerativeModel) {
     return if (end == -1) null else responseText.substring(start + 7, end).trim()
   }
 
-  /** Parses the JSON string into a QuestionnaireResponse object. */
+  /**
+   * Parses the JSON string into a QuestionnaireResponse object.
+   *
+   * @param json The JSON string representing the QuestionnaireResponse.
+   * @return The parsed QuestionnaireResponse object.
+   */
   private fun parseQuestionnaireResponse(json: String): QuestionnaireResponse {
     return QuestionnaireResponse().apply { fromJson(JSONObject(json).toString()) }
   }
 
-  /** Validates the QuestionnaireResponse structure. */
-  private fun validateQuestionnaireResponse(qr: QuestionnaireResponse): Boolean {
+  /**
+   * Validates the QuestionnaireResponse structure.
+   *
+   * @param questionnaireResponse The QuestionnaireResponse object to validate.
+   * @return True if the QuestionnaireResponse is valid, false otherwise.
+   */
+  private fun validateQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
     // todo use SDC validation
 
     return true
