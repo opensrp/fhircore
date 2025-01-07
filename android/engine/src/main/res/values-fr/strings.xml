@@ -25,7 +25,7 @@
     <string name="syncing">Synchronisation</string>
     <string name="syncing_up" >Synchronisation&#8230;</string>
     <string name="syncing_down" >Synchronisation&#8230;</string>
-    <string name="syncing_initiated">Synchronisation initiée&#8230 ;</string>
+    <string name="syncing_initiated">Synchronisation initiée&#8230;</string>
     <string name="sync_failed">La synchronisation a échoué. Vérifier la connexion internet ou réessayer plus tard</string>
     <string name="sync_completed_with_errors">La synchronisation s\'est terminée avec des erreurs. Réessayer...</string>
     <string name="sync_unauthorised">La synchronisation a échoué car les informations d\'authentification ne sont pas valides.</string>
