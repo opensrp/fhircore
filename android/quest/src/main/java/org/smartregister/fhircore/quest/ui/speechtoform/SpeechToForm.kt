@@ -23,9 +23,9 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 
 class SpeechToForm(
   private val speechToText: SpeechToText,
-  private val textToForm: TextToForm,
+  geminiModel: GeminiModel,
 ) {
-
+  private val textToForm: TextToForm = TextToForm(geminiModel.getModel())
   private val logger = Logger.getLogger(SpeechToForm::class.java.name)
 
   /**
