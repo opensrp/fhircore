@@ -1318,7 +1318,12 @@ class CustomParserState<T> {
         protected void populateTarget() {
             weaveContainedResources();
             if (myMutator != null) {
-               // myMutator.setValue(myTarget, getCurrentElement()); //TODO check for regression bugs
+                /* Fix for https://github.com/opensrp/fhircore/issues/3659
+                 For fields that contain a List of Resources, myMutator.setValue()
+                 replaces existing values instead of adding new ones resulting in the field
+                 only having the last item after parsing is completed
+                 */
+               // myMutator.setValue(myTarget, getCurrentElement()); //Check for regression bugs
                 myMutator.addValue(myTarget, getCurrentElement());
             }
         }
