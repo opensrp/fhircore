@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.di
 
-import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -42,6 +41,7 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.parser.CustomFhirContext
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
@@ -168,7 +168,7 @@ class NetworkModule {
 
   @Singleton
   @Provides
-  fun provideParser(): IParser = FhirContext.forR4Cached().getCustomJsonParser()
+  fun provideParser(): IParser = CustomFhirContext().getCustomJsonParser() //FhirContext.forR4Cached().getCustomJsonParser()
 
   @Provides
   @Singleton

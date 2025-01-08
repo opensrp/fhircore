@@ -18,19 +18,34 @@ package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.parser.CustomFhirContext
 import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 
+
 fun FhirContext.getCustomJsonParser(): IParser {
-  return this.apply {
-      registerCustomTypes(
-        listOf(
-          PractitionerDetails::class.java,
-          FhirPractitionerDetails::class.java,
-          LocationHierarchy::class.java,
-        ),
-      )
+    return this.apply {
+        registerCustomTypes(
+            listOf(
+                PractitionerDetails::class.java,
+                FhirPractitionerDetails::class.java,
+                LocationHierarchy::class.java,
+            ),
+        )
     }
-    .newJsonParser()
+        .newJsonParser()
+}
+
+fun CustomFhirContext.getCustomJsonParser(): IParser {
+    return this.apply {
+        registerCustomTypes(
+            listOf(
+                PractitionerDetails::class.java,
+                FhirPractitionerDetails::class.java,
+                LocationHierarchy::class.java,
+            ),
+        )
+    }
+        .newJsonParser()
 }
