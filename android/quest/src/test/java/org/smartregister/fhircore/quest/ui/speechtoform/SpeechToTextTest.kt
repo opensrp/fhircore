@@ -38,29 +38,47 @@ class SpeechToTextTest {
 
   private lateinit var speechToText: SpeechToText
   private lateinit var mockSpeechClient: SpeechClient
+  private val useRealApi = System.getProperty("USE_REAL_API")?.toBoolean() ?: false
 
   @Before
   fun setUp() {
-    // Initialize the SpeechToText instance and mock dependencies
-    mockSpeechClient = mockk(relaxed = true)
-    mockkStatic(SpeechClient::class)
-    every { SpeechClient.create() } returns mockSpeechClient
-
+    if (!useRealApi) {
+      mockSpeechClient = mockk(relaxed = true)
+      mockkStatic(SpeechClient::class)
+      every { SpeechClient.create() } returns mockSpeechClient
+    }
     speechToText = SpeechToText()
   }
 
   @After
   fun tearDown() {
-    unmockkAll()
+    if (!useRealApi) unmockkAll()
   }
 
   @Test
-  fun transcribeAudioToTextShouldReturnTemporaryFileWithTranscription() {
+  fun testTranscribeAudioToTextShouldReturnTemporaryFileWithTranscription() {
+    if (useRealApi) {
+      testTranscribeAudioToTextRealApi()
+    } else {
+      testTranscribeAudioToTextMock()
+    }
+  }
+
+  private fun testTranscribeAudioToTextRealApi() {
+    val testFile = File("src/test/resources/sample_audio.wav")
+    require(testFile.exists()) { "Test audio file not found at ${testFile.absolutePath}" }
+
+    val resultFile = speechToText.transcribeAudioToText(testFile)
+    assertNotNull(resultFile, "Result file should not be null")
+    assertTrue(resultFile.exists(), "Result file should exist")
+    println("Transcription result: ${resultFile.readText()}")
+  }
+
+  private fun testTranscribeAudioToTextMock() {
     val mockAudioFile = mockk<File>(relaxed = true)
     val mockAudioBytes = "test audio bytes".toByteArray()
     every { mockAudioFile.readBytes() } returns mockAudioBytes
 
-    // Mock SpeechClient response
     val mockRecognitionAudio =
       RecognitionAudio.newBuilder()
         .setContent(com.google.protobuf.ByteString.copyFrom(mockAudioBytes))
@@ -78,16 +96,9 @@ class SpeechToTextTest {
     val mockResponse = RecognizeResponse.newBuilder().addResults(mockResult).build()
     every { mockSpeechClient.recognize(mockConfig, mockRecognitionAudio) } returns mockResponse
 
-    var resultFile: File? = null
-    try {
-      resultFile = speechToText.transcribeAudioToText(mockAudioFile)
-
-      assertNotNull(resultFile, "Result file should not be null")
-      assertTrue(resultFile.exists(), "Result file should exist")
-      assertEquals("Hello World", resultFile.readText(), "Transcription content should match")
-    } finally {
-      resultFile?.delete()
-      assertTrue(resultFile?.exists() == false, "Result file should be deleted")
-    }
+    val resultFile = speechToText.transcribeAudioToText(mockAudioFile)
+    assertNotNull(resultFile, "Result file should not be null")
+    assertTrue(resultFile.exists(), "Result file should exist")
+    assertEquals("Hello World", resultFile.readText(), "Transcription content should match")
   }
 }

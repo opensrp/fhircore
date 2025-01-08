@@ -45,6 +45,7 @@ class GeminiModel() {
           SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.MEDIUM_AND_ABOVE),
         ),
     )
+
   /**
    * Returns the configured GenerativeModel instance.
    *
