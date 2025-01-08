@@ -21,15 +21,15 @@ import com.google.ai.client.generativeai.type.BlockThreshold
 import com.google.ai.client.generativeai.type.HarmCategory
 import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.generationConfig
+import org.smartregister.fhircore.quest.BuildConfig
 
-class GeminiModel(private val apiKey: String) {
+class GeminiModel() {
   // model usage
   // https://developer.android.com/ai/google-ai-client-sdk
   val model =
     GenerativeModel(
       modelName = "gemini-1.5-flash-001",
-      // todo actually add the API key
-      apiKey = "BuildConfig.apikey",
+      apiKey = BuildConfig.GEMINI_API_KEY,
       generationConfig =
         generationConfig {
           temperature = 0.15f

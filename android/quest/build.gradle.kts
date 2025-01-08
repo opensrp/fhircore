@@ -77,6 +77,7 @@ android {
     buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
     buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
     buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
+    buildConfigField("String", "GEMINI_API_KEY", """${project.extra["GEMINI_API_KEY"]}""")
 
     testInstrumentationRunner = "org.smartregister.fhircore.quest.QuestTestRunner"
     testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"
