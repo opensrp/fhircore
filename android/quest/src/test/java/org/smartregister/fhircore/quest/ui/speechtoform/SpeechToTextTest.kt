@@ -78,10 +78,16 @@ class SpeechToTextTest {
     val mockResponse = RecognizeResponse.newBuilder().addResults(mockResult).build()
     every { mockSpeechClient.recognize(mockConfig, mockRecognitionAudio) } returns mockResponse
 
-    val resultFile = speechToText.transcribeAudioToText(mockAudioFile)
+    var resultFile: File? = null
+    try {
+      resultFile = speechToText.transcribeAudioToText(mockAudioFile)
 
-    assertNotNull(resultFile, "Result file should not be null")
-    assertTrue(resultFile.exists(), "Result file should exist")
-    assertEquals("Hello World", resultFile.readText(), "Transcription content should match")
+      assertNotNull(resultFile, "Result file should not be null")
+      assertTrue(resultFile.exists(), "Result file should exist")
+      assertEquals("Hello World", resultFile.readText(), "Transcription content should match")
+    } finally {
+      resultFile?.delete()
+      assertTrue(resultFile?.exists() == false, "Result file should be deleted")
+    }
   }
 }
