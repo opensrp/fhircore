@@ -51,5 +51,5 @@ class GeminiModel() {
    *
    * @return The GenerativeModel instance.
    */
-  fun getModel(): GenerativeModel = model
+  fun getGeminiModel(): GenerativeModel = model
 }

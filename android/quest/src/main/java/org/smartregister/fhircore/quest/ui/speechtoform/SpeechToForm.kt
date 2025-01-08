@@ -25,7 +25,7 @@ class SpeechToForm(
   private val speechToText: SpeechToText,
   geminiModel: GeminiModel,
 ) {
-  private val textToForm: TextToForm = TextToForm(geminiModel.getModel())
+  private val textToForm: TextToForm = TextToForm(geminiModel.getGeminiModel())
   private val logger = Logger.getLogger(SpeechToForm::class.java.name)
 
   /**

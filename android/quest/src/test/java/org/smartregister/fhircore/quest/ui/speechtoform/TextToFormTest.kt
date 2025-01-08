@@ -43,7 +43,7 @@ class TextToFormTest {
       textToForm = TextToForm(mockGenerativeModel)
     } else {
       val geminiModel = GeminiModel()
-      textToForm = TextToForm(geminiModel.getModel())
+      textToForm = TextToForm(geminiModel.getGeminiModel())
     }
   }
 
