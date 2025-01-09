@@ -41,9 +41,9 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.parser.CustomFhirContext
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.parser.CustomFhirContext
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.TimeZoneTypeAdapter
@@ -168,7 +168,8 @@ class NetworkModule {
 
   @Singleton
   @Provides
-  fun provideParser(): IParser = CustomFhirContext().getCustomJsonParser() //FhirContext.forR4Cached().getCustomJsonParser()
+  fun provideParser(): IParser =
+    CustomFhirContext().getCustomJsonParser()
 
   @Provides
   @Singleton
