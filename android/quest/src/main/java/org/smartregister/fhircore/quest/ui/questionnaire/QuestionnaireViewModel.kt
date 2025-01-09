@@ -26,9 +26,6 @@ import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
-import com.google.android.fhir.datacapture.validation.NotValidated
-import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
-import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
@@ -92,7 +89,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isIn
-import org.smartregister.fhircore.engine.util.extension.packRepeatedGroups
 import org.smartregister.fhircore.engine.util.extension.prepopulateWithComputedConfigValues
 import org.smartregister.fhircore.engine.util.extension.questionnaireResponseStatus
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -102,6 +98,7 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequest
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequestHandler
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.util.QuestionnaireResponseValidator
 import timber.log.Timber
 
 @HiltViewModel
@@ -169,10 +166,11 @@ constructor(
   ) {
     viewModelScope.launch(SupervisorJob()) {
       val questionnaireResponseValid =
-        validateQuestionnaireResponse(
+        QuestionnaireResponseValidator.validateQuestionnaireResponse(
           questionnaire = questionnaire,
           questionnaireResponse = currentQuestionnaireResponse,
           context = context,
+          dispatcherProvider = dispatcherProvider,
         )
 
       if (questionnaireConfig.saveQuestionnaireResponse && !questionnaireResponseValid) {
@@ -785,45 +783,6 @@ constructor(
                     }",
         )
       }
-    }
-  }
-
-  /**
-   * This function validates all [QuestionnaireResponse] and returns true if all the validation
-   * result of [QuestionnaireResponseValidator] are [Valid] or [NotValidated] (validation is
-   * optional on [Questionnaire] fields)
-   */
-  suspend fun validateQuestionnaireResponse(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
-    context: Context,
-  ): Boolean {
-    val validQuestionnaireResponseItems = mutableListOf<QuestionnaireResponseItemComponent>()
-    val validQuestionnaireItems = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
-    val questionnaireItemsMap = questionnaire.item.associateBy { it.linkId }
-
-    // Only validate items that are present on both Questionnaire and the QuestionnaireResponse
-    questionnaireResponse.copy().item.forEach {
-      if (questionnaireItemsMap.containsKey(it.linkId)) {
-        val questionnaireItem = questionnaireItemsMap.getValue(it.linkId)
-        validQuestionnaireResponseItems.add(it)
-        validQuestionnaireItems.add(questionnaireItem)
-      }
-    }
-
-    return withContext(dispatcherProvider.default()) {
-      QuestionnaireResponseValidator.validateQuestionnaireResponse(
-          questionnaire = Questionnaire().apply { item = validQuestionnaireItems },
-          questionnaireResponse =
-            QuestionnaireResponse().apply {
-              item = validQuestionnaireResponseItems
-              packRepeatedGroups()
-            },
-          context = context,
-        )
-        .values
-        .flatten()
-        .all { it is Valid || it is NotValidated }
     }
   }
 

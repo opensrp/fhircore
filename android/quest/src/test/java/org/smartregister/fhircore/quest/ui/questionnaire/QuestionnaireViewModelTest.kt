@@ -123,6 +123,7 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.assertResourceEquals
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
+import org.smartregister.fhircore.quest.util.QuestionnaireResponseValidator
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber
@@ -292,10 +293,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
       // Verify QuestionnaireResponse was validated
       coVerify {
-        questionnaireViewModel.validateQuestionnaireResponse(
+        QuestionnaireResponseValidator.validateQuestionnaireResponse(
           questionnaire,
           questionnaireResponse,
           context,
+          questionnaireViewModel.dispatcherProvider,
         )
       }
       // Verify perform extraction was invoked
@@ -395,10 +397,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // Verify QuestionnaireResponse was validated
     coVerify {
-      questionnaireViewModel.validateQuestionnaireResponse(
+      QuestionnaireResponseValidator.validateQuestionnaireResponse(
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
         context = context,
+        dispatcherProvider = questionnaireViewModel.dispatcherProvider,
       )
     }
 
@@ -924,16 +927,17 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     runBlocking {
       // No answer provided
       Assert.assertFalse(
-        questionnaireViewModel.validateQuestionnaireResponse(
+        QuestionnaireResponseValidator.validateQuestionnaireResponse(
           questionnaire,
           questionnaireResponse,
           context,
+          questionnaireViewModel.dispatcherProvider,
         ),
       )
 
       // With an answer provided
       Assert.assertTrue(
-        questionnaireViewModel.validateQuestionnaireResponse(
+        QuestionnaireResponseValidator.validateQuestionnaireResponse(
           questionnaire,
           questionnaireResponse.apply {
             itemFirstRep.answer =
@@ -943,6 +947,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
               )
           },
           context,
+          questionnaireViewModel.dispatcherProvider,
         ),
       )
     }
@@ -1037,10 +1042,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponse =
       parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
     val result =
-      questionnaireViewModel.validateQuestionnaireResponse(
+      QuestionnaireResponseValidator.validateQuestionnaireResponse(
         questionnaire,
         questionnaireResponse,
         context,
+        questionnaireViewModel.dispatcherProvider,
       )
     Assert.assertTrue(result)
   }
@@ -1161,10 +1167,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       val actualQuestionnaireResponse =
         parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
       val result =
-        questionnaireViewModel.validateQuestionnaireResponse(
+        QuestionnaireResponseValidator.validateQuestionnaireResponse(
           questionnaire,
           actualQuestionnaireResponse,
           context,
+          questionnaireViewModel.dispatcherProvider,
         )
       val expectedQuestionnaireResponse =
         parser.parseResource(questionnaireResponseString) as QuestionnaireResponse

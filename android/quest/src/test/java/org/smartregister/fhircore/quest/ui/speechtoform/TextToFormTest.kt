@@ -40,10 +40,10 @@ class TextToFormTest {
   fun setUp() {
     if (!useRealApi) {
       mockGenerativeModel = mockk(relaxed = true)
-      textToForm = TextToForm(mockGenerativeModel)
+      textToForm = TextToForm(mockGenerativeModel, null)
     } else {
       val geminiModel = GeminiModel()
-      textToForm = TextToForm(geminiModel.getGeminiModel())
+      textToForm = TextToForm(geminiModel.getGeminiModel(), null)
     }
   }
 

@@ -65,6 +65,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
 import org.smartregister.fhircore.quest.ui.shared.ActivityOnResultType
 import org.smartregister.fhircore.quest.ui.shared.ON_RESULT_TYPE
+import org.smartregister.fhircore.quest.util.QuestionnaireResponseValidator
 import org.smartregister.fhircore.quest.util.ResourceUtils
 import timber.log.Timber
 
@@ -285,7 +286,12 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         if (questionnaireResponse != null) {
           questionnaireResponse
             .takeIf {
-              viewModel.validateQuestionnaireResponse(questionnaire, it, this@QuestionnaireActivity)
+              QuestionnaireResponseValidator.validateQuestionnaireResponse(
+                questionnaire,
+                it,
+                this@QuestionnaireActivity,
+                viewModel.dispatcherProvider,
+              )
             }
             ?.let { setQuestionnaireResponse(it.json()) }
             ?: showToast(getString(R.string.error_populating_questionnaire))

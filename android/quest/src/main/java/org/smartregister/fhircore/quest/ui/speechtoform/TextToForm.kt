@@ -23,8 +23,16 @@ import java.util.logging.Logger
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.json.JSONObject
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.util.QuestionnaireResponseValidator
 
-class TextToForm(private val generativeModel: GenerativeModel) {
+class TextToForm(
+  private val generativeModel: GenerativeModel,
+  private val dispatcherProvider: DispatcherProvider?,
+  private val questionnaireActivity: QuestionnaireActivity?,
+) {
 
   private val logger = Logger.getLogger(TextToForm::class.java.name)
 
@@ -49,7 +57,7 @@ class TextToForm(private val generativeModel: GenerativeModel) {
 
     return try {
       val questionnaireResponse = parseQuestionnaireResponse(questionnaireResponseJson)
-      if (validateQuestionnaireResponse(questionnaireResponse)) {
+      if (validateQuestionnaireResponse(questionnaire, questionnaireResponse)) {
         logger.info("QuestionnaireResponse validated successfully.")
         questionnaireResponse
       } else {
@@ -113,9 +121,29 @@ class TextToForm(private val generativeModel: GenerativeModel) {
    * @param questionnaireResponse The QuestionnaireResponse object to validate.
    * @return True if the QuestionnaireResponse is valid, false otherwise.
    */
-  private fun validateQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
-    // todo use SDC validation
+  private suspend fun validateQuestionnaireResponse(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+  ): Boolean {
+    // validate using existing code, not sure about how to pass/instantiate in the
+    // dispatcherProvider and questionnaireActivity
+    val errors =
+      QuestionnaireResponseValidator.getQuestionnaireResponseErrors(
+        questionnaire,
+        questionnaireResponse,
+        QuestionnaireActivity(),
+        DefaultDispatcherProvider(),
+      )
 
-    return true
+    // no errors, no need to retry
+    if (errors.isEmpty()) {
+      return true
+    }
+
+    // TODO build new prompt from errors
+
+    // TODO retry with new prompt, and go to top
+
+    return false
   }
 }
