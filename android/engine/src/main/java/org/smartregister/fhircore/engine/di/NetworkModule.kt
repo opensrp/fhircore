@@ -166,10 +166,7 @@ class NetworkModule {
       .registerTypeAdapter(TimeZone::class.java, TimeZoneTypeAdapter().nullSafe())
       .create()
 
-  @Singleton
-  @Provides
-  fun provideParser(): IParser =
-    CustomFhirContext().getCustomJsonParser()
+  @Singleton @Provides fun provideParser(): IParser = CustomFhirContext().getCustomJsonParser()
 
   @Provides
   @Singleton
