@@ -18,56 +18,83 @@ package org.smartregister.fhircore.quest.ui.speechtoform
 
 import ca.uhn.fhir.interceptor.model.RequestPartitionId.fromJson
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.android.fhir.datacapture.validation.ValidationResult
 import java.io.File
 import java.util.logging.Logger
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.util.QuestionnaireResponseValidator
 
 class TextToForm(
   private val generativeModel: GenerativeModel,
-  private val dispatcherProvider: DispatcherProvider?,
-  private val questionnaireActivity: QuestionnaireActivity?,
+  private val maxRetries: Int = 3,
 ) {
 
   private val logger = Logger.getLogger(TextToForm::class.java.name)
 
   /**
    * Generates an HL7 FHIR QuestionnaireResponse from a transcript using the provided Questionnaire.
+   * Includes retry logic if the response is invalid.
    *
    * @param transcriptFile The temporary file containing the transcript text.
    * @param questionnaire The FHIR Questionnaire to base the response on.
-   * @return The generated and validated QuestionnaireResponse or null if generation fails.
+   * @return The generated and validated QuestionnaireResponse or null if generation fails after
+   *   retry.
    */
   suspend fun generateQuestionnaireResponse(
     transcriptFile: File,
     questionnaire: Questionnaire,
   ): QuestionnaireResponse? {
     val transcript = transcriptFile.readText()
-    val prompt = promptTemplate(transcript, questionnaire)
+    var retryCount = 0
+    var validResponse: QuestionnaireResponse? = null
+    var prompt = promptTemplate(transcript, questionnaire)
 
-    logger.info("Sending request to Gemini...")
-    val generatedText = generativeModel.generateContent(prompt).text
+    while (
+      retryCount < maxRetries && validResponse == null
+    ) {
 
-    val questionnaireResponseJson = extractJsonBlock(generatedText) ?: return null
+      logger.info("Sending request to Gemini...")
+      val generatedText = generativeModel.generateContent(prompt).text
 
-    return try {
-      val questionnaireResponse = parseQuestionnaireResponse(questionnaireResponseJson)
-      if (validateQuestionnaireResponse(questionnaire, questionnaireResponse)) {
-        logger.info("QuestionnaireResponse validated successfully.")
-        questionnaireResponse
-      } else {
-        logger.warning("QuestionnaireResponse validation failed.")
-        null
+      val questionnaireResponseJson = extractJsonBlock(generatedText) ?: return null
+
+      try {
+        val questionnaireResponse = parseQuestionnaireResponse(questionnaireResponseJson)
+        val errors =
+          QuestionnaireResponseValidator.getQuestionnaireResponseErrors(
+            questionnaire,
+            questionnaireResponse,
+            QuestionnaireActivity(),
+            DefaultDispatcherProvider(),
+          )
+        if (errors.isEmpty()) {
+          logger.info("QuestionnaireResponse validated successfully.")
+          validResponse = questionnaireResponse
+        } else {
+          logger.warning("QuestionnaireResponse validation failed.")
+
+          // Build retry prompt with errors and invalid response for next retry
+          prompt =
+            buildRetryPrompt(
+              transcript = transcript,
+              errors = errors,
+              invalidResponse = questionnaireResponse,
+              questionnaire = questionnaire,
+            )
+
+          retryCount++
+        }
+      } catch (e: Exception) {
+        logger.severe("Error generating QuestionnaireResponse: ${e.message}")
+        return null
       }
-    } catch (e: Exception) {
-      logger.severe("Error generating QuestionnaireResponse: ${e.message}")
-      null
     }
+
+    return validResponse
   }
 
   /**
@@ -116,34 +143,32 @@ class TextToForm(
   }
 
   /**
-   * Validates the QuestionnaireResponse structure.
+   * Builds the retry prompt based on the errors, invalid response, and original questionnaire.
    *
-   * @param questionnaireResponse The QuestionnaireResponse object to validate.
-   * @return True if the QuestionnaireResponse is valid, false otherwise.
+   * @param transcript The transcript of the conversation.
+   * @param errors List of errors encountered in the original response.
+   * @param invalidResponse The original invalid QuestionnaireResponse.
+   * @param questionnaire The FHIR Questionnaire to base the response on.
+   * @return The retry prompt string to be sent to the Gemini model.
    */
-  private suspend fun validateQuestionnaireResponse(
+  private fun buildRetryPrompt(
+    transcript: String,
+    errors: List<ValidationResult>,
+    invalidResponse: QuestionnaireResponse,
     questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
-  ): Boolean {
-    // validate using existing code, not sure about how to pass/instantiate in the
-    // dispatcherProvider and questionnaireActivity
-    val errors =
-      QuestionnaireResponseValidator.getQuestionnaireResponseErrors(
-        questionnaire,
-        questionnaireResponse,
-        QuestionnaireActivity(),
-        DefaultDispatcherProvider(),
-      )
+  ): String {
+    return """
+    The previous attempt to generate the QuestionnaireResponse was invalid. Below is the list of errors encountered:
+    <errors>${errors.joinToString("\n")}</errors>
 
-    // no errors, no need to retry
-    if (errors.isEmpty()) {
-      return true
-    }
+    The invalid QuestionnaireResponse was:
+    <invalidResponse>$invalidResponse</invalidResponse>
 
-    // TODO build new prompt from errors
-
-    // TODO retry with new prompt, and go to top
-
-    return false
+    Please retry generating the QuestionnaireResponse based on the conversation transcript below and the FHIR Questionnaire.
+    
+    <transcript>$transcript</transcript>
+    <questionnaire>$questionnaire</questionnaire>
+            """
+      .trimIndent()
   }
 }
