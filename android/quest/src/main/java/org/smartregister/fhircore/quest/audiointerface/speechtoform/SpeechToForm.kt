@@ -20,7 +20,6 @@ import java.io.File
 import java.util.logging.Logger
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.quest.audiointerface.models.GeminiModel
 import org.smartregister.fhircore.quest.audiointerface.models.LlmModel
 
 class SpeechToForm(

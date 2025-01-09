@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.speechtoform
+package org.smartregister.fhircore.quest.audiointerface.speechtoform
 
 import com.google.cloud.speech.v1.RecognitionAudio
 import com.google.cloud.speech.v1.RecognitionConfig
@@ -33,7 +33,6 @@ import kotlin.test.assertTrue
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.smartregister.fhircore.quest.audiointerface.speechtoform.SpeechToText
 
 class SpeechToTextTest {
 

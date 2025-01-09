@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.speechtoform
+package org.smartregister.fhircore.quest.audiointerface.speechtoform
 
-import com.google.ai.client.generativeai.GenerativeModel
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -30,33 +29,33 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.quest.audiointerface.models.GeminiModel
-import org.smartregister.fhircore.quest.audiointerface.speechtoform.TextToForm
+import org.smartregister.fhircore.quest.audiointerface.models.LlmModel
 
 class TextToFormTest {
 
   private lateinit var textToForm: TextToForm
-  private lateinit var mockGenerativeModel: GenerativeModel
-  private val useRealApi = System.getProperty("USE_REAL_API")?.toBoolean() ?: false
+  private lateinit var mockLlmModel: LlmModel
+  private val useGeminiApi = System.getProperty("USE_GEMINI_API")?.toBoolean() ?: false
 
   @Before
   fun setUp() {
-    if (!useRealApi) {
-      mockGenerativeModel = mockk(relaxed = true)
-      textToForm = TextToForm(mockGenerativeModel)
-    } else {
+    if (useGeminiApi) {
       val geminiModel = GeminiModel()
-      textToForm = TextToForm(geminiModel.getModel())
+      textToForm = TextToForm(geminiModel)
+    } else {
+      mockLlmModel = mockk(relaxed = true)
+      textToForm = TextToForm(mockLlmModel)
     }
   }
 
   @After
   fun tearDown() {
-    if (!useRealApi) unmockkAll()
+    if (!useGeminiApi) unmockkAll()
   }
 
   @Test
   fun testGenerateQuestionnaireResponseShouldReturnQuestionnaireResponse() = runTest {
-    if (useRealApi) {
+    if (useGeminiApi) {
       testGenerateQuestionnaireResponseRealApi()
     } else {
       testGenerateQuestionnaireResponseMock()
@@ -79,8 +78,8 @@ class TextToFormTest {
     val mockResponseJson = "{'id': '123'}" // Mock JSON response
 
     every { mockTranscriptFile.readText() } returns "This is a test transcript."
-    coEvery { mockGenerativeModel.generateContent(any(String::class)) } returns
-      mockk { every { text } returns "```json\n$mockResponseJson\n```" }
+    coEvery { mockLlmModel.generateContent(any(String::class)) } returns
+      "```json\n$mockResponseJson\n```"
 
     val result = textToForm.generateQuestionnaireResponse(mockTranscriptFile, mockQuestionnaire)
     assertNotNull(result, "QuestionnaireResponse should not be null")

@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.audiointerface.speechtoform
 
 import ca.uhn.fhir.interceptor.model.RequestPartitionId.fromJson
-import com.google.ai.client.generativeai.GenerativeModel
 import com.google.android.fhir.datacapture.validation.ValidationResult
 import java.io.File
 import java.util.logging.Logger
@@ -26,8 +25,8 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.quest.audiointerface.models.LlmModel
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.audiointerface.validation.QuestionnaireResponseValidator
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 
 class TextToForm(
   private val llmModel: LlmModel,
