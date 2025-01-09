@@ -53,10 +53,7 @@ class TextToForm(
     var validResponse: QuestionnaireResponse? = null
     var prompt = promptTemplate(transcript, questionnaire)
 
-    while (
-      retryCount < maxRetries && validResponse == null
-    ) {
-
+    while (retryCount < maxRetries && validResponse == null) {
       logger.info("Sending request to Gemini...")
       val generatedText = generativeModel.generateContent(prompt).text
 
