@@ -84,5 +84,20 @@ class QuestionnaireResponseValidator {
           .filter { it !is Valid }
       }
     }
+
+    suspend fun getQuestionnaireResponseErrorsAsStrings(
+      questionnaire: Questionnaire,
+      questionnaireResponse: QuestionnaireResponse,
+      context: Context,
+      dispatcherProvider: DispatcherProvider,
+    ): List<String> {
+      return getQuestionnaireResponseErrors(
+          questionnaire = questionnaire,
+          questionnaireResponse = questionnaireResponse,
+          context = context,
+          dispatcherProvider = dispatcherProvider,
+        )
+        .map { it.toString() }
+    }
   }
 }

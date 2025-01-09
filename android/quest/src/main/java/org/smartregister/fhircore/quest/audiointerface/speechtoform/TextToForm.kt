@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.audiointerface.speechtoform
 
 import ca.uhn.fhir.interceptor.model.RequestPartitionId.fromJson
-import com.google.android.fhir.datacapture.validation.ValidationResult
 import java.io.File
 import java.util.logging.Logger
 import org.hl7.fhir.r4.model.Questionnaire
@@ -47,51 +46,51 @@ class TextToForm(
   suspend fun generateQuestionnaireResponse(
     transcriptFile: File,
     questionnaire: Questionnaire,
-  ): QuestionnaireResponse? {
+  ): QuestionnaireResponse {
     val transcript = transcriptFile.readText()
     var retryCount = 0
-    var validResponse: QuestionnaireResponse? = null
+    var questionnaireResponse = QuestionnaireResponse()
     var prompt = promptTemplate(transcript, questionnaire)
 
-    while (retryCount < maxRetries && validResponse == null) {
+    do {
       logger.info("Sending request to Gemini...")
       val generatedText = llmModel.generateContent(prompt)
+      val errors: List<String>
+      val questionnaireResponseJson = extractJsonBlock(generatedText)
 
-      val questionnaireResponseJson = extractJsonBlock(generatedText) ?: return null
-
-      try {
-        val questionnaireResponse = parseQuestionnaireResponse(questionnaireResponseJson)
-        val errors =
-          QuestionnaireResponseValidator.getQuestionnaireResponseErrors(
+      if (questionnaireResponseJson == null) {
+        logger.severe("Failed to extract JSON block from Gemini response.")
+        errors = listOf("Failed to extract JSON block from Gemini response.")
+      } else {
+        questionnaireResponse = parseQuestionnaireResponse(questionnaireResponseJson)
+        errors =
+          QuestionnaireResponseValidator.getQuestionnaireResponseErrorsAsStrings(
             questionnaire,
             questionnaireResponse,
             QuestionnaireActivity(),
             DefaultDispatcherProvider(),
           )
-        if (errors.isEmpty()) {
-          logger.info("QuestionnaireResponse validated successfully.")
-          validResponse = questionnaireResponse
-        } else {
-          logger.warning("QuestionnaireResponse validation failed.")
-
-          // Build retry prompt with errors and invalid response for next retry
-          prompt =
-            buildRetryPrompt(
-              transcript = transcript,
-              errors = errors,
-              invalidResponse = questionnaireResponse,
-              questionnaire = questionnaire,
-            )
-
-          retryCount++
-        }
-      } catch (e: Exception) {
-        logger.severe("Error generating QuestionnaireResponse: ${e.message}")
-        return null
       }
-    }
+      if (errors.isEmpty()) {
+        logger.info("QuestionnaireResponse validated successfully.")
+        retryCount = maxRetries
+      } else {
+        logger.warning("QuestionnaireResponse validation failed.")
 
-    return validResponse
+        // Build retry prompt with errors and invalid response for next retry
+        prompt =
+          buildRetryPrompt(
+            transcript = transcript,
+            errors = errors,
+            invalidResponse = questionnaireResponse,
+            questionnaire = questionnaire,
+          )
+
+        retryCount++
+      }
+    } while (retryCount < maxRetries)
+
+    return questionnaireResponse
   }
 
   /**
@@ -150,8 +149,8 @@ class TextToForm(
    */
   private fun buildRetryPrompt(
     transcript: String,
-    errors: List<ValidationResult>,
-    invalidResponse: QuestionnaireResponse,
+    errors: List<String>,
+    invalidResponse: QuestionnaireResponse?,
     questionnaire: Questionnaire,
   ): String {
     return """
