@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.speechtoform
+package org.smartregister.fhircore.quest.audiointerface.models
 
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.BlockThreshold
@@ -23,10 +23,10 @@ import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.generationConfig
 import org.smartregister.fhircore.quest.BuildConfig
 
-class GeminiModel() {
+class GeminiModel : LlmModel() {
   // model usage
   // https://developer.android.com/ai/google-ai-client-sdk
-  val model =
+  override val model =
     GenerativeModel(
       modelName = "gemini-1.5-flash-001",
       apiKey = BuildConfig.GEMINI_API_KEY,
@@ -47,9 +47,12 @@ class GeminiModel() {
     )
 
   /**
-   * Returns the configured GenerativeModel instance.
+   * Generates content based on the provided prompt.
    *
-   * @return The GenerativeModel instance.
+   * @param prompt The prompt string to generate content from.
+   * @return The generated content as a string or null.
    */
-  fun getGeminiModel(): GenerativeModel = model
+  override suspend fun generateContent(prompt: String): String? {
+    return model.generateContent(prompt).text
+  }
 }

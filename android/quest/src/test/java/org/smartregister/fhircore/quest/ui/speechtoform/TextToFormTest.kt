@@ -29,6 +29,8 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.quest.audiointerface.models.GeminiModel
+import org.smartregister.fhircore.quest.audiointerface.speechtoform.TextToForm
 
 class TextToFormTest {
 
@@ -43,7 +45,7 @@ class TextToFormTest {
       textToForm = TextToForm(mockGenerativeModel)
     } else {
       val geminiModel = GeminiModel()
-      textToForm = TextToForm(geminiModel.getGeminiModel())
+      textToForm = TextToForm(geminiModel.getModel())
     }
   }
 

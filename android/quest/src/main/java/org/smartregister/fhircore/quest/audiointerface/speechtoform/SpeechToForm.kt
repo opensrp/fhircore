@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.speechtoform
+package org.smartregister.fhircore.quest.audiointerface.speechtoform
 
 import java.io.File
 import java.util.logging.Logger
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.quest.audiointerface.models.GeminiModel
+import org.smartregister.fhircore.quest.audiointerface.models.LlmModel
 
 class SpeechToForm(
   private val speechToText: SpeechToText,
-  geminiModel: GeminiModel,
+  llmModel: LlmModel,
 ) {
-  private val textToForm: TextToForm = TextToForm(geminiModel.getGeminiModel())
+  private val textToForm: TextToForm = TextToForm(llmModel)
   private val logger = Logger.getLogger(SpeechToForm::class.java.name)
 
   /**

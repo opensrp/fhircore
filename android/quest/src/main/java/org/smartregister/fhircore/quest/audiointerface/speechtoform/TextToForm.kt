@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.speechtoform
+package org.smartregister.fhircore.quest.audiointerface.speechtoform
 
 import ca.uhn.fhir.interceptor.model.RequestPartitionId.fromJson
 import com.google.ai.client.generativeai.GenerativeModel
@@ -25,11 +25,12 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.quest.audiointerface.models.LlmModel
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.quest.util.QuestionnaireResponseValidator
+import org.smartregister.fhircore.quest.audiointerface.validation.QuestionnaireResponseValidator
 
 class TextToForm(
-  private val generativeModel: GenerativeModel,
+  private val llmModel: LlmModel,
   private val maxRetries: Int = 3,
 ) {
 
@@ -55,7 +56,7 @@ class TextToForm(
 
     while (retryCount < maxRetries && validResponse == null) {
       logger.info("Sending request to Gemini...")
-      val generatedText = generativeModel.generateContent(prompt).text
+      val generatedText = llmModel.generateContent(prompt)
 
       val questionnaireResponseJson = extractJsonBlock(generatedText) ?: return null
 
@@ -155,13 +156,15 @@ class TextToForm(
     questionnaire: Questionnaire,
   ): String {
     return """
-    The previous attempt to generate the QuestionnaireResponse was invalid. Below is the list of errors encountered:
-    <errors>${errors.joinToString("\n")}</errors>
+    You are a scribe created to turn conversational text into structure HL7 FHIR output. The
+    previous attempt to generate the QuestionnaireResponse was invalid. Below is the list of errors
+    encountered: <errors>${errors.joinToString("\n")}</errors>
 
     The invalid QuestionnaireResponse was:
     <invalidResponse>$invalidResponse</invalidResponse>
 
-    Please retry generating the QuestionnaireResponse based on the conversation transcript below and the FHIR Questionnaire.
+    Avoiding the errors above, retry generating the QuestionnaireResponse based on the conversation
+    transcript below and the FHIR Questionnaire.
     
     <transcript>$transcript</transcript>
     <questionnaire>$questionnaire</questionnaire>

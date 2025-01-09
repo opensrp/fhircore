@@ -65,7 +65,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
 import org.smartregister.fhircore.quest.ui.shared.ActivityOnResultType
 import org.smartregister.fhircore.quest.ui.shared.ON_RESULT_TYPE
-import org.smartregister.fhircore.quest.util.QuestionnaireResponseValidator
+import org.smartregister.fhircore.quest.audiointerface.validation.QuestionnaireResponseValidator
 import org.smartregister.fhircore.quest.util.ResourceUtils
 import timber.log.Timber
 

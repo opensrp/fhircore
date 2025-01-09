@@ -77,7 +77,6 @@ import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseStatus
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -123,7 +122,7 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.assertResourceEquals
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
-import org.smartregister.fhircore.quest.util.QuestionnaireResponseValidator
+import org.smartregister.fhircore.quest.audiointerface.validation.QuestionnaireResponseValidator
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber

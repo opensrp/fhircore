@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util
+package org.smartregister.fhircore.quest.audiointerface.validation
 
 import android.content.Context
 import com.google.android.fhir.datacapture.validation.NotValidated

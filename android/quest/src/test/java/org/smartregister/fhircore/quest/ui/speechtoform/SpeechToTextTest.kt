@@ -33,6 +33,7 @@ import kotlin.test.assertTrue
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.quest.audiointerface.speechtoform.SpeechToText
 
 class SpeechToTextTest {
 
