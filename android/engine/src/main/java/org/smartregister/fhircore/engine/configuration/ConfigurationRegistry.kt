@@ -24,16 +24,22 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
+import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import com.google.android.fhir.sync.download.ResourceSearchParams
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.net.UnknownHostException
+import java.time.OffsetDateTime
 import java.util.Locale
 import java.util.PropertyResourceBundle
 import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -57,8 +63,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
-import org.smartregister.fhircore.engine.sync.CustomSyncState
-import org.smartregister.fhircore.engine.sync.CustomWorkerState
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.KnowledgeManagerUtil
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -100,12 +104,33 @@ constructor(
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
+  private val _syncState = MutableSharedFlow<CurrentSyncJobStatus>()
+  val syncState: SharedFlow<CurrentSyncJobStatus> = _syncState
+
+  suspend fun setSyncState(state: CurrentSyncJobStatus) = _syncState.emit(state)
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
    * can be directly converted to a FHIR resource or hard coded custom model. The filtering assumes
    * you are passing data across screens, then later using it in DataQueries and to retrieve
-   * registerConfiguration. It is necessary to check that [paramsMap] is empty to confirm that the
+   * registerConfiguration. It is necessary to // private val _syncState =
+   * MutableSharedFlow<SyncJobStatus>() // val customSyncState: SharedFlow<SyncJobStatus> =
+   * _syncState // // private suspend fun setSyncState(state: SyncJobStatus) =
+   * _syncState.emit(state)
+   *
+   * // init { // observeWorkerSyncState() // }
+   *
+   * // private fun observeWorkerSyncState() { // viewModelScope.launch { //
+   * CustomWorkerState.workerState.collect { syncState -> // when (syncState) { // is
+   * CustomSyncState.InProgress -> { // Timber.d("Custom Sync Worker InProgress") // // val total =
+   * syncState.total // val completed = syncState.completed // val syncOperation =
+   * syncState.syncOperation // // // Set the current sync state with the extracted values //
+   * setSyncState( // SyncJobStatus.InProgress( // syncOperation = syncOperation, // total = total,
+   * // completed = completed, // ), // ) // } // is CustomSyncState.Failed -> { // Timber.d("Custom
+   * Sync Worker Failed") // setSyncState(SyncJobStatus.Failed(emptyList())) // } //
+   * CustomSyncState.Success -> { // Timber.d("Custom Sync Worker Succeeded") //
+   * setSyncState(SyncJobStatus.Succeeded()) // } // CustomSyncState.Idle -> { // Timber.d("Custom
+   * Sync Worker Idle") // } // } // } // } // }check that [paramsMap] is empty to confirm that the
    * params used in the DataQuery are passed when retrieving the configurations.
    *
    * @throws NoSuchElementException when the [configsJsonMap] doesn't contain a value for the
@@ -525,17 +550,32 @@ constructor(
     return resultBundle
   }
 
-  suspend fun fetchResources(
+  suspend fun fetchCustomResources(
     gatewayModeHeaderValue: String? = null,
     url: String,
-    enableCustomSyncWorkerLogs: Boolean = false,
+    totalCustomRecords: Int = 0,
+    completedRecords: Int = 0,
   ) {
-    runCatching {
-        if (enableCustomSyncWorkerLogs) {
-          Timber.d("Posting state: InProgress")
-          CustomWorkerState.postState(CustomSyncState.InProgress)
-        }
+    if (completedRecords == 0) {
+      Timber.d("Setting state: Started")
+      setSyncState(
+        CurrentSyncJobStatus.Running(
+          SyncJobStatus.Started(),
+        ),
+      )
+    }
 
+    runCatching {
+        Timber.d("Setting state: Running")
+        setSyncState(
+          CurrentSyncJobStatus.Running(
+            SyncJobStatus.InProgress(
+              syncOperation = SyncOperation.DOWNLOAD,
+              total = totalCustomRecords,
+              completed = completedRecords,
+            ),
+          ),
+        )
         Timber.d("Fetching page with URL: $url")
         if (gatewayModeHeaderValue.isNullOrEmpty()) {
           fhirResourceDataSource.getResource(url)
@@ -545,31 +585,70 @@ constructor(
       }
       .onFailure { throwable ->
         Timber.e("Error occurred while retrieving resource via URL $url", throwable)
-        if (enableCustomSyncWorkerLogs) {
-          Timber.d("Posting state: Failed")
-          CustomWorkerState.postState(CustomSyncState.Failed(throwable.localizedMessage))
-        }
-        return // Exit on failure
+        Timber.d("Setting state: Failed")
+        setSyncState(
+          CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
+        )
+        return
       }
       .onSuccess { resultBundle ->
+        processResultBundleEntries(resultBundle.entry)
+        val newCompletedRecords = completedRecords + resultBundle.entry.size
+
+        Timber.d("Updating state: Running")
+        setSyncState(
+          CurrentSyncJobStatus.Running(
+            SyncJobStatus.InProgress(
+              syncOperation = SyncOperation.DOWNLOAD,
+              total = totalCustomRecords,
+              completed = newCompletedRecords,
+            ),
+          ),
+        )
+
         val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url
 
-        processResultBundleEntries(resultBundle.entry)
-
         if (!nextPageUrl.isNullOrEmpty()) {
-          fetchResources(
+          fetchCustomResources(
             gatewayModeHeaderValue = gatewayModeHeaderValue,
             url = nextPageUrl,
-            enableCustomSyncWorkerLogs = enableCustomSyncWorkerLogs,
+            totalCustomRecords = totalCustomRecords,
+            completedRecords = newCompletedRecords, // Pass the new value
           )
         } else {
           Timber.d("No more pages to fetch. Fetching completed.")
-          if (enableCustomSyncWorkerLogs) {
-            Timber.d("Posting state: Success")
-            CustomWorkerState.postState(CustomSyncState.Success)
-          }
+          Timber.d("Setting state: Succeeded")
+          setSyncState(
+            CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
+          )
         }
       }
+  }
+
+  private suspend fun fetchResources(
+    gatewayModeHeaderValue: String? = null,
+    url: String,
+  ) {
+    val resultBundle =
+      runCatching {
+          if (gatewayModeHeaderValue.isNullOrEmpty()) {
+            fhirResourceDataSource.getResource(url)
+          } else {
+            fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, url)
+          }
+        }
+        .onFailure { throwable ->
+          Timber.e("Error occurred while retrieving resource via URL $url", throwable)
+        }
+        .getOrThrow()
+    val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url
+    processResultBundleEntries(resultBundle.entry)
+    if (!nextPageUrl.isNullOrEmpty()) {
+      fetchResources(
+        gatewayModeHeaderValue = gatewayModeHeaderValue,
+        url = nextPageUrl,
+      )
+    }
   }
 
   private suspend fun processResultBundleEntries(

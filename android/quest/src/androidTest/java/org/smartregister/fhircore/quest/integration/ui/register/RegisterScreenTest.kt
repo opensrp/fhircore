@@ -60,7 +60,6 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.sync.CustomSyncState
 import org.smartregister.fhircore.quest.integration.Faker
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 import org.smartregister.fhircore.quest.ui.register.FAB_BUTTON_REGISTER_TEST_TAG
@@ -611,7 +610,6 @@ class RegisterScreenTest {
             currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
           ),
         onAppMainEvent = {},
-        customSyncState = CustomSyncState.Success,
         searchQuery = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,

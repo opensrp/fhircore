@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -52,6 +51,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.AlertDialogButton
@@ -120,7 +120,6 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         val scaffoldState = rememberScaffoldState()
         val uiState: AppMainUiState = appMainViewModel.appMainUiState.value
         val appDrawerUIState = appMainViewModel.appDrawerUiState.value
-        val customSyncState = appMainViewModel.customSyncState.collectAsState().value
         val openDrawer: (Boolean) -> Unit = { open: Boolean ->
           coroutineScope.launch {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
@@ -194,7 +193,6 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                 appDrawerUIState = appDrawerUIState,
                 clearMapLiveData = geoWidgetLauncherViewModel.clearMapLiveData,
                 geoJsonFeatures = geoWidgetLauncherViewModel.geoJsonFeatures,
-                customSyncState = customSyncState,
                 launchQuestionnaire = geoWidgetLauncherViewModel::launchQuestionnaire,
                 decodeImage = geoWidgetLauncherViewModel::getImageBitmap,
                 onAppMainEvent = appMainViewModel::onEvent,
@@ -213,9 +211,21 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
   }
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
+    onSync(syncJobStatus, isCustomSync = false)
+  }
+
+  private fun onSync(syncJobStatus: CurrentSyncJobStatus, isCustomSync: Boolean) {
     when (syncJobStatus) {
       is CurrentSyncJobStatus.Running -> {
-        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
+          lifecycleScope.launch {
+            if (isCustomSync) {
+              geoWidgetLauncherViewModel.emitSnackBarState(
+                SnackBarMessageConfig(message = getString(R.string.syncing_custom_resources_toast)),
+              )
+            }
+          }
+        } else {
           val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
           val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
           val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
@@ -246,26 +256,33 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
     super.onViewCreated(view, savedInstanceState)
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
-        eventBus.events
-          .getFor(MainNavigationScreen.GeoWidgetLauncher.eventId(navArgs.geoWidgetId))
-          .onEach { appEvent ->
-            when (appEvent) {
-              is AppEvent.RefreshData,
-              is AppEvent.OnSubmitQuestionnaire, -> {
-                appMainViewModel.countRegisterData()
-                geoWidgetLauncherViewModel.run {
-                  onEvent(GeoWidgetEvent.ClearMap)
-                  onEvent(
-                    GeoWidgetEvent.RetrieveFeatures(
-                      geoWidgetConfig = geoWidgetConfiguration,
-                      searchQuery = searchViewModel.searchQuery.value,
-                    ),
-                  )
+        launch {
+          configurationRegistry.syncState
+            .onEach { syncJobStatus -> onSync(syncJobStatus, true) }
+            .launchIn(this)
+        }
+        launch {
+          eventBus.events
+            .getFor(MainNavigationScreen.GeoWidgetLauncher.eventId(navArgs.geoWidgetId))
+            .onEach { appEvent ->
+              when (appEvent) {
+                is AppEvent.RefreshData,
+                is AppEvent.OnSubmitQuestionnaire, -> {
+                  appMainViewModel.countRegisterData()
+                  geoWidgetLauncherViewModel.run {
+                    onEvent(GeoWidgetEvent.ClearMap)
+                    onEvent(
+                      GeoWidgetEvent.RetrieveFeatures(
+                        geoWidgetConfig = geoWidgetConfiguration,
+                        searchQuery = searchViewModel.searchQuery.value,
+                      ),
+                    )
+                  }
                 }
               }
             }
-          }
-          .launchIn(lifecycleScope)
+            .launchIn(this)
+        }
       }
     }
     geoWidgetLauncherViewModel.noLocationFoundDialog.observe(viewLifecycleOwner) { show ->

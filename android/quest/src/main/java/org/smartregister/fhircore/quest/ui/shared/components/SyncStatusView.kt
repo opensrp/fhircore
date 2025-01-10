@@ -64,10 +64,10 @@ import java.time.OffsetDateTime
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.sync.CustomSyncState
 import org.smartregister.fhircore.engine.ui.components.LineSpinFadeLoaderProgressIndicator
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.ui.theme.SyncBarBackgroundColor
@@ -75,7 +75,6 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.util.extensions.conditional
-import timber.log.Timber
 
 const val TRANSPARENCY = 0.2f
 const val SYNC_PROGRESS_INDICATOR_TEST_TAG = "syncProgressIndicatorTestTag"
@@ -84,18 +83,13 @@ const val SYNC_PROGRESS_INDICATOR_TEST_TAG = "syncProgressIndicatorTestTag"
 fun SyncBottomBar(
   isFirstTimeSync: Boolean,
   appDrawerUIState: AppDrawerUIState,
-  customSyncState: CustomSyncState,
   onAppMainEvent: (AppMainEvent) -> Unit,
   openDrawer: (Boolean) -> Unit,
 ) {
   val coroutineScope = rememberCoroutineScope()
   val currentSyncJobStatus = appDrawerUIState.currentSyncJobStatus
   val hideSyncCompleteStatus = remember { mutableStateOf(false) }
-
-  if (
-    currentSyncJobStatus is CurrentSyncJobStatus.Succeeded &&
-      customSyncState is CustomSyncState.Success
-  ) {
+  if (currentSyncJobStatus is CurrentSyncJobStatus.Succeeded) {
     LaunchedEffect(Unit) {
       coroutineScope.launch {
         delay(7.seconds)
@@ -103,17 +97,13 @@ fun SyncBottomBar(
       }
     }
   }
-
   val syncBackgroundColor =
-    when {
-      currentSyncJobStatus is CurrentSyncJobStatus.Failed ||
-        customSyncState is CustomSyncState.Failed -> DangerColor.copy(alpha = 0.2f)
-      currentSyncJobStatus is CurrentSyncJobStatus.Succeeded &&
-        customSyncState is CustomSyncState.Success -> SuccessColor.copy(alpha = 0.2f)
-      currentSyncJobStatus is CurrentSyncJobStatus.Running -> SyncBarBackgroundColor
+    when (currentSyncJobStatus) {
+      is CurrentSyncJobStatus.Failed -> DangerColor.copy(alpha = 0.2f)
+      is CurrentSyncJobStatus.Succeeded -> SuccessColor.copy(alpha = 0.2f)
+      is CurrentSyncJobStatus.Running -> SyncBarBackgroundColor
       else -> Color.Transparent
     }
-
   var syncNotificationBarExpanded by remember { mutableStateOf(true) }
   val bottomRadius =
     if (!hideSyncCompleteStatus.value || currentSyncJobStatus is CurrentSyncJobStatus.Running) {
@@ -127,16 +117,12 @@ fun SyncBottomBar(
         if (currentSyncJobStatus is CurrentSyncJobStatus.Running) 114.dp else 80.dp
       else -> 60.dp
     }
-
   if (
     !isFirstTimeSync &&
       currentSyncJobStatus != null &&
       (currentSyncJobStatus is CurrentSyncJobStatus.Running ||
-        (currentSyncJobStatus is CurrentSyncJobStatus.Failed ||
-          customSyncState is CustomSyncState.Failed) ||
-        (!hideSyncCompleteStatus.value &&
-          currentSyncJobStatus is CurrentSyncJobStatus.Succeeded &&
-          customSyncState is CustomSyncState.Success))
+        currentSyncJobStatus is CurrentSyncJobStatus.Failed ||
+        (!hideSyncCompleteStatus.value && currentSyncJobStatus is CurrentSyncJobStatus.Succeeded))
   ) {
     Box(
       modifier =
@@ -170,11 +156,9 @@ fun SyncBottomBar(
               },
             contentDescription = null,
             tint =
-              when {
-                currentSyncJobStatus is CurrentSyncJobStatus.Failed ||
-                  customSyncState is CustomSyncState.Failed -> DangerColor
-                currentSyncJobStatus is CurrentSyncJobStatus.Succeeded &&
-                  customSyncState is CustomSyncState.Success -> SuccessColor
+              when (currentSyncJobStatus) {
+                is CurrentSyncJobStatus.Failed -> DangerColor
+                is CurrentSyncJobStatus.Succeeded -> SuccessColor
                 else -> Color.White
               },
             modifier = Modifier.size(16.dp),
@@ -186,39 +170,34 @@ fun SyncBottomBar(
         contentAlignment = Alignment.Center,
       ) {
         val context = LocalContext.current
-        when {
-          currentSyncJobStatus is CurrentSyncJobStatus.Running -> {
+        when (currentSyncJobStatus) {
+          is CurrentSyncJobStatus.Running -> {
             SyncStatusView(
               isSyncUpload = appDrawerUIState.isSyncUpload,
               currentSyncJobStatus = currentSyncJobStatus,
               minimized = !syncNotificationBarExpanded,
               progressPercentage = appDrawerUIState.percentageProgress,
-              customSyncState = customSyncState,
               onCancel = { onAppMainEvent(AppMainEvent.CancelSyncData(context)) },
             )
             SideEffect { hideSyncCompleteStatus.value = false }
           }
-          currentSyncJobStatus is CurrentSyncJobStatus.Failed ||
-            customSyncState is CustomSyncState.Failed -> {
+          is CurrentSyncJobStatus.Failed -> {
             SyncStatusView(
               isSyncUpload = appDrawerUIState.isSyncUpload,
               currentSyncJobStatus = currentSyncJobStatus,
               minimized = !syncNotificationBarExpanded,
-              customSyncState = customSyncState,
               onRetry = {
                 openDrawer(false)
                 onAppMainEvent(AppMainEvent.SyncData(context))
               },
             )
           }
-          currentSyncJobStatus is CurrentSyncJobStatus.Succeeded &&
-            customSyncState is CustomSyncState.Success -> {
+          is CurrentSyncJobStatus.Succeeded -> {
             if (!hideSyncCompleteStatus.value) {
               SyncStatusView(
                 isSyncUpload = appDrawerUIState.isSyncUpload,
                 currentSyncJobStatus = currentSyncJobStatus,
                 minimized = !syncNotificationBarExpanded,
-                customSyncState = customSyncState,
               )
             }
           }
@@ -235,29 +214,15 @@ fun SyncBottomBar(
 fun SyncStatusView(
   isSyncUpload: Boolean?,
   currentSyncJobStatus: CurrentSyncJobStatus?,
-  customSyncState: CustomSyncState = CustomSyncState.Idle,
   progressPercentage: Int? = null,
   minimized: Boolean = false,
   onRetry: () -> Unit = {},
   onCancel: () -> Unit = {},
 ) {
   val height =
-    when {
-      minimized -> 36.dp
-      currentSyncJobStatus is CurrentSyncJobStatus.Running -> 88.dp
-      else -> 56.dp
-    }
-
-  val isSucceeded =
-    currentSyncJobStatus is CurrentSyncJobStatus.Succeeded &&
-      customSyncState is CustomSyncState.Success
-  val isFailed =
-    currentSyncJobStatus is CurrentSyncJobStatus.Failed || customSyncState is CustomSyncState.Failed
-
-  Timber.d("current sync status evaluates to : $isSucceeded")
-  Timber.d("current custom Sync state is $customSyncState")
-  Timber.d("current fhir sync state is $currentSyncJobStatus")
-
+    if (minimized) {
+      36.dp
+    } else if (currentSyncJobStatus is CurrentSyncJobStatus.Running) 88.dp else 56.dp
   Row(
     modifier =
       Modifier.height(height)
@@ -268,27 +233,35 @@ fun SyncStatusView(
         .conditional(minimized, { padding(vertical = 4.dp) }, { padding(vertical = 16.dp) }),
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    if (isSucceeded || isFailed) {
-      Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.weight(1f),
-      ) {
+    if (
+      (currentSyncJobStatus is CurrentSyncJobStatus.Failed ||
+        currentSyncJobStatus is CurrentSyncJobStatus.Succeeded)
+    ) {
+      Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
         if (!minimized) {
           Icon(
-            imageVector = if (isSucceeded) Icons.Default.CheckCircle else Icons.Default.Error,
+            imageVector =
+              if (currentSyncJobStatus is CurrentSyncJobStatus.Succeeded) {
+                Icons.Default.CheckCircle
+              } else {
+                Icons.Default.Error
+              },
             contentDescription = null,
-            tint = if (isFailed) DangerColor else SuccessColor,
+            tint =
+              when (currentSyncJobStatus) {
+                is CurrentSyncJobStatus.Failed -> DangerColor
+                is CurrentSyncJobStatus.Succeeded -> SuccessColor
+                else -> DefaultColor
+              },
           )
         }
         SyncStatusTitle(
           text =
-            stringResource(
-              if (isSucceeded) {
-                org.smartregister.fhircore.engine.R.string.sync_complete
-              } else {
-                org.smartregister.fhircore.engine.R.string.sync_error
-              },
-            ),
+            if (currentSyncJobStatus is CurrentSyncJobStatus.Succeeded) {
+              stringResource(org.smartregister.fhircore.engine.R.string.sync_complete)
+            } else {
+              stringResource(org.smartregister.fhircore.engine.R.string.sync_error)
+            },
           minimized = minimized,
           startPadding = if (minimized) 0 else 16,
         )
@@ -351,7 +324,10 @@ fun SyncStatusView(
           innerRadius = 12f,
         )
       }
-      if ((isFailed || currentSyncJobStatus is CurrentSyncJobStatus.Running) && !minimized) {
+      if (
+        (currentSyncJobStatus is CurrentSyncJobStatus.Failed ||
+          currentSyncJobStatus is CurrentSyncJobStatus.Running) && !minimized
+      ) {
         Text(
           text =
             stringResource(
@@ -378,7 +354,7 @@ fun SyncStatusView(
 }
 
 @Composable
-fun SyncStatusTitle(
+private fun SyncStatusTitle(
   text: String,
   color: Color = Color.Unspecified,
   minimized: Boolean,
@@ -401,7 +377,6 @@ fun SyncStatusSucceededPreview() {
       SyncStatusView(
         isSyncUpload = false,
         currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
-        customSyncState = CustomSyncState.Success,
       )
     }
   }
