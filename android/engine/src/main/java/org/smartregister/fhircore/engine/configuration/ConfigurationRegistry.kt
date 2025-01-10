@@ -114,24 +114,7 @@ constructor(
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
    * can be directly converted to a FHIR resource or hard coded custom model. The filtering assumes
    * you are passing data across screens, then later using it in DataQueries and to retrieve
-   * registerConfiguration. It is necessary to // private val _syncState =
-   * MutableSharedFlow<SyncJobStatus>() // val customSyncState: SharedFlow<SyncJobStatus> =
-   * _syncState // // private suspend fun setSyncState(state: SyncJobStatus) =
-   * _syncState.emit(state)
-   *
-   * // init { // observeWorkerSyncState() // }
-   *
-   * // private fun observeWorkerSyncState() { // viewModelScope.launch { //
-   * CustomWorkerState.workerState.collect { syncState -> // when (syncState) { // is
-   * CustomSyncState.InProgress -> { // Timber.d("Custom Sync Worker InProgress") // // val total =
-   * syncState.total // val completed = syncState.completed // val syncOperation =
-   * syncState.syncOperation // // // Set the current sync state with the extracted values //
-   * setSyncState( // SyncJobStatus.InProgress( // syncOperation = syncOperation, // total = total,
-   * // completed = completed, // ), // ) // } // is CustomSyncState.Failed -> { // Timber.d("Custom
-   * Sync Worker Failed") // setSyncState(SyncJobStatus.Failed(emptyList())) // } //
-   * CustomSyncState.Success -> { // Timber.d("Custom Sync Worker Succeeded") //
-   * setSyncState(SyncJobStatus.Succeeded()) // } // CustomSyncState.Idle -> { // Timber.d("Custom
-   * Sync Worker Idle") // } // } // } // } // }check that [paramsMap] is empty to confirm that the
+   * registerConfiguration. It is necessary to check that [paramsMap] is empty to confirm that the
    * params used in the DataQuery are passed when retrieving the configurations.
    *
    * @throws NoSuchElementException when the [configsJsonMap] doesn't contain a value for the
