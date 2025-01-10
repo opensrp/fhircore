@@ -52,6 +52,7 @@ import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
@@ -361,24 +362,44 @@ constructor(
         }
       }
     } else {
-      composition.retrieveCompositionSections().forEach {
-        if (it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier()) {
-          val configIdentifier = it.focus.identifier.value
-          val referenceResourceType = it.focus.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
-          if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
-            val extractedId = it.focus.extractId()
-            try {
-              val configBinary = fhirEngine.get<Binary>(extractedId)
-              configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
-            } catch (resourceNotFoundException: ResourceNotFoundException) {
-              Timber.e("Missing Binary file with ID :$extractedId")
-              withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
-            }
+      composition.retrieveCompositionSections().forEach { sectionComponent ->
+        if (sectionComponent.hasFocus()) {
+          addBinaryToConfigsJsonMap(
+            sectionComponent.focus,
+            configsLoadedCallback,
+          )
+        }
+        if (sectionComponent.hasEntry() && sectionComponent.entry.isNotEmpty()) {
+          sectionComponent.entry.forEach { entryReference ->
+            addBinaryToConfigsJsonMap(
+              entryReference,
+              configsLoadedCallback,
+            )
           }
         }
       }
     }
     configsLoadedCallback(true)
+  }
+
+  private suspend fun addBinaryToConfigsJsonMap(
+    entryReference: Reference,
+    configsLoadedCallback: (Boolean) -> Unit,
+  ) {
+    if (entryReference.hasReferenceElement() && entryReference.hasIdentifier()) {
+      val configIdentifier = entryReference.identifier.value
+      val referenceResourceType = entryReference.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
+      if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
+        val extractedId = entryReference.extractId()
+        try {
+          val configBinary = fhirEngine.get<Binary>(extractedId.toString())
+          configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
+        } catch (resourceNotFoundException: ResourceNotFoundException) {
+          Timber.e("Missing Binary file with ID :$extractedId")
+          withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
+        }
+      }
+    }
   }
 
   private fun isAppConfig(referenceResourceType: String) =
@@ -438,41 +459,30 @@ constructor(
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val compositionResource = fetchRemoteCompositionByAppId(parsedAppId)
       compositionResource?.let { composition ->
-        composition
-          .retrieveCompositionSections()
-          .asSequence()
-          .filter { it.hasFocus() && it.focus.hasReferenceElement() }
-          .groupBy { section ->
-            section.focus.reference.substringBefore(
-              TYPE_REFERENCE_DELIMITER,
-              missingDelimiterValue = "",
-            )
+        val compositionSections = composition.retrieveCompositionSections()
+        val sectionComponentMap = mutableMapOf<String, MutableList<Composition.SectionComponent>>()
+        compositionSections.forEach { sectionComponent ->
+          if (sectionComponent.hasFocus() && sectionComponent.focus.hasReferenceElement()) {
+            val key =
+              sectionComponent.focus.reference.substringBefore(
+                delimiter = TYPE_REFERENCE_DELIMITER,
+                missingDelimiterValue = "",
+              )
+            sectionComponentMap.getOrPut(key) { mutableListOf() }.apply { add(sectionComponent) }
           }
-          .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
-          .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-            if (entry.key == ResourceType.List.name) {
-              processCompositionListResources(entry)
-            } else {
-              val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
-
-              chunkedResourceIdList.forEach { sectionComponents ->
-                Timber.d(
-                  "Fetching config resource ${entry.key}: with ids ${
-                                        sectionComponents.joinToString(
-                                            ",",
-                                        )
-                                    }",
+          if (sectionComponent.hasEntry() && sectionComponent.entry.isNotEmpty()) {
+            sectionComponent.entry.forEach {
+              val key =
+                it.reference.substringBefore(
+                  delimiter = TYPE_REFERENCE_DELIMITER,
+                  missingDelimiterValue = "",
                 )
-                fetchResources(
-                  resourceType = entry.key,
-                  resourceIdList =
-                    sectionComponents.map { sectionComponent ->
-                      sectionComponent.focus.extractId()
-                    },
-                )
-              }
+              sectionComponentMap.getOrPut(key) { mutableListOf() }.apply { add(sectionComponent) }
             }
           }
+        }
+
+        processCompositionSectionComponent(sectionComponentMap)
 
         // Save composition after fetching all the referenced section resources
         addOrUpdate(compositionResource)
@@ -480,6 +490,35 @@ constructor(
         Timber.d("Done saving composition resource")
       }
     }
+  }
+
+  private suspend fun processCompositionSectionComponent(
+    sectionComponentMap: Map<String, List<Composition.SectionComponent>>,
+  ) {
+    sectionComponentMap
+      .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
+      .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+        if (entry.key == ResourceType.List.name) {
+          processCompositionListResources(entry)
+        } else {
+          val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+
+          chunkedResourceIdList.forEach { sectionComponents ->
+            Timber.d(
+              "Fetching config resource ${entry.key}: with ids ${
+                                sectionComponents.joinToString(
+                                    ",",
+                                )
+                            }",
+            )
+            fetchResources(
+              resourceType = entry.key,
+              resourceIdList =
+                sectionComponents.map { sectionComponent -> sectionComponent.focus.extractId() },
+            )
+          }
+        }
+      }
   }
 
   suspend fun fetchRemoteImplementationGuideByAppId(

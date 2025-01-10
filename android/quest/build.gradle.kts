@@ -116,8 +116,8 @@ android {
     }
 
     getByName("release") {
-      isMinifyEnabled = true
-      isShrinkResources = true
+      isMinifyEnabled = false
+      isShrinkResources = false
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro",
@@ -199,7 +199,10 @@ android {
 
   testCoverage { jacocoVersion = BuildConfigs.jacocoVersion }
 
-  lint { abortOnError = false }
+  lint {
+    checkReleaseBuilds = true
+    abortOnError = false
+  }
 
   flavorDimensions += "apps"
 
