@@ -63,7 +63,7 @@ class TextToFormTest {
   }
 
   private suspend fun testGenerateQuestionnaireResponseRealApi() {
-    val testFile = File("src/test/resources/sample_transcript.txt")
+    val testFile = File("org/smartregister/fhircore/quest/resources/sample_transcript.txt")
     require(testFile.exists()) { "Test transcript file not found at ${testFile.absolutePath}" }
     val mockQuestionnaire = Questionnaire()
 
