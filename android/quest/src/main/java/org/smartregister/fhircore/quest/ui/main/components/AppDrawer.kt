@@ -93,6 +93,7 @@ import org.smartregister.fhircore.engine.ui.theme.SyncBarBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
@@ -150,14 +151,16 @@ fun AppDrawer(
       }
     },
     bottomBar = { // Display bottom section of the nav (sync)
-      NavBottomSection(
-        appUiState = appUiState,
-        appDrawerUIState = appDrawerUIState,
-        unSyncedResourceCount = unSyncedResourceCount,
-        onSideMenuClick = onSideMenuClick,
-        openDrawer = openDrawer,
-        decodeImage = decodeImage,
-      )
+      if (!BuildConfig.SKIP_AUTHENTICATION) {
+        NavBottomSection(
+          appUiState = appUiState,
+          appDrawerUIState = appDrawerUIState,
+          unSyncedResourceCount = unSyncedResourceCount,
+          onSideMenuClick = onSideMenuClick,
+          openDrawer = openDrawer,
+          decodeImage = decodeImage,
+        )
+      }
     },
   ) { innerPadding ->
     Box(

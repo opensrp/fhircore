@@ -29,7 +29,6 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -73,7 +72,6 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import timber.log.Timber
 
 @AndroidEntryPoint
-@ExperimentalMaterialApi
 open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, OnSyncListener {
 
   @Inject lateinit var syncListenerManager: SyncListenerManager
@@ -134,14 +132,14 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     lifecycleScope.launch(dispatcherProvider.main()) {
       val navController =
         (supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment).navController
+      val launcherType =
+        appMainViewModel.applicationConfiguration.navigationStartDestination.launcherType
 
       val graph =
         withContext(dispatcherProvider.io()) {
           navController.navInflater.inflate(R.navigation.application_nav_graph).apply {
             val startDestination =
-              when (
-                appMainViewModel.applicationConfiguration.navigationStartDestination.launcherType
-              ) {
+              when (launcherType) {
                 LauncherType.MAP -> R.id.geoWidgetLauncherFragment
                 LauncherType.REGISTER -> R.id.registerFragment
               }
@@ -152,7 +150,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       appMainViewModel.run {
         navController.setGraph(graph, getStartDestinationArgs())
         retrieveAppMainUiState()
-        withContext(dispatcherProvider.io()) { schedulePeriodicJobs(this@AppMainActivity) }
+        schedulePeriodicJobs(this@AppMainActivity)
       }
 
       setupLocationServices()
