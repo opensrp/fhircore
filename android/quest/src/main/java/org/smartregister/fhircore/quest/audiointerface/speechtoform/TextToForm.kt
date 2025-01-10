@@ -27,9 +27,11 @@ import org.smartregister.fhircore.quest.audiointerface.models.LlmModel
 import org.smartregister.fhircore.quest.audiointerface.validation.QuestionnaireResponseValidator
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 
+private const val s = "```json"
+
 class TextToForm(
   private val llmModel: LlmModel,
-  private val maxRetries: Int = 3,
+  private val maxRetries: Int = DEFAULT_MAX_RETRIES,
 ) {
 
   private val logger = Logger.getLogger(TextToForm::class.java.name)
@@ -121,11 +123,23 @@ class TextToForm(
    * @return The extracted JSON string or null if extraction fails.
    */
   private fun extractJsonBlock(responseText: String?): String? {
-    if (responseText == null) return null
-    val start = responseText.indexOf("```json")
-    if (start == -1) return null
-    val end = responseText.indexOf("```", start + 7)
-    return if (end == -1) null else responseText.substring(start + 7, end).trim()
+    if (responseText != null) {
+      val start = responseText.indexOf(JSON_CODE_BLOCK_START)
+
+      if (start != -1) {
+        val end = responseText.indexOf(JSON_CODE_BLOCK_END, start + JSON_CODE_BLOCK_START_LENGTH)
+
+        if (end != -1) {
+          return responseText
+            .substring(
+              start + JSON_CODE_BLOCK_START_LENGTH,
+              end,
+            )
+            .trim()
+        }
+      }
+    }
+    return null
   }
 
   /**
@@ -168,5 +182,12 @@ class TextToForm(
     <questionnaire>$questionnaire</questionnaire>
             """
       .trimIndent()
+  }
+
+  companion object {
+    private const val DEFAULT_MAX_RETRIES = 3
+    private const val JSON_CODE_BLOCK_START = "```json"
+    private const val JSON_CODE_BLOCK_END = "```"
+    private const val JSON_CODE_BLOCK_START_LENGTH = JSON_CODE_BLOCK_START.length
   }
 }
