@@ -25,6 +25,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.File
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -68,7 +69,6 @@ import org.smartregister.fhircore.quest.util.DBUtils
 import org.smartregister.fhircore.quest.util.FileUtils
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
-import java.io.File
 
 @HiltViewModel
 class UserSettingViewModel
@@ -263,8 +263,8 @@ constructor(
               applicationConfiguration.appTitle.replace(" ", "_"),
               username,
               practitionerId,
-              today().formatDate("yyyyMMdd-HHmmss")
-            )
+              today().formatDate("yyyyMMdd-HHmmss"),
+            ),
           )
 
         val dbCopied =
@@ -284,9 +284,9 @@ constructor(
             String.format(
               "%s_%s",
               username,
-              practitionerId!!.substring(0, practitionerId.indexOf("-"))
+              practitionerId!!.substring(0, practitionerId.indexOf("-")),
             ),
-            true
+            true,
           )
 
           if (zipFile.exists()) FileUtils.shareFile(context, zipFile)

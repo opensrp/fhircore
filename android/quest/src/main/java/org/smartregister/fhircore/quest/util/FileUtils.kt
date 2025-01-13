@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,51 +30,51 @@ import org.smartregister.fhircore.engine.R
 import timber.log.Timber
 
 object FileUtils {
-    fun zipFiles(
-        zipFile: File,
-        files: List<File>,
-        password: String,
-        deleteOriginalFiles: Boolean = false
-    ) {
-        val zipParameters = ZipParameters()
-        zipParameters.isEncryptFiles = true
-        zipParameters.compressionLevel = CompressionLevel.HIGHER
-        zipParameters.encryptionMethod = EncryptionMethod.AES
+  fun zipFiles(
+    zipFile: File,
+    files: List<File>,
+    password: String,
+    deleteOriginalFiles: Boolean = false,
+  ) {
+    val zipParameters = ZipParameters()
+    zipParameters.isEncryptFiles = true
+    zipParameters.compressionLevel = CompressionLevel.HIGHER
+    zipParameters.encryptionMethod = EncryptionMethod.AES
 
-        val zip = ZipFile(zipFile, password.toCharArray())
-        for (file in files) {
-            try {
-                zip.addFile(file, zipParameters)
-            } catch (e: ZipException) {
-                Timber.e(e, "${file.absolutePath} could not be added to zip file")
-            }
-        }
-
-        if (deleteOriginalFiles) {
-            for (file in files) {
-                try {
-                    file.delete()
-                } catch (e: IOException) {
-                    Timber.e(e, "${file.absolutePath} could not be deleted")
-                } catch (e: SecurityException) {
-                    Timber.e(e, "No permissions to delete ${file.absolutePath}")
-                }
-            }
-        }
+    val zip = ZipFile(zipFile, password.toCharArray())
+    for (file in files) {
+      try {
+        zip.addFile(file, zipParameters)
+      } catch (e: ZipException) {
+        Timber.e(e, "${file.absolutePath} could not be added to zip file")
+      }
     }
 
-    fun shareFile(context: Context, file: File, mimeType: String = "text/plain") {
-        val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-
-        val shareIntent = Intent(Intent.ACTION_SEND)
-        shareIntent.type = mimeType
-        shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
-        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-
-        val chooser = Intent.createChooser(shareIntent, context.getString(R.string.share_file))
-
-        if (shareIntent.resolveActivity(context.packageManager) != null) {
-            context.startActivity(chooser)
+    if (deleteOriginalFiles) {
+      for (file in files) {
+        try {
+          file.delete()
+        } catch (e: IOException) {
+          Timber.e(e, "${file.absolutePath} could not be deleted")
+        } catch (e: SecurityException) {
+          Timber.e(e, "No permissions to delete ${file.absolutePath}")
         }
+      }
     }
+  }
+
+  fun shareFile(context: Context, file: File, mimeType: String = "text/plain") {
+    val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+
+    val shareIntent = Intent(Intent.ACTION_SEND)
+    shareIntent.type = mimeType
+    shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
+    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+    val chooser = Intent.createChooser(shareIntent, context.getString(R.string.share_file))
+
+    if (shareIntent.resolveActivity(context.packageManager) != null) {
+      context.startActivity(chooser)
+    }
+  }
 }
