@@ -34,8 +34,6 @@ tasks.dokkaHtmlMultiModule {
   }
 }
 
-apply(from = "mapbox.gradle.kts")
-
 allprojects {
   repositories {
     gradlePluginPortal()
@@ -46,6 +44,7 @@ allprojects {
     maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots")
     maven(url = "https://repo.spring.io/plugins-release")
     maven(url = "https://repository.liferay.com/nexus/content/repositories/public")
+    maven(url = "https://api.mapbox.com/downloads/v2/releases/maven")
     apply(plugin = "org.owasp.dependencycheck")
     tasks.dependencyCheckAggregate{
       dependencyCheck.formats.add("XML")
