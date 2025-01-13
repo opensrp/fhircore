@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.usersetting
 
 import android.content.Context
+import android.os.Environment
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -49,6 +50,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MMM_DD_HH_MM_SS
 import org.smartregister.fhircore.engine.util.extension.countUnSyncedResources
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
+import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
@@ -56,12 +58,17 @@ import org.smartregister.fhircore.engine.util.extension.reformatDate
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
+import org.smartregister.fhircore.quest.util.DBUtils
+import org.smartregister.fhircore.quest.util.FileUtils
 import org.smartregister.p2p.utils.startP2PScreen
+import timber.log.Timber
+import java.io.File
 
 @HiltViewModel
 class UserSettingViewModel
@@ -177,6 +184,10 @@ constructor(
       is UserSettingsEvent.ShowInsightsScreen -> {
         event.navController.navigate(MainNavigationScreen.Insight.route)
       }
+      is UserSettingsEvent.ExportDB -> {
+        updateProgressBarState(true, R.string.exporting_db)
+        copyDatabase(event.context) { updateProgressBarState(false, R.string.exporting_db) }
+      }
     }
   }
 
@@ -227,5 +238,64 @@ constructor(
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
+  }
+
+  private fun copyDatabase(context: Context, onCopyCompleteListener: () -> Unit) {
+    viewModelScope.launch(dispatcherProvider.io()) {
+      try {
+        val passphrase = DBUtils.getEncryptionPassphrase("fhirEngineDbPassphrase")
+
+        val dbFilename = if (BuildConfig.DEBUG) "resources" else "resources_encrypted"
+        val dbFile = File("/data/data/${context.packageName}/databases/$dbFilename.db")
+
+        val downloadsDir =
+          Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+
+        val username = secureSharedPreference.retrieveSessionUsername()
+        val practitionerId =
+          sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, username)
+
+        val backupFile =
+          File(
+            downloadsDir,
+            String.format(
+              "%s_%s_%s_%s.db",
+              applicationConfiguration.appTitle.replace(" ", "_"),
+              username,
+              practitionerId,
+              today().formatDate("yyyyMMdd-HHmmss")
+            )
+          )
+
+        val dbCopied =
+          if (BuildConfig.DEBUG) {
+            DBUtils.copyUnencryptedDb(dbFile, backupFile)
+          } else {
+            DBUtils.decryptDb(dbFile, backupFile, passphrase)
+          }
+
+        if (dbCopied) {
+          // The password is currently set as:
+          //
+          val zipFile = File("${backupFile.absolutePath}.zip")
+          FileUtils.zipFiles(
+            zipFile,
+            listOf(backupFile),
+            String.format(
+              "%s_%s",
+              username,
+              practitionerId!!.substring(0, practitionerId.indexOf("-"))
+            ),
+            true
+          )
+
+          if (zipFile.exists()) FileUtils.shareFile(context, zipFile)
+        }
+      } catch (e: Exception) {
+        Timber.e(e, "Failed to copy application's database")
+      } finally {
+        onCopyCompleteListener.invoke()
+      }
+    }
   }
 }

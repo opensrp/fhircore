@@ -51,6 +51,7 @@ import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Insights
+import androidx.compose.material.icons.rounded.IosShare
 import androidx.compose.material.icons.rounded.Map
 import androidx.compose.material.icons.rounded.Phone
 import androidx.compose.material.icons.rounded.Share
@@ -354,6 +355,14 @@ fun UserSettingScreen(
           canSwitchToScreen = true,
         )
       }
+
+      UserSettingRow(
+        icon = Icons.Rounded.IosShare,
+        text = stringResource(id = R.string.export_db),
+        clickListener = { onEvent(UserSettingsEvent.ExportDB(true, context)) },
+        modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS),
+        showProgressIndicator = showProgressIndicatorFlow.collectAsState().value,
+      )
 
       UserSettingRow(
         icon = Icons.AutoMirrored.Rounded.Logout,
