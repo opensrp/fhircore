@@ -130,6 +130,7 @@ fun UserSettingScreen(
   showOfflineMaps: Boolean = false,
   allowP2PSync: Boolean = false,
   enableHelpContacts: Boolean = false,
+  enableDatabaseExport: Boolean = false,
 ) {
   val context = LocalContext.current
   val (showProgressBar, messageResource) = progressBarState
@@ -356,13 +357,15 @@ fun UserSettingScreen(
         )
       }
 
-      UserSettingRow(
-        icon = Icons.Rounded.IosShare,
-        text = stringResource(id = R.string.export_db),
-        clickListener = { onEvent(UserSettingsEvent.ExportDB(true, context)) },
-        modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS),
-        showProgressIndicator = showProgressIndicatorFlow.collectAsState().value,
-      )
+      if (enableDatabaseExport) {
+        UserSettingRow(
+          icon = Icons.Rounded.IosShare,
+          text = stringResource(id = R.string.export_db),
+          clickListener = { onEvent(UserSettingsEvent.ExportDB(true, context)) },
+          modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS),
+          showProgressIndicator = showProgressIndicatorFlow.collectAsState().value,
+        )
+      }
 
       UserSettingRow(
         icon = Icons.AutoMirrored.Rounded.Logout,
@@ -533,5 +536,6 @@ fun UserSettingPreview() {
     showOfflineMaps = true,
     allowP2PSync = true,
     enableHelpContacts = true,
+    enableDatabaseExport = true,
   )
 }
