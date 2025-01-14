@@ -212,8 +212,8 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".mpower.mcgovern"
       versionNameSuffix = "-mpower-mcgovern"
-      versionCode = 4
-      versionName = "2.0.2"
+      versionCode = 6
+      versionName = "2.0.4"
       manifestPlaceholders["appLabel"] = "fhir mHealth"
       buildConfigField("String", "OPENSRP_APP_ID", "\"app/debug\"")
     }

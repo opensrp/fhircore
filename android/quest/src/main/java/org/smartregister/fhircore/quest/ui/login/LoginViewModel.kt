@@ -104,6 +104,14 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
+  init {
+    sharedPreferences.read<UserInfo>(
+      key = SharedPreferenceKey.USER_INFO.name
+    )?.let {
+      _username.value = it.preferredUsername
+    }
+  }
+
   fun onUsernameUpdated(username: String) {
     _loginErrorState.postValue(null)
     _username.value = username

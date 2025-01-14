@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -304,14 +305,14 @@ private fun BigServiceButton(
   val backgroundColor = buttonProperties.backgroundColor
   val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.8f) }
+  val textColor = remember { (buttonProperties.contentColor?.parseColor() ?: statusColor).copy(alpha = 0.8f) }
   val buttonClickable = buttonProperties.clickable.toBoolean()
 
   Column(
     modifier =
       modifier
-        .width(136.dp)
-        .height(80.dp)
-        .padding(top = 8.dp, end = 8.dp, bottom = 8.dp)
+        .fillMaxSize()
+        .padding(top = 8.dp, bottom = 8.dp)
         .clip(RoundedCornerShape(4.dp))
         .border(
           width = if (status == ServiceStatus.DUE.name) 1.dp else 0.dp,
@@ -352,7 +353,7 @@ private fun BigServiceButton(
     }
     Text(
       text = buttonProperties.text ?: "",
-      color = if (status == ServiceStatus.OVERDUE.name) Color.White else contentColor,
+      color = if (status == ServiceStatus.OVERDUE.name) Color.White else textColor,
       textAlign = TextAlign.Center,
       fontSize = (buttonProperties.fontSize - 2).sp,
       overflow = TextOverflow.Ellipsis,

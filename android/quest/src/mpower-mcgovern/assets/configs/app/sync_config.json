@@ -53,30 +53,6 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
-        "name": "mode",
-        "code": "mode",
-        "base": [
-          "LocationHierarchy"
-        ],
-        "type": "special",
-        "expression": "list"
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
-        "name": "_id",
-        "code": "_id",
-        "base": [
-          "LocationHierarchy"
-        ],
-        "type": "special",
-        "expression": "44"
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
         "name": "_id",
         "code": "_id",
         "base": [

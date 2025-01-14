@@ -134,7 +134,12 @@ fun calculateAge(date: Date, context: Context, localDateNow: LocalDate = LocalDa
   val days = period.days % 7
 
   return when {
-    years in 1..4 ->
+    years in 1..2 ->
+      context.abbreviateString(R.string.year, years) +
+        context.abbreviateString(R.string.month, months) +
+        context.abbreviateString(R.string.weeks, weeks) +
+        context.abbreviateString(R.string.days, days)
+    years in 3..4 ->
       context.abbreviateString(R.string.year, years) +
         context.abbreviateString(R.string.month, months)
     years >= 5 -> context.abbreviateString(R.string.year, years)

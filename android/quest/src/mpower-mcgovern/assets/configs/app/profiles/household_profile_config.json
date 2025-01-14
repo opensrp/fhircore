@@ -81,7 +81,7 @@
         ],
         "sortConfigs": [
           {
-            "paramName": "_lastUpdated",
+            "paramName": "birthDate",
             "dataType": "DATE",
             "order": "DESCENDING"
           }
@@ -456,7 +456,7 @@
       "name": "familyAdultMemberCount",
       "condition": "true",
       "actions": [
-        "data.put('familyAdultMemberCount', size(service.filterResources(Patient, \"Patient.birthDate < today() - 5 'years'\")))"
+        "data.put('familyAdultMemberCount', size(service.filterResources(Patient, \"Patient.birthDate < today() - 2 'years'\")))"
       ]
     },
     {
@@ -671,7 +671,12 @@
                     "resourceType": "RelatedPerson",
                     "fhirPathExpression": "RelatedPerson.patient.reference"
                   }
-                ]
+                ],
+                "sortConfig": {
+                  "paramName": "birthDate",
+                  "dataType": "DATE",
+                  "fhirPathExpression": "Patient.birthDate"
+                }
               }
             ],
             "registerCard": {
@@ -773,7 +778,7 @@
                   "condition": "true",
                   "priority": 2,
                   "actions": [
-                    "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? 'CHILD': '', data.get('isActivePnc') ? 'BABY_MOTHER' : data.get('isPregnant') ? 'PREGNANT_WOMAN' : ''], ','))"
+                    "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 2 'years')\") == 'true'? 'CHILD': '', data.get('isActivePnc') ? 'BABY_MOTHER' : data.get('isPregnant') ? 'PREGNANT_WOMAN' : ''], ','))"
                   ]
                 },
                 {
@@ -794,7 +799,7 @@
                   "name": "getChildStatus",
                   "condition": "true",
                   "actions": [
-                    "data.put('getChildStatus', fhirPath.extractValue(Patient, \"(Patient.birthDate >= today() - 5 'years')\") == 'true'? 'Child': '')"
+                    "data.put('getChildStatus', fhirPath.extractValue(Patient, \"(Patient.birthDate >= today() - 2 'years')\") == 'true'? 'Child': '')"
                   ]
                 },
                 {
@@ -899,7 +904,7 @@
                   "name": "isChild",
                   "condition": "true",
                   "actions": [
-                    "data.put('isChild', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\"))"
+                    "data.put('isChild', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 2 'years')\"))"
                   ]
                 },
                 {
@@ -1123,7 +1128,12 @@
                     "resourceType": "Encounter",
                     "fhirPathExpression": "Encounter.subject.reference"
                   }
-                ]
+                ],
+                "sortConfig": {
+                  "paramName": "birthDate",
+                  "dataType": "DATE",
+                  "fhirPathExpression": "Patient.birthDate"
+                }
               }
             ],
             "registerCard": {
@@ -1336,14 +1346,14 @@
                   "condition": "true",
                   "priority": 2,
                   "actions": [
-                    "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? 'CHILD': '', data.get('isActivePnc') ? 'BABY_MOTHER' : data.get('isPregnant') ? 'PREGNANT_WOMAN' : ''], ','))"
+                    "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 2 'years')\") == 'true'? 'CHILD': '', data.get('isActivePnc') ? 'BABY_MOTHER' : data.get('isPregnant') ? 'PREGNANT_WOMAN' : ''], ','))"
                   ]
                 },
                 {
                   "name": "getChildStatus",
                   "condition": "true",
                   "actions": [
-                    "data.put('getChildStatus', fhirPath.extractValue(Patient, \"(Patient.birthDate >= today() - 5 'years')\") == 'true'? 'Child': '')"
+                    "data.put('getChildStatus', fhirPath.extractValue(Patient, \"(Patient.birthDate >= today() - 2 'years')\") == 'true'? 'Child': '')"
                   ]
                 },
                 {
@@ -1448,7 +1458,7 @@
                   "name": "isChild",
                   "condition": "true",
                   "actions": [
-                    "data.put('isChild', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\"))"
+                    "data.put('isChild', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 2 'years')\"))"
                   ]
                 },
                 {
@@ -1680,7 +1690,12 @@
                     "resourceType": "Observation",
                     "fhirPathExpression": "Observation.subject.reference"
                   }
-                ]
+                ],
+                "sortConfig": {
+                  "paramName": "birthDate",
+                  "dataType": "DATE",
+                  "fhirPathExpression": "Patient.birthDate"
+                }
               }
             ],
             "registerCard": {
@@ -1764,14 +1779,14 @@
                   "condition": "true",
                   "priority": 2,
                   "actions": [
-                    "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? 'CHILD': '', data.get('isActivePnc') ? 'BABY_MOTHER' : data.get('isPregnant') ? 'PREGNANT_WOMAN' : ''], ','))"
+                    "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 2 'years')\") == 'true'? 'CHILD': '', data.get('isActivePnc') ? 'BABY_MOTHER' : data.get('isPregnant') ? 'PREGNANT_WOMAN' : ''], ','))"
                   ]
                 },
                 {
                   "name": "getChildStatus",
                   "condition": "true",
                   "actions": [
-                    "data.put('getChildStatus', fhirPath.extractValue(Patient, \"(Patient.birthDate >= today() - 5 'years')\") == 'true'? 'Child': '')"
+                    "data.put('getChildStatus', fhirPath.extractValue(Patient, \"(Patient.birthDate >= today() - 2 'years')\") == 'true'? 'Child': '')"
                   ]
                 },
                 {
@@ -1862,7 +1877,7 @@
                   "name": "isChild",
                   "condition": "true",
                   "actions": [
-                    "data.put('isChild', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\"))"
+                    "data.put('isChild', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 2 'years')\"))"
                   ]
                 },
                 {

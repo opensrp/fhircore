@@ -347,7 +347,7 @@
       "name": "childCardVisible",
       "condition": "true",
       "actions": [
-        "data.put('childCardVisible', data.get('patientAge') == 'true' && data.get('patientAge')<=5)"
+        "data.put('childCardVisible', data.get('patientAge') == 'true' && data.get('patientAge')<=2)"
       ]
     },
     {
@@ -476,7 +476,7 @@
       "name": "isChild",
       "condition": "true",
       "actions": [
-        "data.put('isChild', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\"))"
+        "data.put('isChild', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 2 'years')\"))"
       ]
     },
     {
@@ -578,28 +578,75 @@
       "name": "isChildOver2months",
       "condition": "true",
       "actions": [
-        "data.put('isChildOver2months', fhirPath.extractValue(Patient, \"Patient.active and ((Patient.birthDate <= today() - 2 'months') and (Patient.birthDate >= today() - 5 'years'))\"))"
+        "data.put('isChildOver2months', fhirPath.extractValue(Patient, \"Patient.active and ((Patient.birthDate <= today() - 2 'months') and (Patient.birthDate >= today() - 2 'years'))\"))"
+      ]
+    },
+    {
+      "name": "ncdVisits",
+      "condition": "true",
+      "actions": [
+        "data.put('ncdVisits', service.filterResources(totalEncounters, \"Encounter.type[0].coding.code = 'ncd_facility_service' \"))"
+      ]
+    },
+    {
+      "name": "isLastNcdVisitPast24Hours",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('isLastNcdVisitPast24Hours', size(data.get('ncdVisits')) > 0 ? fhirPath.extractValue(data.get('ncdVisits').get(0), \"Encounter.period.start < now() - 24 'hours'\") : true)"
       ]
     },
     {
       "name": "applicableForNCDPackage",
       "condition": "true",
+      "priority": 3,
       "actions": [
-        "data.put('applicableForNCDPackage', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate <= today() - 18 'years') and (Patient.birthDate >= today() - 50 'years')\"))"
+        "data.put('applicableForNCDPackage', data.get('isLastNcdVisitPast24Hours') and fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate <= today() - 18 'years') and (Patient.birthDate >= today() - 50 'years')\"))"
+      ]
+    },
+    {
+      "name": "applicableForEyeTest",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('applicableForEyeTest', fhirPath.extractValue(Patient, \"Patient.active and Patient.birthDate <= today() - 2 'years'\"))"
+      ]
+    },
+    {
+      "name": "elcoVisits",
+      "condition": "true",
+      "actions": [
+        "data.put('elcoVisits', service.filterResources(totalEncounters, \"Encounter.type[0].coding.code = 'elco_visit' \"))"
+      ]
+    },
+    {
+      "name": "isLastElcoVisitPast24Hours",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('isLastElcoVisitPast24Hours', size(data.get('elcoVisits')) > 0 ? fhirPath.extractValue(data.get('elcoVisits').get(0), \"Encounter.period.start < now() - 24 'hours'\") : true)"
+      ]
+    },
+    {
+      "name": "applicableForElcoVisit",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('applicableForElcoVisit', data.get('isLastElcoVisitPast24Hours') and data.get('canRegisterPregnancy'))"
       ]
     },
     {
       "name": "applicableForWomenReferral",
       "condition": "true",
       "actions": [
-        "data.put('applicableForWomenReferral', fhirPath.extractValue(Patient, \"Patient.active and Patient.gender = 'female' and (Patient.birthDate < today() - 5 'years')\"))"
+        "data.put('applicableForWomenReferral', fhirPath.extractValue(Patient, \"Patient.active and Patient.gender = 'female' and (Patient.birthDate < today() - 2 'years')\"))"
       ]
     },
     {
       "name": "applicableForMemberReferral",
       "condition": "true",
       "actions": [
-        "data.put('applicableForMemberReferral', fhirPath.extractValue(Patient, \"Patient.active and Patient.gender != 'female' and (Patient.birthDate < today() - 5 'years')\"))"
+        "data.put('applicableForMemberReferral', fhirPath.extractValue(Patient, \"Patient.active and Patient.gender != 'female' and (Patient.birthDate < today() - 2 'years')\"))"
       ]
     },
     {
@@ -1320,7 +1367,7 @@
                 "smallSized": "true",
                 "text": "{{hh.due.elco}}",
                 "status": "DUE",
-                "visible": "@{canRegisterPregnancy}",
+                "visible": "@{applicableForElcoVisit}",
                 "enabled": "@{patientActive}",
                 "startIcon": {
                   "reference": "ic_family_planning"
@@ -1391,6 +1438,13 @@
                       "condition": "true",
                       "actions": [
                         "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
+                      ]
+                    },
+                    {
+                      "name": "taskReferralPlaceCodes",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('taskReferralPlaceCodes', StringUtils:join(fhirPath.extractData(Task, 'Task.input.where(type.coding.code=\"referral-place\").value.coding.code'), '|'))"
                       ]
                     },
                     {
@@ -1484,6 +1538,13 @@
                               "dataType": "STRING",
                               "key": "taskReasonDisplay",
                               "value": "@{taskReasonDisplay}"
+                            },
+                            {
+                              "paramType": "PREPOPULATE",
+                              "linkId": "8af2f5ba-90f4-4e4b-831e-163ed7b6abb8",
+                              "dataType": "STRING",
+                              "key": "taskReferralPlaceCodes",
+                              "value": "@{taskReferralPlaceCodes}"
                             },
                             {
                               "paramType": "PREPOPULATE",
@@ -1611,7 +1672,7 @@
                     "smallSized": "true",
                     "text": "{{hh.service.eye}}",
                     "status": "DUE",
-                    "visible": "true",
+                    "visible": "@{applicableForEyeTest}",
                     "enabled": "@{patientActive}",
                     "startIcon": {
                       "reference": "ic_eye"
@@ -1952,6 +2013,258 @@
                             "dataType": "STRING",
                             "key": "patientMobile",
                             "value": "@{patientMobile}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "49eca2ad-6524-403d-b1b3-7456485f87e3",
+                            "dataType": "INTEGER",
+                            "key": "glassesPreviousBalance",
+                            "value": "@{glassesPreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "ca0fbdf6-974e-4869-bed6-75f34e1f2c2f",
+                            "dataType": "STRING",
+                            "key": "glassesObservationId",
+                            "value": "@{glassesObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "0e0e7a86-40a6-45c3-ba73-b19330192d19",
+                            "dataType": "STRING",
+                            "key": "glassesStockOutFlagId",
+                            "value": "@{glassesStockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "e6145f08-a682-4e8c-ae28-850aa73251c2",
+                            "dataType": "INTEGER",
+                            "key": "sunGlassesPreviousBalance",
+                            "value": "@{sunGlassesPreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "d0b5c58a-bfdc-49f6-96c0-c5b37af964f2",
+                            "dataType": "STRING",
+                            "key": "sunGlassesObservationId",
+                            "value": "@{sunGlassesObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "aac22321-582c-43d7-f382-85bd5c4e5346",
+                            "dataType": "STRING",
+                            "key": "sunGlassesStockOutFlagId",
+                            "value": "@{sunGlassesStockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "e9befdd0-f56d-494e-8899-767dbcc7fa8e",
+                            "dataType": "INTEGER",
+                            "key": "bf100PreviousBalance",
+                            "value": "@{bf100PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "6ef5319f-13d4-499f-8c16-9e9ebf3a0f55",
+                            "dataType": "STRING",
+                            "key": "bf100ObservationId",
+                            "value": "@{bf100ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "4fef01af-29c8-4459-951e-b917c4ba9b12",
+                            "dataType": "STRING",
+                            "key": "bf100StockOutFlagId",
+                            "value": "@{bf100StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "764dd849-21a1-410b-b98f-29fe145bdb87",
+                            "dataType": "INTEGER",
+                            "key": "bf150PreviousBalance",
+                            "value": "@{bf150PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "44873d86-80b1-45ab-860b-4b64d57862b8",
+                            "dataType": "STRING",
+                            "key": "bf150ObservationId",
+                            "value": "@{bf150ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "bc92a5eb-8d25-4866-ca1b-d638d3eb991d",
+                            "dataType": "STRING",
+                            "key": "bf150StockOutFlagId",
+                            "value": "@{bf150StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "96dd8383-7d3e-4756-8ea2-9a720d2ebdb7",
+                            "dataType": "INTEGER",
+                            "key": "bf200PreviousBalance",
+                            "value": "@{bf200PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "a9d74f31-56ca-4750-8d69-893a004698f9",
+                            "dataType": "STRING",
+                            "key": "bf200ObservationId",
+                            "value": "@{bf200ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "7faf7f8b-c401-49a2-e6b5-ebc38d7c8952",
+                            "dataType": "STRING",
+                            "key": "bf200StockOutFlagId",
+                            "value": "@{bf200StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "2147e6cc-f4c2-40f4-8f95-c8e12f5a3906",
+                            "dataType": "INTEGER",
+                            "key": "bf250PreviousBalance",
+                            "value": "@{bf250PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "5e0e940e-d26f-4890-af22-818c32166bce",
+                            "dataType": "STRING",
+                            "key": "bf250ObservationId",
+                            "value": "@{bf250ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "06c74605-d3c2-414e-b8a1-d715cdeb8da8",
+                            "dataType": "STRING",
+                            "key": "bf250StockOutFlagId",
+                            "value": "@{bf250StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "70095888-1aac-4e94-c4f2-a0c1b615cc25",
+                            "dataType": "INTEGER",
+                            "key": "bf300PreviousBalance",
+                            "value": "@{bf300PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "bf372250-a924-4370-d3c2-7028a744c48e",
+                            "dataType": "STRING",
+                            "key": "bf300ObservationId",
+                            "value": "@{bf300ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "13935d7e-57a1-4ade-f91d-8f7cccfdb0fa",
+                            "dataType": "STRING",
+                            "key": "bf300StockOutFlagId",
+                            "value": "@{bf300StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "52e56dfa-aab3-4de1-a7b3-1872ad4b5d05",
+                            "dataType": "INTEGER",
+                            "key": "sv100PreviousBalance",
+                            "value": "@{sv100PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "82260d3e-1d12-4a56-8917-26fa39d29a35",
+                            "dataType": "STRING",
+                            "key": "sv100ObservationId",
+                            "value": "@{sv100ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "9c6affa9-6d22-4673-8664-c5d386e476fa",
+                            "dataType": "STRING",
+                            "key": "sv100StockOutFlagId",
+                            "value": "@{sv100StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "68e5a011-edde-4257-8a37-52a50f26cc0f",
+                            "dataType": "INTEGER",
+                            "key": "sv150PreviousBalance",
+                            "value": "@{sv150PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "81ec6b3e-57e0-4c36-9830-213baabb0e38",
+                            "dataType": "STRING",
+                            "key": "sv150ObservationId",
+                            "value": "@{sv150ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "0a71df31-64e1-46e5-a498-ef777f0cedaf",
+                            "dataType": "STRING",
+                            "key": "sv150StockOutFlagId",
+                            "value": "@{sv150StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "80722325-12ca-40c8-f24a-5955410c9afa",
+                            "dataType": "INTEGER",
+                            "key": "sv200PreviousBalance",
+                            "value": "@{sv200PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "14b0ddd8-cdb9-4439-81ed-56073741d06e",
+                            "dataType": "STRING",
+                            "key": "sv200ObservationId",
+                            "value": "@{sv200ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "a6785696-af28-4466-c289-6f83e3153dff",
+                            "dataType": "STRING",
+                            "key": "sv200StockOutFlagId",
+                            "value": "@{sv200StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "4620c135-06b5-46c7-bce4-13ea3cebd562",
+                            "dataType": "INTEGER",
+                            "key": "sv250PreviousBalance",
+                            "value": "@{sv250PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "06e1a33b-2476-4fab-88ad-f371c9b28e48",
+                            "dataType": "STRING",
+                            "key": "sv250ObservationId",
+                            "value": "@{sv250ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "098c7312-33c4-4598-8050-5b3b193db5e9",
+                            "dataType": "STRING",
+                            "key": "sv250StockOutFlagId",
+                            "value": "@{sv250StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "db715612-cb19-4e19-8e95-265559eb9d2d",
+                            "dataType": "INTEGER",
+                            "key": "sv300PreviousBalance",
+                            "value": "@{sv300PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "45979eef-d80a-44b1-c512-c70568baea2a",
+                            "dataType": "STRING",
+                            "key": "sv300ObservationId",
+                            "value": "@{sv300ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "6655f7d1-a0fc-43fe-820a-6ec0c8c2a60c",
+                            "dataType": "STRING",
+                            "key": "sv300StockOutFlagId",
+                            "value": "@{sv300StockOutFlagId}"
                           }
                         ]
                       }
@@ -2304,7 +2617,7 @@
                         "name": "patientId",
                         "condition": "true",
                         "actions": [
-                          "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
+                          "data.put('patientId', 'Patient/' + fhirPath.extractValue(Patient, 'Patient.id'))"
                         ]
                       }
                     ],
@@ -2331,7 +2644,36 @@
                     "relatedResources": [
                       {
                         "resource": "Task",
-                        "searchParameter": "based-on"
+                        "searchParameter": "based-on",
+                        "dataQueries": [
+                          {
+                            "paramName": "status",
+                            "operation": "OR",
+                            "filterCriteria": [
+                              {
+                                "dataType": "CODE",
+                                "value": {
+                                  "system": "http://hl7.org/fhir/task-status",
+                                  "code": "ready"
+                                }
+                              },
+                              {
+                                "dataType": "CODE",
+                                "value": {
+                                  "system": "http://hl7.org/fhir/task-status",
+                                  "code": "requested"
+                                }
+                              },
+                              {
+                                "dataType": "CODE",
+                                "value": {
+                                  "system": "http://hl7.org/fhir/task-status",
+                                  "code": "failed"
+                                }
+                              }
+                            ]
+                          }
+                        ]
                       }
                     ]
                   },
@@ -2343,7 +2685,7 @@
                         "name": "patientId",
                         "condition": "true",
                         "actions": [
-                          "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
+                          "data.put('patientId', 'Patient/' + fhirPath.extractValue(Patient, 'Patient.id'))"
                         ]
                       }
                     ],
@@ -2370,6 +2712,22 @@
                         ]
                       }
                     ]
+                  }
+                ],
+                "updateValues": [
+                  {
+                    "jsonPathExpression" : "CarePlan.status",
+                    "value": "completed",
+                    "resourceType": "CarePlan"
+                  },
+                  {
+                    "jsonPathExpression" : "Task.status",
+                    "value": "cancelled"
+                  },
+                  {
+                    "jsonPathExpression" : "Condition.clinicalStatus.coding[0].code",
+                    "value": "inactive",
+                    "resourceType": "Condition"
                   }
                 ]
               }

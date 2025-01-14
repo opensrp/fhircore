@@ -121,6 +121,11 @@
             ]
           }
         ]
+      },
+      {
+        "id": "groupEncounter",
+        "resource": "Encounter",
+        "searchParameter": "subject"
       }
     ]
   },
@@ -135,6 +140,76 @@
   },
   "registerCard": {
     "rules": [
+      {
+        "name": "hhRegistrationEncounter",
+        "condition": "true",
+        "actions": [
+          "data.put('hhRegistrationEncounter', service.filterResources(groupEncounter, \"Encounter.reasonCode[0].coding[0].code = 'family_registration'\"))"
+        ]
+      },
+      {
+        "name": "hhRegistrationDate",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('hhRegistrationDate', fhirPath.extractValue(data.get('hhRegistrationEncounter').get(0), \"Encounter.period.start\"))"
+        ]
+      },
+      {
+        "name": "hhVisitEncounter",
+        "condition": "true",
+        "actions": [
+        "data.put('hhVisitEncounter', service.filterResources(groupEncounter, \"Encounter.reasonCode[0].coding[0].code = 'household_visit'\"))"
+        ]
+      },
+      {
+        "name": "hhVisitDate",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('hhVisitDate', size(data.get('hhVisitEncounter')) > 0 ? fhirPath.extractValue(data.get('hhVisitEncounter').get(0), \"Encounter.period.start\") : null)"
+        ]
+      },
+      {
+        "name": "isFamilyVisitPast7Months",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('isFamilyVisitPast7Months', size(data.get('hhVisitEncounter')) > 0 ? fhirPath.extractValue(data.get('hhVisitEncounter').get(0), \"Encounter.period.start < today() - 7 'months'\") : fhirPath.extractValue(data.get('hhRegistrationEncounter').get(0), \"Encounter.period.start < today() - 7 'months'\"))"
+        ]
+      },
+      {
+        "name": "isFamilyVisitPast5Months",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('isFamilyVisitPast5Months', size(data.get('hhVisitEncounter')) > 0 ? fhirPath.extractValue(data.get('hhVisitEncounter').get(0), \"Encounter.period.start < today() - 5 'months'\") : fhirPath.extractValue(data.get('hhRegistrationEncounter').get(0), \"Encounter.period.start < today() - 5 'months'\"))"
+        ]
+      },
+      {
+        "name": "isFamilyVisitPast3Months",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('isFamilyVisitPast3Months', size(data.get('hhVisitEncounter')) > 0 ? fhirPath.extractValue(data.get('hhVisitEncounter').get(0), \"Encounter.period.start < today() - 3 'months'\") : fhirPath.extractValue(data.get('hhRegistrationEncounter').get(0), \"Encounter.period.start < today() - 3 'months'\"))"
+        ]
+      },
+      {
+        "name": "familyVisitStatus",
+        "condition": "true",
+        "priority": 3,
+        "actions": [
+          "data.put('familyVisitStatus', data.get('hhVisitDate') != null ? 'শেষ পরিদর্শনের তারিখঃ ' + service.formatDate(data.get('hhVisitDate'), \"yyyy-MM-dd'T'HH:mm:ssZ\", \"dd-MM-yyyy\") : 'পরিদর্শনে যাওযা হয়নি')"
+        ]
+      },
+      {
+        "name": "familyVisitStatusColor",
+        "condition": "true",
+        "priority": 3,
+        "actions": [
+        "data.put('familyVisitStatusColor', data.get('isFamilyVisitPast7Months') ? '#964B00' : data.get('isFamilyVisitPast5Months') ? '#f04646' : data.get('isFamilyVisitPast3Months') ? '#FFA500' : '#4B8B3B')"
+        ]
+      },
       {
         "name": "activeConditions",
         "condition": "true",
@@ -218,7 +293,7 @@
         "name": "serviceMemberIcons",
         "condition": "true",
         "actions": [
-          "data.put('serviceMemberIcons', StringUtils:join([service.mapResourcesToLabeledCSV(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\", 'CHILD'), service.mapResourcesToLabeledCSV(data.get('activeConditions'), \"Condition.code.text = 'Pregnant'\", 'PREGNANT_WOMAN'), service.mapResourcesToLabeledCSV(data.get('activeConditions'), \"Condition.code.text = 'PNC'\", 'BABY_MOTHER')], ','))"
+          "data.put('serviceMemberIcons', StringUtils:join([service.mapResourcesToLabeledCSV(Patient, \"Patient.active and (Patient.birthDate >= today() - 2 'years')\", 'CHILD'), service.mapResourcesToLabeledCSV(data.get('activeConditions'), \"Condition.code.text = 'Pregnant'\", 'PREGNANT_WOMAN'), service.mapResourcesToLabeledCSV(data.get('activeConditions'), \"Condition.code.text = 'PNC'\", 'BABY_MOTHER')], ','))"
         ]
       },
       {
@@ -232,7 +307,7 @@
     "views": [
       {
         "viewType": "COLUMN",
-        "padding": 10,
+        "padding": 5,
         "children": [
           {
             "viewType": "SERVICE_CARD",
@@ -260,10 +335,12 @@
             "serviceMemberIcons": "@{serviceMemberIcons}",
             "serviceButton": {
               "visible": true,
-              "text": "@{totalTaskCount}",
-              "status": "@{serviceStatus}",
+              "text": "@{familyVisitStatus}",
+              "status": "",
+              "backgroundColor": "@{familyVisitStatusColor}",
+              "contentColor": "#FFFFFF",
               "fontSize": 14.0,
-              "smallSized": false,
+              "buttonType": "BIG",
               "actions": [
                 {
                   "trigger": "ON_CLICK",

@@ -5,10 +5,10 @@
   "pageSize": 20,
   "configRules": [
     {
-      "name": "under5",
+      "name": "under2",
       "condition": "true",
       "actions": [
-        "data.put('under5', dateService.addOrSubtractTimeUnitFromCurrentDate(5,'-','YEAR'))"
+        "data.put('under2', dateService.addOrSubtractTimeUnitFromCurrentDate(2,'-','YEAR'))"
       ]
     }
   ],
@@ -21,7 +21,7 @@
           "filterCriteria": [
             {
               "dataType": "DATE",
-              "computedRule": "under5",
+              "computedRule": "under2",
               "prefix": "GREATERTHAN_OR_EQUALS"
             }
           ]
