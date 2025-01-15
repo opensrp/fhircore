@@ -178,7 +178,7 @@
     <string name="sync_error">Erreur de synchronisation</string>
     <string name="minutes_remaining">Calcul des minutes restantes...</string>
     <string name="sync_up_inprogress">%1$d%% Synchronisation en cours&#8230;</string>
-    <string name="sync_down_inprogress">%1$d%%Synchronisation en cours&#8230;</string>
+    <string name="sync_down_inprogress">%1$d%% Synchronisation en cours&#8230;</string>
     <string name="default_html_title">fichier</string>
     <string name="retry">REESSAYER</string>
     <string name="unsynced_data_present">Il y a des données non synchronisées</string>
