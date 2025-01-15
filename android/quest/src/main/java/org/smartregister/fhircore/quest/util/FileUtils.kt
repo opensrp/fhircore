@@ -24,8 +24,6 @@ import java.io.IOException
 import java.util.zip.ZipException
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.ZipParameters
-import net.lingala.zip4j.model.enums.CompressionLevel
-import net.lingala.zip4j.model.enums.EncryptionMethod
 import org.smartregister.fhircore.engine.R
 import timber.log.Timber
 
@@ -34,13 +32,9 @@ object FileUtils {
     zipFile: File,
     files: List<File>,
     password: String,
+    zipParameters: ZipParameters,
     deleteOriginalFiles: Boolean = false,
   ) {
-    val zipParameters = ZipParameters()
-    zipParameters.isEncryptFiles = true
-    zipParameters.compressionLevel = CompressionLevel.HIGHER
-    zipParameters.encryptionMethod = EncryptionMethod.AES
-
     val zip = ZipFile(zipFile, password.toCharArray())
     for (file in files) {
       try {

@@ -36,6 +36,9 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import net.lingala.zip4j.model.ZipParameters
+import net.lingala.zip4j.model.enums.CompressionLevel
+import net.lingala.zip4j.model.enums.EncryptionMethod
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -279,10 +282,16 @@ constructor(
           val practitionerUuid = practitionerId!!.substring(0, practitionerId.indexOf("-"))
           val zipPassword = "${username}_$practitionerUuid"
 
+          val zipParameters = ZipParameters()
+          zipParameters.isEncryptFiles = true
+          zipParameters.compressionLevel = CompressionLevel.HIGHER
+          zipParameters.encryptionMethod = EncryptionMethod.AES
+
           FileUtils.zipFiles(
             zipFile,
             listOf(backupFile),
             zipPassword,
+            zipParameters,
             true,
           )
 
