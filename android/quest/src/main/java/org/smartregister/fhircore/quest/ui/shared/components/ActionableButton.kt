@@ -34,6 +34,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,6 +59,7 @@ import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.util.extensions.conditional
@@ -152,6 +154,7 @@ fun ActionableButton(
         if (isButtonEnabled) {
           when (status) {
             ServiceStatus.COMPLETED.name -> SuccessColor
+            ServiceStatus.IN_PROGRESS.name -> WarningColor
             ServiceStatus.FAILED.name -> DangerColor
             else -> statusColor
           }
@@ -160,7 +163,7 @@ fun ActionableButton(
         }
       if (buttonProperties.startIcon != null) {
         Image(
-          imageProperties = ImageProperties(imageConfig = buttonProperties.startIcon, size = 16),
+          imageProperties = ImageProperties(imageConfig = buttonProperties.startIcon, size = buttonProperties.statusIconSize),
           tint = iconTintColor,
           resourceData = resourceData,
           navController = navController,
@@ -173,6 +176,9 @@ fun ActionableButton(
               ServiceStatus.COMPLETED.name -> {
                 Icons.Filled.Check
               }
+              ServiceStatus.IN_PROGRESS.name -> {
+                Icons.Outlined.Edit
+              }
               ServiceStatus.FAILED.name -> {
                 Icons.Filled.Clear
               }
@@ -180,7 +186,7 @@ fun ActionableButton(
             },
           contentDescription = null,
           tint = iconTintColor,
-          modifier = Modifier.size(16.dp),
+          modifier = Modifier.size(buttonProperties.statusIconSize.dp),
         )
       }
       Text(

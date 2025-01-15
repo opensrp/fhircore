@@ -159,6 +159,9 @@
     <string name="percentage_progress" translatable="false">%1$d%%</string>
     <string name="error_occurred">Something went wrong…</string>
     <string name="insights">Insights</string>
+    <string name="export_db" translatable="false">Export DB</string>
+    <string name="exporting_db" translatable="false">Exporting DB...</string>
+    <string name="share_file" translatable="false">Share File</string>
     <string name="contact_help">"Contact help"</string>
     <string name="offline_map">"Offline Maps"</string>
     <string name="dismiss">Dismiss</string>
