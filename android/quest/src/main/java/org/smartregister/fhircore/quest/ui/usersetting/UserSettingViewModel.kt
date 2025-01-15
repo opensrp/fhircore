@@ -275,8 +275,6 @@ constructor(
           }
 
         if (dbCopied) {
-          // The password is currently set as:
-          //
           val zipFile = File("${backupFile.absolutePath}.zip")
           FileUtils.zipFiles(
             zipFile,
