@@ -171,7 +171,8 @@ fun SyncBottomBar(
       ) {
         val context = LocalContext.current
         when {
-          currentSyncJobStatus is CurrentSyncJobStatus.Running && appDrawerUIState.percentageProgress!!<=100 -> {
+          currentSyncJobStatus is CurrentSyncJobStatus.Running &&
+            appDrawerUIState.percentageProgress!! <= 100 -> {
             SyncStatusView(
               isSyncUpload = appDrawerUIState.isSyncUpload,
               currentSyncJobStatus = currentSyncJobStatus,
