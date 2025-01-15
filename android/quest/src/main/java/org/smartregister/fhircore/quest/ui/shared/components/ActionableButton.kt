@@ -34,6 +34,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,6 +59,7 @@ import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.util.extensions.conditional
@@ -152,6 +154,7 @@ fun ActionableButton(
         if (isButtonEnabled) {
           when (status) {
             ServiceStatus.COMPLETED.name -> SuccessColor
+            ServiceStatus.IN_PROGRESS.name -> WarningColor
             ServiceStatus.FAILED.name -> DangerColor
             else -> statusColor
           }
@@ -172,6 +175,9 @@ fun ActionableButton(
             when (status) {
               ServiceStatus.COMPLETED.name -> {
                 Icons.Filled.Check
+              }
+              ServiceStatus.IN_PROGRESS.name -> {
+                Icons.Outlined.Edit
               }
               ServiceStatus.FAILED.name -> {
                 Icons.Filled.Clear
