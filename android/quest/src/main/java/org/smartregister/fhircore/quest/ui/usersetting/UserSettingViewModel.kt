@@ -280,12 +280,13 @@ constructor(
         if (dbCopied) {
           val zipFile = File("${backupFile.absolutePath}.zip")
           val practitionerUuid = practitionerId!!.substring(0, practitionerId.indexOf("-"))
-          val zipPassword = "${username}_$practitionerUuid"
-
-          val zipParameters = ZipParameters()
-          zipParameters.isEncryptFiles = true
-          zipParameters.compressionLevel = CompressionLevel.HIGHER
-          zipParameters.encryptionMethod = EncryptionMethod.AES
+          val zipPassword = "${username}_$practitionerUuid".toCharArray()
+          val zipParameters =
+            ZipParameters().apply {
+              isEncryptFiles = true
+              compressionLevel = CompressionLevel.HIGHER
+              encryptionMethod = EncryptionMethod.AES
+            }
 
           FileUtils.zipFiles(
             zipFile,

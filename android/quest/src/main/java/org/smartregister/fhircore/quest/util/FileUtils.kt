@@ -31,11 +31,11 @@ object FileUtils {
   fun zipFiles(
     zipFile: File,
     files: List<File>,
-    password: String,
+    zipPassword: CharArray,
     zipParameters: ZipParameters,
     deleteOriginalFiles: Boolean = false,
   ) {
-    val zip = ZipFile(zipFile, password.toCharArray())
+    val zip = ZipFile(zipFile, zipPassword)
     for (file in files) {
       try {
         zip.addFile(file, zipParameters)
