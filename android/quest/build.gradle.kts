@@ -515,7 +515,7 @@ dependencies {
   kapt(libs.androidx.room.compiler)
   implementation(libs.androidx.room.ktx)
   implementation(libs.androidx.room.runtime)
-  implementation(libs.androidx.room.testing)
+  testImplementation(libs.androidx.room.testing)
 
   implementation(libs.android.database.sqlcipher)
 
