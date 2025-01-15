@@ -26,6 +26,7 @@ import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
+import java.io.IOException
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -48,6 +49,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYYMMDD_HHMMSS
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MMM_DD_HH_MM_SS
 import org.smartregister.fhircore.engine.util.extension.countUnSyncedResources
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
@@ -69,6 +71,8 @@ import org.smartregister.fhircore.quest.util.DBUtils
 import org.smartregister.fhircore.quest.util.FileUtils
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
+
+private const val FHIR_ENGINE_DB_PASSPHRASE = "fhirEngineDbPassphrase"
 
 @HiltViewModel
 class UserSettingViewModel
@@ -243,8 +247,7 @@ constructor(
   private fun copyDatabase(context: Context, onCopyCompleteListener: () -> Unit) {
     viewModelScope.launch(dispatcherProvider.io()) {
       try {
-        val passphrase = DBUtils.getEncryptionPassphrase("fhirEngineDbPassphrase")
-
+        val passphrase = DBUtils.getEncryptionPassphrase(FHIR_ENGINE_DB_PASSPHRASE)
         val dbFilename = if (BuildConfig.DEBUG) "resources" else "resources_encrypted"
         val dbFile = File("/data/data/${context.packageName}/databases/$dbFilename.db")
 
@@ -255,16 +258,13 @@ constructor(
         val practitionerId =
           sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, username)
 
+        val appName = applicationConfiguration.appTitle.replace(" ", "_")
+        val fileTimestamp = today().formatDate(SDF_YYYYMMDD_HHMMSS)
+        val filename = "${appName}_${username}_${practitionerId}_$fileTimestamp.db"
         val backupFile =
           File(
             downloadsDir,
-            String.format(
-              "%s_%s_%s_%s.db",
-              applicationConfiguration.appTitle.replace(" ", "_"),
-              username,
-              practitionerId,
-              today().formatDate("yyyyMMdd-HHmmss"),
-            ),
+            filename,
           )
 
         val dbCopied =
@@ -276,20 +276,19 @@ constructor(
 
         if (dbCopied) {
           val zipFile = File("${backupFile.absolutePath}.zip")
+          val practitionerUuid = practitionerId!!.substring(0, practitionerId.indexOf("-"))
+          val zipPassword = "${username}_$practitionerUuid"
+
           FileUtils.zipFiles(
             zipFile,
             listOf(backupFile),
-            String.format(
-              "%s_%s",
-              username,
-              practitionerId!!.substring(0, practitionerId.indexOf("-")),
-            ),
+            zipPassword,
             true,
           )
 
           if (zipFile.exists()) FileUtils.shareFile(context, zipFile)
         }
-      } catch (e: Exception) {
+      } catch (e: IOException) {
         Timber.e(e, "Failed to copy application's database")
       } finally {
         onCopyCompleteListener.invoke()

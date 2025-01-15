@@ -66,10 +66,12 @@ object FileUtils {
   fun shareFile(context: Context, file: File, mimeType: String = "text/plain") {
     val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
 
-    val shareIntent = Intent(Intent.ACTION_SEND)
-    shareIntent.type = mimeType
-    shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
-    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    val shareIntent =
+      Intent(Intent.ACTION_SEND).apply {
+        type = mimeType
+        putExtra(Intent.EXTRA_STREAM, fileUri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+      }
 
     val chooser = Intent.createChooser(shareIntent, context.getString(R.string.share_file))
 
