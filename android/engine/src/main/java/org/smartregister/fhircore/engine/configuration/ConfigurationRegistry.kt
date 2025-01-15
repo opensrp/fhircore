@@ -635,7 +635,8 @@ constructor(
     fhirEngine.create(*resources, isLocalOnly = true)
   }
 
-  private fun saveLastConfigUpdatedTimestamp(resource: Resource) {
+  @VisibleForTesting
+   fun saveLastConfigUpdatedTimestamp(resource: Resource) {
     sharedPreferencesHelper.write(
       lastConfigUpdatedTimestampKey(
         resource.resourceType.name.uppercase(),
@@ -645,7 +646,8 @@ constructor(
     )
   }
 
-  private fun lastConfigUpdatedTimestampKey(resourceType: String, resourceId: String) =
+  @VisibleForTesting
+  fun lastConfigUpdatedTimestampKey(resourceType: String, resourceId: String) =
     "${resourceType}_${resourceId}_${SharedPreferenceKey.LAST_CONFIG_SYNC_TIMESTAMP.name}"
 
   @VisibleForTesting fun isNonProxy(): Boolean = _isNonProxy
@@ -654,8 +656,8 @@ constructor(
   fun setNonProxy(nonProxy: Boolean) {
     _isNonProxy = nonProxy
   }
-
-  private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
+  @VisibleForTesting
+   fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
     val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
 
     idList.forEach {
@@ -663,7 +665,7 @@ constructor(
         Bundle.BundleEntryComponent().apply {
           request =
             Bundle.BundleEntryRequestComponent().apply {
-              url = "$resourceType/$it${getLastConfigUpdatedTimestampParam(resourceType, it)}"
+              url = "$resourceType?$ID=$it${getLastConfigUpdatedTimestampParam(resourceType, it)}"
               method = Bundle.HTTPVerb.GET
             }
         },
@@ -681,7 +683,7 @@ constructor(
       sharedPreferencesHelper
         .read(lastConfigUpdatedTimestampKey(resourceType.uppercase(), resourceId), "")
         .orEmpty()
-    return if (timestamp.isNotEmpty()) "?$LAST_UPDATED_KEY=$GREATER_THAN_PREFIX$timestamp" else ""
+    return if (timestamp.isNotEmpty()) "&$LAST_UPDATED_KEY=$GREATER_THAN_PREFIX$timestamp" else ""
   }
 
   private suspend fun fhirResourceDataSourceGetBundle(
