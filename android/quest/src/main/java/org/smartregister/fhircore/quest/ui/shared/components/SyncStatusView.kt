@@ -170,8 +170,8 @@ fun SyncBottomBar(
         contentAlignment = Alignment.Center,
       ) {
         val context = LocalContext.current
-        when (currentSyncJobStatus) {
-          is CurrentSyncJobStatus.Running -> {
+        when {
+          currentSyncJobStatus is CurrentSyncJobStatus.Running && appDrawerUIState.percentageProgress!!<=100 -> {
             SyncStatusView(
               isSyncUpload = appDrawerUIState.isSyncUpload,
               currentSyncJobStatus = currentSyncJobStatus,
@@ -181,7 +181,7 @@ fun SyncBottomBar(
             )
             SideEffect { hideSyncCompleteStatus.value = false }
           }
-          is CurrentSyncJobStatus.Failed -> {
+          currentSyncJobStatus is CurrentSyncJobStatus.Failed -> {
             SyncStatusView(
               isSyncUpload = appDrawerUIState.isSyncUpload,
               currentSyncJobStatus = currentSyncJobStatus,
@@ -192,7 +192,7 @@ fun SyncBottomBar(
               },
             )
           }
-          is CurrentSyncJobStatus.Succeeded -> {
+          currentSyncJobStatus is CurrentSyncJobStatus.Succeeded -> {
             if (!hideSyncCompleteStatus.value) {
               SyncStatusView(
                 isSyncUpload = appDrawerUIState.isSyncUpload,
