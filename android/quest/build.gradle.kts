@@ -378,7 +378,7 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".jobaids"
       versionNameSuffix = "-kaderjobaids"
-      manifestPlaceholders["appLabel"] = "Kader Job Aids"
+      manifestPlaceholders["appLabel"] = "Kader Kesehatan"
     }
   }
 
