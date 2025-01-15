@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.audiointerface.models
+package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 
-import com.google.ai.client.generativeai.GenerativeModel
-
-interface LlmModel {
-  val model: GenerativeModel
-
-  suspend fun generateContent(prompt: String): String?
-}
+class SpeechToFormTest

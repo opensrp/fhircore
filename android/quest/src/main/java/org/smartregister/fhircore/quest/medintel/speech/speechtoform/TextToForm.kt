@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.audiointerface.speechtoform
+package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 
 import ca.uhn.fhir.interceptor.model.RequestPartitionId.fromJson
 import java.io.File
@@ -23,8 +23,8 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.quest.audiointerface.models.LlmModel
-import org.smartregister.fhircore.quest.audiointerface.validation.QuestionnaireResponseValidator
+import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel
+import org.smartregister.fhircore.quest.medintel.speech.validation.QuestionnaireResponseValidator
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 
 private const val s = "```json"

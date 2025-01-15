@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.audiointerface.speechtoform
+package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 
 import com.google.cloud.speech.v1.RecognitionAudio
 import com.google.cloud.speech.v1.RecognitionConfig

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.audiointerface.speechtoform
+package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 
 import io.mockk.coEvery
 import io.mockk.every
@@ -28,8 +28,8 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.smartregister.fhircore.quest.audiointerface.models.GeminiModel
-import org.smartregister.fhircore.quest.audiointerface.models.LlmModel
+import org.smartregister.fhircore.quest.medintel.speech.models.GeminiModel
+import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel
 
 class TextToFormTest {
 

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.audiointerface.speechtoform
+package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 
 import java.io.File
 import java.util.logging.Logger
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.quest.audiointerface.models.LlmModel
+import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel
 
 class SpeechToForm(
   private val speechToText: SpeechToText,

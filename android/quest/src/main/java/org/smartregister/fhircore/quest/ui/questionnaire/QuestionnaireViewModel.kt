@@ -98,7 +98,7 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequest
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequestHandler
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.audiointerface.validation.QuestionnaireResponseValidator
+import org.smartregister.fhircore.quest.medintel.speech.validation.QuestionnaireResponseValidator
 import timber.log.Timber
 
 @HiltViewModel

@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.audiointerface.speechtoform
+package org.smartregister.fhircore.quest.medintel.speech.models
 
-class GeminiModelTest
+import com.google.ai.client.generativeai.GenerativeModel
+
+interface LlmModel {
+  val model: GenerativeModel
+
+  suspend fun generateContent(prompt: String): String?
+}

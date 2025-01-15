@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.audiointerface.speechtoform
+package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 
-class SpeechToFormTest
+class GeminiModelTest
