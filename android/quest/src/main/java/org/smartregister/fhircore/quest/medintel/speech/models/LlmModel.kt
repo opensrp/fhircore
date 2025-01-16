@@ -16,10 +16,8 @@
 
 package org.smartregister.fhircore.quest.medintel.speech.models
 
-import com.google.ai.client.generativeai.GenerativeModel
-
-interface LlmModel {
-  val model: GenerativeModel
+interface LlmModel <T> {
+  val model: T
 
   suspend fun generateContent(prompt: String): String?
 }
