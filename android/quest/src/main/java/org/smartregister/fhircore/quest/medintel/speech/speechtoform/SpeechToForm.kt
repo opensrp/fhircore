@@ -16,18 +16,17 @@
 
 package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 
+import android.content.Context
 import java.io.File
 import java.util.logging.Logger
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel
+import timber.log.Timber
 
-class SpeechToForm(
-  private val speechToText: SpeechToText,
-  llmModel: LlmModel,
+class SpeechToForm <T> (
+  private  val  llmModel: LlmModel<T>,
 ) {
-  private val textToForm: TextToForm = TextToForm(llmModel)
-  private val logger = Logger.getLogger(SpeechToForm::class.java.name)
 
   /**
    * Reads an audio file, transcribes it, and generates a FHIR QuestionnaireResponse.
@@ -39,26 +38,23 @@ class SpeechToForm(
   suspend fun processAudioToQuestionnaireResponse(
     audioFile: File,
     questionnaire: Questionnaire,
+    context: Context
   ): QuestionnaireResponse? {
-    logger.info("Starting audio transcription process...")
+    Timber.i("Starting audio transcription process...")
 
     // Step 1: Transcribe audio to text
-    val tempTextFile = speechToText.transcribeAudioToText(audioFile)
+    val tempTextFile = SpeechToText.transcribeAudioToText(audioFile)
     if (tempTextFile == null) {
-      logger.severe("Failed to transcribe audio.")
+      Timber.e("Failed to transcribe audio.")
       return null
     }
-    logger.info("Transcription successful. File path: ${tempTextFile.absolutePath}")
+    Timber.i("Transcription successful. File path: ${tempTextFile.absolutePath}")
 
     // Step 2: Generate QuestionnaireResponse from the transcript
     val questionnaireResponse =
-      textToForm.generateQuestionnaireResponse(tempTextFile, questionnaire)
-    if (questionnaireResponse == null) {
-      logger.severe("Failed to generate QuestionnaireResponse.")
-      return null
-    }
+      TextToForm.generateQuestionnaireResponse(tempTextFile, questionnaire, context, llmModel)
 
-    logger.info("QuestionnaireResponse generated successfully.")
+    Timber.i("QuestionnaireResponse generated successfully.")
     return questionnaireResponse
   }
 }

@@ -21,13 +21,11 @@ import com.google.cloud.speech.v1.RecognitionConfig
 import com.google.cloud.speech.v1.RecognitionConfig.AudioEncoding
 import com.google.cloud.speech.v1.SpeechClient
 import com.google.cloud.speech.v1.SpeechRecognitionResult
+import timber.log.Timber
 import java.io.File
 import java.util.logging.Logger
 
-class SpeechToText {
-
-  private val logger = Logger.getLogger(SpeechToText::class.java.name)
-
+object SpeechToText {
   /**
    * Transcribes an audio file to text using Google Cloud Speech-to-Text API and writes it to a
    * temporary file.
@@ -62,13 +60,13 @@ class SpeechToText {
           result.alternativesList[0].transcript
         }
 
-      logger.info("Transcription: $transcription")
+      Timber.i("Transcription: $transcription")
 
       // Write transcription to a temporary file
       tempFile = File.createTempFile("transcription", ".txt")
       tempFile?.writeText(transcription)
 
-      logger.info("Transcription written to temporary file. ")
+      Timber.i("Transcription written to temporary file. ")
     }
     return tempFile
   }
