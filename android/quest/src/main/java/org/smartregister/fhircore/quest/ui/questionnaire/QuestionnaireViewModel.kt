@@ -76,6 +76,7 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.allItems
 import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
@@ -708,19 +709,7 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     questionnaireConfig: QuestionnaireConfig,
   ) {
-    val hasPages = questionnaireResponse.item.any { it.hasItem() }
-    val questionnaireHasAnswer =
-      questionnaireResponse.item.any {
-        if (!hasPages) {
-          it.answer.any { answerComponent -> answerComponent.hasValue() }
-        } else {
-          questionnaireResponse.item.any { page ->
-            page.item.any { pageItem ->
-              pageItem.answer.any { answerComponent -> answerComponent.hasValue() }
-            }
-          }
-        }
-      }
+    val hasAnswer = questionnaireResponse.allItems.any { it.hasAnswer() }
     questionnaireResponse.questionnaire =
       questionnaireConfig.id.asReference(ResourceType.Questionnaire).reference
     if (
@@ -732,7 +721,7 @@ constructor(
           questionnaireConfig.resourceType!!,
         )
     }
-    if (questionnaireHasAnswer) {
+    if (hasAnswer) {
       questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
       defaultRepository.addOrUpdate(
         addMandatoryTags = true,

@@ -377,7 +377,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   }
 
   private fun handleBackPress() {
-    if (questionnaireConfig.isReadOnly()) {
+    if (questionnaireConfig.isReadOnly() || questionnaireConfig.isSummary()) {
       finish()
     } else if (questionnaireConfig.saveDraft) {
       AlertDialogue.showThreeButtonAlert(

@@ -379,7 +379,7 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".jobaids"
       versionNameSuffix = "-kaderjobaids"
-      manifestPlaceholders["appLabel"] = "Kader Job Aids"
+      manifestPlaceholders["appLabel"] = "Kader Kesehatan"
     }
   }
 
@@ -516,6 +516,15 @@ dependencies {
   debugImplementation(libs.ui.test.manifest)
   debugImplementation(libs.fragment.testing)
   // debugImplementation(libs.leakcanary.android)
+
+  kapt(libs.androidx.room.compiler)
+  implementation(libs.androidx.room.ktx)
+  implementation(libs.androidx.room.runtime)
+  testImplementation(libs.androidx.room.testing)
+
+  implementation(libs.android.database.sqlcipher)
+
+  implementation(libs.zip4j)
 
   // Annotation processors for test
   kaptTest(libs.dagger.hilt.android.compiler)
