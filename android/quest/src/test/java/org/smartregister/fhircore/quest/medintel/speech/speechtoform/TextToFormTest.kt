@@ -22,6 +22,9 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
+import java.io.File
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Questionnaire
 import org.junit.After
@@ -29,11 +32,8 @@ import org.junit.Test
 import org.smartregister.fhircore.quest.medintel.speech.models.GeminiModel
 import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import java.io.File
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
-class TextToFormTest: RobolectricTest() {
+class TextToFormTest : RobolectricTest() {
 
   private lateinit var mockLlmModel: LlmModel<GenerativeModel>
   private val useGeminiApi = System.getProperty("USE_GEMINI_API")?.toBoolean() ?: false
@@ -56,17 +56,22 @@ class TextToFormTest: RobolectricTest() {
 
   private suspend fun testGenerateQuestionnaireResponseRealApi() {
     val workingDir = System.getProperty("user.dir")
-    val testFile = File(workingDir,"src/test/java/org/smartregister/fhircore/quest/resources/sample_transcript.txt")
+    val testFile =
+      File(
+        workingDir,
+        "src/test/java/org/smartregister/fhircore/quest/resources/sample_transcript.txt"
+      )
     require(testFile.exists()) { "Test transcript file not found at ${testFile.absolutePath}" }
     val mockQuestionnaire = Questionnaire()
     val geminiModel = GeminiModel()
 
-    val result = TextToForm.generateQuestionnaireResponse(
-      transcriptFile = testFile,
-      questionnaire = mockQuestionnaire,
-      context = ApplicationProvider.getApplicationContext(),
-      llmModel = geminiModel
-    )
+    val result =
+      TextToForm.generateQuestionnaireResponse(
+        transcriptFile = testFile,
+        questionnaire = mockQuestionnaire,
+        context = ApplicationProvider.getApplicationContext(),
+        llmModel = geminiModel,
+      )
     assertNotNull(result, "QuestionnaireResponse should not be null")
     println("Generated QuestionnaireResponse: ${result.id}")
   }
@@ -80,12 +85,13 @@ class TextToFormTest: RobolectricTest() {
     coEvery { mockLlmModel.generateContent(any(String::class)) } returns
       "```json\n$mockResponseJson\n```"
 
-    val result = TextToForm.generateQuestionnaireResponse(
-      transcriptFile = mockTranscriptFile,
-      questionnaire = mockQuestionnaire,
-      context = ApplicationProvider.getApplicationContext(),
-      llmModel = mockLlmModel
-    )
+    val result =
+      TextToForm.generateQuestionnaireResponse(
+        transcriptFile = mockTranscriptFile,
+        questionnaire = mockQuestionnaire,
+        context = ApplicationProvider.getApplicationContext(),
+        llmModel = mockLlmModel,
+      )
     assertNotNull(result, "QuestionnaireResponse should not be null")
     assertEquals("123", result.id, "QuestionnaireResponse ID should match")
   }

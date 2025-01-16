@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.quest.medintel.speech.models
 
-interface LlmModel <T> {
+interface LlmModel<T> {
   val model: T
 
   suspend fun generateContent(prompt: String): String?

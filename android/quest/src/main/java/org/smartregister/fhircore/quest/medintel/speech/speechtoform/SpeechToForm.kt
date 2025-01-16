@@ -18,14 +18,13 @@ package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 
 import android.content.Context
 import java.io.File
-import java.util.logging.Logger
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel
 import timber.log.Timber
 
-class SpeechToForm <T> (
-  private  val  llmModel: LlmModel<T>,
+class SpeechToForm<T>(
+  private val llmModel: LlmModel<T>,
 ) {
 
   /**
@@ -38,7 +37,7 @@ class SpeechToForm <T> (
   suspend fun processAudioToQuestionnaireResponse(
     audioFile: File,
     questionnaire: Questionnaire,
-    context: Context
+    context: Context,
   ): QuestionnaireResponse? {
     Timber.i("Starting audio transcription process...")
 

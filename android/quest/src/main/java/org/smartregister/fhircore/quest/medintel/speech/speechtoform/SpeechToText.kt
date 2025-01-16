@@ -21,8 +21,8 @@ import com.google.cloud.speech.v1.RecognitionConfig
 import com.google.cloud.speech.v1.RecognitionConfig.AudioEncoding
 import com.google.cloud.speech.v1.SpeechClient
 import com.google.cloud.speech.v1.SpeechRecognitionResult
-import timber.log.Timber
 import java.io.File
+import timber.log.Timber
 
 object SpeechToText {
   /**

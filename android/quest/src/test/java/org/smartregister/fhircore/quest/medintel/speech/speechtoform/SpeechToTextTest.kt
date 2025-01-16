@@ -64,7 +64,11 @@ class SpeechToTextTest {
 
   private fun testTranscribeAudioToTextRealApi() {
     val workingDir = System.getProperty("user.dir")
-    val testFile = File(workingDir,"src/test/java/org/smartregister/fhircore/quest/resources/sample_conversation.mp3")
+    val testFile =
+      File(
+        workingDir,
+        "src/test/java/org/smartregister/fhircore/quest/resources/sample_conversation.mp3"
+      )
     require(testFile.exists()) { "Test audio file not found at ${testFile.absolutePath}" }
 
     val resultFile = SpeechToText.transcribeAudioToText(testFile)

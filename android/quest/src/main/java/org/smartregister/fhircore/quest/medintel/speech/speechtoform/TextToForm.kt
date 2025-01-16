@@ -18,15 +18,14 @@ package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.File
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.json.JSONObject
 import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel
 import org.smartregister.fhircore.quest.medintel.speech.validation.QuestionnaireResponseValidator
-
 import timber.log.Timber
 
 object TextToForm {
@@ -50,7 +49,7 @@ object TextToForm {
     questionnaire: Questionnaire,
     context: Context,
     llmModel: LlmModel<T>,
-    ): QuestionnaireResponse {
+  ): QuestionnaireResponse {
     val transcript = transcriptFile.readText()
     var retryCount = 0
     var questionnaireResponse = QuestionnaireResponse()
@@ -66,16 +65,15 @@ object TextToForm {
         Timber.e("Failed to extract JSON block from Gemini response.")
         errors = listOf("Failed to extract JSON block from Gemini response.")
       } else {
-        withContext(Dispatchers.IO){
+        withContext(Dispatchers.IO) {
           questionnaireResponse = parseQuestionnaireResponse(questionnaireResponseJson)
           errors =
             QuestionnaireResponseValidator.getQuestionnaireResponseErrorsAsStrings(
               questionnaire = questionnaire,
               questionnaireResponse = questionnaireResponse,
-              context = context
+              context = context,
             )
         }
-
       }
       if (errors.isEmpty()) {
         Timber.i("QuestionnaireResponse validated successfully.")
@@ -147,7 +145,6 @@ object TextToForm {
           }
         }
       }
-
     }
     return null
   }
@@ -195,5 +192,4 @@ object TextToForm {
             """
       .trimIndent()
   }
-
 }

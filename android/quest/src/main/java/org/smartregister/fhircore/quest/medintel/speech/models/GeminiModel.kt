@@ -23,7 +23,7 @@ import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.generationConfig
 import org.smartregister.fhircore.quest.BuildConfig
 
-class GeminiModel : LlmModel <GenerativeModel> {
+class GeminiModel : LlmModel<GenerativeModel> {
   // model usage
   // https://developer.android.com/ai/google-ai-client-sdk
   override val model =

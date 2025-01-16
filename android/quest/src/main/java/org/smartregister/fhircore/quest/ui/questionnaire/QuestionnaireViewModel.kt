@@ -168,9 +168,9 @@ constructor(
     viewModelScope.launch(SupervisorJob()) {
       val questionnaireResponseValid =
         QuestionnaireResponseValidator.validateQuestionnaireResponse(
-            questionnaire = questionnaire,
-            questionnaireResponse = currentQuestionnaireResponse,
-            context = context,
+          questionnaire = questionnaire,
+          questionnaireResponse = currentQuestionnaireResponse,
+          context = context,
         )
 
       if (questionnaireConfig.saveQuestionnaireResponse && !questionnaireResponseValid) {
