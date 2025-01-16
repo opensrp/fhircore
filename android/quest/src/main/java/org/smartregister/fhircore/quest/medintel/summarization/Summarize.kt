@@ -3,8 +3,8 @@ package org.smartregister.fhircore.quest.medintel.summarization;
 import org.hl7.fhir.r4b.model.Bundle;
 import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel;
 
-class Summarize(
-    private val llmModel: LlmModel
+class Summarize<T>(
+    private val llmModel: LlmModel<T>
 ) {
     suspend fun summarize(bundle: Bundle): String? {
         val prompt = generatePrompt(bundle);

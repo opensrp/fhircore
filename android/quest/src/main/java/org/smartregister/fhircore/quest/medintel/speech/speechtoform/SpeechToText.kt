@@ -23,7 +23,6 @@ import com.google.cloud.speech.v1.SpeechClient
 import com.google.cloud.speech.v1.SpeechRecognitionResult
 import timber.log.Timber
 import java.io.File
-import java.util.logging.Logger
 
 object SpeechToText {
   /**

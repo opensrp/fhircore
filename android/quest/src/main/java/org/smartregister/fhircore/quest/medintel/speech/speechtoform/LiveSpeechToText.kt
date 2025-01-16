@@ -4,10 +4,14 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import com.google.api.gax.rpc.ResponseObserver
 import com.google.api.gax.rpc.StreamController
-import com.google.cloud.speech.v1.*
 import com.google.protobuf.ByteString
 import java.util.logging.Logger
 import com.google.api.gax.rpc.ClientStream
+import com.google.cloud.speech.v1.RecognitionConfig
+import com.google.cloud.speech.v1.SpeechClient
+import com.google.cloud.speech.v1.StreamingRecognitionConfig
+import com.google.cloud.speech.v1.StreamingRecognizeRequest
+import com.google.cloud.speech.v1.StreamingRecognizeResponse
 
 class LiveSpeechToText {
 
