@@ -186,7 +186,7 @@ fun ActionableButton(
           imageProperties =
             ImageProperties(
               imageConfig = buttonProperties.startIcon,
-              size = buttonProperties.statusIconSize
+              size = buttonProperties.statusIconSize,
             ),
           tint = iconTintColor,
           resourceData = resourceData,
