@@ -140,29 +140,32 @@ fun ActionableButton(
       enabled = buttonProperties.enabled.toBoolean(),
       border = BorderStroke(width = 0.8.dp, color = statusColor.copy(alpha = 0.1f)),
       elevation = null,
-      contentPadding = run {
-        // Determine default padding based on button type
-        val defaultPadding: PaddingValues = when (buttonProperties.buttonType) {
-          ButtonType.TINY -> PaddingValues(vertical = 2.4.dp, horizontal = 4.dp)
-          else -> PaddingValues(vertical = 4.8.dp, horizontal = 8.dp)
-        }
+      contentPadding =
+        run {
+          // Determine default padding based on button type
+          val defaultPadding: PaddingValues =
+            when (buttonProperties.buttonType) {
+              ButtonType.TINY -> PaddingValues(vertical = 2.4.dp, horizontal = 4.dp)
+              else -> PaddingValues(vertical = 4.8.dp, horizontal = 8.dp)
+            }
 
-        // Check if custom padding values are provided
-        val customPadding: PaddingValues? = if (
-          buttonProperties.contentPaddingHorizontal != null &&
-          buttonProperties.contentPaddingVertical != null
-        ) {
-          PaddingValues(
-            vertical = buttonProperties.contentPaddingVertical!!.dp,
-            horizontal = buttonProperties.contentPaddingHorizontal!!.dp
-          )
-        } else {
-          null
-        }
+          // Check if custom padding values are provided
+          val customPadding: PaddingValues? =
+            if (
+              buttonProperties.contentPaddingHorizontal != null &&
+                buttonProperties.contentPaddingVertical != null
+            ) {
+              PaddingValues(
+                vertical = buttonProperties.contentPaddingVertical!!.dp,
+                horizontal = buttonProperties.contentPaddingHorizontal!!.dp,
+              )
+            } else {
+              null
+            }
 
-        // Use custom padding if available; otherwise, fallback to default padding
-        customPadding ?: defaultPadding
-      },
+          // Use custom padding if available; otherwise, fallback to default padding
+          customPadding ?: defaultPadding
+        },
       shape = RoundedCornerShape(buttonProperties.borderRadius),
     ) {
       // Each component here uses a new modifier to avoid inheriting the properties of the
@@ -180,7 +183,11 @@ fun ActionableButton(
         }
       if (buttonProperties.startIcon != null) {
         Image(
-          imageProperties = ImageProperties(imageConfig = buttonProperties.startIcon, size = buttonProperties.statusIconSize),
+          imageProperties =
+            ImageProperties(
+              imageConfig = buttonProperties.startIcon,
+              size = buttonProperties.statusIconSize,
+            ),
           tint = iconTintColor,
           resourceData = resourceData,
           navController = navController,

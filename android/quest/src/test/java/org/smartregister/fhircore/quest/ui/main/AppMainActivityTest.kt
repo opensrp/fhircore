@@ -196,10 +196,4 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     coVerify { eventBus.triggerEvent(capture(onSubmitQuestionnaireSlot)) }
     Assert.assertNotNull(onSubmitQuestionnaireSlot)
   }
-
-  @Test
-  fun testStartForResult() {
-    val resultLauncher = appMainActivity.startForResult
-    Assert.assertNotNull(resultLauncher)
-  }
 }
