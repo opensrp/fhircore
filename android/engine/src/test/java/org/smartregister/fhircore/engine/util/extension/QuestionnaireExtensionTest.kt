@@ -488,4 +488,11 @@ class QuestionnaireExtensionTest : RobolectricTest() {
     val questionnaireConfig = QuestionnaireConfig(id = "patient-reg-config", saveDraft = true)
     Assert.assertEquals("in-progress", questionnaireConfig.questionnaireResponseStatus())
   }
+
+  @Test
+  fun testQuestionnaireResponseStatusReturnsCompletedWhenIsSummaryIsTrue() {
+    val questionnaireConfig =
+      QuestionnaireConfig(id = "patient-reg-config", type = QuestionnaireType.SUMMARY.name)
+    Assert.assertEquals("completed", questionnaireConfig.questionnaireResponseStatus())
+  }
 }

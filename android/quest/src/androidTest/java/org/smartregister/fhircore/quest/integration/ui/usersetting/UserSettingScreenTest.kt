@@ -167,6 +167,12 @@ class UserSettingScreenTest {
   }
 
   @Test
+  fun testExportDbIsClickable() {
+    initComposable()
+    composeRule.onNodeWithText("Export DB").assertHasClickAction()
+  }
+
+  @Test
   fun testOnClickingInsightsAllDataSavedToastShown() {
     initComposable()
     composeRule.onNodeWithText("Insights").performClick()
@@ -185,6 +191,7 @@ class UserSettingScreenTest {
     showAppInsights: Boolean = true,
     hasOfflineMaps: Boolean = true,
     showContactHelp: Boolean = true,
+    isDatabaseExportEnabled: Boolean = true,
   ) {
     scenario.onActivity { activity ->
       activity.setContent {
@@ -209,6 +216,7 @@ class UserSettingScreenTest {
           enableAppInsights = showAppInsights,
           showOfflineMaps = hasOfflineMaps,
           enableHelpContacts = showContactHelp,
+          enableDatabaseExport = isDatabaseExportEnabled,
         )
       }
 
