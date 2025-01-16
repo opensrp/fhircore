@@ -36,7 +36,6 @@ import org.junit.Test
 
 class SpeechToTextTest {
 
-  private lateinit var speechToText: SpeechToText
   private lateinit var mockSpeechClient: SpeechClient
   private val useRealApi = System.getProperty("USE_REAL_API")?.toBoolean() ?: false
 
@@ -47,7 +46,6 @@ class SpeechToTextTest {
       mockkStatic(SpeechClient::class)
       every { SpeechClient.create() } returns mockSpeechClient
     }
-    speechToText = SpeechToText()
   }
 
   @After
@@ -65,10 +63,11 @@ class SpeechToTextTest {
   }
 
   private fun testTranscribeAudioToTextRealApi() {
-    val testFile = File("org/smartregister/fhircore/quest/resources/sample_conversation.mp3")
+    val workingDir = System.getProperty("user.dir")
+    val testFile = File(workingDir,"src/test/java/org/smartregister/fhircore/quest/resources/sample_conversation.mp3")
     require(testFile.exists()) { "Test audio file not found at ${testFile.absolutePath}" }
 
-    val resultFile = speechToText.transcribeAudioToText(testFile)
+    val resultFile = SpeechToText.transcribeAudioToText(testFile)
     assertNotNull(resultFile, "Result file should not be null")
     assertTrue(resultFile.exists(), "Result file should exist")
     println("Transcription result: ${resultFile.readText()}")
@@ -96,7 +95,7 @@ class SpeechToTextTest {
     val mockResponse = RecognizeResponse.newBuilder().addResults(mockResult).build()
     every { mockSpeechClient.recognize(mockConfig, mockRecognitionAudio) } returns mockResponse
 
-    val resultFile = speechToText.transcribeAudioToText(mockAudioFile)
+    val resultFile = SpeechToText.transcribeAudioToText(mockAudioFile)
     assertNotNull(resultFile, "Result file should not be null")
     assertTrue(resultFile.exists(), "Result file should exist")
     assertEquals("Hello World", resultFile.readText(), "Transcription content should match")

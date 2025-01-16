@@ -16,40 +16,31 @@
 
 package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 
+import androidx.test.core.app.ApplicationProvider
+import com.google.ai.client.generativeai.GenerativeModel
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
-import java.io.File
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Questionnaire
 import org.junit.After
-import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.quest.medintel.speech.models.GeminiModel
 import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import java.io.File
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
-class TextToFormTest {
+class TextToFormTest: RobolectricTest() {
 
-  private lateinit var textToForm: TextToForm
-  private lateinit var mockLlmModel: LlmModel
+  private lateinit var mockLlmModel: LlmModel<GenerativeModel>
   private val useGeminiApi = System.getProperty("USE_GEMINI_API")?.toBoolean() ?: false
 
-  @Before
-  fun setUp() {
-    if (useGeminiApi) {
-      val geminiModel = GeminiModel()
-      textToForm = TextToForm(geminiModel)
-    } else {
-      mockLlmModel = mockk(relaxed = true)
-      textToForm = TextToForm(mockLlmModel)
-    }
-  }
-
   @After
-  fun tearDown() {
+  override fun tearDown() {
+    super.tearDown()
     if (!useGeminiApi) unmockkAll()
   }
 
@@ -58,16 +49,24 @@ class TextToFormTest {
     if (useGeminiApi) {
       testGenerateQuestionnaireResponseRealApi()
     } else {
+      mockLlmModel = mockk(relaxed = true)
       testGenerateQuestionnaireResponseMock()
     }
   }
 
   private suspend fun testGenerateQuestionnaireResponseRealApi() {
-    val testFile = File("org/smartregister/fhircore/quest/resources/sample_transcript.txt")
+    val workingDir = System.getProperty("user.dir")
+    val testFile = File(workingDir,"src/test/java/org/smartregister/fhircore/quest/resources/sample_transcript.txt")
     require(testFile.exists()) { "Test transcript file not found at ${testFile.absolutePath}" }
     val mockQuestionnaire = Questionnaire()
+    val geminiModel = GeminiModel()
 
-    val result = textToForm.generateQuestionnaireResponse(testFile, mockQuestionnaire)
+    val result = TextToForm.generateQuestionnaireResponse(
+      transcriptFile = testFile,
+      questionnaire = mockQuestionnaire,
+      context = ApplicationProvider.getApplicationContext(),
+      llmModel = geminiModel
+    )
     assertNotNull(result, "QuestionnaireResponse should not be null")
     println("Generated QuestionnaireResponse: ${result.id}")
   }
@@ -81,7 +80,12 @@ class TextToFormTest {
     coEvery { mockLlmModel.generateContent(any(String::class)) } returns
       "```json\n$mockResponseJson\n```"
 
-    val result = textToForm.generateQuestionnaireResponse(mockTranscriptFile, mockQuestionnaire)
+    val result = TextToForm.generateQuestionnaireResponse(
+      transcriptFile = mockTranscriptFile,
+      questionnaire = mockQuestionnaire,
+      context = ApplicationProvider.getApplicationContext(),
+      llmModel = mockLlmModel
+    )
     assertNotNull(result, "QuestionnaireResponse should not be null")
     assertEquals("123", result.id, "QuestionnaireResponse ID should match")
   }
