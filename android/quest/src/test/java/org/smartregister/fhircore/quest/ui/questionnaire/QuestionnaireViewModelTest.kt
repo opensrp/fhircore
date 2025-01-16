@@ -293,10 +293,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       // Verify QuestionnaireResponse was validated
       coVerify {
         QuestionnaireResponseValidator.validateQuestionnaireResponse(
-          questionnaire,
-          questionnaireResponse,
-          context,
-          questionnaireViewModel.dispatcherProvider,
+            questionnaire,
+            questionnaireResponse,
+            context,
         )
       }
       // Verify perform extraction was invoked
@@ -397,10 +396,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // Verify QuestionnaireResponse was validated
     coVerify {
       QuestionnaireResponseValidator.validateQuestionnaireResponse(
-        questionnaire = questionnaire,
-        questionnaireResponse = questionnaireResponse,
-        context = context,
-        dispatcherProvider = questionnaireViewModel.dispatcherProvider,
+          questionnaire = questionnaire,
+          questionnaireResponse = questionnaireResponse,
+          context = context,
       )
     }
 
@@ -927,26 +925,24 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       // No answer provided
       Assert.assertFalse(
         QuestionnaireResponseValidator.validateQuestionnaireResponse(
-          questionnaire,
-          questionnaireResponse,
-          context,
-          questionnaireViewModel.dispatcherProvider,
+            questionnaire,
+            questionnaireResponse,
+            context,
         ),
       )
 
       // With an answer provided
       Assert.assertTrue(
         QuestionnaireResponseValidator.validateQuestionnaireResponse(
-          questionnaire,
-          questionnaireResponse.apply {
-            itemFirstRep.answer =
-              listOf(
-                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
-                  .setValue(StringType("Answer")),
-              )
-          },
-          context,
-          questionnaireViewModel.dispatcherProvider,
+            questionnaire,
+            questionnaireResponse.apply {
+              itemFirstRep.answer =
+                listOf(
+                  QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
+                    .setValue(StringType("Answer")),
+                )
+            },
+            context,
         ),
       )
     }
@@ -1042,10 +1038,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
     val result =
       QuestionnaireResponseValidator.validateQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse,
-        context,
-        questionnaireViewModel.dispatcherProvider,
+          questionnaire,
+          questionnaireResponse,
+          context,
       )
     Assert.assertTrue(result)
   }
@@ -1167,10 +1162,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
       val result =
         QuestionnaireResponseValidator.validateQuestionnaireResponse(
-          questionnaire,
-          actualQuestionnaireResponse,
-          context,
-          questionnaireViewModel.dispatcherProvider,
+            questionnaire,
+            actualQuestionnaireResponse,
+            context,
         )
       val expectedQuestionnaireResponse =
         parser.parseResource(questionnaireResponseString) as QuestionnaireResponse

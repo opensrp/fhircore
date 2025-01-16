@@ -290,7 +290,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
                 questionnaire,
                 it,
                 this@QuestionnaireActivity,
-                viewModel.dispatcherProvider,
               )
             }
             ?.let { setQuestionnaireResponse(it.json()) }

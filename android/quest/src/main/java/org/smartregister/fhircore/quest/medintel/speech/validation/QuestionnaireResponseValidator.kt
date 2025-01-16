@@ -21,11 +21,11 @@ import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.datacapture.validation.ValidationResult
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComponent
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.packRepeatedGroups
 
 class QuestionnaireResponseValidator {
@@ -39,13 +39,11 @@ class QuestionnaireResponseValidator {
       questionnaire: Questionnaire,
       questionnaireResponse: QuestionnaireResponse,
       context: Context,
-      dispatcherProvider: DispatcherProvider,
     ): Boolean {
       return getQuestionnaireResponseErrors(
           questionnaire = questionnaire,
           questionnaireResponse = questionnaireResponse,
           context = context,
-          dispatcherProvider = dispatcherProvider,
         )
         .isEmpty()
     }
@@ -54,7 +52,6 @@ class QuestionnaireResponseValidator {
       questionnaire: Questionnaire,
       questionnaireResponse: QuestionnaireResponse,
       context: Context,
-      dispatcherProvider: DispatcherProvider,
     ): List<ValidationResult> {
       val validQuestionnaireResponseItems = mutableListOf<QuestionnaireResponseItemComponent>()
       val validQuestionnaireItems = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
@@ -69,7 +66,7 @@ class QuestionnaireResponseValidator {
         }
       }
 
-      return withContext(dispatcherProvider.default()) {
+      return withContext(Dispatchers.Default) {
         QuestionnaireResponseValidator.validateQuestionnaireResponse(
             questionnaire = Questionnaire().apply { item = validQuestionnaireItems },
             questionnaireResponse =
@@ -89,13 +86,11 @@ class QuestionnaireResponseValidator {
       questionnaire: Questionnaire,
       questionnaireResponse: QuestionnaireResponse,
       context: Context,
-      dispatcherProvider: DispatcherProvider,
     ): List<String> {
       return getQuestionnaireResponseErrors(
           questionnaire = questionnaire,
           questionnaireResponse = questionnaireResponse,
           context = context,
-          dispatcherProvider = dispatcherProvider,
         )
         .map { it.toString() }
     }
