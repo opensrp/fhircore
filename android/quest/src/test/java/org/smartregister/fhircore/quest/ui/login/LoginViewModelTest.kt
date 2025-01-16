@@ -33,6 +33,11 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import javax.inject.Inject
+import kotlin.test.assertEquals
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import okhttp3.internal.http.RealResponseBody
@@ -76,11 +81,6 @@ import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
 import retrofit2.Response
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-import javax.inject.Inject
-import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.minutes
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -466,7 +466,7 @@ internal class LoginViewModelTest : RobolectricTest() {
         getCapturedUserInfoResult(userInfoSlot).getOrThrow().keycloakUuid,
       )
       Assert.assertTrue(
-        getCapturedBundleResult(bundleSlot).exceptionOrNull() is UnknownHostException
+        getCapturedBundleResult(bundleSlot).exceptionOrNull() is UnknownHostException,
       )
     }
 
