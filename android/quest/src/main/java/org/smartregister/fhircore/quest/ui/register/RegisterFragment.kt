@@ -52,9 +52,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -75,6 +78,8 @@ import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 class RegisterFragment : Fragment(), OnSyncListener {
 
   @Inject lateinit var syncListenerManager: SyncListenerManager
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   @Inject lateinit var eventBus: EventBus
   private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
@@ -193,19 +198,29 @@ class RegisterFragment : Fragment(), OnSyncListener {
   }
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
+    onSync(syncJobStatus, isCustomSync = false)
+  }
+
+  private fun onSync(syncJobStatus: CurrentSyncJobStatus, isCustomSync: Boolean) {
     when (syncJobStatus) {
       is CurrentSyncJobStatus.Running -> {
-        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
+          lifecycleScope.launch {
+            if (isCustomSync) {
+              registerViewModel.emitSnackBarState(
+                SnackBarMessageConfig(message = getString(R.string.syncing_custom_resources_toast)),
+              )
+            }
+          }
+        } else {
           val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
           val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
           val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
-          lifecycleScope.launch {
-            appMainViewModel.updateAppDrawerUIState(
-              isSyncUpload = isSyncUpload,
-              currentSyncJobStatus = syncJobStatus,
-              percentageProgress = progressPercentage,
-            )
-          }
+          appMainViewModel.updateAppDrawerUIState(
+            isSyncUpload = isSyncUpload,
+            currentSyncJobStatus = syncJobStatus,
+            percentageProgress = progressPercentage,
+          )
         }
       }
       is CurrentSyncJobStatus.Succeeded -> {
@@ -242,20 +257,27 @@ class RegisterFragment : Fragment(), OnSyncListener {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+        launch {
+          configurationRegistry.syncState
+            .onEach { syncJobStatus -> onSync(syncJobStatus, true) }
+            .launchIn(this)
+        }
         // Each register should have unique eventId
-        eventBus.events
-          .getFor(MainNavigationScreen.Home.eventId(registerFragmentArgs.registerId))
-          .onEach { appEvent ->
-            when (appEvent) {
-              is AppEvent.OnSubmitQuestionnaire ->
-                handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
-              is AppEvent.RefreshData -> {
-                appMainViewModel.countRegisterData()
-                refreshRegisterData()
+        launch {
+          eventBus.events
+            .getFor(MainNavigationScreen.Home.eventId(registerFragmentArgs.registerId))
+            .onEach { appEvent ->
+              when (appEvent) {
+                is AppEvent.OnSubmitQuestionnaire ->
+                  handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+                is AppEvent.RefreshData -> {
+                  appMainViewModel.countRegisterData()
+                  refreshRegisterData()
+                }
               }
             }
-          }
-          .launchIn(lifecycleScope)
+            .launchIn(this)
+        }
       }
     }
 
