@@ -201,6 +201,8 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
   fun deleteSessionPin() =
     secureSharedPreferences.edit { remove(SharedPreferenceKey.LOGIN_PIN_KEY.name) }
 
+  fun hasActivePin(): Boolean = secureSharedPreferences.all.keys.any { it.contains(SharedPreferenceKey.LOGIN_PIN_KEY.name) }
+
   fun deleteSessionPin(username: String) =
     secureSharedPreferences.edit {
       remove("${username}_${SharedPreferenceKey.LOGIN_PIN_KEY.name}")

@@ -160,7 +160,7 @@ constructor(
   }
 
   fun onMenuItemClicked(launchAppSettingScreen: Boolean) {
-    secureSharedPreference.deleteSessionPin()
+//    secureSharedPreference.deleteSessionPin()
 
     if (launchAppSettingScreen) {
       secureSharedPreference.deleteCredentials()

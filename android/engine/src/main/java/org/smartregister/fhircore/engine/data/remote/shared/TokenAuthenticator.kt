@@ -118,7 +118,10 @@ constructor(
           val launchIntent = bundle.get(AccountManager.KEY_INTENT) as? Intent
 
           // Deletes session PIN to allow reset
-          secureSharedPreference.deleteSessionPin()
+          account?.let {
+            secureSharedPreference.deleteSessionPin(it.name)
+          }
+//          secureSharedPreference.deleteSessionPin()
 
           if (launchIntent != null && !isLoginPageRendered) {
             context.startActivity(launchIntent.putExtra(CANCEL_BACKGROUND_SYNC, true))

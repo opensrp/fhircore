@@ -102,7 +102,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
   @VisibleForTesting open fun pinEnabled() = loginViewModel.isPinEnabled()
 
   @VisibleForTesting
-  open fun pinActive() = !loginViewModel.secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
+  open fun pinActive() = !loginViewModel.secureSharedPreference.hasActivePin()
 
   @VisibleForTesting
   open fun isRefreshTokenActive() = loginViewModel.tokenAuthenticator.isCurrentRefreshTokenActive()
