@@ -34,12 +34,9 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.BuildConfig
-import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 
 @AndroidEntryPoint
 class AppSettingActivity : AppCompatActivity() {
-
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
@@ -70,7 +67,7 @@ class AppSettingActivity : AppCompatActivity() {
         onApplicationIdChanged(existingAppId)
         loadConfigurations(appSettingActivity)
       }
-    } else if (!BuildConfig.OPENSRP_APP_ID.isNullOrEmpty()) {
+    } else if (BuildConfig.OPENSRP_APP_ID.isNotEmpty()) {
       appSettingViewModel.onApplicationIdChanged(BuildConfig.OPENSRP_APP_ID)
       appSettingViewModel.fetchConfigurations(appSettingActivity)
     } else {
