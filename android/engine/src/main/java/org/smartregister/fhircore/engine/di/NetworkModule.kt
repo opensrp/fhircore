@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.di
 
-import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -44,6 +43,7 @@ import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.parser.CustomFhirContext
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.TimeZoneTypeAdapter
@@ -166,9 +166,7 @@ class NetworkModule {
       .registerTypeAdapter(TimeZone::class.java, TimeZoneTypeAdapter().nullSafe())
       .create()
 
-  @Singleton
-  @Provides
-  fun provideParser(): IParser = FhirContext.forR4Cached().getCustomJsonParser()
+  @Singleton @Provides fun provideParser(): IParser = CustomFhirContext().getCustomJsonParser()
 
   @Provides
   @Singleton
