@@ -747,7 +747,7 @@ class RegisterScreenTest {
       .onNodeWithText(
         applicationContext.getString(
           org.smartregister.fhircore.engine.R.string.sync_down_inprogress,
-          progress
+          progress,
         ),
         useUnmergedTree = true,
       )
