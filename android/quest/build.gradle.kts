@@ -512,6 +512,15 @@ dependencies {
   debugImplementation(libs.fragment.testing)
   // debugImplementation(libs.leakcanary.android)
 
+  kapt(libs.androidx.room.compiler)
+  implementation(libs.androidx.room.ktx)
+  implementation(libs.androidx.room.runtime)
+  testImplementation(libs.androidx.room.testing)
+
+  implementation(libs.android.database.sqlcipher)
+
+  implementation(libs.zip4j)
+
   // Annotation processors for test
   kaptTest(libs.dagger.hilt.android.compiler)
   kaptAndroidTest(libs.dagger.hilt.android.compiler)
