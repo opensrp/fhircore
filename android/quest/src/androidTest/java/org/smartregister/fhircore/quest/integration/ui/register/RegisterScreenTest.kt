@@ -683,4 +683,62 @@ class RegisterScreenTest {
       .assertExists()
       .assertIsDisplayed()
   }
+
+  @Test
+  fun testSyncStatusPercentageProgressLimitIs100() {
+    val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+    val registerUiState =
+      RegisterUiState(
+        screenTitle = "Register101",
+        isFirstTimeSync = false,
+        registerConfiguration =
+        configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
+        registerId = "register101",
+        progressPercentage = flowOf(100),
+        isSyncUpload = flowOf(false),
+        currentSyncJobStatus = flowOf(CurrentSyncJobStatus.Running(
+          SyncJobStatus.InProgress(
+            syncOperation = SyncOperation.DOWNLOAD))),
+        params = emptyList(),
+      )
+    val searchText = mutableStateOf(SearchQuery.emptyText)
+    val currentPage = mutableStateOf(0)
+
+    composeTestRule.setContent {
+      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
+      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
+
+      RegisterScreen(
+        modifier = Modifier,
+        openDrawer = {},
+        onEvent = {},
+        registerUiState = registerUiState,
+        registerUiCountState =
+        RegisterUiCountState(
+          totalRecordsCount = 1,
+          filteredRecordsCount = 0,
+          pagesCount = 0,
+        ),
+        appDrawerUIState =
+        AppDrawerUIState(
+          currentSyncJobStatus = CurrentSyncJobStatus.Running(
+            SyncJobStatus.InProgress(
+              syncOperation = SyncOperation.DOWNLOAD,
+            ),
+          ),
+        ),
+        onAppMainEvent = {},
+        searchQuery = searchText,
+        currentPage = currentPage,
+        pagingItems = pagingItems,
+        navController = rememberNavController(),
+        decodeImage = null,
+      )
+    }
+
+    composeTestRule
+      .onNodeWithTag(SYNC_PROGRESS_INDICATOR_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
 }
