@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.Period
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -210,4 +211,12 @@ fun reformatDate(
     Timber.e(e)
     inputDateString
   }
+}
+
+/** Utility function to format a [Date] object using the system's default locale. */
+internal fun Date.toTimeZoneString(): String {
+  val simpleDateFormat =
+    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
+      .withZone(ZoneId.systemDefault())
+  return simpleDateFormat.format(this.toInstant())
 }
