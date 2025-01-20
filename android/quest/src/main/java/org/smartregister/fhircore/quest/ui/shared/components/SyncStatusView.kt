@@ -170,37 +170,37 @@ fun SyncBottomBar(
         contentAlignment = Alignment.Center,
       ) {
         val context = LocalContext.current
-        when {
-          currentSyncJobStatus is CurrentSyncJobStatus.Running &&
-            appDrawerUIState.percentageProgress!! <= 100 -> {
-            SyncStatusView(
-              isSyncUpload = appDrawerUIState.isSyncUpload,
-              currentSyncJobStatus = currentSyncJobStatus,
-              minimized = !syncNotificationBarExpanded,
-              progressPercentage = appDrawerUIState.percentageProgress,
-              onCancel = { onAppMainEvent(AppMainEvent.CancelSyncData(context)) },
-            )
-            SideEffect { hideSyncCompleteStatus.value = false }
-          }
-          currentSyncJobStatus is CurrentSyncJobStatus.Failed -> {
-            SyncStatusView(
-              isSyncUpload = appDrawerUIState.isSyncUpload,
-              currentSyncJobStatus = currentSyncJobStatus,
-              minimized = !syncNotificationBarExpanded,
-              onRetry = {
-                openDrawer(false)
-                onAppMainEvent(AppMainEvent.SyncData(context))
-              },
-            )
-          }
-          currentSyncJobStatus is CurrentSyncJobStatus.Succeeded -> {
-            if (!hideSyncCompleteStatus.value) {
-              SyncStatusView(
-                isSyncUpload = appDrawerUIState.isSyncUpload,
-                currentSyncJobStatus = currentSyncJobStatus,
-                minimized = !syncNotificationBarExpanded,
-              )
+        when (currentSyncJobStatus) {
+            is CurrentSyncJobStatus.Running -> {
+                val maxPercentage = appDrawerUIState.percentageProgress?.coerceAtMost(100) ?: 0
+                SyncStatusView(
+                  isSyncUpload = appDrawerUIState.isSyncUpload,
+                  currentSyncJobStatus = currentSyncJobStatus,
+                  minimized = !syncNotificationBarExpanded,
+                  progressPercentage = maxPercentage,
+                  onCancel = { onAppMainEvent(AppMainEvent.CancelSyncData(context)) },
+                )
+                SideEffect { hideSyncCompleteStatus.value = false }
             }
+          is CurrentSyncJobStatus.Failed -> {
+                SyncStatusView(
+                  isSyncUpload = appDrawerUIState.isSyncUpload,
+                  currentSyncJobStatus = currentSyncJobStatus,
+                  minimized = !syncNotificationBarExpanded,
+                  onRetry = {
+                    openDrawer(false)
+                    onAppMainEvent(AppMainEvent.SyncData(context))
+                  },
+                )
+          }
+          is CurrentSyncJobStatus.Succeeded -> {
+                if (!hideSyncCompleteStatus.value) {
+                  SyncStatusView(
+                    isSyncUpload = appDrawerUIState.isSyncUpload,
+                    currentSyncJobStatus = currentSyncJobStatus,
+                    minimized = !syncNotificationBarExpanded,
+                  )
+                }
           }
           else -> {
             // No render required

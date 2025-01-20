@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertValueEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onChildAt
@@ -681,67 +682,5 @@ class RegisterScreenTest {
       )
       .assertExists()
       .assertIsDisplayed()
-  }
-
-  @Test
-  fun testSyncStatusPercentageProgressLimitIs100() {
-    val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-    val registerUiState =
-      RegisterUiState(
-        screenTitle = "Register101",
-        isFirstTimeSync = true,
-        registerConfiguration =
-          configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
-        registerId = "register101",
-        progressPercentage = flowOf(101),
-        isSyncUpload = flowOf(false),
-        currentSyncJobStatus =
-          flowOf(
-            CurrentSyncJobStatus.Running(
-              SyncJobStatus.InProgress(
-                syncOperation = SyncOperation.DOWNLOAD,
-              ),
-            ),
-          ),
-        params = emptyList(),
-      )
-    val searchText = mutableStateOf(SearchQuery.emptyText)
-    val currentPage = mutableStateOf(0)
-
-    composeTestRule.setContent {
-      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
-      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
-      RegisterScreen(
-        modifier = Modifier,
-        openDrawer = {},
-        onEvent = {},
-        registerUiState = registerUiState,
-        registerUiCountState =
-          RegisterUiCountState(
-            totalRecordsCount = 1,
-            filteredRecordsCount = 0,
-            pagesCount = 0,
-          ),
-        appDrawerUIState =
-          AppDrawerUIState(
-            currentSyncJobStatus =
-              CurrentSyncJobStatus.Running(
-                SyncJobStatus.InProgress(
-                  syncOperation = SyncOperation.UPLOAD,
-                ),
-              ),
-          ),
-        onAppMainEvent = {},
-        searchQuery = searchText,
-        currentPage = currentPage,
-        pagingItems = pagingItems,
-        navController = rememberNavController(),
-        decodeImage = null,
-      )
-    }
-
-    composeTestRule
-      .onNodeWithTag(SYNC_PROGRESS_INDICATOR_TEST_TAG, useUnmergedTree = true)
-      .assertIsNotDisplayed()
   }
 }
