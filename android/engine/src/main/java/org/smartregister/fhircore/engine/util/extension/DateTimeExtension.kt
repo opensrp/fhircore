@@ -44,6 +44,7 @@ const val SDF_E_MMM_DD_YYYY = "E, MMM dd yyyy"
 const val DEFAULT_FORMAT_SDF_DD_MM_YYYY = "EEE, MMM dd - hh:mm a"
 const val SDF_YYYY_MMM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss"
 const val MMM_D_HH_MM_AA = "MMM d, hh:mm aa"
+const val SDF_YYYYMMDD_HHMMSS = "yyyyMMdd-HHmmss"
 
 fun yesterday(): Date = DateTimeType.now().apply { add(Calendar.DATE, -1) }.value
 
