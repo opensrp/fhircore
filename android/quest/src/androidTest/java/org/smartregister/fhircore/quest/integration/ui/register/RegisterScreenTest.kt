@@ -694,7 +694,6 @@ class RegisterScreenTest {
         registerConfiguration =
           configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
         registerId = "register101",
-        progressPercentage = flowOf(100),
         isSyncUpload = flowOf(false),
         currentSyncJobStatus =
           flowOf(
@@ -732,6 +731,7 @@ class RegisterScreenTest {
                   syncOperation = SyncOperation.DOWNLOAD,
                 ),
               ),
+            percentageProgress = 107,
           ),
         onAppMainEvent = {},
         searchQuery = searchText,
@@ -741,9 +741,16 @@ class RegisterScreenTest {
         decodeImage = null,
       )
     }
+    val progress = 100
 
     composeTestRule
-      .onNodeWithTag(SYNC_PROGRESS_INDICATOR_TEST_TAG, useUnmergedTree = true)
+      .onNodeWithText(
+        applicationContext.getString(
+          org.smartregister.fhircore.engine.R.string.sync_down_inprogress,
+          progress
+        ),
+        useUnmergedTree = true,
+      )
       .assertExists()
       .assertIsDisplayed()
   }
