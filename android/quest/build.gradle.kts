@@ -491,7 +491,10 @@ dependencies {
   implementation(libs.log4j)
 
   // AI dependencies
-  implementation(libs.google.cloud.speech)
+  implementation(libs.google.cloud.speech) {
+    exclude("com.google.guava", "guava")
+    exclude("org.threeten", "threetenbp")
+  }
   implementation(libs.generativeai)
 
   // Annotation processors
