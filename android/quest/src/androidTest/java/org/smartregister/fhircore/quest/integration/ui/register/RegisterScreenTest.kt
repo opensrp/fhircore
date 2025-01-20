@@ -692,13 +692,18 @@ class RegisterScreenTest {
         screenTitle = "Register101",
         isFirstTimeSync = false,
         registerConfiguration =
-        configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
+          configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
         registerId = "register101",
         progressPercentage = flowOf(100),
         isSyncUpload = flowOf(false),
-        currentSyncJobStatus = flowOf(CurrentSyncJobStatus.Running(
-          SyncJobStatus.InProgress(
-            syncOperation = SyncOperation.DOWNLOAD))),
+        currentSyncJobStatus =
+          flowOf(
+            CurrentSyncJobStatus.Running(
+              SyncJobStatus.InProgress(
+                syncOperation = SyncOperation.DOWNLOAD,
+              ),
+            ),
+          ),
         params = emptyList(),
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
@@ -714,19 +719,20 @@ class RegisterScreenTest {
         onEvent = {},
         registerUiState = registerUiState,
         registerUiCountState =
-        RegisterUiCountState(
-          totalRecordsCount = 1,
-          filteredRecordsCount = 0,
-          pagesCount = 0,
-        ),
-        appDrawerUIState =
-        AppDrawerUIState(
-          currentSyncJobStatus = CurrentSyncJobStatus.Running(
-            SyncJobStatus.InProgress(
-              syncOperation = SyncOperation.DOWNLOAD,
-            ),
+          RegisterUiCountState(
+            totalRecordsCount = 1,
+            filteredRecordsCount = 0,
+            pagesCount = 0,
           ),
-        ),
+        appDrawerUIState =
+          AppDrawerUIState(
+            currentSyncJobStatus =
+              CurrentSyncJobStatus.Running(
+                SyncJobStatus.InProgress(
+                  syncOperation = SyncOperation.DOWNLOAD,
+                ),
+              ),
+          ),
         onAppMainEvent = {},
         searchQuery = searchText,
         currentPage = currentPage,
