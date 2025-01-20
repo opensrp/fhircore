@@ -433,13 +433,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.setNonProxy(true)
     configRegistry.fetchNonWorkflowConfigResources()
 
-    val createdResourceArgumentSlot = mutableListOf<Resource>()
+    coVerify { configRegistry.createOrUpdateRemote(listResource) }
 
-    coVerify { configRegistry.createOrUpdateRemote(capture(createdResourceArgumentSlot)) }
-    assertEquals(
-      "test-list-id",
-      createdResourceArgumentSlot.filterIsInstance<ListResource>().first().id,
-    )
     coVerify {
       fhirResourceDataSource.getResource(
         "$resourceKey?_id=$resourceId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
