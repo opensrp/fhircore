@@ -77,7 +77,6 @@ import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseStatus
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -121,6 +120,7 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequestHandler
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.assertResourceEquals
+import org.smartregister.fhircore.quest.medintel.speech.validation.QuestionnaireResponseValidator
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
 import org.smartregister.model.practitioner.FhirPractitionerDetails
@@ -292,7 +292,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
       // Verify QuestionnaireResponse was validated
       coVerify {
-        questionnaireViewModel.validateQuestionnaireResponse(
+        QuestionnaireResponseValidator.validateQuestionnaireResponse(
           questionnaire,
           questionnaireResponse,
           context,
@@ -395,7 +395,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // Verify QuestionnaireResponse was validated
     coVerify {
-      questionnaireViewModel.validateQuestionnaireResponse(
+      QuestionnaireResponseValidator.validateQuestionnaireResponse(
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
         context = context,
@@ -924,7 +924,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     runBlocking {
       // No answer provided
       Assert.assertFalse(
-        questionnaireViewModel.validateQuestionnaireResponse(
+        QuestionnaireResponseValidator.validateQuestionnaireResponse(
           questionnaire,
           questionnaireResponse,
           context,
@@ -933,7 +933,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
       // With an answer provided
       Assert.assertTrue(
-        questionnaireViewModel.validateQuestionnaireResponse(
+        QuestionnaireResponseValidator.validateQuestionnaireResponse(
           questionnaire,
           questionnaireResponse.apply {
             itemFirstRep.answer =
@@ -1037,7 +1037,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponse =
       parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
     val result =
-      questionnaireViewModel.validateQuestionnaireResponse(
+      QuestionnaireResponseValidator.validateQuestionnaireResponse(
         questionnaire,
         questionnaireResponse,
         context,
@@ -1161,7 +1161,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       val actualQuestionnaireResponse =
         parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
       val result =
-        questionnaireViewModel.validateQuestionnaireResponse(
+        QuestionnaireResponseValidator.validateQuestionnaireResponse(
           questionnaire,
           actualQuestionnaireResponse,
           context,
