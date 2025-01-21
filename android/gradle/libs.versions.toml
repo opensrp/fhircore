@@ -36,6 +36,7 @@ generativeai = "0.9.0"
 glide = "4.16.0"
 googleCloudSpeech = "4.50.0"
 gradle = "8.3.2"
+grpcOkHttp = "1.69.0"
 gson = "2.10.1"
 hilt = "1.2.0"
 java-jwt = "4.4.0"
@@ -143,6 +144,7 @@ glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "gl
 gms-play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 google-cloud-speech = { module = "com.google.cloud:google-cloud-speech", version.ref = "googleCloudSpeech" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
+grpc-okhttp = { module = "io.grpc:grpc-okhttp", version.ref = "grpcOkHttp" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hilt" }
 hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hilt" }

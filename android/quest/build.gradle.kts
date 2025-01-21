@@ -496,6 +496,7 @@ dependencies {
     exclude("org.threeten", "threetenbp")
   }
   implementation(libs.generativeai)
+  implementation(libs.grpc.okhttp) { exclude("com.google.guava", "guava") }
 
   // Annotation processors
   kapt(libs.hilt.compiler)
