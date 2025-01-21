@@ -58,6 +58,8 @@ import org.mockito.ArgumentMatchers.anyString
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.customsearch.ISearchParametersConfigStore
+import org.smartregister.fhircore.engine.configuration.customsearch.SearchParametersConfigService
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -103,6 +105,18 @@ class AppSettingViewModelTest : RobolectricTest() {
           configService = configService,
           configurationRegistry = Faker.buildTestConfigurationRegistry(),
           dispatcherProvider = dispatcherProvider,
+          customSearchParameterService =
+            SearchParametersConfigService(
+              object : ISearchParametersConfigStore {
+                override suspend fun write(bundle: Bundle) {
+                  // no-op
+                }
+
+                override fun read(): Bundle? {
+                  return null
+                }
+              },
+            ),
         ),
       )
   }

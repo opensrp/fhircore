@@ -26,9 +26,8 @@ fun Reference.extractType(): ResourceType? =
   if (this.reference.isNullOrEmpty()) {
     null
   } else {
-    this.reference.substringBefore("/" + this.extractId()).substringAfterLast("/").let {
-      ResourceType.fromCode(it)
-    }
+    (this.type ?: this.reference.substringBefore("/" + this.extractId()).substringAfterLast("/"))
+      .let { ResourceType.fromCode(it) }
   }
 
 fun String.asReference(resourceType: ResourceType): Reference {

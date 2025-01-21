@@ -26,11 +26,12 @@ import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.apache.commons.lang3.StringUtils
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.BuildConfig
@@ -38,18 +39,22 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.customsearch.SearchParametersConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
-import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
+import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSectionsExcludingCustomSearchParameters
+import org.smartregister.fhircore.engine.util.extension.retrieveCustomSearchParametersSection
 import org.smartregister.fhircore.engine.util.extension.retrieveImplementationGuideDefinitionResources
+import org.smartregister.fhircore.engine.util.extension.sectionDataReference
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import retrofit2.HttpException
 import timber.log.Timber
@@ -66,6 +71,7 @@ constructor(
   val configService: ConfigService,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
+  val customSearchParameterService: SearchParametersConfigService,
 ) : ViewModel() {
 
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
@@ -133,13 +139,9 @@ constructor(
             val compositionId = compositionIdWithHistory?.substringBefore('/')
             val compositionVersion = compositionIdWithHistory?.substringAfterLast('/', "")
 
-            withContext(dispatcherProvider.io()) {
-              configurationRegistry.fetchRemoteCompositionById(compositionId, compositionVersion)
-            }
+            configurationRegistry.fetchRemoteCompositionById(compositionId, compositionVersion)
           } else {
-            withContext(dispatcherProvider.io()) {
-              configurationRegistry.fetchRemoteCompositionByAppId(appId)
-            }
+            configurationRegistry.fetchRemoteCompositionByAppId(appId)
           }
 
         if (compositionResource == null) {
@@ -151,47 +153,19 @@ constructor(
         // Save composition
         defaultRepository.createRemote(false, compositionResource)
 
-        compositionResource
-          .retrieveCompositionSections()
-          .asSequence()
-          .filter { it.hasFocus() && it.focus.hasReferenceElement() }
-          .groupBy {
-            it.focus.reference.substringBefore(
-              ConfigurationRegistry.TYPE_REFERENCE_DELIMITER,
-              missingDelimiterValue = "",
-            )
-          }
-          .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
-          .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-            val chunkedResourceIdList =
-              entry.value.chunked(ConfigurationRegistry.MANIFEST_PROCESSOR_BATCH_SIZE)
-            chunkedResourceIdList.forEach { parentIt ->
-              Timber.d(
-                "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
-              )
+        val appConfigSectionReferences =
+          compositionResource
+            .retrieveCompositionSectionsExcludingCustomSearchParameters()
+            .asSequence()
+            .flatMap { it.sectionDataReference() }
+            .groupBy(::referenceResourceTypeString)
+            .filterKeys(::isReferenceToAppConfig)
+        appConfigSectionReferences.download { resultBundle ->
+          val resources = resultBundle.entry.mapNotNull { it.resource }
+          defaultRepository.createRemote(false, *resources.toTypedArray())
+        }
 
-              val resultBundle: Bundle =
-                if (isNonProxy()) {
-                  fhirResourceDataSourceGetBundle(
-                    entry.key,
-                    parentIt.map { it.focus.extractId() },
-                  )
-                } else {
-                  fhirResourceDataSource.post(
-                    requestBody =
-                      generateRequestBundle(entry.key, parentIt.map { it.focus.extractId() })
-                        .encodeResourceToString()
-                        .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
-                  )
-                }
-
-              resultBundle.entry.forEach { bundleEntryComponent ->
-                if (bundleEntryComponent.resource != null) {
-                  defaultRepository.createRemote(false, bundleEntryComponent.resource)
-                }
-              }
-            }
-          }
+        fetchSearchParameterBundle(compositionResource.retrieveCustomSearchParametersSection())
 
         Timber.d("Done fetching application configurations remotely")
         loadConfigurations(context)
@@ -243,6 +217,80 @@ constructor(
 
   @VisibleForTesting fun isDebugVariant() = BuildConfig.DEBUG
 
+  private suspend fun fetchSearchParameterBundle(
+    searchParameterCompositionSection: List<Composition.SectionComponent>,
+  ): Bundle? {
+    val searchParameterBinary =
+      searchParameterCompositionSection
+        .flatMap { it.sectionDataReference() }
+        .groupBy(::referenceResourceTypeString)
+        .download()
+        .flatMap { bundle -> bundle.entry.mapNotNull { it.resource as? Binary } }
+
+    val searchParameterBundle =
+      searchParameterBinary
+        .map { it.content.decodeToString() }
+        .map { it.decodeResourceFromString<Bundle>() }
+        .filter { it.entry.isNotEmpty() }
+        .reduceOrNull { acc, bundle -> acc.apply { entry = entry + bundle.entry } }
+
+    return searchParameterBundle?.also { customSearchParameterService.saveBundle(it) }
+  }
+
+  private suspend inline fun <V : Iterable<Reference>> Map<String, V>.download(
+    onSuccess: (Bundle) -> Unit = {},
+  ): List<Bundle> {
+    return entries
+      .flatMap { (key, value) ->
+        value.chunked(ConfigurationRegistry.MANIFEST_PROCESSOR_BATCH_SIZE) { key to it }
+      }
+      .map { (resourceType, references) ->
+        downloadConfigResourceReferencesWithRetry(resourceType, references)
+      }
+      .onEach(onSuccess)
+  }
+
+  private suspend fun downloadConfigResourceReferencesWithRetry(
+    resourceType: String,
+    references: Iterable<Reference>,
+  ): Bundle {
+    val downloadResources = suspend { downloadConfigResourceReferences(resourceType, references) }
+    return kotlin
+      .runCatching { downloadResources() }
+      .getOrElse {
+        // retry
+        downloadResources()
+      }
+  }
+
+  private suspend fun downloadConfigResourceReferences(
+    resourceType: String,
+    references: Iterable<Reference>,
+  ): Bundle {
+    return if (isNonProxy()) {
+      fhirResourceDataSourceGetBundle(
+        resourceType,
+        references.map { it.extractId() },
+      )
+    } else {
+      fhirResourceDataSource.post(
+        requestBody =
+          generateRequestBundle(resourceType, references.map { it.extractId() })
+            .encodeResourceToString()
+            .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
+      )
+    }
+  }
+
+  private fun referenceResourceTypeString(reference: Reference) =
+    reference.reference.substringBefore(
+      ConfigurationRegistry.TYPE_REFERENCE_DELIMITER,
+      missingDelimiterValue = "",
+    )
+
+  private fun isReferenceToAppConfig(reference: String) =
+    reference == ResourceType.Binary.name || reference == ResourceType.Parameters.name
+
   private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
     val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
 
@@ -272,7 +320,7 @@ constructor(
 
     resourceIds.forEach {
       val responseBundle =
-        fhirResourceDataSource.getResource("$resourceType?${Composition.SP_RES_ID}=$it")
+        fhirResourceDataSource.getResource("$resourceType?${Resource.SP_RES_ID}=$it")
       responseBundle.let {
         bundleEntryComponents.add(
           Bundle.BundleEntryComponent().apply {

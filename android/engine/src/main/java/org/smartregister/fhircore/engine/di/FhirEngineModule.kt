@@ -32,6 +32,7 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.customsearch.SearchParametersConfigService
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.di.NetworkModule.Companion.AUTHORIZATION
 import org.smartregister.fhircore.engine.di.NetworkModule.Companion.COOKIE
@@ -51,6 +52,7 @@ class FhirEngineModule {
     @ApplicationContext context: Context,
     tokenAuthenticator: TokenAuthenticator,
     configService: ConfigService,
+    customSearchParameterService: SearchParametersConfigService,
   ): FhirEngine {
     FhirEngineProvider.init(
       FhirEngineConfiguration(
@@ -76,7 +78,7 @@ class FhirEngineModule {
               Timber.tag(QUEST_OKHTTP_CLIENT_TAG).d(it)
             },
         ),
-        customSearchParameters = configService.provideCustomSearchParameters(),
+        customSearchParameters = customSearchParameterService.getCustomSearchParameters(),
       ),
     )
     return FhirEngineProvider.getInstance(context)

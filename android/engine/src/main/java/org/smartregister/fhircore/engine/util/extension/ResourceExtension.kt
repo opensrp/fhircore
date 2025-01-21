@@ -32,7 +32,6 @@ import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Consent
 import org.hl7.fhir.r4.model.Encounter
@@ -410,30 +409,6 @@ fun ImplementationGuide.retrieveImplementationGuideDefinitionResources():
     mutableListOf<ImplementationGuide.ImplementationGuideDefinitionResourceComponent>()
   this.definition.resource.forEach { resources.add(it) }
   return resources
-}
-
-/**
- * Composition sections can be nested. This function retrieves all the nested composition sections
- * and returns a flattened list of all [Composition.SectionComponent] for the given [Composition]
- * resource
- */
-fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent> {
-  val sections = mutableListOf<Composition.SectionComponent>()
-  val sectionsQueue = ArrayDeque<Composition.SectionComponent>()
-  this.section.forEach {
-    if (!it.section.isNullOrEmpty()) {
-      it.section.forEach { sectionComponent -> sectionsQueue.addLast(sectionComponent) }
-    }
-    sections.add(it)
-  }
-  while (sectionsQueue.isNotEmpty()) {
-    val sectionComponent = sectionsQueue.removeFirst()
-    if (!sectionComponent.section.isNullOrEmpty()) {
-      sectionComponent.section.forEach { sectionsQueue.addLast(it) }
-    }
-    sections.add(sectionComponent)
-  }
-  return sections
 }
 
 fun String.resourceClassType(): Class<out Resource> =
