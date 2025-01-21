@@ -436,6 +436,10 @@ fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent
   return sections
 }
 
+fun Composition.SectionComponent.sectionDataReference(): Iterable<Reference> {
+  return if (hasFocus() && focus.hasReferenceElement()) entry + focus else entry
+}
+
 fun String.resourceClassType(): Class<out Resource> =
   FhirContext.forR4().getResourceDefinition(this).implementingClass as Class<out Resource>
 

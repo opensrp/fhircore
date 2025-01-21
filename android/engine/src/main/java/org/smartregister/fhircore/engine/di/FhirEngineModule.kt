@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.di
 
 import android.content.Context
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.DatabaseErrorStrategy
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineConfiguration
@@ -29,13 +30,16 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import java.io.File
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.app.CustomSearchParameterService
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.di.NetworkModule.Companion.AUTHORIZATION
 import org.smartregister.fhircore.engine.di.NetworkModule.Companion.COOKIE
 import org.smartregister.fhircore.engine.di.NetworkModule.Companion.TIMEOUT_DURATION
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
 
 /**
@@ -45,12 +49,33 @@ import timber.log.Timber
 @Module
 class FhirEngineModule {
 
+  @Provides
+  fun provideCustomSearchParameterDir(@ApplicationContext context: Context): File {
+    val path = context.filesDir
+    return File(path, CUSTOM_SEARCH_PARAMETER_STORE_DIR).apply {
+      if (!this.exists()) {
+        mkdirs()
+      }
+    }
+  }
+
+  @Singleton
+  @Provides
+  fun provideCustomSearchParameterService(
+    customSearchParametersStoreDir: File,
+    parser: IParser,
+    dispatcherProvider: DispatcherProvider,
+  ): CustomSearchParameterService {
+    return CustomSearchParameterService(customSearchParametersStoreDir, parser, dispatcherProvider)
+  }
+
   @Singleton
   @Provides
   fun provideFhirEngine(
     @ApplicationContext context: Context,
     tokenAuthenticator: TokenAuthenticator,
     configService: ConfigService,
+    customSearchParameterService: CustomSearchParameterService,
   ): FhirEngine {
     FhirEngineProvider.init(
       FhirEngineConfiguration(
@@ -76,7 +101,7 @@ class FhirEngineModule {
               Timber.tag(QUEST_OKHTTP_CLIENT_TAG).d(it)
             },
         ),
-        customSearchParameters = configService.provideCustomSearchParameters(),
+        customSearchParameters = customSearchParameterService.getCustomSearchParameters(),
       ),
     )
     return FhirEngineProvider.getInstance(context)
@@ -84,5 +109,6 @@ class FhirEngineModule {
 
   companion object {
     private const val QUEST_OKHTTP_CLIENT_TAG = "QuestOkHttpClient"
+    private const val CUSTOM_SEARCH_PARAMETER_STORE_DIR = "customSearchDir"
   }
 }
