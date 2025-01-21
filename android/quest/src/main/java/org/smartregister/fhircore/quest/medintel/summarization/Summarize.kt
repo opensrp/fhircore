@@ -16,19 +16,41 @@
 
 package org.smartregister.fhircore.quest.medintel.summarization
 
-import org.hl7.fhir.r4b.model.Bundle
+import ca.uhn.fhir.context.FhirContext
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel
 
-class Summarize<T>(
-  private val llmModel: LlmModel<T>,
-) {
-  suspend fun summarize(bundle: Bundle): String? {
-    val prompt = generatePrompt(bundle)
+object Summarize {
+  private val fhirContext = FhirContext.forR4()
+
+  suspend fun <T> summarize(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    llmModel: LlmModel<T>,
+  ): String? {
+    val prompt =
+      generateSummarizationPrompt(
+        questionnaireName = questionnaire.name,
+        questionnaire = questionnaire,
+        questionnaireResponse = questionnaireResponse,
+      )
     return llmModel.generateContent(prompt)
   }
 
-  private fun generatePrompt(bundle: Bundle): String {
-    // TODO convert bundle to text and add to prompt
-    return "Summarize the patient's medical history"
+  private fun generateSummarizationPrompt(
+    questionnaireName: String,
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+  ): String {
+    val jsonParser = fhirContext.newJsonParser().setPrettyPrint(true)
+    return """
+      Summarize in 3 sentences a patient visit based on the
+      QuestionnaireResponse and Questionnaire provided.\n
+      Questionnaire Name: $questionnaireName\n
+      Questionnaire: ${jsonParser.encodeResourceToString(questionnaire)}\n
+      QuestionnaireResponse: ${jsonParser.encodeResourceToString(questionnaireResponse)}
+            """
+      .trimIndent()
   }
 }
