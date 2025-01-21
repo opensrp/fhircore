@@ -33,6 +33,10 @@ object SpeechToText {
    * @return The temporary file containing the transcribed text.
    */
   fun transcribeAudioToText(audioFile: File): File? {
+    if (!isValidWavFile(audioFile)) {
+      Timber.e("Invalid file format. Please provide a WAV file.")
+      return null
+    }
     var tempFile: File? = null
 
     SpeechClient.create().use { speechClient ->
@@ -68,5 +72,19 @@ object SpeechToText {
       Timber.i("Transcription written to temporary file. ")
     }
     return tempFile
+  }
+
+  /**
+   * Checks if the provided file is a valid WAV file based on its extension and content type.
+   *
+   * @param file The file to validate.
+   * @return True if the file is a valid WAV file; false otherwise.
+   */
+  private fun isValidWavFile(file: File): Boolean {
+    if (!file.extension.equals("wav", ignoreCase = true)) {
+      Timber.e("File extension is not .wav")
+      return false
+    }
+    return true
   }
 }

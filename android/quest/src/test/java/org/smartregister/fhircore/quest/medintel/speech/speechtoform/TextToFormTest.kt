@@ -111,7 +111,7 @@ class TextToFormTest : RobolectricTest() {
     assertEquals(
       "QuestionnaireResponse/f8a7d652-a69b-416f-9a6c-7128a2e76667",
       result.id,
-      "QuestionnaireResponse ID should match"
+      "QuestionnaireResponse ID should match",
     )
   }
 }

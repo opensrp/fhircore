@@ -27,6 +27,7 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import java.io.File
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -67,14 +68,14 @@ class SpeechToTextTest {
     val testFile =
       File(
         workingDir,
-        "src/test/java/org/smartregister/fhircore/quest/resources/sample_conversation.mp3"
+        "src/test/java/org/smartregister/fhircore/quest/resources/sample_conversation.wav",
       )
     require(testFile.exists()) { "Test audio file not found at ${testFile.absolutePath}" }
 
     val resultFile = SpeechToText.transcribeAudioToText(testFile)
     assertNotNull(resultFile, "Result file should not be null")
     assertTrue(resultFile.exists(), "Result file should exist")
-    println("Transcription result: ${resultFile.readText()}")
+    assertContains(resultFile.readText(), "what is your")
   }
 
   private fun testTranscribeAudioToTextMock() {
