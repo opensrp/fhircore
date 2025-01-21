@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 import androidx.test.core.app.ApplicationProvider
 import com.google.ai.client.generativeai.GenerativeModel
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import java.io.File
@@ -59,7 +58,7 @@ class TextToFormTest : RobolectricTest() {
     val testFile =
       File(
         workingDir,
-        "src/test/java/org/smartregister/fhircore/quest/resources/sample_transcript.txt"
+        "src/test/java/org/smartregister/fhircore/quest/resources/sample_transcript.txt",
       )
     require(testFile.exists()) { "Test transcript file not found at ${testFile.absolutePath}" }
     val mockQuestionnaire = Questionnaire()
@@ -77,22 +76,42 @@ class TextToFormTest : RobolectricTest() {
   }
 
   private suspend fun testGenerateQuestionnaireResponseMock() {
-    val mockTranscriptFile = mockk<File>(relaxed = true)
-    val mockQuestionnaire = mockk<Questionnaire>(relaxed = true)
-    val mockResponseJson = "{'id': '123'}" // Mock JSON response
+    val workingDir = System.getProperty("user.dir")
+    val transcript =
+      File(
+        workingDir,
+        "src/test/java/org/smartregister/fhircore/quest/resources/sample_transcript.txt",
+      )
+    val questionnaireContent =
+      File(
+          workingDir,
+          "src/test/java/org/smartregister/fhircore/quest/resources/sample_questionnaire.json",
+        )
+        .readText()
+    val questionnaireResponseContent =
+      File(
+          workingDir,
+          "src/test/java/org/smartregister/fhircore/quest/resources/sample_questionnaire_response.json",
+        )
+        .readText()
 
-    every { mockTranscriptFile.readText() } returns "This is a test transcript."
+    val questionnaire = TextToForm.parseQuestionnaire(questionnaireContent)
+
     coEvery { mockLlmModel.generateContent(any(String::class)) } returns
-      "```json\n$mockResponseJson\n```"
+      "```json\n$questionnaireResponseContent\n```"
 
     val result =
       TextToForm.generateQuestionnaireResponse(
-        transcriptFile = mockTranscriptFile,
-        questionnaire = mockQuestionnaire,
+        transcriptFile = transcript,
+        questionnaire = questionnaire,
         context = ApplicationProvider.getApplicationContext(),
         llmModel = mockLlmModel,
       )
     assertNotNull(result, "QuestionnaireResponse should not be null")
-    assertEquals("123", result.id, "QuestionnaireResponse ID should match")
+    assertEquals(
+      "QuestionnaireResponse/f8a7d652-a69b-416f-9a6c-7128a2e76667",
+      result.id,
+      "QuestionnaireResponse ID should match"
+    )
   }
 }

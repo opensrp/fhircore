@@ -162,6 +162,18 @@ object TextToForm {
   }
 
   /**
+   * Parses the JSON string into a Questionnaire object.
+   *
+   * @param json The JSON string representing the Questionnaire.
+   * @return The parsed Questionnaire object.
+   */
+  suspend fun parseQuestionnaire(json: String): Questionnaire {
+    val fhirContext = FhirContext.forR4()
+    val parser = fhirContext.newJsonParser()
+    return parser.parseResource(Questionnaire::class.java, json)
+  }
+
+  /**
    * Builds the retry prompt based on the errors, invalid response, and original questionnaire.
    *
    * @param transcript The transcript of the conversation.
