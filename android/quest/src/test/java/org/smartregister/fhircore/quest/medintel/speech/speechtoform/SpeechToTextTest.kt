@@ -49,7 +49,7 @@ class SpeechToTextTest {
 
   @After
   fun tearDown() {
-    if (!useRealApi) unmockkAll()
+    unmockkAll()
   }
 
   @Test

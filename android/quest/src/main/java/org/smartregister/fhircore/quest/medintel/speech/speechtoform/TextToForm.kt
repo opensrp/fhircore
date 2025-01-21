@@ -54,6 +54,7 @@ object TextToForm {
     var retryCount = 0
     var questionnaireResponse = QuestionnaireResponse()
     var prompt = promptTemplate(transcript, questionnaire)
+    val fhirContext = FhirContext.forR4()
 
     do {
       Timber.i("Sending request to Gemini...")
@@ -66,7 +67,7 @@ object TextToForm {
         errors = listOf("Failed to extract JSON block from Gemini response.")
       } else {
         withContext(Dispatchers.IO) {
-          questionnaireResponse = parseQuestionnaireResponse(questionnaireResponseJson)
+          questionnaireResponse = parseQuestionnaireResponse(questionnaireResponseJson, fhirContext)
           errors =
             QuestionnaireResponseValidator.getQuestionnaireResponseErrorsAsStrings(
               questionnaire = questionnaire,
@@ -79,15 +80,23 @@ object TextToForm {
         Timber.i("QuestionnaireResponse validated successfully.")
         retryCount = DEFAULT_MAX_RETRIES
       } else {
-        Timber.w("QuestionnaireResponse validation failed.")
+        Timber.w("QuestionnaireResponse validation failed. Retrying")
+        // Determine the invalid response to pass to buildRetryPrompt
+        val invalidResponse =
+          questionnaireResponse
+            .takeIf { it.hasId() }
+            ?.let { fhirContext.newJsonParser().encodeResourceToString(it) }
+            ?: questionnaireResponseJson?.takeIf { it.isNotBlank() }
+            ?: generatedText
 
         // Build retry prompt with errors and invalid response for next retry
         prompt =
           buildRetryPrompt(
             transcript = transcript,
             errors = errors,
-            invalidResponse = questionnaireResponse,
+            invalidResponse = invalidResponse,
             questionnaire = questionnaire,
+            fhirContext = fhirContext,
           )
 
         retryCount++
@@ -124,7 +133,7 @@ object TextToForm {
    * @param responseText The text response from the Gemini model.
    * @return The extracted JSON string or null if extraction fails.
    */
-  private fun extractJsonBlock(responseText: String?): String? {
+  fun extractJsonBlock(responseText: String?): String? {
     if (responseText != null) {
       try {
         JSONObject(responseText)
@@ -155,8 +164,7 @@ object TextToForm {
    * @param json The JSON string representing the QuestionnaireResponse.
    * @return The parsed QuestionnaireResponse object.
    */
-  private fun parseQuestionnaireResponse(json: String): QuestionnaireResponse {
-    val fhirContext = FhirContext.forR4()
+  fun parseQuestionnaireResponse(json: String, fhirContext: FhirContext): QuestionnaireResponse {
     val parser = fhirContext.newJsonParser()
     return parser.parseResource(QuestionnaireResponse::class.java, json)
   }
@@ -167,8 +175,7 @@ object TextToForm {
    * @param json The JSON string representing the Questionnaire.
    * @return The parsed Questionnaire object.
    */
-  suspend fun parseQuestionnaire(json: String): Questionnaire {
-    val fhirContext = FhirContext.forR4()
+  fun parseQuestionnaire(json: String, fhirContext: FhirContext): Questionnaire {
     val parser = fhirContext.newJsonParser()
     return parser.parseResource(Questionnaire::class.java, json)
   }
@@ -182,12 +189,14 @@ object TextToForm {
    * @param questionnaire The FHIR Questionnaire to base the response on.
    * @return The retry prompt string to be sent to the Gemini model.
    */
-  private fun buildRetryPrompt(
+  fun buildRetryPrompt(
     transcript: String,
     errors: List<String>,
-    invalidResponse: QuestionnaireResponse?,
+    invalidResponse: String?,
     questionnaire: Questionnaire,
+    fhirContext: FhirContext,
   ): String {
+    val jsonParser = fhirContext.newJsonParser().setPrettyPrint(true)
     return """
     You are a scribe created to turn conversational text into structure HL7 FHIR output. The
     previous attempt to generate the QuestionnaireResponse was invalid. Below is the list of errors
@@ -200,7 +209,7 @@ object TextToForm {
     transcript below and the FHIR Questionnaire.
     
     <transcript>$transcript</transcript>
-    <questionnaire>$questionnaire</questionnaire>
+    <questionnaire>${jsonParser.encodeResourceToString(questionnaire)}</questionnaire>
             """
       .trimIndent()
   }

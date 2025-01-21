@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 
 import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.context.FhirContext
 import com.google.ai.client.generativeai.GenerativeModel
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -24,8 +25,11 @@ import io.mockk.unmockkAll
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+import kotlin.test.fail
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
 import org.junit.Test
 import org.smartregister.fhircore.quest.medintel.speech.models.GeminiModel
@@ -35,12 +39,12 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 class TextToFormTest : RobolectricTest() {
 
   private lateinit var mockLlmModel: LlmModel<GenerativeModel>
+  private val fhirContext = FhirContext.forR4()
   private val useGeminiApi = System.getProperty("USE_GEMINI_API")?.toBoolean() ?: false
 
   @After
   override fun tearDown() {
-    super.tearDown()
-    if (!useGeminiApi) unmockkAll()
+    unmockkAll()
   }
 
   @Test
@@ -51,6 +55,103 @@ class TextToFormTest : RobolectricTest() {
       mockLlmModel = mockk(relaxed = true)
       testGenerateQuestionnaireResponseMock()
     }
+  }
+
+  @Test
+  fun testExtractJsonBlockWithValidJson() {
+    val responseText =
+      """```json
+    {
+      "resourceType": "QuestionnaireResponse",
+      "id": "test-id"
+    }
+    ```"""
+    val jsonBlock = TextToForm.extractJsonBlock(responseText)
+    assertNotNull(jsonBlock, "JSON block should not be null")
+    assertEquals(
+      """{
+      "resourceType": "QuestionnaireResponse",
+      "id": "test-id"
+    }
+            """
+        .trimIndent(),
+      jsonBlock,
+      "JSON block content should match",
+    )
+  }
+
+  @Test
+  fun testExtractJsonBlockWithInvalidJson() {
+    val responseText = "Invalid text without JSON block"
+    val jsonBlock = TextToForm.extractJsonBlock(responseText)
+    assertEquals(null, jsonBlock, "JSON block should be null for invalid input")
+  }
+
+  @Test
+  fun testParseQuestionnaireResponseWithValidJson() {
+    val json =
+      """
+    {
+      "resourceType": "QuestionnaireResponse",
+      "id": "valid-id"
+    }
+    """
+    val questionnaireResponse = TextToForm.parseQuestionnaireResponse(json, fhirContext)
+    assertNotNull(questionnaireResponse, "QuestionnaireResponse should not be null")
+    assertEquals(
+      "QuestionnaireResponse/valid-id",
+      questionnaireResponse.id,
+      "QuestionnaireResponse ID should match",
+    )
+  }
+
+  @Test
+  fun testParseQuestionnaireResponseWithInvalidJson() {
+    val json = "{ invalid-json }"
+    try {
+      TextToForm.parseQuestionnaireResponse(json, fhirContext)
+      fail("Exception should have been thrown for invalid JSON")
+    } catch (e: Exception) {
+      assertTrue(
+        e is ca.uhn.fhir.parser.DataFormatException,
+        "Exception should be of type DataFormatException",
+      )
+    }
+  }
+
+  @Test
+  fun testBuildRetryPrompt() {
+    val errors = listOf("Error 1", "Error 2")
+    val invalidQuestionnaire = QuestionnaireResponse().apply { id = "invalid-id" }
+    val questionnaire = Questionnaire().apply { id = "questionnaire-id" }
+    val transcript = "Sample transcript"
+
+    val jsonParser = fhirContext.newJsonParser().setPrettyPrint(true)
+
+    val invalidResponse = jsonParser.encodeResourceToString(invalidQuestionnaire)
+
+    val prompt =
+      TextToForm.buildRetryPrompt(transcript, errors, invalidResponse, questionnaire, fhirContext)
+    assertTrue(
+      prompt.contains("<errors>Error 1\nError 2</errors>"),
+      "Prompt should include errors",
+    )
+    assertTrue(
+      prompt.contains(
+        "<invalidResponse>{\n  \"resourceType\": \"QuestionnaireResponse\",\n  \"id\": \"invalid-id\"\n}</invalidResponse>",
+      ),
+      "Prompt should include invalid response",
+    )
+    assertTrue(
+      prompt.contains("<transcript>Sample transcript</transcript>"),
+      "Prompt should include transcript",
+    )
+    assertTrue(
+      prompt.contains(
+        "<questionnaire>{\n  \"resourceType\": \"Questionnaire\",\n  \"id\": \"questionnaire-id\"\n}</questionnaire>",
+      ),
+      "Prompt should include questionnaire",
+    )
   }
 
   private suspend fun testGenerateQuestionnaireResponseRealApi() {
@@ -95,7 +196,7 @@ class TextToFormTest : RobolectricTest() {
         )
         .readText()
 
-    val questionnaire = TextToForm.parseQuestionnaire(questionnaireContent)
+    val questionnaire = TextToForm.parseQuestionnaire(questionnaireContent, fhirContext)
 
     coEvery { mockLlmModel.generateContent(any(String::class)) } returns
       "```json\n$questionnaireResponseContent\n```"
