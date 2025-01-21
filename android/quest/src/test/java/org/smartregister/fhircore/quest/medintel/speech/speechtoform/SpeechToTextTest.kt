@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 
-import com.google.cloud.speech.v1.RecognitionAudio
-import com.google.cloud.speech.v1.RecognitionConfig
 import com.google.cloud.speech.v1.RecognizeResponse
 import com.google.cloud.speech.v1.SpeechClient
 import com.google.cloud.speech.v1.SpeechRecognitionAlternative
@@ -79,30 +77,39 @@ class SpeechToTextTest {
   }
 
   private fun testTranscribeAudioToTextMock() {
-    val mockAudioFile = mockk<File>(relaxed = true)
-    val mockAudioBytes = "test audio bytes".toByteArray()
-    every { mockAudioFile.readBytes() } returns mockAudioBytes
+    val workingDir = System.getProperty("user.dir")
+    val audioFile =
+      File(
+        workingDir,
+        "src/test/java/org/smartregister/fhircore/quest/resources/sample_conversation.wav",
+      )
+    require(audioFile.exists()) { "Test audio file not found at ${audioFile.absolutePath}" }
 
-    val mockRecognitionAudio =
-      RecognitionAudio.newBuilder()
-        .setContent(com.google.protobuf.ByteString.copyFrom(mockAudioBytes))
-        .build()
-    val mockConfig =
-      RecognitionConfig.newBuilder()
-        .setEncoding(RecognitionConfig.AudioEncoding.LINEAR16)
-        .setSampleRateHertz(16000)
-        .setLanguageCode("en-US")
-        .build()
+    val transcriptFile =
+      File(
+        workingDir,
+        "src/test/java/org/smartregister/fhircore/quest/resources/sample_transcript.txt",
+      )
+    require(transcriptFile.exists()) {
+      "Transcript file not found at ${transcriptFile.absolutePath}"
+    }
+
     val mockResult =
       SpeechRecognitionResult.newBuilder()
-        .addAlternatives(SpeechRecognitionAlternative.newBuilder().setTranscript("Hello World"))
+        .addAlternatives(
+          SpeechRecognitionAlternative.newBuilder().setTranscript(transcriptFile.readText().trim()),
+        )
         .build()
     val mockResponse = RecognizeResponse.newBuilder().addResults(mockResult).build()
-    every { mockSpeechClient.recognize(mockConfig, mockRecognitionAudio) } returns mockResponse
+    every { mockSpeechClient.recognize(any(), any()) } returns mockResponse
 
-    val resultFile = SpeechToText.transcribeAudioToText(mockAudioFile)
+    val resultFile = SpeechToText.transcribeAudioToText(audioFile)
     assertNotNull(resultFile, "Result file should not be null")
     assertTrue(resultFile.exists(), "Result file should exist")
-    assertEquals("Hello World", resultFile.readText(), "Transcription content should match")
+    assertEquals(
+      transcriptFile.readText().trim(),
+      resultFile.readText().trim(),
+      "Transcription content should match the expected content",
+    )
   }
 }
