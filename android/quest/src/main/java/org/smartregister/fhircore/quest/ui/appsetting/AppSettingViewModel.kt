@@ -127,8 +127,6 @@ constructor(
 
         compositionResource =
           if (implementationGuideResource != null) {
-            configurationRegistry.addOrUpdate(implementationGuideResource)
-
             val compositionReference =
               implementationGuideResource
                 .retrieveImplementationGuideDefinitionResources()[0]
@@ -150,8 +148,11 @@ constructor(
           return@launch
         }
 
+        fetchSearchParameterBundle(compositionResource.retrieveCustomSearchParametersSection())
+
         // Save composition
         defaultRepository.createRemote(false, compositionResource)
+        implementationGuideResource?.let { configurationRegistry.addOrUpdate(it) }
 
         val appConfigSectionReferences =
           compositionResource
@@ -164,8 +165,6 @@ constructor(
           val resources = resultBundle.entry.mapNotNull { it.resource }
           defaultRepository.createRemote(false, *resources.toTypedArray())
         }
-
-        fetchSearchParameterBundle(compositionResource.retrieveCustomSearchParametersSection())
 
         Timber.d("Done fetching application configurations remotely")
         loadConfigurations(context)
