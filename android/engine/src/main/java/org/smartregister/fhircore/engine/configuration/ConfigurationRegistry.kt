@@ -73,7 +73,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fileExtension
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.interpolate
-import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
+import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSectionsExcludingCustomSearchParameters
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.toTimeZoneString
@@ -267,7 +267,7 @@ constructor(
 
         localCompositionResource.run {
           val iconConfigs =
-            retrieveCompositionSections().filter {
+            retrieveCompositionSectionsExcludingCustomSearchParameters().filter {
               it.focus.hasIdentifier() && isIconConfig(it.focus.identifier.value)
             }
           if (iconConfigs.isNotEmpty()) {
@@ -338,7 +338,8 @@ constructor(
         }
       }
     } else {
-      composition.retrieveCompositionSections().forEach { sectionComponent ->
+      composition.retrieveCompositionSectionsExcludingCustomSearchParameters().forEach {
+        sectionComponent ->
         if (sectionComponent.hasFocus()) {
           addBinaryToConfigsJsonMap(
             sectionComponent.focus,
@@ -435,7 +436,8 @@ constructor(
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val compositionResource = fetchRemoteCompositionByAppId(parsedAppId)
       compositionResource?.let { composition ->
-        val compositionSections = composition.retrieveCompositionSections()
+        val compositionSections =
+          composition.retrieveCompositionSectionsExcludingCustomSearchParameters()
         val sectionComponentMap = mutableMapOf<String, MutableList<Composition.SectionComponent>>()
         compositionSections.forEach { sectionComponent ->
           if (sectionComponent.hasFocus() && sectionComponent.focus.hasReferenceElement()) {
