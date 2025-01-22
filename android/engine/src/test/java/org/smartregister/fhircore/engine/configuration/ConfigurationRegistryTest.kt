@@ -33,6 +33,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
+import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -47,6 +48,7 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
+import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -78,6 +80,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
+import org.smartregister.fhircore.engine.util.extension.toTimeZoneString
 
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
@@ -430,13 +433,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.setNonProxy(true)
     configRegistry.fetchNonWorkflowConfigResources()
 
-    val createdResourceArgumentSlot = mutableListOf<Resource>()
+    coVerify { configRegistry.createOrUpdateRemote(listResource) }
 
-    coVerify { configRegistry.createOrUpdateRemote(capture(createdResourceArgumentSlot)) }
-    assertEquals(
-      "test-list-id",
-      createdResourceArgumentSlot.filterIsInstance<ListResource>().first().id,
-    )
     coVerify {
       fhirResourceDataSource.getResource(
         "$resourceKey?_id=$resourceId&_count=${ConfigurationRegistry.DEFAULT_COUNT}",
@@ -1211,5 +1209,100 @@ class ConfigurationRegistryTest : RobolectricTest() {
     assertEquals(2, configRegistry.configsJsonMap.size)
     assertTrue(configRegistry.configsJsonMap.containsKey("resource1"))
     assertTrue(configRegistry.configsJsonMap.containsKey("resource2"))
+  }
+
+  @Test
+  fun testSaveLastConfigUpdatedTimestamp() {
+    val resource =
+      Binary().apply {
+        id = "test-binary-id"
+        meta = Meta().setLastUpdated(Date())
+      }
+
+    val expectedKey = "BINARY_test-binary-id_LAST_CONFIG_SYNC_TIMESTAMP"
+    val expectedValue = resource.meta.lastUpdated.toTimeZoneString()
+
+    configRegistry.saveLastConfigUpdatedTimestamp(resource)
+
+    assertEquals(expectedValue, configRegistry.sharedPreferencesHelper.read(expectedKey, ""))
+  }
+
+  @Test
+  fun testLastConfigUpdatedTimestampKey() {
+    val resourceType = "BINARY"
+    val resourceId = "test-binary-id"
+
+    val expectedKey = "BINARY_test-binary-id_LAST_CONFIG_SYNC_TIMESTAMP"
+    val expectedValue = configRegistry.lastConfigUpdatedTimestampKey(resourceType, resourceId)
+
+    assertEquals(expectedKey, expectedValue)
+  }
+
+  @Test
+  fun testGetLastConfigUpdatedTimestampParam() {
+    val resourceType = "BINARY"
+    val resourceId = "test-binary-id"
+    val timestamp = "2024-01-15T10:00:00Z"
+    val expectedKey = "${resourceType}_${resourceId}_LAST_CONFIG_SYNC_TIMESTAMP"
+
+    configRegistry.sharedPreferencesHelper.write(expectedKey, timestamp)
+
+    val result = configRegistry.getLastConfigUpdatedTimestampParam(resourceType, resourceId)
+    assertEquals("&_lastUpdated=gt2024-01-15T10:00:00Z", result)
+  }
+
+  @Test
+  fun testGetLastConfigUpdatedTimestampParamWithNoLastUpdated() {
+    val resourceType = "BINARY"
+    val resourceId = "test-binary-id"
+
+    val result = configRegistry.getLastConfigUpdatedTimestampParam(resourceType, resourceId)
+
+    assertEquals("", result)
+  }
+
+  @Test
+  fun testGenerateRequestBundleIncludesLastUpdated() {
+    val resourceType = "BINARY"
+    val resourceId = "test-binary-id"
+    val timestamp = "2024-01-15T10:00:00Z"
+    val expectedKey = "${resourceType}_${resourceId}_LAST_CONFIG_SYNC_TIMESTAMP"
+
+    configRegistry.sharedPreferencesHelper.write(expectedKey, timestamp)
+
+    val resultBundle = configRegistry.generateRequestBundle(resourceType, listOf(resourceId))
+
+    assertEquals(
+      "$resourceType?_id=$resourceId&_lastUpdated=gt$timestamp",
+      resultBundle.entry.first().request.url,
+    )
+  }
+
+  @Test
+  fun testGenerateRequestBundleWithNoLastUpdated() {
+    val resourceType = "BINARY"
+    val resourceId = "test-binary-id"
+
+    val resultBundle = configRegistry.generateRequestBundle(resourceType, listOf(resourceId))
+
+    assertEquals(
+      "$resourceType?_id=$resourceId",
+      resultBundle.entry.first().request.url,
+    )
+  }
+
+  @Test
+  fun testCreateOrUpdateRemoteUpdatesTimestamp() = runTest {
+    val resource =
+      Binary().apply {
+        id = "test-binary-id"
+        meta = Meta().setLastUpdated(Date())
+      }
+    val expectedKey = "BINARY_test-binary-id_LAST_CONFIG_SYNC_TIMESTAMP"
+
+    configRegistry.createOrUpdateRemote(resource)
+
+    val savedTimestamp = configRegistry.sharedPreferencesHelper.read(expectedKey, "")
+    assertFalse(savedTimestamp.isNullOrEmpty())
   }
 }
