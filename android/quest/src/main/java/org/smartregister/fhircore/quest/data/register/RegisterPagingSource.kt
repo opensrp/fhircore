@@ -60,6 +60,7 @@ class RegisterPagingSource(
             registerId = registerPagingSourceState.registerId,
             fhirResourceConfig = fhirResourceConfig,
             paramsMap = actionParameters,
+            loadAll = registerPagingSourceState.loadAll,
           )
           .map {
             rulesExecutor.processResourceData(

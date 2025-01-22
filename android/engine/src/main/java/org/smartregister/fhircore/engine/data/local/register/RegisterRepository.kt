@@ -73,21 +73,24 @@ constructor(
     registerId: String,
     fhirResourceConfig: FhirResourceConfig?,
     paramsMap: Map<String, String>?,
+    loadAll: Boolean,
   ): List<RepositoryResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     val requiredFhirResourceConfig = fhirResourceConfig ?: registerConfiguration.fhirResource
     val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
 
+    val filterByRelatedEntityLocationMetaTag =
+      registerConfiguration.filterDataByRelatedEntityLocation
+    val pageSize = registerConfiguration.pageSize
     val registerDataMap =
       searchNestedResources(
         baseResourceIds = null,
         fhirResourceConfig = requiredFhirResourceConfig,
         configComputedRuleValues = configComputedRuleValues,
         activeResourceFilters = registerConfiguration.activeResourceFilters,
-        filterByRelatedEntityLocationMetaTag =
-          registerConfiguration.filterDataByRelatedEntityLocation,
+        filterByRelatedEntityLocationMetaTag = filterByRelatedEntityLocationMetaTag,
         currentPage = currentPage,
-        pageSize = registerConfiguration.pageSize,
+        pageSize = pageSize,
       )
 
     populateSecondaryResources(
@@ -96,7 +99,13 @@ constructor(
       resultsDataMap = registerDataMap,
     )
 
-    return registerDataMap.values.toList()
+    // Handle pagination via code for resources filtered by REL tag. The list size should be
+    // (currentPage + 1).times(pageSize).
+    return if (filterByRelatedEntityLocationMetaTag && !loadAll) {
+      getPage(registerDataMap.values.toList(), currentPage, pageSize)
+    } else {
+      registerDataMap.values as List
+    }
   }
 
   /** Count register data for the provided [registerId]. Use the configured base resource filters */
@@ -125,7 +134,7 @@ constructor(
       )
     }
 
-    val locationIds = retrieveRelatedEntitySyncLocationIds()
+    val locationIds = retrieveRelatedEntitySyncLocationIds().chunked(SQL_WHERE_CLAUSE_LIMIT)
     var total = 0L
     for (ids in locationIds) {
       val search =
@@ -196,7 +205,7 @@ constructor(
   private suspend fun populateSecondaryResources(
     secondaryResources: List<FhirResourceConfig>?,
     configComputedRuleValues: Map<String, Any>,
-    resultsDataMap: MutableMap<String, RepositoryResourceData>,
+    resultsDataMap: Map<String, RepositoryResourceData>,
   ) {
     if (!secondaryResources.isNullOrEmpty()) {
       val secondaryRepositoryResourceData = mutableListOf<RepositoryResourceData>()
