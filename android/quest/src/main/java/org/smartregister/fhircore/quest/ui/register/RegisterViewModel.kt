@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CodeType
@@ -161,6 +162,7 @@ constructor(
   private fun getPagerFlow(
     registerId: String,
     loadAll: Boolean = false,
+    startFromOffsetZero: Boolean = true,
   ): Flow<PagingData<ResourceData>> {
     val currentRegisterConfig = retrieveRegisterConfiguration(registerId)
     val pageSize = currentRegisterConfig.pageSize
@@ -176,7 +178,7 @@ constructor(
               RegisterPagingSourceState(
                 registerId = currentRegisterConfig.id,
                 loadAll = loadAll,
-                currentPage = if (loadAll) 0 else currentPage.value,
+                currentPage = if (loadAll && startFromOffsetZero) 0 else currentPage.value,
                 rules = rules,
               ),
             rulesExecutor = rulesExecutor,
@@ -263,15 +265,23 @@ constructor(
       paginateRegisterData(registerId = registerId, loadAll = true, clearCache = true)
     } else if (searchBar?.computedRules != null) {
       registerData.value =
-        getPagerFlow(registerId, true).map { pagingData: PagingData<ResourceData> ->
-          pagingData.filter { resourceData: ResourceData ->
-            searchBar.computedRules!!.any { ruleName ->
-              // if ruleName not found in map return {-1}; check always return false hence no data
-              val value = resourceData.computedValuesMap[ruleName]?.toString() ?: "{-1}"
-              value.contains(other = searchText, ignoreCase = true)
+        merge(
+            pagesDataCache.values.merge(),
+            getPagerFlow(
+              registerId = registerId,
+              loadAll = true,
+              startFromOffsetZero = pagesDataCache.isEmpty(),
+            ),
+          )
+          .map { pagingData: PagingData<ResourceData> ->
+            pagingData.filter { resourceData: ResourceData ->
+              searchBar.computedRules!!.any { ruleName ->
+                // if ruleName not found in map return {-1}; check always return false hence no data
+                val value = resourceData.computedValuesMap[ruleName]?.toString() ?: "{-1}"
+                value.contains(other = searchText, ignoreCase = true)
+              }
             }
           }
-        }
     }
   }
 
