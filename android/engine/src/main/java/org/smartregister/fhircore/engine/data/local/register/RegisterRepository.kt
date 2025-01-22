@@ -101,10 +101,11 @@ constructor(
 
     // Handle pagination via code for resources filtered by REL tag. The list size should be
     // (currentPage + 1).times(pageSize).
+    val data = registerDataMap.values.toList()
     return if (filterByRelatedEntityLocationMetaTag && !loadAll) {
-      getPage(registerDataMap.values.toList(), currentPage, pageSize)
+      getPage(data, currentPage, pageSize)
     } else {
-      registerDataMap.values as List
+      data
     }
   }
 
