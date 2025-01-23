@@ -374,10 +374,10 @@ android {
       manifestPlaceholders["appLabel"] = "Minsa EIR"
     }
 
-    create("kaderjobaids") {
+    create("kaderJobAids") {
       dimension = "apps"
       applicationIdSuffix = ".jobaids"
-      versionNameSuffix = "-kaderjobaids"
+      versionNameSuffix = "-kaderJobAids"
       manifestPlaceholders["appLabel"] = "Kader Kesehatan"
     }
   }
