@@ -34,10 +34,13 @@ import javax.inject.Singleton
 import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.jexl3.JexlEngine
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
@@ -772,6 +775,29 @@ constructor(
         } else {
           false
         }
+      }
+    }
+
+    fun getResourceByReference(
+      resourceReference: String,
+    ): Resource? {
+      return runBlocking(dispatcherProvider.io()) {
+        runCatching {
+            defaultRepository.loadResource(Reference().apply { reference = resourceReference })
+          }
+          .getOrNull()
+      }
+    }
+
+    fun getResourceByResourceId(
+      resourceType: String,
+      resourceId: String,
+    ): Resource? {
+      return runBlocking(dispatcherProvider.io()) {
+        runCatching {
+            defaultRepository.loadResource(resourceId, ResourceType.valueOf(resourceType))
+          }
+          .getOrNull()
       }
     }
   }
