@@ -32,7 +32,6 @@ interface Repository {
     registerId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
     paramsMap: Map<String, String>? = emptyMap(),
-    loadAll: Boolean = false,
   ): List<RepositoryResourceData>
 
   /**

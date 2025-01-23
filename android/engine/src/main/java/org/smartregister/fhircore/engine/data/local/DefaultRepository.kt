@@ -581,8 +581,7 @@ constructor(
           pageSize = null,
         )
 
-      repositoryResourceDataList.forEach { entry ->
-        val repoResourceData = entry.value
+      repositoryResourceDataList.forEach { repoResourceData ->
         filterResourcesByFhirPathExpression(
             resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
             resources = listOf(repoResourceData.resource),
@@ -746,8 +745,8 @@ constructor(
     filterByRelatedEntityLocationMetaTag: Boolean,
     currentPage: Int?,
     pageSize: Int?,
-  ): Map<String, RepositoryResourceData> {
-    // Use LinkedHashMap to maintain the order of insertion
+  ): List<RepositoryResourceData> {
+    //  Important!! Used LinkedHashMap to maintain the order of insertion.
     val resultsDataMap = LinkedHashMap<String, RepositoryResourceData>()
     if (filterByRelatedEntityLocationMetaTag) {
       val syncLocationIds = retrieveRelatedEntitySyncLocationIds()
@@ -788,7 +787,9 @@ constructor(
           )
           page++
         }
-        return resultsDataMap
+
+        // Extract list of paginated data filtered by REL tag
+        return retrievePageData(resultsDataMap.values.toList(), currentPage, pageSize)
       } else {
         for (ids in syncLocationIds.chunked(SQL_WHERE_CLAUSE_LIMIT)) {
           val searchResults =
@@ -811,6 +812,7 @@ constructor(
             activeResourceFilters = activeResourceFilters,
           )
         }
+        return resultsDataMap.values.toList()
       }
     } else {
       val searchResults =
@@ -830,8 +832,8 @@ constructor(
         configComputedRuleValues = configComputedRuleValues,
         activeResourceFilters = activeResourceFilters,
       )
+      return resultsDataMap.values.toList()
     }
-    return resultsDataMap
   }
 
   private suspend fun processSearchResult(
@@ -1395,7 +1397,7 @@ constructor(
    * @return A list containing the items on the specified page, or an empty list if the page is out
    *   of range.
    */
-  fun <T> getPage(data: List<T>, page: Int, pageSize: Int): List<T> {
+  fun <T> retrievePageData(data: List<T>, page: Int, pageSize: Int): List<T> {
     val fromIndex = page * pageSize
     val toIndex = minOf(fromIndex + pageSize, data.size)
     return if (fromIndex in data.indices) {
