@@ -21,12 +21,14 @@ import android.database.SQLException
 import ca.uhn.fhir.context.ConfigurationException
 import ca.uhn.fhir.parser.DataFormatException
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
+import com.google.android.fhir.sync.SyncDataParams.LAST_UPDATED_KEY
 import com.google.android.fhir.sync.download.ResourceSearchParams
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.FileNotFoundException
@@ -80,6 +82,7 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
+import org.smartregister.fhircore.engine.util.extension.toTimeZoneString
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import retrofit2.HttpException
@@ -747,11 +750,27 @@ constructor(
    */
   suspend fun createOrUpdateRemote(vararg resources: Resource) {
     resources.onEach {
+      saveLastConfigUpdatedTimestamp(it)
       it.updateLastUpdated()
       it.generateMissingId()
     }
     fhirEngine.create(*resources, isLocalOnly = true)
   }
+
+  @VisibleForTesting
+  fun saveLastConfigUpdatedTimestamp(resource: Resource) {
+    sharedPreferencesHelper.write(
+      lastConfigUpdatedTimestampKey(
+        resource.resourceType.name.uppercase(),
+        resource.logicalId,
+      ),
+      resource.meta?.lastUpdated?.toTimeZoneString(),
+    )
+  }
+
+  @VisibleForTesting
+  fun lastConfigUpdatedTimestampKey(resourceType: String, resourceId: String) =
+    "${resourceType}_${resourceId}_${SharedPreferenceKey.LAST_CONFIG_SYNC_TIMESTAMP.name}"
 
   @VisibleForTesting fun isNonProxy(): Boolean = _isNonProxy
 
@@ -760,7 +779,8 @@ constructor(
     _isNonProxy = nonProxy
   }
 
-  private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
+  @VisibleForTesting
+  fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
     val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
 
     idList.forEach {
@@ -768,7 +788,7 @@ constructor(
         Bundle.BundleEntryComponent().apply {
           request =
             Bundle.BundleEntryRequestComponent().apply {
-              url = "$resourceType/$it"
+              url = "$resourceType?$ID=$it${getLastConfigUpdatedTimestampParam(resourceType, it)}"
               method = Bundle.HTTPVerb.GET
             }
         },
@@ -781,6 +801,15 @@ constructor(
     }
   }
 
+  @VisibleForTesting
+  fun getLastConfigUpdatedTimestampParam(resourceType: String, resourceId: String): String {
+    val timestamp =
+      sharedPreferencesHelper
+        .read(lastConfigUpdatedTimestampKey(resourceType.uppercase(), resourceId), "")
+        .orEmpty()
+    return if (timestamp.isNotEmpty()) "&$LAST_UPDATED_KEY=$GREATER_THAN_PREFIX$timestamp" else ""
+  }
+
   private suspend fun fhirResourceDataSourceGetBundle(
     resourceType: String,
     resourceIds: List<String>,
@@ -790,7 +819,11 @@ constructor(
       entry =
         resourceIds
           .map {
-            fhirResourceDataSource.getResource("$resourceType?${Composition.SP_RES_ID}=$it").entry
+            fhirResourceDataSource
+              .getResource(
+                "$resourceType?${Composition.SP_RES_ID}=$it${getLastConfigUpdatedTimestampParam(resourceType, it)}",
+              )
+              .entry
           }
           .flatten()
     }
@@ -917,6 +950,7 @@ constructor(
     const val PAGINATION_NEXT = "next"
     const val RESOURCES_PATH = "resources/"
     const val SYNC_LOCATION_IDS = "_syncLocations"
+    const val GREATER_THAN_PREFIX = "gt"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.
