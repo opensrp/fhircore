@@ -164,7 +164,6 @@ constructor(
               currentPage = null,
               pageSize = null,
             )
-            .values
             .filterByFhirPathExpression(
               fhirPathDataExtractor = fhirPathDataExtractor,
               conditionalFhirPathExpressions =

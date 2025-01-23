@@ -34,17 +34,16 @@ import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.math.ceil
-import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CodeType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -88,7 +87,6 @@ import org.smartregister.fhircore.quest.util.extensions.referenceToBitmap
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
-@OptIn(FlowPreview::class)
 @HiltViewModel
 class RegisterViewModel
 @Inject
@@ -114,7 +112,6 @@ constructor(
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
   }
-  val searchQueryFlow: MutableSharedFlow<SearchQuery> = MutableSharedFlow()
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
   private val _currentSyncJobStatusFlow: MutableSharedFlow<CurrentSyncJobStatus?> =
@@ -122,25 +119,7 @@ constructor(
   private val decodedImageMap = mutableStateMapOf<String, Bitmap>()
   private val _totalRecordsCount = mutableLongStateOf(0L)
   private val _filteredRecordsCount = mutableLongStateOf(-1L)
-
-  init {
-    viewModelScope.launch {
-      searchQueryFlow
-        .debounce {
-          val searchText = it.query
-          when (searchText.length) {
-            0 -> 2.milliseconds // when search is cleared
-            1,
-            2, -> 1000.milliseconds
-            else -> 500.milliseconds
-          }
-        }
-        .collect {
-          val registerId = registerUiState.value.registerId
-          performSearch(registerId, it)
-        }
-    }
-  }
+  private var searchJob: Job? = null
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -160,7 +139,7 @@ constructor(
 
   private fun getPagerFlow(
     registerId: String,
-    loadAll: Boolean = false,
+    loadAll: Boolean,
   ): Flow<PagingData<ResourceData>> {
     val currentRegisterConfig = retrieveRegisterConfiguration(registerId)
     val pageSize = currentRegisterConfig.pageSize
@@ -208,7 +187,11 @@ constructor(
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
-        viewModelScope.launch { searchQueryFlow.emit(event.searchQuery) }
+        if (searchJob?.isActive == true) searchJob?.cancel()
+        searchJob =
+          viewModelScope.launch {
+            performSearch(registerUiState.value.registerId, event.searchQuery)
+          }
       }
       is RegisterEvent.MoveToNextPage -> {
         currentPage.value = currentPage.value.plus(1)
@@ -223,7 +206,7 @@ constructor(
   }
 
   @VisibleForTesting
-  fun performSearch(registerId: String, searchQuery: SearchQuery) {
+  suspend fun performSearch(registerId: String, searchQuery: SearchQuery) {
     if (searchQuery.isBlank()) {
       val regConfig = retrieveRegisterConfiguration(registerId)
       val searchByDynamicQueries = !regConfig.searchBar?.dataFilterFields.isNullOrEmpty()
@@ -246,32 +229,34 @@ constructor(
     }
   }
 
-  fun filterRegisterData(searchText: String) {
-    val searchBar = registerUiState.value.registerConfiguration?.searchBar
-    val registerId = registerUiState.value.registerId
-    if (!searchBar?.dataFilterFields.isNullOrEmpty()) {
-      val dataFilterFields = searchBar?.dataFilterFields
-      updateRegisterFilterState(
-        registerId = registerId,
-        questionnaireResponse =
-          constructSearchQuestionnaireResponse(
-            searchText = searchText,
-            dataFilterFields = searchBar?.dataFilterFields ?: emptyList(),
-          ),
-        dataFilterFields = dataFilterFields,
-      )
-      paginateRegisterData(registerId = registerId, loadAll = true, clearCache = true)
-    } else if (searchBar?.computedRules != null) {
-      registerData.value =
-        getPagerFlow(registerId, true).map { pagingData: PagingData<ResourceData> ->
-          pagingData.filter { resourceData: ResourceData ->
-            searchBar.computedRules!!.any { ruleName ->
-              // if ruleName not found in map return {-1}; check always return false hence no data
-              val value = resourceData.computedValuesMap[ruleName]?.toString() ?: "{-1}"
-              value.contains(other = searchText, ignoreCase = true)
+  suspend fun filterRegisterData(searchText: String) {
+    withContext(dispatcherProvider.io()) {
+      val searchBar = registerUiState.value.registerConfiguration?.searchBar
+      val registerId = registerUiState.value.registerId
+      if (!searchBar?.dataFilterFields.isNullOrEmpty()) {
+        val dataFilterFields = searchBar?.dataFilterFields
+        updateRegisterFilterState(
+          registerId = registerId,
+          questionnaireResponse =
+            constructSearchQuestionnaireResponse(
+              searchText = searchText,
+              dataFilterFields = searchBar?.dataFilterFields ?: emptyList(),
+            ),
+          dataFilterFields = dataFilterFields,
+        )
+        paginateRegisterData(registerId = registerId, loadAll = true, clearCache = true)
+      } else if (searchBar?.computedRules != null) {
+        registerData.value =
+          getPagerFlow(registerId, true).map { pagingData: PagingData<ResourceData> ->
+            pagingData.filter { resourceData: ResourceData ->
+              searchBar.computedRules!!.any { ruleName ->
+                // if ruleName not found in map return {-1}; check always return false hence no data
+                val value = resourceData.computedValuesMap[ruleName]?.toString() ?: "{-1}"
+                value.contains(other = searchText, ignoreCase = true)
+              }
             }
           }
-        }
+      }
     }
   }
 

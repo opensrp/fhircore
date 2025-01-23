@@ -114,7 +114,6 @@ constructor(
             currentPage = null,
             pageSize = null,
           )
-          .values
           .asSequence()
           .filter { it.resource is Location }
           .partition {

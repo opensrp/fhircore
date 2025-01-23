@@ -78,25 +78,27 @@ constructor(
     val requiredFhirResourceConfig = fhirResourceConfig ?: registerConfiguration.fhirResource
     val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
 
-    val registerDataMap =
+    val filterByRelatedEntityLocationMetaTag =
+      registerConfiguration.filterDataByRelatedEntityLocation
+    val pageSize = registerConfiguration.pageSize
+    val repositoryResourceDataList =
       searchNestedResources(
         baseResourceIds = null,
         fhirResourceConfig = requiredFhirResourceConfig,
         configComputedRuleValues = configComputedRuleValues,
         activeResourceFilters = registerConfiguration.activeResourceFilters,
-        filterByRelatedEntityLocationMetaTag =
-          registerConfiguration.filterDataByRelatedEntityLocation,
+        filterByRelatedEntityLocationMetaTag = filterByRelatedEntityLocationMetaTag,
         currentPage = currentPage,
-        pageSize = registerConfiguration.pageSize,
+        pageSize = pageSize,
       )
 
     populateSecondaryResources(
       secondaryResources = registerConfiguration.secondaryResources,
       configComputedRuleValues = configComputedRuleValues,
-      resultsDataMap = registerDataMap,
+      repositoryResourceDataList = repositoryResourceDataList,
     )
 
-    return registerDataMap.values.toList()
+    return repositoryResourceDataList
   }
 
   /** Count register data for the provided [registerId]. Use the configured base resource filters */
@@ -125,7 +127,7 @@ constructor(
       )
     }
 
-    val locationIds = retrieveRelatedEntitySyncLocationIds()
+    val locationIds = retrieveRelatedEntitySyncLocationIds().chunked(SQL_WHERE_CLAUSE_LIMIT)
     var total = 0L
     for (ids in locationIds) {
       val search =
@@ -155,7 +157,7 @@ constructor(
     val requiredFhirResourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
     val configComputedRuleValues = profileConfiguration.configRules.configRulesComputedValues()
 
-    val profileDataMap =
+    val repositoryResourceDataList =
       searchNestedResources(
         baseResourceIds = listOf(resourceId),
         fhirResourceConfig = requiredFhirResourceConfig,
@@ -169,9 +171,9 @@ constructor(
     populateSecondaryResources(
       secondaryResources = profileConfiguration.secondaryResources,
       configComputedRuleValues = configComputedRuleValues,
-      resultsDataMap = profileDataMap,
+      repositoryResourceDataList = repositoryResourceDataList,
     )
-    return profileDataMap.values.firstOrNull()
+    return repositoryResourceDataList.firstOrNull()
   }
 
   fun retrieveProfileConfiguration(profileId: String, paramsMap: Map<String, String>?) =
@@ -188,20 +190,20 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramsMap)
 
   /**
-   * Retrieve and populate secondary resources in [resultsDataMap]. Every [RepositoryResourceData]
-   * in [resultsDataMap] must have a copy of the secondary resources. Secondary resources
-   * independent resources that needs to be loaded and have no relationship with the primary base
-   * resources.
+   * Retrieve and populate secondary resources in [repositoryResourceDataList]. Every
+   * [RepositoryResourceData] in [repositoryResourceDataList] must have a copy of the secondary
+   * resources. Secondary resources are independent resources and have no relationship with the
+   * primary base resources.
    */
   private suspend fun populateSecondaryResources(
     secondaryResources: List<FhirResourceConfig>?,
     configComputedRuleValues: Map<String, Any>,
-    resultsDataMap: MutableMap<String, RepositoryResourceData>,
+    repositoryResourceDataList: List<RepositoryResourceData>,
   ) {
     if (!secondaryResources.isNullOrEmpty()) {
       val secondaryRepositoryResourceData = mutableListOf<RepositoryResourceData>()
       secondaryResources.forEach { secondaryFhirResourceConfig ->
-        val resultsMap =
+        val result =
           searchNestedResources(
             baseResourceIds = null,
             fhirResourceConfig = secondaryFhirResourceConfig,
@@ -211,10 +213,10 @@ constructor(
             currentPage = null,
             pageSize = 1,
           )
-        secondaryRepositoryResourceData.addAll(resultsMap.values)
+        secondaryRepositoryResourceData.addAll(result)
       }
-      resultsDataMap.forEach { entry ->
-        entry.value.secondaryRepositoryResourceData = secondaryRepositoryResourceData
+      repositoryResourceDataList.forEach { item ->
+        item.secondaryRepositoryResourceData = secondaryRepositoryResourceData
       }
     }
   }

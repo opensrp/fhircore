@@ -22,6 +22,7 @@ import com.google.android.fhir.search.StringFilterModifier
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -29,10 +30,6 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateType
@@ -153,44 +150,6 @@ class RegisterViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun testDebounceSearchQueryFlow() = runTest {
-    val registerConfig =
-      RegisterConfiguration(
-        appId = "app",
-        id = registerId,
-        fhirResource =
-          FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Patient)),
-        pageSize = 10,
-      )
-    configurationRegistry.configCacheMap[registerId] = registerConfig
-    registerViewModel.registerUiState.value =
-      registerViewModel.registerUiState.value.copy(registerId = registerId)
-    coEvery { registerRepository.countRegisterData(any()) } returns 0L
-
-    val results = mutableListOf<String>()
-    val debounceJob = launch { registerViewModel.searchQueryFlow.collect { results.add(it.query) } }
-    advanceUntilIdle()
-
-    // Search with empty string should paginate the data
-    registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery.emptyText))
-
-    advanceTimeBy(3.milliseconds)
-    Assert.assertTrue(results.isNotEmpty())
-    Assert.assertTrue(results.last().isBlank())
-
-    registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery("K")))
-    registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery("Kh")))
-    registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery("Kha")))
-    registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery("Khan")))
-
-    advanceTimeBy(1010.milliseconds)
-    Assert.assertEquals(5, results.size)
-    Assert.assertEquals("Khan", results.last())
-    debounceJob.cancel()
-  }
-
-  @Test
   fun testPerformSearchWithEmptyQuery() = runTest {
     val registerConfig =
       RegisterConfiguration(
@@ -223,7 +182,7 @@ class RegisterViewModelTest : RobolectricTest() {
 
     // Search for the word 'Khan' should call the filterRegisterData function
     registerViewModel.performSearch(registerId, SearchQuery("Khan"))
-    verify { registerViewModel.filterRegisterData(any()) }
+    coVerify { registerViewModel.filterRegisterData(any()) }
   }
 
   @Test
