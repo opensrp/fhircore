@@ -77,6 +77,7 @@ android {
     buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
     buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
     buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
+    buildConfigField("String", "GEMINI_API_KEY", """"${project.extra["GEMINI_API_KEY"]}"""")
 
     testInstrumentationRunner = "org.smartregister.fhircore.quest.QuestTestRunner"
     testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"
@@ -488,6 +489,15 @@ dependencies {
   implementation(libs.androidx.fragment.compose)
   implementation(libs.bundles.cameraX)
   implementation(libs.log4j)
+
+  // AI dependencies
+  implementation(libs.google.cloud.speech) {
+    exclude("com.google.guava", "guava")
+    exclude("org.threeten", "threetenbp")
+  }
+  implementation(libs.generativeai)
+  implementation(libs.grpc.okhttp) { exclude("com.google.guava", "guava") }
+  implementation(libs.tasks.genai)
 
   // Annotation processors
   kapt(libs.hilt.compiler)
