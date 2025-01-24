@@ -26,7 +26,7 @@ import org.smartregister.fhircore.quest.BuildConfig
 class GeminiModel : LlmModel<GenerativeModel> {
   // model usage
   // https://developer.android.com/ai/google-ai-client-sdk
-  override val model =
+  override var model =
     GenerativeModel(
       modelName = "gemini-1.5-flash-001",
       apiKey = BuildConfig.GEMINI_API_KEY,

@@ -514,6 +514,7 @@ dependencies {
   testImplementation(libs.robolectric)
   testImplementation(libs.bundles.junit.test)
   testImplementation(libs.core.testing)
+  testImplementation(libs.mockito.inline)
   testImplementation(libs.mockk)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.dagger.hilt.android.testing)
