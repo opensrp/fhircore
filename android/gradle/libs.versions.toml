@@ -85,6 +85,7 @@ slf4j-nop = "2.0.7"
 spotlessPluginGradle = "6.25.0"
 sqlcipher = "4.5.4"
 stax-api = "1.0-2"
+tasks-genai = "0.10.14"
 timber = "5.0.1"
 uiautomator = "2.3.0"
 work = "2.9.1"
@@ -140,6 +141,7 @@ foundation = { group = "androidx.compose.foundation", name = "foundation", versi
 fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragment-ktx" }
 fragment-testing = { group = "androidx.fragment", name = "fragment-testing", version.ref = "fragment-ktx" }
 generativeai = { module = "com.google.ai.client.generativeai:generativeai", version.ref = "generativeai" }
+tasks-genai = { module = "com.google.mediapipe:tasks-genai", version.ref = "tasks-genai" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 gms-play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 google-cloud-speech = { module = "com.google.cloud:google-cloud-speech", version.ref = "googleCloudSpeech" }

@@ -497,6 +497,7 @@ dependencies {
   }
   implementation(libs.generativeai)
   implementation(libs.grpc.okhttp) { exclude("com.google.guava", "guava") }
+  implementation(libs.tasks.genai)
 
   // Annotation processors
   kapt(libs.hilt.compiler)
