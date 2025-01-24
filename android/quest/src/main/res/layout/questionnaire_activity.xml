@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/questionnaireToolbar"
@@ -13,48 +12,68 @@
             android:layout_height="wrap_content"
             android:background="@color/colorPrimary"
             android:minHeight="?android:attr/actionBarSize"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:titleTextColor="@color/white">
 
-            <RelativeLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
                 <TextView
                     android:id="@+id/questionnaireTitle"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                   android:layout_toStartOf="@+id/clearAll"
+                    android:ellipsize="middle"
+                    android:maxLines="1"
                     android:paddingStart="@dimen/item_margin_horizontal"
                     android:paddingEnd="@dimen/item_margin_horizontal"
                     android:text="Register so many many patients until elpsis is displayed"
-                    android:maxLines="1"
-                    android:ellipsize="middle"
                     android:textColor="@color/white"
-                    android:textSize="18sp" />
+                    android:textSize="18sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/clearAll"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/clearAll"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
                     android:paddingStart="@dimen/item_margin_horizontal"
                     android:paddingEnd="@dimen/item_margin_horizontal"
                     android:text="@string/clear_all"
+                    android:textColor="@color/white"
                     android:visibility="visible"
-                    android:textColor="@color/white" />
-            </RelativeLayout>
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.appcompat.widget.Toolbar>
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/container"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:paddingTop="24dp"
-            android:paddingBottom="24dp"
-            android:paddingRight="16dp"
             android:paddingLeft="16dp"
-            app:layout_constraintStart_toStartOf="parent" />
-    </LinearLayout>
+            android:paddingTop="16dp"
+            android:paddingRight="16dp"
+            android:paddingBottom="16dp"
+            app:layout_constraintBottom_toTopOf="@+id/speechToTextContainer"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/questionnaireToolbar"
+            app:layout_constraintVertical_weight="3" />
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/speechToTextContainer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:name="org.smartregister.fhircore.quest.ui.questionnaire.SpeechToTextFragment"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/container"
+            app:layout_constraintVertical_weight="1" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
