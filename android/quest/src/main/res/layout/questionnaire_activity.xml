@@ -58,22 +58,30 @@
             android:paddingLeft="16dp"
             android:paddingTop="16dp"
             android:paddingRight="16dp"
-            android:paddingBottom="16dp"
             app:layout_constraintBottom_toTopOf="@+id/speechToTextContainer"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/questionnaireToolbar"
-            app:layout_constraintVertical_weight="3" />
+            app:layout_constraintVertical_weight="3.5" />
+
+        <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/container_divider"
+            app:dividerColor="@color/item_border_color"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/speechToTextContainer"
+            />
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/speechToTextContainer"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:background="@color/backgroundGray"
             android:name="org.smartregister.fhircore.quest.ui.questionnaire.SpeechToTextFragment"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/container"
-            app:layout_constraintVertical_weight="1" />
+            app:layout_constraintVertical_weight="1.5" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

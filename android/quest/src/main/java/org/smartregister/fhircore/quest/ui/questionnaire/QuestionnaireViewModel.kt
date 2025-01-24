@@ -135,6 +135,10 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
+  private val _newQuestionnaireResponseMutableLiveData = MutableLiveData<QuestionnaireResponse>()
+  val newQuestionnaireResponseLiveData: LiveData<QuestionnaireResponse>
+    get() = _newQuestionnaireResponseMutableLiveData
+
   var uniqueIdResource: Resource? = null
 
   /**
@@ -1186,6 +1190,9 @@ constructor(
   fun setProgressState(questionnaireState: QuestionnaireProgressState) {
     _questionnaireProgressStateLiveData.postValue(questionnaireState)
   }
+
+  fun onNewQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) =
+    _newQuestionnaireResponseMutableLiveData.postValue(questionnaireResponse)
 
   companion object {
     const val CONTAINED_LIST_TITLE = "GeneratedResourcesList"
