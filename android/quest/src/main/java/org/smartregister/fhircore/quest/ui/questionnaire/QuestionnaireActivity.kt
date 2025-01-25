@@ -35,7 +35,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
@@ -122,22 +121,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       return
     }
 
-    viewModel.questionnaireProgressStateLiveData.observe(this) { progressState ->
-      alertDialog =
-        if (progressState?.active == false) {
-          alertDialog?.dismiss()
-          null
-        } else {
-          when (progressState) {
-            is QuestionnaireProgressState.ExtractionInProgress ->
-              AlertDialogue.showProgressAlert(this, R.string.extraction_in_progress)
-            is QuestionnaireProgressState.QuestionnaireLaunch ->
-              AlertDialogue.showProgressAlert(this, R.string.loading_questionnaire)
-            else -> null
-          }
-        }
-    }
-
     viewBinding.questionnaireToolbar.setNavigationIcon(R.drawable.ic_cancel)
     viewBinding.questionnaireToolbar.setNavigationOnClickListener { handleBackPress() }
     viewBinding.questionnaireTitle.text = questionnaireConfig.title
@@ -158,6 +141,22 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         }
       },
     )
+  }
+
+  private fun showProgressDialog(progressState: QuestionnaireProgressState?) {
+    alertDialog =
+      if (progressState?.active == false) {
+        alertDialog?.dismiss()
+        null
+      } else {
+        when (progressState) {
+          is QuestionnaireProgressState.ExtractionInProgress ->
+            AlertDialogue.showProgressAlert(this, R.string.extraction_in_progress)
+          is QuestionnaireProgressState.QuestionnaireLaunch ->
+            AlertDialogue.showProgressAlert(this, R.string.loading_questionnaire)
+          else -> null
+        }
+      }
   }
 
   private fun setupLocationServices() {
@@ -194,7 +193,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   }
 
   private fun showLocationSettingsDialog(intent: Intent) {
-    viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
+    showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
     AlertDialog.Builder(this)
       .setMessage(getString(R.string.location_services_disabled))
       .setCancelable(true)
@@ -228,7 +227,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   }
 
   private suspend fun launchQuestionnaire() {
-    viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(true))
+    showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(true))
 
     val questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig)
     if (questionnaire == null) {
@@ -243,14 +242,14 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       finish()
     }
 
-//    questionnaire.url = "Questionnaire/${questionnaire.logicalId}"
+    //    questionnaire.url = "Questionnaire/${questionnaire.logicalId}"
 
     val (questionnaireResponse, launchContextResources) =
       viewModel.populateQuestionnaire(questionnaire, questionnaireConfig, actionParameters)
 
     renderQuestionnaire(questionnaire, questionnaireResponse, launchContextResources)
 
-    viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
+    showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
 
     viewModel.newQuestionnaireResponseLiveData.observe(this@QuestionnaireActivity) {
       newQuestionnaireResponse ->
@@ -259,7 +258,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           questionnaire,
           newQuestionnaireResponse,
           launchContextResources,
-          validateQuestionnaireResponseForPopulation = false
+          validateQuestionnaireResponseForPopulation = false,
         )
       }
     }
@@ -271,11 +270,16 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     launchContextResources: List<Resource>,
     validateQuestionnaireResponseForPopulation: Boolean,
   ) {
-    viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(true))
+    showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(true))
 
-    renderQuestionnaire(questionnaire, questionnaireResponse, launchContextResources, validateQuestionnaireResponseForPopulation)
+    renderQuestionnaire(
+      questionnaire,
+      questionnaireResponse,
+      launchContextResources,
+      validateQuestionnaireResponseForPopulation,
+    )
 
-    viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
+    showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
   }
 
   private suspend fun renderQuestionnaire(
@@ -382,12 +386,18 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       }
       if (questionnaireResponse != null) {
         viewModel.run {
-          setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
+          showProgressDialog(QuestionnaireProgressState.ExtractionInProgress(true))
 
           if (currentLocation != null) {
             questionnaireResponse.contained.add(
               ResourceUtils.createFhirLocationFromGpsLocation(gpsLocation = currentLocation!!),
             )
+          }
+
+          val questionnaireResponseInvalid = {
+            Timber.e("Invalid questionnaire response")
+            showToast(getString(R.string.questionnaire_response_invalid))
+            showProgressDialog(QuestionnaireProgressState.ExtractionInProgress(false))
           }
 
           handleQuestionnaireSubmission(
@@ -396,10 +406,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             questionnaireConfig = questionnaireConfig,
             actionParameters = actionParameters,
             context = this@QuestionnaireActivity,
+            onQuestionnaireResponseInvalid = questionnaireResponseInvalid,
           ) { idTypes, questionnaireResponse ->
             // Dismiss progress indicator dialog, submit result then finish activity
             // TODO Ensure this dialog is dismissed even when an exception is encountered
-            setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
+            showProgressDialog(QuestionnaireProgressState.ExtractionInProgress(false))
             setResult(
               Activity.RESULT_OK,
               Intent().apply {

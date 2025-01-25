@@ -127,10 +127,6 @@ constructor(
       ?.extractLogicalIdUuid()
   }
 
-  private val _questionnaireProgressStateLiveData = MutableLiveData<QuestionnaireProgressState?>()
-  val questionnaireProgressStateLiveData: LiveData<QuestionnaireProgressState?>
-    get() = _questionnaireProgressStateLiveData
-
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
@@ -167,6 +163,7 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
     actionParameters: List<ActionParameter>,
     context: Context,
+    onQuestionnaireResponseInvalid: () -> Unit,
     onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit,
   ) {
     viewModelScope.launch(SupervisorJob()) {
@@ -178,9 +175,7 @@ constructor(
         )
 
       if (questionnaireConfig.saveQuestionnaireResponse && !questionnaireResponseValid) {
-        Timber.e("Invalid questionnaire response")
-        context.showToast(context.getString(R.string.questionnaire_response_invalid))
-        setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
+        onQuestionnaireResponseInvalid.invoke()
         return@launch
       }
 
@@ -1185,11 +1180,6 @@ constructor(
     } catch (resourceNotFoundException: ResourceNotFoundException) {
       null
     }
-
-  /** Update the current progress state of the questionnaire. */
-  fun setProgressState(questionnaireState: QuestionnaireProgressState) {
-    _questionnaireProgressStateLiveData.postValue(questionnaireState)
-  }
 
   fun onNewQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) =
     _newQuestionnaireResponseMutableLiveData.postValue(questionnaireResponse)
