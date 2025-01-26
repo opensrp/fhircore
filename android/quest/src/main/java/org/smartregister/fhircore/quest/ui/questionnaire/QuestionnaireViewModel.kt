@@ -37,6 +37,9 @@ import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
@@ -131,9 +134,9 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
-  private val _newQuestionnaireResponseMutableLiveData = MutableLiveData<QuestionnaireResponse>()
-  val newQuestionnaireResponseLiveData: LiveData<QuestionnaireResponse>
-    get() = _newQuestionnaireResponseMutableLiveData
+  private val _questionnaireFormUpdateMutableStateflow = MutableStateFlow<QuestionnaireFormUpdate>(QuestionnaireFormUpdate.ShowQuestionnaireResponse(null))
+  val questionnaireFormUpdateStateflow: StateFlow<QuestionnaireFormUpdate>
+    get() = _questionnaireFormUpdateMutableStateflow
 
   var uniqueIdResource: Resource? = null
 
@@ -1181,11 +1184,21 @@ constructor(
       null
     }
 
-  fun onNewQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) =
-    _newQuestionnaireResponseMutableLiveData.postValue(questionnaireResponse)
+  fun showSpeechToText() {
+    _questionnaireFormUpdateMutableStateflow.update { QuestionnaireFormUpdate.ShowSpeechToTextSubView }
+  }
+
+  fun showQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse?) =
+    _questionnaireFormUpdateMutableStateflow.update { QuestionnaireFormUpdate.ShowQuestionnaireResponse(questionnaireResponse) }
 
   companion object {
     const val CONTAINED_LIST_TITLE = "GeneratedResourcesList"
     const val OUTPUT_PARAMETER_KEY = "OUTPUT"
   }
+}
+
+sealed class QuestionnaireFormUpdate {
+  data object ShowSpeechToTextSubView: QuestionnaireFormUpdate()
+
+  data class ShowQuestionnaireResponse(val newQuestionnaireResponse: QuestionnaireResponse?): QuestionnaireFormUpdate()
 }

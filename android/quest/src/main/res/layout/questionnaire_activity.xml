@@ -3,6 +3,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -62,26 +63,45 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/questionnaireToolbar"
-            app:layout_constraintVertical_weight="3.5" />
+            app:layout_constraintVertical_weight="3.5"
+            tools:layout="@layout/questionnaire_fragment" />
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/record_speech_action_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/action_button_margin_horizontal"
+            android:backgroundTint="@android:color/holo_red_dark"
+            android:visibility="gone"
+            app:icon="@drawable/ic_speech_to_text_24dp"
+            app:iconGravity="start"
+            app:iconTint="@color/white"
+            android:text="@string/record_action_text"
+            android:textColor="@color/white"
+            app:layout_constraintVertical_bias="0.85"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/container"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="visible" />
 
         <com.google.android.material.divider.MaterialDivider
             android:id="@+id/container_divider"
-            app:dividerColor="@color/item_border_color"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@+id/speechToTextContainer"
-            />
+            app:dividerColor="@color/item_border_color"
+            app:layout_constraintBottom_toTopOf="@+id/speechToTextContainer" />
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/speechToTextContainer"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:background="@color/backgroundGray"
-            android:name="org.smartregister.fhircore.quest.ui.questionnaire.SpeechToTextFragment"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/container"
-            app:layout_constraintVertical_weight="1.5" />
+            app:layout_constraintVertical_weight="1.5"
+            tools:layout="@layout/fragment_speech_to_text" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

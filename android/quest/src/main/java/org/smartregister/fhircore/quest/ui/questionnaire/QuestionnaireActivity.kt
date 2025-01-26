@@ -22,6 +22,8 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.location.Location
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.Parcelable
 import android.provider.Settings
 import android.view.View
@@ -35,6 +37,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
@@ -126,6 +129,10 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     viewBinding.questionnaireTitle.text = questionnaireConfig.title
     viewBinding.clearAll.visibility =
       if (questionnaireConfig.showClearAll) View.VISIBLE else View.GONE
+
+    viewBinding.recordSpeechActionButton.setOnClickListener {
+      viewModel.showSpeechToText()
+    }
 
     if (savedInstanceState == null) {
       lifecycleScope.launch { launchQuestionnaire() }
@@ -226,6 +233,14 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     outState.clear()
   }
 
+  private fun showSpeechToTextFragment() {
+    viewBinding.speechToTextContainer.visibility = View.VISIBLE
+    supportFragmentManager.commit {
+      setReorderingAllowed(true)
+      replace(R.id.speechToTextContainer, SpeechToTextFragment(), SpeechToText_FRAGMENT_TAG)
+    }
+  }
+
   private suspend fun launchQuestionnaire() {
     showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(true))
 
@@ -242,16 +257,16 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       finish()
     }
 
-    //    questionnaire.url = "Questionnaire/${questionnaire.logicalId}"
+    questionnaire.url = "Questionnaire/${questionnaire.logicalId}"
 
     val (questionnaireResponse, launchContextResources) =
       viewModel.populateQuestionnaire(questionnaire, questionnaireConfig, actionParameters)
 
-    renderQuestionnaire(questionnaire, questionnaireResponse, launchContextResources)
+    viewModel.showQuestionnaireResponse(questionnaireResponse)
 
     showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
 
-    viewModel.newQuestionnaireResponseLiveData.observe(this@QuestionnaireActivity) {
+    viewModel.questionnaireFormUpdateStateflow.observe(this@QuestionnaireActivity) {
       newQuestionnaireResponse ->
       lifecycleScope.launch {
         launchQuestionnaire(
@@ -271,15 +286,20 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     validateQuestionnaireResponseForPopulation: Boolean,
   ) {
     showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(true))
+    viewBinding.speechToTextContainer.visibility = View.GONE
 
-    renderQuestionnaire(
-      questionnaire,
-      questionnaireResponse,
-      launchContextResources,
-      validateQuestionnaireResponseForPopulation,
-    )
-
-    showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
+    try {
+      renderQuestionnaire(
+        questionnaire,
+        questionnaireResponse,
+        launchContextResources,
+        validateQuestionnaireResponseForPopulation,
+      )
+    } catch (e: IllegalArgumentException) {
+      showToast(e.message.toString())
+    } finally {
+      showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
+    }
   }
 
   private suspend fun renderQuestionnaire(
@@ -302,6 +322,10 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       setReorderingAllowed(true)
       replace(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
     }
+
+    Handler(Looper.getMainLooper())
+      .postDelayed({ viewBinding.recordSpeechActionButton.visibility = View.VISIBLE }, 500)
+
     registerFragmentResultListener(questionnaire)
   }
 
@@ -494,6 +518,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   companion object {
 
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaireFragment"
+    const val SpeechToText_FRAGMENT_TAG = "speechToTextFragment"
     const val QUESTIONNAIRE_CONFIG = "questionnaireConfig"
     const val QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS = "questionnaireExtractedResourceIds"
     const val QUESTIONNAIRE_RESPONSE = "questionnaireResponse"
