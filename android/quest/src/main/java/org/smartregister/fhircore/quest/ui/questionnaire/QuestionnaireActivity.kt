@@ -372,7 +372,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   }
 
   private fun handleBackPress() {
-    if (questionnaireConfig.isReadOnly()) {
+    if (questionnaireConfig.isReadOnly() || questionnaireConfig.isSummary()) {
       finish()
     } else if (questionnaireConfig.saveDraft) {
       AlertDialogue.showThreeButtonAlert(
@@ -387,6 +387,14 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
               lifecycleScope.launch {
                 retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
                   viewModel.saveDraftQuestionnaire(questionnaireResponse, questionnaireConfig)
+                  setResult(
+                    Activity.RESULT_OK,
+                    Intent().apply {
+                      putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
+                      putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
+                      putExtra(ON_RESULT_TYPE, ActivityOnResultType.QUESTIONNAIRE.name)
+                    },
+                  )
                   finish()
                 }
               }

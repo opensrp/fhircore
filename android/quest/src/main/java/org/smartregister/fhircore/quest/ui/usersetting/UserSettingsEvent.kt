@@ -40,4 +40,6 @@ sealed class UserSettingsEvent {
   data class OnLaunchOfflineMap(val isShow: Boolean, val context: Context) : UserSettingsEvent()
 
   data class ShowInsightsScreen(val navController: NavController) : UserSettingsEvent()
+
+  data class ExportDB(val isShow: Boolean, val context: Context) : UserSettingsEvent()
 }

@@ -73,11 +73,13 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.isEditable
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
+import org.smartregister.fhircore.engine.domain.model.isSummary
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.allItems
 import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
@@ -706,42 +708,28 @@ constructor(
    * This function saves [QuestionnaireResponse] as draft if any of the [QuestionnaireResponse.item]
    * has an answer.
    */
-  fun saveDraftQuestionnaire(
+  suspend fun saveDraftQuestionnaire(
     questionnaireResponse: QuestionnaireResponse,
     questionnaireConfig: QuestionnaireConfig,
   ) {
-    viewModelScope.launch {
-      val hasPages = questionnaireResponse.item.any { it.hasItem() }
-      val questionnaireHasAnswer =
-        questionnaireResponse.item.any {
-          if (!hasPages) {
-            it.answer.any { answerComponent -> answerComponent.hasValue() }
-          } else {
-            questionnaireResponse.item.any { page ->
-              page.item.any { pageItem ->
-                pageItem.answer.any { answerComponent -> answerComponent.hasValue() }
-              }
-            }
-          }
-        }
-      questionnaireResponse.questionnaire =
-        questionnaireConfig.id.asReference(ResourceType.Questionnaire).reference
-      if (
-        !questionnaireConfig.resourceIdentifier.isNullOrBlank() &&
-          questionnaireConfig.resourceType != null
-      ) {
-        questionnaireResponse.subject =
-          questionnaireConfig.resourceIdentifier!!.asReference(
-            questionnaireConfig.resourceType!!,
-          )
-      }
-      if (questionnaireHasAnswer) {
-        questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
-        defaultRepository.addOrUpdate(
-          addMandatoryTags = true,
-          resource = questionnaireResponse,
+    val hasAnswer = questionnaireResponse.allItems.any { it.hasAnswer() }
+    questionnaireResponse.questionnaire =
+      questionnaireConfig.id.asReference(ResourceType.Questionnaire).reference
+    if (
+      !questionnaireConfig.resourceIdentifier.isNullOrBlank() &&
+        questionnaireConfig.resourceType != null
+    ) {
+      questionnaireResponse.subject =
+        questionnaireConfig.resourceIdentifier!!.asReference(
+          questionnaireConfig.resourceType!!,
         )
-      }
+    }
+    if (hasAnswer) {
+      questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
+      defaultRepository.addOrUpdate(
+        addMandatoryTags = true,
+        resource = questionnaireResponse,
+      )
     }
   }
 
@@ -1138,6 +1126,7 @@ constructor(
           !resourceIdentifier.isNullOrEmpty() &&
           (questionnaireConfig.isEditable() ||
             questionnaireConfig.isReadOnly() ||
+            questionnaireConfig.isSummary() ||
             questionnaireConfig.saveDraft)
       ) {
         defaultRepository

@@ -21,9 +21,11 @@ import android.database.SQLException
 import ca.uhn.fhir.context.ConfigurationException
 import ca.uhn.fhir.parser.DataFormatException
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
+import com.google.android.fhir.sync.SyncDataParams.LAST_UPDATED_KEY
 import com.google.android.fhir.sync.download.ResourceSearchParams
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.FileNotFoundException
@@ -46,6 +48,7 @@ import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
@@ -73,6 +76,7 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
+import org.smartregister.fhircore.engine.util.extension.toTimeZoneString
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import retrofit2.HttpException
@@ -334,24 +338,44 @@ constructor(
         }
       }
     } else {
-      composition.retrieveCompositionSections().forEach {
-        if (it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier()) {
-          val configIdentifier = it.focus.identifier.value
-          val referenceResourceType = it.focus.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
-          if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
-            val extractedId = it.focus.extractId()
-            try {
-              val configBinary = fhirEngine.get<Binary>(extractedId)
-              configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
-            } catch (resourceNotFoundException: ResourceNotFoundException) {
-              Timber.e("Missing Binary file with ID :$extractedId")
-              withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
-            }
+      composition.retrieveCompositionSections().forEach { sectionComponent ->
+        if (sectionComponent.hasFocus()) {
+          addBinaryToConfigsJsonMap(
+            sectionComponent.focus,
+            configsLoadedCallback,
+          )
+        }
+        if (sectionComponent.hasEntry() && sectionComponent.entry.isNotEmpty()) {
+          sectionComponent.entry.forEach { entryReference ->
+            addBinaryToConfigsJsonMap(
+              entryReference,
+              configsLoadedCallback,
+            )
           }
         }
       }
     }
     configsLoadedCallback(true)
+  }
+
+  private suspend fun addBinaryToConfigsJsonMap(
+    entryReference: Reference,
+    configsLoadedCallback: (Boolean) -> Unit,
+  ) {
+    if (entryReference.hasReferenceElement() && entryReference.hasIdentifier()) {
+      val configIdentifier = entryReference.identifier.value
+      val referenceResourceType = entryReference.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
+      if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
+        val extractedId = entryReference.extractId()
+        try {
+          val configBinary = fhirEngine.get<Binary>(extractedId.toString())
+          configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
+        } catch (resourceNotFoundException: ResourceNotFoundException) {
+          Timber.e("Missing Binary file with ID :$extractedId")
+          withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
+        }
+      }
+    }
   }
 
   private fun isAppConfig(referenceResourceType: String) =
@@ -411,41 +435,30 @@ constructor(
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val compositionResource = fetchRemoteCompositionByAppId(parsedAppId)
       compositionResource?.let { composition ->
-        composition
-          .retrieveCompositionSections()
-          .asSequence()
-          .filter { it.hasFocus() && it.focus.hasReferenceElement() }
-          .groupBy { section ->
-            section.focus.reference.substringBefore(
-              TYPE_REFERENCE_DELIMITER,
-              missingDelimiterValue = "",
-            )
+        val compositionSections = composition.retrieveCompositionSections()
+        val sectionComponentMap = mutableMapOf<String, MutableList<Composition.SectionComponent>>()
+        compositionSections.forEach { sectionComponent ->
+          if (sectionComponent.hasFocus() && sectionComponent.focus.hasReferenceElement()) {
+            val key =
+              sectionComponent.focus.reference.substringBefore(
+                delimiter = TYPE_REFERENCE_DELIMITER,
+                missingDelimiterValue = "",
+              )
+            sectionComponentMap.getOrPut(key) { mutableListOf() }.apply { add(sectionComponent) }
           }
-          .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
-          .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-            if (entry.key == ResourceType.List.name) {
-              processCompositionListResources(entry)
-            } else {
-              val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
-
-              chunkedResourceIdList.forEach { sectionComponents ->
-                Timber.d(
-                  "Fetching config resource ${entry.key}: with ids ${
-                                        sectionComponents.joinToString(
-                                            ",",
-                                        )
-                                    }",
+          if (sectionComponent.hasEntry() && sectionComponent.entry.isNotEmpty()) {
+            sectionComponent.entry.forEach {
+              val key =
+                it.reference.substringBefore(
+                  delimiter = TYPE_REFERENCE_DELIMITER,
+                  missingDelimiterValue = "",
                 )
-                fetchResources(
-                  resourceType = entry.key,
-                  resourceIdList =
-                    sectionComponents.map { sectionComponent ->
-                      sectionComponent.focus.extractId()
-                    },
-                )
-              }
+              sectionComponentMap.getOrPut(key) { mutableListOf() }.apply { add(sectionComponent) }
             }
           }
+        }
+
+        processCompositionSectionComponent(sectionComponentMap)
 
         // Save composition after fetching all the referenced section resources
         addOrUpdate(compositionResource)
@@ -453,6 +466,35 @@ constructor(
         Timber.d("Done saving composition resource")
       }
     }
+  }
+
+  private suspend fun processCompositionSectionComponent(
+    sectionComponentMap: Map<String, List<Composition.SectionComponent>>,
+  ) {
+    sectionComponentMap
+      .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
+      .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+        if (entry.key == ResourceType.List.name) {
+          processCompositionListResources(entry)
+        } else {
+          val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+
+          chunkedResourceIdList.forEach { sectionComponents ->
+            Timber.d(
+              "Fetching config resource ${entry.key}: with ids ${
+                                sectionComponents.joinToString(
+                                    ",",
+                                )
+                            }",
+            )
+            fetchResources(
+              resourceType = entry.key,
+              resourceIdList =
+                sectionComponents.map { sectionComponent -> sectionComponent.focus.extractId() },
+            )
+          }
+        }
+      }
   }
 
   suspend fun fetchRemoteImplementationGuideByAppId(
@@ -626,11 +668,27 @@ constructor(
    */
   suspend fun createOrUpdateRemote(vararg resources: Resource) {
     resources.onEach {
+      saveLastConfigUpdatedTimestamp(it)
       it.updateLastUpdated()
       it.generateMissingId()
     }
     fhirEngine.create(*resources, isLocalOnly = true)
   }
+
+  @VisibleForTesting
+  fun saveLastConfigUpdatedTimestamp(resource: Resource) {
+    sharedPreferencesHelper.write(
+      lastConfigUpdatedTimestampKey(
+        resource.resourceType.name.uppercase(),
+        resource.logicalId,
+      ),
+      resource.meta?.lastUpdated?.toTimeZoneString(),
+    )
+  }
+
+  @VisibleForTesting
+  fun lastConfigUpdatedTimestampKey(resourceType: String, resourceId: String) =
+    "${resourceType}_${resourceId}_${SharedPreferenceKey.LAST_CONFIG_SYNC_TIMESTAMP.name}"
 
   @VisibleForTesting fun isNonProxy(): Boolean = _isNonProxy
 
@@ -639,7 +697,8 @@ constructor(
     _isNonProxy = nonProxy
   }
 
-  private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
+  @VisibleForTesting
+  fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
     val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
 
     idList.forEach {
@@ -647,7 +706,7 @@ constructor(
         Bundle.BundleEntryComponent().apply {
           request =
             Bundle.BundleEntryRequestComponent().apply {
-              url = "$resourceType/$it"
+              url = "$resourceType?$ID=$it${getLastConfigUpdatedTimestampParam(resourceType, it)}"
               method = Bundle.HTTPVerb.GET
             }
         },
@@ -660,6 +719,15 @@ constructor(
     }
   }
 
+  @VisibleForTesting
+  fun getLastConfigUpdatedTimestampParam(resourceType: String, resourceId: String): String {
+    val timestamp =
+      sharedPreferencesHelper
+        .read(lastConfigUpdatedTimestampKey(resourceType.uppercase(), resourceId), "")
+        .orEmpty()
+    return if (timestamp.isNotEmpty()) "&$LAST_UPDATED_KEY=$GREATER_THAN_PREFIX$timestamp" else ""
+  }
+
   private suspend fun fhirResourceDataSourceGetBundle(
     resourceType: String,
     resourceIds: List<String>,
@@ -669,7 +737,11 @@ constructor(
       entry =
         resourceIds
           .map {
-            fhirResourceDataSource.getResource("$resourceType?${Composition.SP_RES_ID}=$it").entry
+            fhirResourceDataSource
+              .getResource(
+                "$resourceType?${Composition.SP_RES_ID}=$it${getLastConfigUpdatedTimestampParam(resourceType, it)}",
+              )
+              .entry
           }
           .flatten()
     }
@@ -796,6 +868,7 @@ constructor(
     const val PAGINATION_NEXT = "next"
     const val RESOURCES_PATH = "resources/"
     const val SYNC_LOCATION_IDS = "_syncLocations"
+    const val GREATER_THAN_PREFIX = "gt"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.
