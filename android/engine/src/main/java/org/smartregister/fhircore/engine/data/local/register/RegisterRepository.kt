@@ -201,20 +201,18 @@ constructor(
     repositoryResourceDataList: List<RepositoryResourceData>,
   ) {
     if (!secondaryResources.isNullOrEmpty()) {
-      val secondaryRepositoryResourceData = mutableListOf<RepositoryResourceData>()
-      secondaryResources.forEach { secondaryFhirResourceConfig ->
-        val result =
+      val secondaryRepositoryResourceData =
+        secondaryResources.flatMap { resourceConfig ->
           searchNestedResources(
             baseResourceIds = null,
-            fhirResourceConfig = secondaryFhirResourceConfig,
+            fhirResourceConfig = resourceConfig,
             configComputedRuleValues = configComputedRuleValues,
             activeResourceFilters = null,
             filterByRelatedEntityLocationMetaTag = false,
             currentPage = null,
-            pageSize = 1,
+            pageSize = null,
           )
-        secondaryRepositoryResourceData.addAll(result)
-      }
+        }
       repositoryResourceDataList.forEach { item ->
         item.secondaryRepositoryResourceData = secondaryRepositoryResourceData
       }
