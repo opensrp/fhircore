@@ -4,7 +4,7 @@ sidebar_label: Custom Endpoints
 
 # OpenSRP Custom Endpoints
 
-OpenSRP has developed custom endpoints to extend the functionality provided by HAPI and other FHIR servers. These endpoints address specific challenges faced during the development and deployment of OpenSRP's Mobile and Web clients. The two primary custom endpoints are:
+OpenSRP 2.0 has developed custom endpoints to extend the functionality provided by HAPI and other FHIR servers. These endpoints address specific challenges faced during the development and deployment of OpenSRP's Mobile and Web clients. The two primary custom endpoints are:
 
 - **`LocationHierarchy`**: Enhances location management by providing hierarchical structures and additional metadata for locations.
 - **`PractitionerDetail`**: Offers detailed information about practitioners, including roles, affiliations, and other relevant data.

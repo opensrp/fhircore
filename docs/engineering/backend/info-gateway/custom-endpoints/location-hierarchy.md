@@ -4,7 +4,7 @@ title: Location Hierarchy
 
 # OpenSRP Location Hierarchy Endpoint
 
-The OpenSRP Location Hierarchy endpoint is designed to efficiently retrieve and manage hierarchical location data within the OpenSRP system. The location hierarchy is defined by the `Location.partOf` property on the [Location resource](https://hl7.org/fhir/R4B/location.html) in the FHIR specification.
+The OpenSRP 2.0 Location Hierarchy endpoint is designed to efficiently retrieve and manage hierarchical location data within the OpenSRP system. The location hierarchy is defined by the `Location.partOf` property on the [Location resource](https://hl7.org/fhir/R4B/location.html) in the FHIR specification.
 
 ## 1. Data Retrieval Process
 
@@ -24,7 +24,8 @@ The endpoint is designed to return data in two formats: a tree (hierarchical) fo
 
 The LocationHierarchy endpoint supports two response formats: tree and list. By default, the response format remains a tree, providing hierarchical location data. In addition, clients can request the endpoint to return location resources in a flat list format by providing a request parameter `mode=list`.
 
-Example: `[GET] /LocationHierarchy?_id=<some-location-id>&mode=list&_count=<page-size>&_page=<page-number>&_sort=<some-sort>`
+Example: 
+```[GET] /LocationHierarchy?_id=<some-location-id>&mode=list&_count=<page-size>&_page=<page-number>&_sort=<some-sort>```
 
 
 #### LocationHierarchy Dynamic Identifier
@@ -38,7 +39,8 @@ The `LocationHierarchy` endpoint has the following supported functionalities whe
     - The deployment/app user should have the `ALL_LOCATIONS` role on Keycloak.
     - The request should have the `_syncLocations` parameter set.
 
-Example: `[GET] /LocationHierarchy?_syncLocations=<some-location-id>,<some-location-id>,<some-location-id>`
+Example: 
+```[GET] /LocationHierarchy?_syncLocations=<some-location-id>,<some-location-id>,<some-location-id>```
 
 All other valid parameters can be used on this endpoint.
 
@@ -56,7 +58,8 @@ The LocationHierarchy endpoint supports filtering by administrative levels. This
 - Only `administrativeLevelMax` Defined: The response will include all locations from the root down to the specified maximum administrative level.
 - Both Parameters Defined: The response will include locations only within the specified range of administrative levels.
 
-Example: `[GET] /LocationHierarchy?_id=<some-location-id>&administrativeLevelMin=2&administrativeLevelMax=4&_count=<page-size>&_page=<page-number>&_sort=<some-sort>`
+Example: 
+```[GET] /LocationHierarchy?_id=<some-location-id>&administrativeLevelMin=2&administrativeLevelMax=4&_count=<page-size>&_page=<page-number>&_sort=<some-sort>```
 
 
 #### Inventory Filters
@@ -66,7 +69,8 @@ The `LocationHierarchy` endpoint supports filtering by inventory availability, a
   - `filterInventory=true`: Only locations with inventories will be included in the response.
   - `filterInventory=false` (or not set): Locations with or without inventories will be returned. This effectively disables inventory-based filtering. The response will include all locations, regardless of their inventory status. Both locations with and without inventories will be returned.
 
-Example: `[GET] /LocationHierarchy?_id=<some-location-id>&filterInventory=true&_count=<page-size>&_page=<page-number>&_sort=<some-sort>`
+Example: 
+```[GET] /LocationHierarchy?_id=<some-location-id>&filterInventory=true&_count=<page-size>&_page=<page-number>&_sort=<some-sort>```
 
 
 #### LastUpdated Filters
@@ -77,11 +81,15 @@ The `LocationHierarchy` endpoint supports filtering by the last updated timestam
 
 Note: This filter only works when in list mode, i.e., `mode=list` is set as one of the parameters.
 
-Example: `[GET] /LocationHierarchy?_id=<some-location-id>&mode=list&_lastUpdated=2024-09-22T15%3A13%3A53.014%2B00%3A00&_count=<page-size>&_page=<page-number>&_sort=<some-sort>`
+Example: 
+```[GET] /LocationHierarchy?_id=<some-location-id>&mode=list&_lastUpdated=2024-09-22T15%3A13%3A53.014%2B00%3A00&_count=<page-size>&_page=<page-number>&_sort=<some-sort>```
 
 
 #### LocationHierarchy Summary Count
 
 The LocationHierarchy endpoint supports the `_summary=count` parameter. This allows users to retrieve the total number of matching resources without returning the resource data. This filter only works when in list mode, i.e., `mode=list` is set as one of the parameters.
 
-Example: `[GET] /LocationHierarchy?_id=<some-location-id>&mode=list&_summary=count`
+Example: 
+```[GET] /LocationHierarchy?_id=<some-location-id>&mode=list&_summary=count```
+
+## 2. Location Hierarchy Creation
