@@ -19,11 +19,13 @@ The endpoint is designed to return data in two formats: a tree (hierarchical) fo
 - `_summary` - This allows users to retrieve the total number of matching resources without returning the resource data. Example: `[GET] /LocationHierarchy?_id=<some-location-id>&mode=list&_summary=count`
 - `mode` - A parameter to switch between the two response formats. Example: `[GET] /LocationHierarchy?_id=<some-location-id>&mode=list`
 
+
 #### LocationHierarchy List Mode
 
 The LocationHierarchy endpoint supports two response formats: tree and list. By default, the response format remains a tree, providing hierarchical location data. In addition, clients can request the endpoint to return location resources in a flat list format by providing a request parameter `mode=list`.
 
 Example: `[GET] /LocationHierarchy?_id=<some-location-id>&mode=list&_count=<page-size>&_page=<page-number>&_sort=<some-sort>`
+
 
 #### LocationHierarchy Dynamic Identifier
 
@@ -31,15 +33,15 @@ The `LocationHierarchy` endpoint has the following supported functionalities whe
 
 - Build location hierarchies of the **_User Assigned Locations_**: The `LocationHierarchy` endpoint will build location hierarchies of all user-assigned locations. Example: `[GET] /LocationHierarchy`
 - Build location hierarchies of the **_User Selected Locations_**: The `LocationHierarchy` endpoint will build location hierarchies of the locations provided by the user via the `_syncLocations` parameter.
-
-##### Conditions for User Selected Location Hierarchies
-- The deployment/app user should have Related Entity Location as their sync strategy.
-- The deployment/app user should have the `ALL_LOCATIONS` role on Keycloak.
-- The request should have the `_syncLocations` parameter set.
+  - ##### Conditions for User Selected Location Hierarchies
+    - The deployment/app user should have Related Entity Location as their sync strategy.
+    - The deployment/app user should have the `ALL_LOCATIONS` role on Keycloak.
+    - The request should have the `_syncLocations` parameter set.
 
 Example: `[GET] /LocationHierarchy?_syncLocations=<some-location-id>,<some-location-id>,<some-location-id>`
 
 All other valid parameters can be used on this endpoint.
+
 
 #### LocationHierarchy Administrative Level Filters
 
@@ -56,6 +58,7 @@ The LocationHierarchy endpoint supports filtering by administrative levels. This
 
 Example: `[GET] /LocationHierarchy?_id=<some-location-id>&administrativeLevelMin=2&administrativeLevelMax=4&_count=<page-size>&_page=<page-number>&_sort=<some-sort>`
 
+
 #### Inventory Filters
 
 The `LocationHierarchy` endpoint supports filtering by inventory availability, allowing users to specify whether they want to retrieve only locations that have associated inventories. This filter can be particularly useful for narrowing down the results to locations that are actively involved in inventory management. The following search parameter is available:
@@ -64,6 +67,7 @@ The `LocationHierarchy` endpoint supports filtering by inventory availability, a
   - `filterInventory=false` (or not set): Locations with or without inventories will be returned. This effectively disables inventory-based filtering. The response will include all locations, regardless of their inventory status. Both locations with and without inventories will be returned.
 
 Example: `[GET] /LocationHierarchy?_id=<some-location-id>&filterInventory=true&_count=<page-size>&_page=<page-number>&_sort=<some-sort>`
+
 
 #### LastUpdated Filters
 
@@ -74,6 +78,7 @@ The `LocationHierarchy` endpoint supports filtering by the last updated timestam
 Note: This filter only works when in list mode, i.e., `mode=list` is set as one of the parameters.
 
 Example: `[GET] /LocationHierarchy?_id=<some-location-id>&mode=list&_lastUpdated=2024-09-22T15%3A13%3A53.014%2B00%3A00&_count=<page-size>&_page=<page-number>&_sort=<some-sort>`
+
 
 #### LocationHierarchy Summary Count
 
