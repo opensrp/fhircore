@@ -18,8 +18,6 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.content.Context
 import android.widget.Toast
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
@@ -134,7 +132,10 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
-  private val _questionnaireFormUpdateMutableStateflow = MutableStateFlow<QuestionnaireFormUpdate>(QuestionnaireFormUpdate.ShowQuestionnaireResponse(null))
+  private val _questionnaireFormUpdateMutableStateflow =
+    MutableStateFlow<QuestionnaireFormUpdate>(
+      QuestionnaireFormUpdate.ShowQuestionnaireResponse(null),
+    )
   val questionnaireFormUpdateStateflow: StateFlow<QuestionnaireFormUpdate>
     get() = _questionnaireFormUpdateMutableStateflow
 
@@ -662,8 +663,7 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     context: Context,
   ): Bundle =
-    kotlin
-      .runCatching {
+    runCatching {
         if (extractByStructureMap) {
           ResourceMapper.extract(
             questionnaire = questionnaire,
@@ -863,8 +863,7 @@ constructor(
   ) {
     questionnaireConfig.planDefinitions?.forEach { planId ->
       if (planId.isNotEmpty()) {
-        kotlin
-          .runCatching {
+        runCatching {
             val carePlan =
               fhirCarePlanGenerator.generateOrUpdateCarePlan(
                 planDefinitionId = planId,
@@ -1185,11 +1184,27 @@ constructor(
     }
 
   fun showSpeechToText() {
-    _questionnaireFormUpdateMutableStateflow.update { QuestionnaireFormUpdate.ShowSpeechToTextSubView }
+    _questionnaireFormUpdateMutableStateflow.update {
+      val questionnaireResponse =
+        when (it) {
+          is QuestionnaireFormUpdate.ShowQuestionnaireResponse -> it.newQuestionnaireResponse
+          is QuestionnaireFormUpdate.ShowSpeechToTextSubView -> it.currentQuestionnaireResponse
+        }
+      QuestionnaireFormUpdate.ShowSpeechToTextSubView(questionnaireResponse)
+    }
   }
 
   fun showQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse?) =
-    _questionnaireFormUpdateMutableStateflow.update { QuestionnaireFormUpdate.ShowQuestionnaireResponse(questionnaireResponse) }
+    _questionnaireFormUpdateMutableStateflow.update {
+      QuestionnaireFormUpdate.ShowQuestionnaireResponse(questionnaireResponse)
+    }
+
+  fun disableQuestionnaireItem(
+    questionnaireItemComponent: Questionnaire.QuestionnaireItemComponent,
+  ) {
+    questionnaireItemComponent.item.forEach { disableQuestionnaireItem(it) }
+    questionnaireItemComponent.readOnly = true
+  }
 
   companion object {
     const val CONTAINED_LIST_TITLE = "GeneratedResourcesList"
@@ -1198,7 +1213,9 @@ constructor(
 }
 
 sealed class QuestionnaireFormUpdate {
-  data object ShowSpeechToTextSubView: QuestionnaireFormUpdate()
+  data class ShowSpeechToTextSubView(val currentQuestionnaireResponse: QuestionnaireResponse?) :
+    QuestionnaireFormUpdate()
 
-  data class ShowQuestionnaireResponse(val newQuestionnaireResponse: QuestionnaireResponse?): QuestionnaireFormUpdate()
+  data class ShowQuestionnaireResponse(val newQuestionnaireResponse: QuestionnaireResponse?) :
+    QuestionnaireFormUpdate()
 }

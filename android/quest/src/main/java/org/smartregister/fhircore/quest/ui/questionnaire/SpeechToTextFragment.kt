@@ -36,7 +36,7 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
     val speechToTextView = view.findViewById<TextView>(R.id.speech_to_text_view)
     val stopButton = view.findViewById<View>(R.id.stop_button)
     stopButton.setOnClickListener {
-      viewModel.onNewQuestionnaireResponse(testQuestionnaireResponse())
+      viewModel.showQuestionnaireResponse(testQuestionnaireResponse())
     }
     speechToTextView.movementMethod = ScrollingMovementMethod()
 

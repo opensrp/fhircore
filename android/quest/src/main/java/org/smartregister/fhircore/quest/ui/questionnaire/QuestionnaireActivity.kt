@@ -66,7 +66,6 @@ import org.smartregister.fhircore.engine.util.location.LocationUtils
 import org.smartregister.fhircore.engine.util.location.PermissionUtils
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
-import org.smartregister.fhircore.quest.medintel.speech.validation.QuestionnaireResponseValidator
 import org.smartregister.fhircore.quest.ui.shared.ActivityOnResultType
 import org.smartregister.fhircore.quest.ui.shared.ON_RESULT_TYPE
 import org.smartregister.fhircore.quest.util.ResourceUtils
@@ -130,9 +129,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     viewBinding.clearAll.visibility =
       if (questionnaireConfig.showClearAll) View.VISIBLE else View.GONE
 
-    viewBinding.recordSpeechActionButton.setOnClickListener {
-      viewModel.showSpeechToText()
-    }
+    viewBinding.recordSpeechActionButton.setOnClickListener { viewModel.showSpeechToText() }
 
     if (savedInstanceState == null) {
       lifecycleScope.launch { launchQuestionnaire() }
@@ -233,8 +230,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     outState.clear()
   }
 
-  private fun showSpeechToTextFragment() {
-    viewBinding.speechToTextContainer.visibility = View.VISIBLE
+  private fun renderSpeechToTextFragment() {
     supportFragmentManager.commit {
       setReorderingAllowed(true)
       replace(R.id.speechToTextContainer, SpeechToTextFragment(), SpeechToText_FRAGMENT_TAG)
@@ -266,39 +262,66 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
     showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
 
-    viewModel.questionnaireFormUpdateStateflow.observe(this@QuestionnaireActivity) {
-      newQuestionnaireResponse ->
-      lifecycleScope.launch {
-        launchQuestionnaire(
-          questionnaire,
-          newQuestionnaireResponse,
-          launchContextResources,
-          validateQuestionnaireResponseForPopulation = false,
-        )
+    val handler = Handler(Looper.getMainLooper())
+    viewModel.questionnaireFormUpdateStateflow.collect {
+      when (it) {
+        is QuestionnaireFormUpdate.ShowSpeechToTextSubView -> {
+          viewBinding.recordSpeechActionButton.visibility = View.GONE
+          viewBinding.speechToTextContainer.visibility = View.VISIBLE
+          renderSpeechToTextFragment()
+          val disabledQuestionnaire =
+            questionnaire.copy().apply { item.forEach(viewModel::disableQuestionnaireItem) }
+
+          renderQuestionnaire(
+            disabledQuestionnaire,
+            it.currentQuestionnaireResponse,
+            launchContextResources,
+          )
+
+          // Disable form buttons - very hacky
+          handler.postDelayed(
+            {
+              supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG)?.view?.let {
+                fragmentView ->
+                fragmentView
+                  .findViewById<View>(com.google.android.fhir.datacapture.R.id.submit_questionnaire)
+                  ?.isEnabled = false
+                fragmentView
+                  .findViewById<View>(com.google.android.fhir.datacapture.R.id.cancel_questionnaire)
+                  ?.isEnabled = false
+                fragmentView
+                  .findViewById<View>(
+                    com.google.android.fhir.datacapture.R.id.pagination_previous_button,
+                  )
+                  ?.isEnabled = false
+                fragmentView
+                  .findViewById<View>(
+                    com.google.android.fhir.datacapture.R.id.pagination_next_button,
+                  )
+                  ?.isEnabled = false
+              }
+            },
+            200,
+          )
+        }
+        is QuestionnaireFormUpdate.ShowQuestionnaireResponse -> {
+          viewBinding.speechToTextContainer.visibility = View.GONE
+          try {
+            renderQuestionnaire(
+              questionnaire,
+              it.newQuestionnaireResponse,
+              launchContextResources,
+            )
+            handler.postDelayed(
+              { viewBinding.recordSpeechActionButton.visibility = View.VISIBLE },
+              200,
+            )
+          } catch (e: IllegalArgumentException) {
+            Timber.e(e)
+            showToast(e.message.toString())
+          }
+        }
       }
-    }
-  }
-
-  private suspend fun launchQuestionnaire(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse?,
-    launchContextResources: List<Resource>,
-    validateQuestionnaireResponseForPopulation: Boolean,
-  ) {
-    showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(true))
-    viewBinding.speechToTextContainer.visibility = View.GONE
-
-    try {
-      renderQuestionnaire(
-        questionnaire,
-        questionnaireResponse,
-        launchContextResources,
-        validateQuestionnaireResponseForPopulation,
-      )
-    } catch (e: IllegalArgumentException) {
-      showToast(e.message.toString())
-    } finally {
-      showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
     }
   }
 
@@ -306,7 +329,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse?,
     launchContextResources: List<Resource>,
-    validateQuestionnaireResponseForPopulation: Boolean = true,
   ) {
     val questionnaireFragment =
       getQuestionnaireFragmentBuilder(
@@ -314,7 +336,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           questionnaireConfig,
           questionnaireResponse,
           launchContextResources,
-          validateQuestionnaireResponseForPopulation,
         )
         .build()
     viewBinding.clearAll.setOnClickListener { questionnaireFragment.clearAllAnswers() }
@@ -322,9 +343,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       setReorderingAllowed(true)
       replace(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
     }
-
-    Handler(Looper.getMainLooper())
-      .postDelayed({ viewBinding.recordSpeechActionButton.visibility = View.VISIBLE }, 500)
 
     registerFragmentResultListener(questionnaire)
   }
@@ -334,7 +352,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     questionnaireConfig: QuestionnaireConfig,
     questionnaireResponse: QuestionnaireResponse?,
     launchContextResources: List<Resource>,
-    validateQuestionnaireResponseForPopulation: Boolean,
   ): QuestionnaireFragment.Builder {
     return QuestionnaireFragment.builder()
       .setQuestionnaire(questionnaire.json())
@@ -350,17 +367,18 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       .setShowSubmitAnywayButton(questionnaireConfig.showSubmitAnywayButton.toBooleanStrict())
       .apply {
         if (questionnaireResponse != null) {
-          questionnaireResponse
-            .takeIf {
-              !validateQuestionnaireResponseForPopulation ||
-                QuestionnaireResponseValidator.validateQuestionnaireResponse(
-                  questionnaire,
-                  it,
-                  this@QuestionnaireActivity,
-                )
-            }
-            ?.let { setQuestionnaireResponse(it.json()) }
-            ?: showToast(getString(R.string.error_populating_questionnaire))
+          //          questionnaireResponse
+          //            .takeIf {
+          //              QuestionnaireResponseValidator.validateQuestionnaireResponse(
+          //                questionnaire,
+          //                it,
+          //                this@QuestionnaireActivity,
+          //              )
+          //            }
+          //            ?.let {
+          setQuestionnaireResponse(questionnaireResponse.json())
+          //            }
+          //            ?: showToast(getString(R.string.error_populating_questionnaire))
         }
 
         launchContextResources
