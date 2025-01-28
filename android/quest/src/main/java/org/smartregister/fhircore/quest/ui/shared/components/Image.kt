@@ -79,14 +79,11 @@ fun Image(
   decodeImage: ((String) -> Bitmap?)?,
 ) {
   val imageConfig = imageProperties.imageConfig
-  val colorTint = tint
-    ?: imageProperties.tint
-      ?.takeIf { it.isNotEmpty() }
-      ?.parseColor()
-    ?: imageProperties.imageConfig
-      ?.color
-      ?.parseColor()
-    ?: Color.White // Default color
+  val colorTint =
+    tint
+      ?: imageProperties.tint?.takeIf { it.isNotEmpty() }?.parseColor()
+      ?: imageProperties.imageConfig?.color?.parseColor()
+      ?: Color.White // Default color
   val context = LocalContext.current
   if (imageConfig != null) {
     if (imageProperties.text != null) {
