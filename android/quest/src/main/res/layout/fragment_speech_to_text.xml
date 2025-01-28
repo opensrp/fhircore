@@ -65,6 +65,17 @@
                     android:textAllCaps="false"
                     tools:visibility="gone" />
 
+                <Button
+                    android:id="@+id/start_button"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center"
+                    android:text="@string/start_action_text"
+                    android:textAllCaps="false"
+                    tools:visibility="gone" />
+
             </FrameLayout>
 
             <Button

@@ -51,6 +51,24 @@ object TextToForm {
     llmModel: LlmModel<T>,
   ): QuestionnaireResponse {
     val transcript = transcriptFile.readText()
+    return generateQuestionnaireResponse(transcript, questionnaire, context, llmModel)
+  }
+
+  /**
+   * Generates an HL7 FHIR QuestionnaireResponse from a transcript using the provided Questionnaire.
+   * Includes retry logic if the response is invalid.
+   *
+   * @param transcript The transcript text.
+   * @param questionnaire The FHIR Questionnaire to base the response on.
+   * @return The generated and validated QuestionnaireResponse or null if generation fails after
+   *   retry.
+   */
+  suspend fun <T> generateQuestionnaireResponse(
+    transcript: String,
+    questionnaire: Questionnaire,
+    context: Context,
+    llmModel: LlmModel<T>,
+  ): QuestionnaireResponse {
     var retryCount = 0
     var questionnaireResponse = QuestionnaireResponse()
     var prompt = promptTemplate(transcript, questionnaire)
@@ -58,7 +76,7 @@ object TextToForm {
 
     do {
       Timber.i("Sending request to Gemini...")
-      val generatedText = llmModel.generateContent(prompt)
+      val generatedText = withContext(Dispatchers.IO) { llmModel.generateContent(prompt) }
       val errors: List<String>
       val questionnaireResponseJson = extractJsonBlock(generatedText)
 

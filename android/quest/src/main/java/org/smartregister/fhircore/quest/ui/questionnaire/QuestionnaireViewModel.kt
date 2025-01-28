@@ -141,6 +141,14 @@ constructor(
 
   var uniqueIdResource: Resource? = null
 
+  lateinit var currentQuestionnaire: Questionnaire
+    private set
+
+  fun setQuestionnaire(questionnaire: Questionnaire) {
+    currentQuestionnaire = questionnaire
+    currentQuestionnaire.url = "Questionnaire/${currentQuestionnaire.logicalId}"
+  }
+
   /**
    * This function retrieves the [Questionnaire] as configured via the [QuestionnaireConfig]. The
    * retrieved [Questionnaire] can then be pre-populated.

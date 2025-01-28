@@ -38,7 +38,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
@@ -292,18 +291,22 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       showToast(subjectRequiredMessage)
       Timber.e(subjectRequiredMessage)
       finish()
+      return
     }
-
-    questionnaire.url = "Questionnaire/${questionnaire.logicalId}"
+    viewModel.setQuestionnaire(questionnaire)
 
     val (questionnaireResponse, launchContextResources) =
-      viewModel.populateQuestionnaire(questionnaire, questionnaireConfig, actionParameters)
+      viewModel.populateQuestionnaire(
+        viewModel.currentQuestionnaire,
+        questionnaireConfig,
+        actionParameters,
+      )
 
     viewModel.showQuestionnaireResponse(questionnaireResponse)
 
     showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
 
-    listenForQuestionnaireFormUpdates(questionnaire, launchContextResources)
+    listenForQuestionnaireFormUpdates(viewModel.currentQuestionnaire, launchContextResources)
   }
 
   private suspend fun listenForQuestionnaireFormUpdates(
