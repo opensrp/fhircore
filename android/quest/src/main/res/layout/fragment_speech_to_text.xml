@@ -6,71 +6,119 @@
     android:layout_height="match_parent"
     tools:background="@color/backgroundGray">
 
-    <TextView
-        android:id="@+id/speech_to_text_view"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/speech_to_text_input_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:gravity="center_horizontal|bottom"
-        android:paddingBottom="@dimen/action_button_margin_vertical"
-        tools:text="Text Time Waster"
-        android:textSize="28sp"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_action_layout"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/bottom_action_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
-        <FrameLayout
-            android:id="@+id/pause_resume_group"
+        <TextView
+            android:id="@+id/speech_to_text_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:gravity="center_horizontal|bottom"
+            android:paddingBottom="@dimen/action_button_margin_vertical"
+            android:textSize="32sp"
+            app:layout_constraintBottom_toTopOf="@+id/bottom_action_layout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Text Time Waster" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottom_action_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:padding="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintStart_toStartOf="parent">
+
+            <FrameLayout
+                android:id="@+id/pause_resume_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <Button
+                    android:id="@+id/pause_button"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center"
+                    android:text="@string/pause_action_text"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/resume_button"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center"
+                    android:text="@string/resume_action_text"
+                    android:textAllCaps="false"
+                    tools:visibility="gone" />
+
+            </FrameLayout>
 
             <Button
-                android:id="@+id/pause_button"
+                android:id="@+id/stop_button"
                 style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center"
-                android:text="@string/pause_action_text"
-                android:textAllCaps="false" />
-
-            <Button
-                android:id="@+id/resume_button"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center"
-                android:text="@string/resume_action_text"
+                android:layout_marginStart="@dimen/action_button_margin_horizontal"
+                android:text="@string/stop_action_text"
                 android:textAllCaps="false"
-                tools:visibility="gone" />
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/pause_resume_group"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        </FrameLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <Button
-            android:id="@+id/stop_button"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/processing_progress_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible">
+
+        <TextView
+            android:id="@+id/processing_text_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/action_button_margin_horizontal"
-            android:text="@string/stop_action_text"
-            android:textAllCaps="false"
+            android:gravity="center"
+            android:text="@string/processing"
+            android:textSize="32sp"
+            android:fontFamily="sans-serif-condensed-light"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/pause_resume_group"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.48"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <TextView
+            android:id="@+id/progress_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="32sp"
+            android:fontFamily="sans-serif-condensed-light"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/processing_text_view"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="..." />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
