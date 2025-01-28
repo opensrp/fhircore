@@ -541,7 +541,7 @@ class RulesEngineServiceTest : RobolectricTest() {
   }
 
   @Test
-  fun testGetResourceByIdAndTypeReturnsResourceWhenReferenceIsValid() = runTest {
+  fun testGetResourceByIdAndTypeReturnsNullWhenResourceIdAndTypeAreValid() = runTest {
     val expectedResource = Patient().apply { id = "uuid" }
 
     coEvery {
