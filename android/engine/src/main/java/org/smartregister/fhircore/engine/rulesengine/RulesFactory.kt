@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.rulesengine
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.extensions.logicalId
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Order
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
@@ -779,25 +780,35 @@ constructor(
     }
 
     fun getResourceByReference(
-      resourceReference: String,
+      resourceReference: String?,
     ): Resource? {
+      if (resourceReference.isNullOrEmpty()) {
+        return null
+      }
+
       return runBlocking(dispatcherProvider.io()) {
-        runCatching {
-            defaultRepository.loadResource(Reference().apply { reference = resourceReference })
-          }
-          .getOrNull()
+        try {
+          defaultRepository.loadResource(Reference().apply { reference = resourceReference })
+        } catch (e: ResourceNotFoundException) {
+          null
+        }
       }
     }
 
-    fun getResourceByResourceId(
-      resourceType: String,
-      resourceId: String,
+    fun getResourceByIdAndType(
+      resourceId: String?,
+      resourceType: String?,
     ): Resource? {
+      if (resourceId.isNullOrEmpty() || resourceType.isNullOrEmpty()) {
+        return null
+      }
+
       return runBlocking(dispatcherProvider.io()) {
-        runCatching {
-            defaultRepository.loadResource(resourceId, ResourceType.valueOf(resourceType))
-          }
-          .getOrNull()
+        try {
+          defaultRepository.loadResource(resourceId, ResourceType.valueOf(resourceType))
+        } catch (e: ResourceNotFoundException) {
+          null
+        }
       }
     }
   }
