@@ -1194,6 +1194,17 @@ constructor(
     }
   }
 
+  fun hideSpeechToText() {
+    _questionnaireFormUpdateMutableStateflow.update {
+      val questionnaireResponse =
+        when (it) {
+          is QuestionnaireFormUpdate.ShowQuestionnaireResponse -> it.newQuestionnaireResponse
+          is QuestionnaireFormUpdate.ShowSpeechToTextSubView -> it.currentQuestionnaireResponse
+        }
+      QuestionnaireFormUpdate.ShowQuestionnaireResponse(questionnaireResponse)
+    }
+  }
+
   fun showQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse?) =
     _questionnaireFormUpdateMutableStateflow.update {
       QuestionnaireFormUpdate.ShowQuestionnaireResponse(questionnaireResponse)

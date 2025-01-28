@@ -33,6 +33,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
@@ -106,6 +107,21 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       }
     }
 
+  private val recordAudioRequestPermissionLauncher =
+    registerForActivityResult(
+      ActivityResultContracts.RequestPermission(),
+    ) {
+      if (it) {
+        viewModel.showSpeechToText()
+      } else {
+        viewModel.hideSpeechToText()
+        showToast(
+          getString(R.string.record_audio_denied),
+          Toast.LENGTH_SHORT,
+        )
+      }
+    }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -129,7 +145,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     viewBinding.clearAll.visibility =
       if (questionnaireConfig.showClearAll) View.VISIBLE else View.GONE
 
-    viewBinding.recordSpeechActionButton.setOnClickListener { viewModel.showSpeechToText() }
+    viewBinding.recordSpeechActionButton.setOnClickListener {
+      reviewRecordAudioPermissionToLaunchSpeechToText()
+    }
 
     if (savedInstanceState == null) {
       lifecycleScope.launch { launchQuestionnaire() }
@@ -145,6 +163,29 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         }
       },
     )
+  }
+
+  private fun reviewRecordAudioPermissionToLaunchSpeechToText() {
+    when {
+      PermissionUtils.checkPermissions(
+        this@QuestionnaireActivity,
+        listOf(Manifest.permission.RECORD_AUDIO),
+      ) -> {
+        viewModel.showSpeechToText()
+      }
+      ActivityCompat.shouldShowRequestPermissionRationale(
+        this,
+        Manifest.permission.RECORD_AUDIO,
+      ) -> {
+        showToast(
+          getString(R.string.record_audio_denied),
+          Toast.LENGTH_SHORT,
+        )
+      }
+      else -> {
+        recordAudioRequestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+      }
+    }
   }
 
   private fun showProgressDialog(progressState: QuestionnaireProgressState?) {
@@ -262,6 +303,13 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
     showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
 
+    listenForQuestionnaireFormUpdates(questionnaire, launchContextResources)
+  }
+
+  private suspend fun listenForQuestionnaireFormUpdates(
+    questionnaire: Questionnaire,
+    launchContextResources: List<Resource>,
+  ) {
     val handler = Handler(Looper.getMainLooper())
     viewModel.questionnaireFormUpdateStateflow.collect {
       when (it) {
