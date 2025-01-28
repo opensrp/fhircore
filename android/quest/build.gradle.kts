@@ -497,7 +497,11 @@ dependencies {
   }
   implementation(libs.generativeai)
   implementation(libs.grpc.okhttp) { exclude("com.google.guava", "guava") }
-  implementation(libs.tasks.genai)
+  implementation(libs.tasks.genai) {
+    // exclude to use the full version required for com.google.cloud:google-cloud-speech
+    // https://github.com/protocolbuffers/protobuf/blob/main/java/lite.md
+    exclude("com.google.protobuf", "protobuf-javalite")
+  }
 
   // Annotation processors
   kapt(libs.hilt.compiler)
