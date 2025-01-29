@@ -20,6 +20,7 @@ import android.content.Context
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.download.ResourceSearchParams
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -104,5 +105,9 @@ constructor(
     val (_, resourceSearchParams) = configurationRegistry.loadResourceSearchParams()
     Timber.i("FHIR resource sync parameters $resourceSearchParams")
     return resourceSearchParams
+  }
+
+  fun emitSyncStatus(currentSyncJobStatus: CurrentSyncJobStatus) {
+    _onSyncListeners.forEach { it.get()?.onSync(currentSyncJobStatus) }
   }
 }

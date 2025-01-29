@@ -57,6 +57,7 @@ constructor(
   private val openSrpFhirEngine: FhirEngine,
   private val appTimeStampContext: AppTimeStampContext,
   private val configService: ConfigService,
+  private val customResourceSyncService: CustomResourceSyncService,
 ) : FhirSyncWorker(appContext, workerParams), OnSyncListener {
   private val notificationManager =
     appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -76,6 +77,7 @@ constructor(
   override suspend fun doWork(): Result {
     saveSyncStartTimestamp()
     setForeground(getForegroundInfo())
+    customResourceSyncService.runCustomResourceSync()
     return super.doWork()
   }
 

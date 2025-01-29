@@ -51,7 +51,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
-import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.AlertDialogButton
@@ -211,21 +210,9 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
   }
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
-    onSync(syncJobStatus, isCustomSync = false)
-  }
-
-  private fun onSync(syncJobStatus: CurrentSyncJobStatus, isCustomSync: Boolean) {
     when (syncJobStatus) {
       is CurrentSyncJobStatus.Running -> {
-        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
-          lifecycleScope.launch {
-            if (isCustomSync) {
-              geoWidgetLauncherViewModel.emitSnackBarState(
-                SnackBarMessageConfig(message = getString(R.string.syncing_custom_resources_toast)),
-              )
-            }
-          }
-        } else {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
           val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
           val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
           val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
@@ -256,11 +243,6 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
     super.onViewCreated(view, savedInstanceState)
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
-        launch {
-          configurationRegistry.syncState
-            .onEach { syncJobStatus -> onSync(syncJobStatus, true) }
-            .launchIn(this)
-        }
         launch {
           eventBus.events
             .getFor(MainNavigationScreen.GeoWidgetLauncher.eventId(navArgs.geoWidgetId))

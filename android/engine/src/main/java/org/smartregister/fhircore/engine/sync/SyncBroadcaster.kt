@@ -20,7 +20,6 @@ import android.content.Context
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.BackoffCriteria
@@ -74,19 +73,6 @@ constructor(
   suspend fun runOneTimeSync(): Unit = coroutineScope {
     Timber.i("Running one time sync...")
     Sync.oneTimeSync<AppSyncWorker>(context).handleOneTimeSyncJobStatus(this)
-
-    workManager.enqueue(
-      OneTimeWorkRequestBuilder<CustomSyncWorker>()
-        .setConstraints(
-          Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
-        )
-        .setBackoffCriteria(
-          BackoffPolicy.LINEAR,
-          10,
-          TimeUnit.SECONDS,
-        )
-        .build(),
-    )
   }
 
   /**

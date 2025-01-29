@@ -59,7 +59,6 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
-import org.smartregister.fhircore.engine.sync.CustomSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
@@ -237,12 +236,10 @@ constructor(
         }
       }
       is AppMainEvent.CancelSyncData -> {
-        viewModelScope.launch {
-          workManager.cancelUniqueWork(
-            "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
-          )
-          updateAppDrawerUIState(currentSyncJobStatus = CurrentSyncJobStatus.Cancelled)
-        }
+        workManager.cancelUniqueWork(
+          "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
+        )
+        updateAppDrawerUIState(currentSyncJobStatus = CurrentSyncJobStatus.Cancelled)
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
@@ -466,12 +463,6 @@ constructor(
         duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
         requiresNetwork = false,
         initialDelay = INITIAL_DELAY,
-      )
-
-      schedulePeriodically<CustomSyncWorker>(
-        workId = CustomSyncWorker.WORK_ID,
-        repeatInterval = applicationConfiguration.syncInterval,
-        initialDelay = 0,
       )
 
       measureReportConfigurations.forEach { measureReportConfig ->
