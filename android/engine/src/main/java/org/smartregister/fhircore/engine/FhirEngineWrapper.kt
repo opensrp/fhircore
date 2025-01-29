@@ -32,53 +32,53 @@ import org.hl7.fhir.r4.model.ResourceType
 
 class FhirEngineWrapper(fhirEngineProducer: () -> FhirEngine) : FhirEngine {
 
-  private val fhirEngine by lazy {
+  private val mFhirEngine by lazy {
     return@lazy fhirEngineProducer.invoke()
   }
 
-  override suspend fun clearDatabase() = fhirEngine.clearDatabase()
+  override suspend fun clearDatabase() = mFhirEngine.clearDatabase()
 
-  override suspend fun count(search: Search): Long = fhirEngine.count(search)
+  override suspend fun count(search: Search): Long = mFhirEngine.count(search)
 
   override suspend fun create(vararg resource: Resource, isLocalOnly: Boolean): List<String> =
-    fhirEngine.create(*resource, isLocalOnly = isLocalOnly)
+    mFhirEngine.create(*resource, isLocalOnly = isLocalOnly)
 
-  override suspend fun delete(type: ResourceType, id: String) = fhirEngine.delete(type, id)
+  override suspend fun delete(type: ResourceType, id: String) = mFhirEngine.delete(type, id)
 
-  override suspend fun get(type: ResourceType, id: String): Resource = fhirEngine.get(type, id)
+  override suspend fun get(type: ResourceType, id: String): Resource = mFhirEngine.get(type, id)
 
-  override suspend fun getLastSyncTimeStamp(): OffsetDateTime? = fhirEngine.getLastSyncTimeStamp()
+  override suspend fun getLastSyncTimeStamp(): OffsetDateTime? = mFhirEngine.getLastSyncTimeStamp()
 
   override suspend fun getLocalChanges(type: ResourceType, id: String): List<LocalChange> =
-    fhirEngine.getLocalChanges(type, id)
+    mFhirEngine.getLocalChanges(type, id)
 
   override suspend fun getUnsyncedLocalChanges(): List<LocalChange> =
-    fhirEngine.getUnsyncedLocalChanges()
+    mFhirEngine.getUnsyncedLocalChanges()
 
   override suspend fun purge(type: ResourceType, id: String, forcePurge: Boolean) =
-    fhirEngine.purge(type, id, forcePurge)
+    mFhirEngine.purge(type, id, forcePurge)
 
   override suspend fun purge(type: ResourceType, ids: Set<String>, forcePurge: Boolean) =
-    fhirEngine.purge(type, ids)
+    mFhirEngine.purge(type, ids)
 
   override suspend fun <R : Resource> search(search: Search): List<SearchResult<R>> =
-    fhirEngine.search<R>(search)
+    mFhirEngine.search<R>(search)
 
   @Deprecated("To be deprecated.")
   override suspend fun syncDownload(
     conflictResolver: ConflictResolver,
     download: suspend () -> Flow<List<Resource>>,
-  ) = fhirEngine.syncDownload(conflictResolver, download)
+  ) = mFhirEngine.syncDownload(conflictResolver, download)
 
   @Deprecated("To be deprecated.")
   override suspend fun syncUpload(
     uploadStrategy: UploadStrategy,
     upload:
       suspend (List<LocalChange>, List<LocalChangeResourceReference>) -> Flow<UploadRequestResult>,
-  ): Flow<SyncUploadProgress> = fhirEngine.syncUpload(uploadStrategy, upload)
+  ): Flow<SyncUploadProgress> = mFhirEngine.syncUpload(uploadStrategy, upload)
 
-  override suspend fun update(vararg resource: Resource) = fhirEngine.update(*resource)
+  override suspend fun update(vararg resource: Resource) = mFhirEngine.update(*resource)
 
   override suspend fun withTransaction(block: suspend FhirEngine.() -> Unit) =
-    fhirEngine.withTransaction(block)
+    mFhirEngine.withTransaction(block)
 }
