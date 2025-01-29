@@ -148,6 +148,8 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       reviewRecordAudioPermissionToLaunchSpeechToText()
     }
 
+    viewBinding.editFormActionButton.setOnClickListener { viewModel.hideSpeechToText() }
+
     if (savedInstanceState == null) {
       lifecycleScope.launch { launchQuestionnaire() }
     }
@@ -318,6 +320,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       when (it) {
         is QuestionnaireFormUpdate.ShowSpeechToTextSubView -> {
           viewBinding.recordSpeechActionButton.visibility = View.GONE
+          viewBinding.editFormActionButton.visibility = View.VISIBLE
           viewBinding.speechToTextContainer.visibility = View.VISIBLE
           renderSpeechToTextFragment()
           val disabledQuestionnaire =
@@ -357,6 +360,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         }
         is QuestionnaireFormUpdate.ShowQuestionnaireResponse -> {
           viewBinding.speechToTextContainer.visibility = View.GONE
+          viewBinding.editFormActionButton.visibility = View.GONE
           try {
             renderQuestionnaire(
               questionnaire,

@@ -20,17 +20,21 @@ import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import java.io.IOException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.medintel.speech.speechtoform.TextToForm
+import timber.log.Timber
 
 class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
 
@@ -38,8 +42,9 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
   private val viewModel by viewModels<SpeechToTextViewModel>()
 
   private lateinit var speechInputContainer: View
-  private lateinit var speechToTextView: TextView
+  private lateinit var speechToEditText: EditText
   private lateinit var processingProgressView: View
+  private lateinit var listeningProgressView: View
   private lateinit var progressTextView: TextView
   private lateinit var stopButton: View
   private lateinit var resumeButton: Button
@@ -51,14 +56,16 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     speechInputContainer = view.findViewById<View>(R.id.speech_to_text_input_container)
-    speechToTextView = view.findViewById<TextView>(R.id.speech_to_text_view)
+    speechToEditText = view.findViewById<EditText>(R.id.speech_to_text_view)
     processingProgressView = view.findViewById<View>(R.id.processing_progress_view)
     progressTextView = view.findViewById<TextView>(R.id.progress_text_view)
+    listeningProgressView = view.findViewById<TextView>(R.id.listening_view)
     stopButton = view.findViewById<View>(R.id.stop_button)
     startButton = view.findViewById<Button>(R.id.start_button)
     resumeButton = view.findViewById<Button>(R.id.resume_button)
     pauseButton = view.findViewById<Button>(R.id.pause_button)
-    speechToTextView.movementMethod = ScrollingMovementMethod()
+
+    speechToEditText.movementMethod = ScrollingMovementMethod()
 
     startButton.setOnClickListener { startRecording() }
     resumeButton.setOnClickListener { resumeRecording() }
@@ -81,7 +88,11 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
     }
 
     lifecycleScope.launch {
-      viewModel.speechTranscriptTextStateFlow.collect { speechToTextView.text = it }
+      viewModel.speechTranscriptTextStateFlow.collect {
+        listeningProgressView.visibility = if (it.isBlank()) View.VISIBLE else View.GONE
+        speechInputContainer.visibility = if (it.isNotBlank()) View.VISIBLE else View.GONE
+        speechToEditText.setText(it)
+      }
     }
 
     lifecycleScope.launch {
@@ -107,6 +118,10 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
         }
       }
     }
+
+    //    viewModel.setTranscriptText(getString(R.string.test_speech_text).trimIndent())
+    viewModel.setTranscriptText("Yellow")
+    startRecording()
   }
 
   private fun renderProcessingProgressView(): Job {
@@ -138,6 +153,7 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
 
   private fun startRecording() {
     viewModel.resetTranscript()
+    viewModel.onRecordingStarted()
   }
 
   private fun resumeRecording() {}
@@ -152,7 +168,7 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
 
   private fun processTranscriptRecorded() {
     lifecycleScope.launch {
-      speechToTextView.text
+      speechToEditText.text
         .toString()
         .takeIf { it.isNotBlank() }
         ?.let { processTranscriptQuestionnaireResponse(it) }
@@ -161,14 +177,20 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
 
   private suspend fun processTranscriptQuestionnaireResponse(transcript: String) {
     viewModel.showProcessingProgress()
-    val result =
-      TextToForm.generateQuestionnaireResponse(
-        transcript,
-        parentViewModel.currentQuestionnaire,
-        requireActivity(),
-        viewModel.geminiModel,
-      )
-    viewModel.hideProcessingProgress()
-    parentViewModel.showQuestionnaireResponse(result)
+    try {
+      val result =
+        TextToForm.generateQuestionnaireResponse(
+          transcript,
+          parentViewModel.currentQuestionnaire,
+          requireActivity(),
+          viewModel.geminiModel,
+        )
+      parentViewModel.showQuestionnaireResponse(result)
+    } catch (e: IOException) {
+      Timber.e(e)
+      requireContext().showToast(e.message.toString())
+    } finally {
+      viewModel.hideProcessingProgress()
+    }
   }
 }

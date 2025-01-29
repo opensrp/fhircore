@@ -37,13 +37,6 @@ class SpeechToTextViewModel : ViewModel() {
   val recordingStateFlow: StateFlow<RecordingState>
     get() = _recordingStateMutableStateFlow
 
-  init {
-    viewModelScope.launch {
-      delay(2800)
-      appendToTranscript(speech)
-    }
-  }
-
   private val _showProcessingProgressMutableStateFlow = MutableStateFlow(false)
   val showProcessingProgressStateFlow: StateFlow<Boolean>
     get() = _showProcessingProgressMutableStateFlow
@@ -60,50 +53,12 @@ class SpeechToTextViewModel : ViewModel() {
     _speechTranscriptTextMutableStateFlow.update { "" }
   }
 
-  private val speech: String =
-    """
-    let's start with your patient information.  What is your NHS number?
-
-    12345
-
-    And your full name, please?
-
-    John Doe Smith
-
-    What's your date of birth?
-
-    March 15th, 1985.
-
-    And your age?
-
-    39.
-
-    What is your gender?
-
-    Male.
-
-    What is your National ID number?
-
-    I’m not sure that’s something I can give out.
-
-    Is this for the patient portal?
-
-    Yes.
-
-    Then it’s fine.  It’s 1234567890.
-
-    And finally, your phone number?
-
-    0123456789
-
-    Great, thanks.  Now, regarding your location, we need to record some details. Your home address is at 34.0522 latitude and -118.2437 longitude. Is that correct?
-
-    Yes, that's correct.  The address is also associated with Location 678 in our records.  I also have a care location, Location 910, and my workplace is at Location 1112.
-
-    Excellent, thank you for confirming that information.
-
-    """
-      .trimIndent()
+  fun setTranscriptText(text: String) {
+    viewModelScope.launch {
+      delay(2800)
+      appendToTranscript(text)
+    }
+  }
 
   fun onRecordingStarted() = _recordingStateMutableStateFlow.update { RecordingState.STARTED }
 

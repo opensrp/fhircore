@@ -13,17 +13,21 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
+        <EditText
             android:id="@+id/speech_to_text_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:gravity="center_horizontal|bottom"
+            android:importantForAutofill="noExcludeDescendants"
+            android:inputType="textMultiLine"
             android:paddingBottom="@dimen/action_button_margin_vertical"
-            android:textSize="32sp"
+            android:textSize="24sp"
+            android:background="@null"
             app:layout_constraintBottom_toTopOf="@+id/bottom_action_layout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Text Time Waster" />
+            tools:text="@string/test_speech_text"
+            tools:ignore="LabelFor" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/bottom_action_layout"
@@ -103,7 +107,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="visible">
+        tools:visibility="gone">
 
         <TextView
             android:id="@+id/processing_text_view"
@@ -111,7 +115,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="@string/processing"
-            android:textSize="32sp"
+            android:textSize="28sp"
             android:fontFamily="sans-serif-condensed-light"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -124,12 +128,41 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:textSize="32sp"
+            android:textSize="28sp"
             android:fontFamily="sans-serif-condensed-light"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/processing_text_view"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="..." />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/listening_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@color/_80000000"
+        tools:visibility="gone">
+
+        <TextView
+            android:id="@+id/listening_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/listening"
+            android:textSize="32sp"
+            android:textColor="@color/white"
+            android:fontFamily="sans-serif-condensed-light"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.48"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
