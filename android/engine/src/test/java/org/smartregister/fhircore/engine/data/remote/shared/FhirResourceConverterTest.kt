@@ -310,19 +310,19 @@ class FhirResourceConverterTest {
     Assert.assertEquals(6, parsedPractitionerDetails.contained.size)
     Assert.assertEquals(
       "Gurudola Test GND",
-      (parsedPractitionerDetails.contained[0] as Location).name
+      (parsedPractitionerDetails.contained[0] as Location).name,
     )
     Assert.assertEquals(
       "Henpita Test GND",
-      (parsedPractitionerDetails.contained[1] as Location).name
+      (parsedPractitionerDetails.contained[1] as Location).name,
     )
     Assert.assertEquals(
       "Diyagala Test GND",
-      (parsedPractitionerDetails.contained[2] as Location).name
+      (parsedPractitionerDetails.contained[2] as Location).name,
     )
     Assert.assertEquals(
       "Gurudola Org",
-      (parsedPractitionerDetails.contained[3] as Organization).name
+      (parsedPractitionerDetails.contained[3] as Organization).name,
     )
     Assert.assertEquals("Diyagala", (parsedPractitionerDetails.contained[4] as Organization).name)
     Assert.assertEquals("Henpita", (parsedPractitionerDetails.contained[5] as Organization).name)
