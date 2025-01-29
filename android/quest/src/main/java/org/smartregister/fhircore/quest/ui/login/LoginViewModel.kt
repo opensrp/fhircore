@@ -337,6 +337,11 @@ constructor(
           practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
 
         if (containedResources.isNullOrEmpty()) {
+          /**
+           * This block is retained for backward compatibility with FHIR Gateway lower than v2.2.6
+           * The user assignments in those versions are not stored in the
+           * [PractitionerDetails.contained] field
+           */
           practitionerDetails.fhirPractitionerDetails?.careTeams?.let { careTeams.addAll(it) }
           practitionerDetails.fhirPractitionerDetails?.organizations?.let {
             organizations.addAll(it)
