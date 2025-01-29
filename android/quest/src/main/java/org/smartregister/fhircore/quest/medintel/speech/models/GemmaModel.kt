@@ -23,14 +23,21 @@ class GemmaModel(context: Context, modelPath: String) : LlmModel<LlmInference> {
   private val options =
     LlmInference.LlmInferenceOptions.builder()
       .setModelPath(modelPath)
-      .setMaxTokens(1000)
-      .setTopK(40)
-      .setTemperature(0.8F)
-      .setRandomSeed(101)
+      .setMaxTokens(DEFAULT_MAX_TOKENS)
+      .setTopK(DEFAULT_TOP_K)
+      .setTemperature(DEFAULT_TEMPERATURE)
+      .setRandomSeed(DEFAULT_RANDOM_SEED)
       .build()
-  override var model = LlmInference.createFromOptions(context, options)
+  override var model: LlmInference = LlmInference.createFromOptions(context, options)
 
   override suspend fun generateContent(prompt: String): String? {
     return model.generateResponse(prompt)
+  }
+
+  companion object {
+    const val DEFAULT_MAX_TOKENS = 1000
+    const val DEFAULT_TOP_K = 40
+    const val DEFAULT_TEMPERATURE = 0.8F
+    const val DEFAULT_RANDOM_SEED = 101
   }
 }
