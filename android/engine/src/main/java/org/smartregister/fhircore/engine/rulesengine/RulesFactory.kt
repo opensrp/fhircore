@@ -756,7 +756,8 @@ constructor(
         fhirContext
           .newJsonParser()
           .parseResource(resource::class.java, updatedResourceDocument.jsonString())
-      CoroutineScope(dispatcherProvider.io()).launch {
+
+      runBlocking {
         if (purgeAffectedResources) {
           defaultRepository.purge(updatedResource as Resource, forcePurge = true)
         }
@@ -786,7 +787,7 @@ constructor(
         return null
       }
 
-      return runBlocking(dispatcherProvider.io()) {
+      return runBlocking {
         try {
           defaultRepository.loadResource(Reference().apply { reference = resourceReference })
         } catch (e: ResourceNotFoundException) {
@@ -803,7 +804,7 @@ constructor(
         return null
       }
 
-      return runBlocking(dispatcherProvider.io()) {
+      return runBlocking {
         try {
           defaultRepository.loadResource(resourceId, ResourceType.valueOf(resourceType))
         } catch (e: ResourceNotFoundException) {
