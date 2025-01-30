@@ -101,7 +101,7 @@ class UserSettingFragment : Fragment(), OnSyncListener {
                   userSettingViewModel.progressBarState.observeAsState(Pair(false, 0)).value,
                 isDebugVariant = BuildConfig.DEBUG,
                 mainNavController = findNavController(),
-                lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp(),
+                lastSyncTime = appMainViewModel.getSyncTime(),
                 showProgressIndicatorFlow = userSettingViewModel.showProgressIndicatorFlow,
                 dataMigrationVersion = userSettingViewModel.retrieveDataMigrationVersion(),
                 enableManualSync =
@@ -116,6 +116,8 @@ class UserSettingFragment : Fragment(), OnSyncListener {
                 allowP2PSync = userSettingViewModel.enabledDeviceToDeviceSync(),
                 enableHelpContacts =
                   userSettingViewModel.enableMenuOption(SettingsOptions.CONTACT_HELP),
+                enableDatabaseExport =
+                  userSettingViewModel.enableMenuOption(SettingsOptions.DATABASE_EXPORT),
               )
             }
           }

@@ -41,6 +41,7 @@ class StackViewTest {
         stackViewProperties = stackViewProperties,
         resourceData = ResourceData("", ResourceType.Patient, emptyMap()),
         navController = rememberNavController(),
+        decodeImage = null,
       )
     }
     composeTestRule.onNodeWithTag(STACK_VIEW_TEST_TAG).assertExists()

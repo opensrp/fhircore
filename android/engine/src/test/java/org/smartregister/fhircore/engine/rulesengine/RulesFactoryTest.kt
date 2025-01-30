@@ -32,9 +32,11 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.apache.commons.jexl3.JexlEngine
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -72,6 +74,8 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
@@ -87,12 +91,14 @@ class RulesFactoryTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var locationService: LocationService
+
+  @Inject lateinit var fhirContext: FhirContext
+
+  @Inject lateinit var jexlEngine: JexlEngine
   private val rulesEngine = mockk<DefaultRulesEngine>()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var rulesFactory: RulesFactory
   private lateinit var rulesEngineService: RulesFactory.RulesEngineService
-
-  @Inject lateinit var fhirContext: FhirContext
   private lateinit var defaultRepository: DefaultRepository
 
   @Before
@@ -109,6 +115,7 @@ class RulesFactoryTest : RobolectricTest() {
           dispatcherProvider = dispatcherProvider,
           locationService = locationService,
           fhirContext = fhirContext,
+          jexlEngine = jexlEngine,
           defaultRepository = defaultRepository,
         ),
       )
@@ -131,7 +138,7 @@ class RulesFactoryTest : RobolectricTest() {
   fun fireRulesCallsRulesEngineFireWithCorrectRulesAndFacts() {
     runTest {
       val baseResource = Faker.buildPatient()
-      val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
+      val relatedResourcesMap: ConcurrentHashMap<String, List<Resource>> = ConcurrentHashMap()
       val ruleConfig =
         RuleConfig(
           name = "patientName",
@@ -198,37 +205,47 @@ class RulesFactoryTest : RobolectricTest() {
             secondaryRepositoryResourceData =
               listOf(
                 RepositoryResourceData(
-                  resourceRulesEngineFactId = "commodities",
+                  resourceConfigId = "commodities",
                   resource = Group().apply { id = "Commodity1" },
                   relatedResourcesMap =
-                    mapOf(
-                      "stockObservations" to
+                    ConcurrentHashMap<String, List<Resource>>().apply {
+                      put(
+                        "stockObservations",
                         listOf(
                           Observation().apply { id = "Obsv1" },
                           Observation().apply { id = "Obsv2" },
                         ),
-                      "latestObservations" to
+                      )
+                      put(
+                        "latestObservations",
                         listOf(
                           Observation().apply { id = "Obsv3" },
                           Observation().apply { id = "Obsv4" },
                         ),
-                    ),
+                      )
+                    },
                   relatedResourcesCountMap =
-                    mapOf("stockCount" to listOf(RelatedResourceCount(count = 20))),
+                    ConcurrentHashMap<String, List<RelatedResourceCount>>().apply {
+                      put("stockCount", listOf(RelatedResourceCount(count = 20)))
+                    },
                 ),
                 RepositoryResourceData(
-                  resourceRulesEngineFactId = "commodities",
+                  resourceConfigId = "commodities",
                   resource = Group().apply { id = "Commodity2" },
                   relatedResourcesMap =
-                    mapOf(
-                      "stockObservations" to
+                    ConcurrentHashMap<String, List<Resource>>().apply {
+                      put(
+                        "stockObservations",
                         listOf(
                           Observation().apply { id = "Obsv6" },
                           Observation().apply { id = "Obsv7" },
                         ),
-                    ),
+                      )
+                    },
                   relatedResourcesCountMap =
-                    mapOf("stockCount" to listOf(RelatedResourceCount(count = 10))),
+                    ConcurrentHashMap<String, List<RelatedResourceCount>>().apply {
+                      put("stockCount", listOf(RelatedResourceCount(count = 10)))
+                    },
                 ),
               ),
           ),
@@ -295,6 +312,29 @@ class RulesFactoryTest : RobolectricTest() {
     Assert.assertEquals(1, result.size)
     Assert.assertEquals("CarePlan", result[0].resourceType.name)
     Assert.assertEquals("careplan-1", result[0].logicalId)
+  }
+
+  @Test
+  fun retrieveRelatedResourcesReturnsCorrectResourceWithForwardInclude() {
+    val patient = Faker.buildPatient()
+    val group =
+      Group().apply {
+        id = "grp1"
+        addMember(
+          Group.GroupMemberComponent().apply { entity = patient.asReference() },
+        )
+      }
+    populateFactsWithResources(group)
+    val result =
+      rulesEngineService.retrieveRelatedResources(
+        resource = group,
+        relatedResourceKey = ResourceType.Patient.name,
+        referenceFhirPathExpression = "Group.member.entity.reference",
+        isRevInclude = false,
+      )
+    Assert.assertEquals(1, result.size)
+    Assert.assertEquals("Patient", result[0].resourceType.name)
+    Assert.assertEquals(patient.logicalId, result[0].logicalId)
   }
 
   @Test
@@ -424,7 +464,7 @@ class RulesFactoryTest : RobolectricTest() {
   @Test
   fun mapResourceToLabeledCSVReturnsCorrectLabels() {
     val fhirPathExpression = "Patient.active and (Patient.birthDate >= today() - 5 'years')"
-    val resource = Patient().setActive(true).setBirthDate(LocalDate.parse("2019-10-03").toDate())
+    val resource = Patient().setActive(true).setBirthDate(Date().plusYears(-5))
 
     val result = rulesEngineService.mapResourceToLabeledCSV(resource, fhirPathExpression, "CHILD")
     Assert.assertEquals("CHILD", result)
@@ -886,13 +926,16 @@ class RulesFactoryTest : RobolectricTest() {
     Assert.assertTrue(result.isEmpty())
   }
 
-  private fun populateFactsWithResources() {
+  private fun populateFactsWithResources(vararg resource: Resource = emptyArray()) {
     val carePlanRelatedResource = mutableListOf(Faker.buildCarePlan())
-    val patientRelatedResource = mutableListOf(Faker.buildPatient())
+    val patient = Faker.buildPatient()
+    val patientRelatedResource = mutableListOf(patient)
+
     val facts = ReflectionHelpers.getField<Facts>(rulesFactory, "facts")
     facts.apply {
       put(carePlanRelatedResource[0].resourceType.name, carePlanRelatedResource)
       put(patientRelatedResource[0].resourceType.name, patientRelatedResource)
+      resource.forEach { put(it.resourceType.name, it) }
     }
     ReflectionHelpers.setField(rulesFactory, "facts", facts)
   }
@@ -1276,6 +1319,51 @@ class RulesFactoryTest : RobolectricTest() {
       Assert.assertEquals("group-id-1", id)
       Assert.assertEquals("Group", resourceType.name)
     }
+  }
+
+  @Test
+  fun mapResourcesToExtractedValuesReturnsCorrectlyFormattedString() {
+    val patientsList =
+      listOf(
+        Patient().apply {
+          birthDate = LocalDate.parse("2015-10-03").toDate()
+          addName().apply { family = "alpha" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2017-10-03").toDate()
+          addName().apply { family = "beta" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2018-10-03").toDate()
+          addName().apply { family = "gamma" }
+        },
+      )
+
+    val names =
+      rulesEngineService.mapResourcesToExtractedValues(patientsList, "Patient.name.family", " | ")
+    Assert.assertEquals("alpha | beta | gamma", names)
+  }
+
+  @Test
+  fun mapResourcesToExtractedValuesReturnsEmptyStringWhenFhirPathExpressionIsEmpty() {
+    val patientsList =
+      listOf(
+        Patient().apply {
+          birthDate = LocalDate.parse("2015-10-03").toDate()
+          addName().apply { family = "alpha" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2017-10-03").toDate()
+          addName().apply { family = "beta" }
+        },
+        Patient().apply {
+          birthDate = LocalDate.parse("2018-10-03").toDate()
+          addName().apply { family = "gamma" }
+        },
+      )
+
+    val names = rulesEngineService.mapResourcesToExtractedValues(patientsList, "", " | ")
+    Assert.assertEquals("", names)
   }
 
   private fun getListOfResource(): List<Resource> {

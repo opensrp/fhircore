@@ -77,7 +77,7 @@ import org.smartregister.fhircore.engine.configuration.report.measure.ReportConf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.MeasurePopulationType
 import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
@@ -107,7 +107,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Inject lateinit var defaultRepository: DefaultRepository
 
-  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  @Inject lateinit var rulesExecutor: RulesExecutor
 
   @OptIn(ExperimentalCoroutinesApi::class)
   private val unconfinedTestDispatcher = UnconfinedTestDispatcher()
@@ -147,7 +147,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
           defaultRepository = defaultRepository,
-          resourceDataRulesExecutor = resourceDataRulesExecutor,
+          rulesExecutor = rulesExecutor,
           measureReportRepository = measureReportRepository,
         ),
       )

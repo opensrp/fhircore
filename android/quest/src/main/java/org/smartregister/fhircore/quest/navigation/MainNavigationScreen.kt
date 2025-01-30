@@ -54,7 +54,7 @@ sealed class MainNavigationScreen(
       route = org.smartregister.fhircore.quest.R.id.profileFragment,
     )
 
-  object GeoWidgetLauncher :
+  data object GeoWidgetLauncher :
     MainNavigationScreen(route = org.smartregister.fhircore.quest.R.id.geoWidgetLauncherFragment)
 
   data object Insight :
@@ -68,6 +68,11 @@ sealed class MainNavigationScreen(
   data object SummaryBottomSheetFragment :
     MainNavigationScreen(
       route = org.smartregister.fhircore.quest.R.id.summaryBottomSheetFragment,
+    )
+
+  data object AlertDialogFragment :
+    MainNavigationScreen(
+      route = org.smartregister.fhircore.quest.R.id.questionnaireDraftDialogFragment,
     )
 
   fun eventId(id: String) = route.toString() + "_" + id

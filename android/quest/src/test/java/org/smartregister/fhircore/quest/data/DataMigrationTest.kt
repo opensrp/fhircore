@@ -71,7 +71,7 @@ class DataMigrationTest : RobolectricTest() {
 
   @Test
   fun testMigrateShouldUpdateResources() =
-    runTest(timeout = 45.seconds) {
+    runTest(timeout = 60.seconds) {
       // Create patient to be updated
       defaultRepository.create(addResourceTags = true, patient)
       dataMigration.migrate(
@@ -200,6 +200,53 @@ class DataMigrationTest : RobolectricTest() {
       // Version updated to 1
       Assert.assertEquals(
         1,
+        preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).first(),
+      )
+    }
+
+  @Test
+  fun testMigrateShouldNotUpdateResourceIfRuleConditionIsFalse() =
+    runTest(timeout = 60.seconds) {
+      defaultRepository.create(addResourceTags = true, patient)
+
+      dataMigration.migrate(
+        migrationConfigs =
+          listOf(
+            MigrationConfig(
+              resourceConfig =
+                FhirResourceConfig(
+                  baseResource = ResourceConfig(resource = ResourceType.Patient),
+                ),
+              version = 2,
+              rules =
+                listOf(
+                  RuleConfig(
+                    name = "ruleCondition",
+                    actions = listOf("data.put('ruleCondition', 'false')"),
+                  ),
+                  RuleConfig(
+                    name = "updateValue",
+                    actions = listOf("data.put('updateValue', 'female')"),
+                    condition = "data.get('ruleCondition')",
+                  ),
+                ),
+              updateValues =
+                listOf(
+                  UpdateValueConfig(
+                    jsonPathExpression = "\$.gender",
+                    computedValueKey = "updateValue",
+                  ),
+                ),
+            ),
+          ),
+        previousVersion = 0,
+      )
+
+      val updatedPatient = defaultRepository.loadResource<Patient>(patient.logicalId)
+
+      Assert.assertEquals(Enumerations.AdministrativeGender.MALE, updatedPatient?.gender)
+      Assert.assertEquals(
+        2,
         preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).first(),
       )
     }

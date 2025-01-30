@@ -18,18 +18,16 @@ package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
 import android.database.SQLException
-import android.graphics.Bitmap
-import androidx.compose.runtime.mutableStateMapOf
 import ca.uhn.fhir.context.ConfigurationException
-import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.DataFormatException
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
+import com.google.android.fhir.sync.SyncDataParams.LAST_UPDATED_KEY
 import com.google.android.fhir.sync.download.ResourceSearchParams
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.net.UnknownHostException
@@ -50,6 +48,7 @@ import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
@@ -60,7 +59,9 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.di.NetworkModule
+import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.KnowledgeManagerUtil
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.camelCase
@@ -72,10 +73,10 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fileExtension
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.interpolate
-import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
-import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationIds
+import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
+import org.smartregister.fhircore.engine.util.extension.toTimeZoneString
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import retrofit2.HttpException
@@ -98,12 +99,9 @@ constructor(
 
   val configsJsonMap = mutableMapOf<String, String>()
   val configCacheMap = mutableMapOf<String, Configuration>()
-  val decodedImageMap = mutableStateMapOf<String, Bitmap>()
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
-  private val fhirContext = FhirContext.forR4Cached()
-  private val authConfiguration = configService.provideAuthConfiguration()
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -340,24 +338,44 @@ constructor(
         }
       }
     } else {
-      composition.retrieveCompositionSections().forEach {
-        if (it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier()) {
-          val configIdentifier = it.focus.identifier.value
-          val referenceResourceType = it.focus.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
-          if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
-            val extractedId = it.focus.extractId()
-            try {
-              val configBinary = fhirEngine.get<Binary>(extractedId)
-              configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
-            } catch (resourceNotFoundException: ResourceNotFoundException) {
-              Timber.e("Missing Binary file with ID :$extractedId")
-              withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
-            }
+      composition.retrieveCompositionSections().forEach { sectionComponent ->
+        if (sectionComponent.hasFocus()) {
+          addBinaryToConfigsJsonMap(
+            sectionComponent.focus,
+            configsLoadedCallback,
+          )
+        }
+        if (sectionComponent.hasEntry() && sectionComponent.entry.isNotEmpty()) {
+          sectionComponent.entry.forEach { entryReference ->
+            addBinaryToConfigsJsonMap(
+              entryReference,
+              configsLoadedCallback,
+            )
           }
         }
       }
     }
     configsLoadedCallback(true)
+  }
+
+  private suspend fun addBinaryToConfigsJsonMap(
+    entryReference: Reference,
+    configsLoadedCallback: (Boolean) -> Unit,
+  ) {
+    if (entryReference.hasReferenceElement() && entryReference.hasIdentifier()) {
+      val configIdentifier = entryReference.identifier.value
+      val referenceResourceType = entryReference.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
+      if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
+        val extractedId = entryReference.extractId()
+        try {
+          val configBinary = fhirEngine.get<Binary>(extractedId.toString())
+          configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
+        } catch (resourceNotFoundException: ResourceNotFoundException) {
+          Timber.e("Missing Binary file with ID :$extractedId")
+          withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
+        }
+      }
+    }
   }
 
   private fun isAppConfig(referenceResourceType: String) =
@@ -411,49 +429,72 @@ constructor(
    */
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources() {
+    Timber.d("Triggered fetching application configurations remotely")
     configCacheMap.clear()
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val compositionResource = fetchRemoteCompositionByAppId(parsedAppId)
       compositionResource?.let { composition ->
-        composition
-          .retrieveCompositionSections()
-          .asSequence()
-          .filter { it.hasFocus() && it.focus.hasReferenceElement() }
-          .groupBy { section ->
-            section.focus.reference.substringBefore(
-              TYPE_REFERENCE_DELIMITER,
-              missingDelimiterValue = "",
-            )
+        val compositionSections = composition.retrieveCompositionSections()
+        val sectionComponentMap = mutableMapOf<String, MutableList<Composition.SectionComponent>>()
+        compositionSections.forEach { sectionComponent ->
+          if (sectionComponent.hasFocus() && sectionComponent.focus.hasReferenceElement()) {
+            val key =
+              sectionComponent.focus.reference.substringBefore(
+                delimiter = TYPE_REFERENCE_DELIMITER,
+                missingDelimiterValue = "",
+              )
+            sectionComponentMap.getOrPut(key) { mutableListOf() }.apply { add(sectionComponent) }
           }
-          .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
-          .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-            if (entry.key == ResourceType.List.name) {
-              processCompositionListResources(entry)
-            } else {
-              val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
-
-              chunkedResourceIdList.forEach { sectionComponents ->
-                Timber.d(
-                  "Fetching config resource ${entry.key}: with ids ${sectionComponents.joinToString(",")}",
+          if (sectionComponent.hasEntry() && sectionComponent.entry.isNotEmpty()) {
+            sectionComponent.entry.forEach {
+              val key =
+                it.reference.substringBefore(
+                  delimiter = TYPE_REFERENCE_DELIMITER,
+                  missingDelimiterValue = "",
                 )
-                fetchResources(
-                  resourceType = entry.key,
-                  resourceIdList =
-                    sectionComponents.map { sectionComponent ->
-                      sectionComponent.focus.extractId()
-                    },
-                )
-              }
+              sectionComponentMap.getOrPut(key) { mutableListOf() }.apply { add(sectionComponent) }
             }
           }
+        }
+
+        processCompositionSectionComponent(sectionComponentMap)
 
         // Save composition after fetching all the referenced section resources
         addOrUpdate(compositionResource)
 
-        Timber.d("Done fetching application configurations remotely")
+        Timber.d("Done saving composition resource")
       }
     }
+  }
+
+  private suspend fun processCompositionSectionComponent(
+    sectionComponentMap: Map<String, List<Composition.SectionComponent>>,
+  ) {
+    sectionComponentMap
+      .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
+      .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+        if (entry.key == ResourceType.List.name) {
+          processCompositionListResources(entry)
+        } else {
+          val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+
+          chunkedResourceIdList.forEach { sectionComponents ->
+            Timber.d(
+              "Fetching config resource ${entry.key}: with ids ${
+                                sectionComponents.joinToString(
+                                    ",",
+                                )
+                            }",
+            )
+            fetchResources(
+              resourceType = entry.key,
+              resourceIdList =
+                sectionComponents.map { sectionComponent -> sectionComponent.focus.extractId() },
+            )
+          }
+        }
+      }
   }
 
   suspend fun fetchRemoteImplementationGuideByAppId(
@@ -575,7 +616,7 @@ constructor(
           if (bundleEntryComponent.resource != null) {
             addOrUpdate(bundleEntryComponent.resource)
             Timber.d(
-              "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.id}",
+              "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.idPart}",
             )
           }
         }
@@ -590,52 +631,31 @@ constructor(
    * Note
    */
   suspend fun <R : Resource> addOrUpdate(resource: R) {
-    withContext(dispatcherProvider.io()) {
-      try {
-        createOrUpdateRemote(resource)
-      } catch (sqlException: SQLException) {
-        Timber.e(sqlException)
-      }
-
-      /**
-       * Knowledge manager [MetadataResource]s install Here we install all resources types of
-       * [MetadataResource] as per FHIR Spec.This supports future use cases as well
-       */
-      try {
-        if (resource is MetadataResource && resource.name != null) {
-          knowledgeManager.install(
-            writeToFile(resource.overwriteCanonicalURL()),
-          )
-        }
-      } catch (exception: Exception) {
-        Timber.e(exception)
-      }
-    }
-  }
-
-  private fun MetadataResource.overwriteCanonicalURL() =
-    this.apply {
-      url =
-        url
-          ?: """${authConfiguration.fhirServerBaseUrl.trimEnd { it == '/' }}/${this.referenceValue()}"""
+    try {
+      createOrUpdateRemote(resource)
+    } catch (sqlException: SQLException) {
+      Timber.e(sqlException)
     }
 
-  fun writeToFile(resource: Resource): File {
-    val fileName =
-      if (resource is MetadataResource && resource.name != null) {
-        resource.name
-      } else {
-        resource.idElement.idPart
+    /**
+     * Knowledge manager [MetadataResource]s install. Here we install all resources types of
+     * [MetadataResource] as per FHIR Spec.This supports future use cases as well
+     */
+    try {
+      if (resource is MetadataResource) {
+        knowledgeManager.install(
+          KnowledgeManagerUtil.writeToFile(
+            context = context,
+            configService = configService,
+            metadataResource = resource,
+            subFilePath =
+              "${KnowledgeManagerUtil.KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER}/${resource.resourceType}/${resource.idElement.idPart}.json",
+          ),
+        )
       }
-
-    return File(
-        context.filesDir,
-        "$KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER/${resource.resourceType}/$fileName.json",
-      )
-      .apply {
-        this.parentFile?.mkdirs()
-        writeText(fhirContext.newJsonParser().encodeResourceToString(resource))
-      }
+    } catch (exception: Exception) {
+      Timber.e(exception)
+    }
   }
 
   /**
@@ -647,14 +667,28 @@ constructor(
    * @param resources vararg of resources
    */
   suspend fun createOrUpdateRemote(vararg resources: Resource) {
-    return withContext(dispatcherProvider.io()) {
-      resources.onEach {
-        it.updateLastUpdated()
-        it.generateMissingId()
-      }
-      fhirEngine.create(*resources, isLocalOnly = true)
+    resources.onEach {
+      saveLastConfigUpdatedTimestamp(it)
+      it.updateLastUpdated()
+      it.generateMissingId()
     }
+    fhirEngine.create(*resources, isLocalOnly = true)
   }
+
+  @VisibleForTesting
+  fun saveLastConfigUpdatedTimestamp(resource: Resource) {
+    sharedPreferencesHelper.write(
+      lastConfigUpdatedTimestampKey(
+        resource.resourceType.name.uppercase(),
+        resource.logicalId,
+      ),
+      resource.meta?.lastUpdated?.toTimeZoneString(),
+    )
+  }
+
+  @VisibleForTesting
+  fun lastConfigUpdatedTimestampKey(resourceType: String, resourceId: String) =
+    "${resourceType}_${resourceId}_${SharedPreferenceKey.LAST_CONFIG_SYNC_TIMESTAMP.name}"
 
   @VisibleForTesting fun isNonProxy(): Boolean = _isNonProxy
 
@@ -663,7 +697,8 @@ constructor(
     _isNonProxy = nonProxy
   }
 
-  private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
+  @VisibleForTesting
+  fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
     val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
 
     idList.forEach {
@@ -671,7 +706,7 @@ constructor(
         Bundle.BundleEntryComponent().apply {
           request =
             Bundle.BundleEntryRequestComponent().apply {
-              url = "$resourceType/$it"
+              url = "$resourceType?$ID=$it${getLastConfigUpdatedTimestampParam(resourceType, it)}"
               method = Bundle.HTTPVerb.GET
             }
         },
@@ -684,6 +719,15 @@ constructor(
     }
   }
 
+  @VisibleForTesting
+  fun getLastConfigUpdatedTimestampParam(resourceType: String, resourceId: String): String {
+    val timestamp =
+      sharedPreferencesHelper
+        .read(lastConfigUpdatedTimestampKey(resourceType.uppercase(), resourceId), "")
+        .orEmpty()
+    return if (timestamp.isNotEmpty()) "&$LAST_UPDATED_KEY=$GREATER_THAN_PREFIX$timestamp" else ""
+  }
+
   private suspend fun fhirResourceDataSourceGetBundle(
     resourceType: String,
     resourceIds: List<String>,
@@ -693,7 +737,11 @@ constructor(
       entry =
         resourceIds
           .map {
-            fhirResourceDataSource.getResource("$resourceType?${Composition.SP_RES_ID}=$it").entry
+            fhirResourceDataSource
+              .getResource(
+                "$resourceType?${Composition.SP_RES_ID}=$it${getLastConfigUpdatedTimestampParam(resourceType, it)}",
+              )
+              .entry
           }
           .flatten()
     }
@@ -746,7 +794,10 @@ constructor(
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
     val mandatoryTags = configService.provideResourceTags(sharedPreferencesHelper)
 
-    val locationIds = context.retrieveRelatedEntitySyncLocationIds()
+    val locationIds =
+      context.retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA).map {
+        it.locationId
+      }
 
     syncConfig.parameter
       .map { it.resource as SearchParameter }
@@ -762,7 +813,7 @@ constructor(
                   it.system.contentEquals(organizationResourceTag?.tag?.system, ignoreCase = true)
                 }
                 ?.code
-            COUNT -> appConfig.remoteSyncPageSize.toString()
+            COUNT -> DEFAULT_COUNT.toString()
             else -> paramExpression
           }?.let { paramExpression?.replace(paramLiteral, it) }
 
@@ -813,11 +864,11 @@ constructor(
     const val MANIFEST_PROCESSOR_BATCH_SIZE = 20
     const val ORGANIZATION = "organization"
     const val TYPE_REFERENCE_DELIMITER = "/"
-    const val DEFAULT_COUNT = 200
+    const val DEFAULT_COUNT = 1000
     const val PAGINATION_NEXT = "next"
     const val RESOURCES_PATH = "resources/"
     const val SYNC_LOCATION_IDS = "_syncLocations"
-    const val KNOWLEDGE_MANAGER_ASSETS_SUBFOLDER = "km"
+    const val GREATER_THAN_PREFIX = "gt"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.

@@ -22,10 +22,13 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
+import org.jeasy.rules.api.Rules
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -34,7 +37,7 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
@@ -45,7 +48,7 @@ class RegisterPagingSourceTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
-  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  @Inject lateinit var rulesExecutor: RulesExecutor
   private val registerRepository = mockk<RegisterRepository>()
   private lateinit var registerPagingSource: RegisterPagingSource
   private val registerId = "registerId"
@@ -60,10 +63,16 @@ class RegisterPagingSourceTest : RobolectricTest() {
     registerPagingSource =
       RegisterPagingSource(
         registerRepository = registerRepository,
-        resourceDataRulesExecutor = resourceDataRulesExecutor,
-        ruleConfigs = listOf(),
-        actionParameters = emptyMap(),
         fhirResourceConfig = null,
+        actionParameters = emptyMap(),
+        rulesExecutor = rulesExecutor,
+        registerPagingSourceState =
+          RegisterPagingSourceState(
+            registerId = registerId,
+            currentPage = 0,
+            loadAll = false,
+            rules = Rules(setOf()),
+          ),
       )
     coEvery { registerRepository.loadRegisterData(0, registerId) } returns
       listOf(RepositoryResourceData(resource = Faker.buildPatient()))
@@ -72,9 +81,6 @@ class RegisterPagingSourceTest : RobolectricTest() {
     every { loadParams.key } returns null
     runBlocking {
       registerPagingSource.run {
-        setPatientPagingSourceState(
-          RegisterPagingSourceState(registerId = registerId, currentPage = 0, loadAll = false),
-        )
         val result = load(loadParams)
         Assert.assertNotNull(result)
         Assert.assertEquals(1, (result as PagingSource.LoadResult.Page).data.size)
@@ -113,10 +119,18 @@ class RegisterPagingSourceTest : RobolectricTest() {
     registerPagingSource =
       RegisterPagingSource(
         registerRepository = registerRepository,
-        resourceDataRulesExecutor = resourceDataRulesExecutor,
-        ruleConfigs = listOf(),
-        actionParameters = emptyMap(),
         fhirResourceConfig = fhirResourceConfig,
+        actionParameters = emptyMap(),
+        registerPagingSourceState =
+          RegisterPagingSourceState(
+            registerId = registerId,
+            currentPage = 0,
+            loadAll = false,
+            Rules(
+              setOf(),
+            ),
+          ),
+        rulesExecutor = rulesExecutor,
       )
     coEvery {
       registerRepository.loadRegisterData(
@@ -128,7 +142,8 @@ class RegisterPagingSourceTest : RobolectricTest() {
       listOf(
         RepositoryResourceData(
           resource = baseResource,
-          relatedResourcesMap = relatedResources.groupBy { it.resourceType.name },
+          relatedResourcesMap =
+            relatedResources.groupBy { it.resourceType.name }.toMap(ConcurrentHashMap()),
         ),
       )
 
@@ -136,9 +151,6 @@ class RegisterPagingSourceTest : RobolectricTest() {
     every { loadParams.key } returns null
     runBlocking {
       registerPagingSource.run {
-        setPatientPagingSourceState(
-          RegisterPagingSourceState(registerId = registerId, currentPage = 0, loadAll = false),
-        )
         val result = load(loadParams)
         Assert.assertNotNull(result)
         Assert.assertEquals(1, (result as PagingSource.LoadResult.Page).data.size)
@@ -151,19 +163,25 @@ class RegisterPagingSourceTest : RobolectricTest() {
     registerPagingSource =
       RegisterPagingSource(
         registerRepository = registerRepository,
-        resourceDataRulesExecutor = resourceDataRulesExecutor,
-        ruleConfigs = listOf(),
-        actionParameters = emptyMap(),
         fhirResourceConfig = null,
+        actionParameters = emptyMap(),
+        registerPagingSourceState =
+          RegisterPagingSourceState(
+            registerId = registerId,
+            currentPage = 0,
+            loadAll = false,
+            rules =
+              Rules(
+                setOf(),
+              ),
+          ),
+        rulesExecutor = rulesExecutor,
       )
     coEvery { registerRepository.loadRegisterData(0, registerId) } returns emptyList()
     val loadParams = mockk<PagingSource.LoadParams<Int>>()
     every { loadParams.key } returns null
     runBlocking {
       registerPagingSource.run {
-        setPatientPagingSourceState(
-          RegisterPagingSourceState(registerId = registerId, currentPage = 0, loadAll = false),
-        )
         val result = load(loadParams)
         Assert.assertNotNull(result)
         Assert.assertTrue((result as PagingSource.LoadResult.Page).data.isEmpty())
@@ -176,10 +194,19 @@ class RegisterPagingSourceTest : RobolectricTest() {
     registerPagingSource =
       RegisterPagingSource(
         registerRepository = registerRepository,
-        resourceDataRulesExecutor = resourceDataRulesExecutor,
-        ruleConfigs = listOf(),
-        actionParameters = emptyMap(),
         fhirResourceConfig = null,
+        actionParameters = emptyMap(),
+        registerPagingSourceState =
+          RegisterPagingSourceState(
+            registerId = registerId,
+            currentPage = 2,
+            loadAll = false,
+            rules =
+              Rules(
+                setOf(),
+              ),
+          ),
+        rulesExecutor = rulesExecutor,
       )
     coEvery { registerRepository.loadRegisterData(2, registerId) } returns
       listOf(RepositoryResourceData(resource = Faker.buildPatient()))
@@ -187,9 +214,6 @@ class RegisterPagingSourceTest : RobolectricTest() {
     every { loadParams.key } returns 2
     runBlocking {
       registerPagingSource.run {
-        setPatientPagingSourceState(
-          RegisterPagingSourceState(registerId = registerId, currentPage = 2, loadAll = false),
-        )
         val result = load(loadParams)
         Assert.assertNotNull(result)
         Assert.assertEquals(1, (result as PagingSource.LoadResult.Page).data.size)
@@ -202,10 +226,19 @@ class RegisterPagingSourceTest : RobolectricTest() {
     registerPagingSource =
       RegisterPagingSource(
         registerRepository = registerRepository,
-        resourceDataRulesExecutor = resourceDataRulesExecutor,
-        ruleConfigs = listOf(),
-        actionParameters = emptyMap(),
         fhirResourceConfig = null,
+        actionParameters = emptyMap(),
+        registerPagingSourceState =
+          RegisterPagingSourceState(
+            registerId = registerId,
+            currentPage = 0,
+            loadAll = true,
+            rules =
+              Rules(
+                setOf(),
+              ),
+          ),
+        rulesExecutor = rulesExecutor,
       )
     coEvery { registerRepository.loadRegisterData(0, registerId) } returns
       listOf(RepositoryResourceData(resource = Faker.buildPatient()))
@@ -215,9 +248,6 @@ class RegisterPagingSourceTest : RobolectricTest() {
     every { loadParams.key } returns null
     runBlocking {
       registerPagingSource.run {
-        setPatientPagingSourceState(
-          RegisterPagingSourceState(registerId = registerId, currentPage = 0, loadAll = true),
-        )
         var result = load(loadParams)
         Assert.assertNotNull(result)
         Assert.assertEquals(1, (result as PagingSource.LoadResult.Page).data.size)
@@ -230,29 +260,35 @@ class RegisterPagingSourceTest : RobolectricTest() {
   }
 
   @Test
-  fun testLoadWithNonEmptyActionParametersShouldReturnResults() {
+  fun testLoadWithNonEmptyActionParametersShouldReturnResults() = runTest {
     val actionParameters = mapOf("param1" to "value1")
     registerPagingSource =
       RegisterPagingSource(
         registerRepository = registerRepository,
-        resourceDataRulesExecutor = resourceDataRulesExecutor,
-        ruleConfigs = listOf(),
-        actionParameters = actionParameters,
         fhirResourceConfig = null,
+        actionParameters = actionParameters,
+        registerPagingSourceState =
+          RegisterPagingSourceState(
+            registerId = registerId,
+            currentPage = 0,
+            loadAll = false,
+            rules = Rules(setOf()),
+          ),
+        rulesExecutor = rulesExecutor,
       )
-    coEvery { registerRepository.loadRegisterData(0, registerId) } returns
-      listOf(RepositoryResourceData(resource = Faker.buildPatient()))
+    coEvery {
+      registerRepository.loadRegisterData(
+        currentPage = 0,
+        registerId = registerId,
+        paramsMap = actionParameters,
+      )
+    } returns listOf(RepositoryResourceData(resource = Faker.buildPatient()))
     val loadParams = mockk<PagingSource.LoadParams<Int>>()
     every { loadParams.key } returns null
-    runBlocking {
-      registerPagingSource.run {
-        setPatientPagingSourceState(
-          RegisterPagingSourceState(registerId = registerId, currentPage = 0, loadAll = false),
-        )
-        val result = load(loadParams)
-        Assert.assertNotNull(result)
-        Assert.assertEquals(1, (result as PagingSource.LoadResult.Page).data.size)
-      }
+    registerPagingSource.run {
+      val result = load(loadParams)
+      Assert.assertNotNull(result)
+      Assert.assertEquals(1, (result as PagingSource.LoadResult.Page).data.size)
     }
   }
 }

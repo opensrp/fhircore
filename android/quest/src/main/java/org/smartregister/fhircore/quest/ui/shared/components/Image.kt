@@ -56,9 +56,9 @@ import org.smartregister.fhircore.engine.configuration.view.ImageShape
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
+import org.smartregister.fhircore.engine.ui.theme.SideMenuTopItemDarkColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.engine.util.extension.retrieveResourceId
 import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ICON
@@ -76,7 +76,7 @@ fun Image(
   imageProperties: ImageProperties = ImageProperties(viewType = ViewType.IMAGE, size = 24),
   navController: NavController,
   resourceData: ResourceData? = null,
-  decodedImageMap: MutableMap<String, Bitmap> = mutableMapOf(),
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   val imageConfig = imageProperties.imageConfig
   val colorTint = tint ?: imageProperties.imageConfig?.color.parseColor()
@@ -91,31 +91,29 @@ fun Image(
           text = imageProperties.text!!,
           textAlign = TextAlign.Center,
           modifier = Modifier.padding(end = 8.dp),
-          color = imageProperties.textColor?.parseColor() ?: Color.Gray,
+          color = imageProperties.textColor?.parseColor() ?: SideMenuTopItemDarkColor,
         )
         ClickableImageIcon(
           imageProperties = imageProperties,
-          imageConfig = imageConfig,
           tint = colorTint,
           paddingEnd = paddingEnd,
           navController = navController,
           resourceData = resourceData,
           modifier = modifier,
           context = context,
-          decodedImageMap = decodedImageMap,
+          decodeImage = decodeImage,
         )
       }
     } else {
       ClickableImageIcon(
         imageProperties = imageProperties,
-        imageConfig = imageConfig,
         tint = colorTint,
         paddingEnd = paddingEnd,
         navController = navController,
         resourceData = resourceData,
         modifier = modifier,
         context = context,
-        decodedImageMap = decodedImageMap,
+        decodeImage = decodeImage,
       )
     }
   }
@@ -125,13 +123,12 @@ fun Image(
 fun ClickableImageIcon(
   modifier: Modifier = Modifier,
   imageProperties: ImageProperties,
-  imageConfig: ImageConfig,
   tint: Color,
   paddingEnd: Int?,
   navController: NavController,
   resourceData: ResourceData? = null,
   context: Context? = null,
-  decodedImageMap: MutableMap<String, Bitmap> = mutableMapOf(),
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   Box(
     contentAlignment = Alignment.Center,
@@ -144,8 +141,8 @@ fun ClickableImageIcon(
         )
         .conditional(
           imageProperties.size != null,
-          { size(imageProperties.size!!.dp) },
-          { size(24.dp) },
+          { size(if (imageProperties.size!! >= 22) imageProperties.size!!.dp else 16.dp) },
+          { size(20.dp) },
         )
         .conditional(
           !imageProperties.backgroundColor.isNullOrEmpty(),
@@ -167,34 +164,33 @@ fun ClickableImageIcon(
           },
         ),
   ) {
-    when (imageConfig.type) {
-      ICON_TYPE_LOCAL -> {
-        LocalContext.current.retrieveResourceId(imageConfig.reference)?.let { drawableId ->
-          Icon(
-            modifier =
-              Modifier.testTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG)
-                .conditional(paddingEnd != null, { padding(end = paddingEnd?.dp!!) })
-                .align(Alignment.Center)
-                .fillMaxSize(0.9f),
-            painter = painterResource(id = drawableId),
-            contentDescription = SIDE_MENU_ICON,
-            tint = tint,
-          )
+    val imageConfig =
+      imageProperties.imageConfig?.interpolate(
+        resourceData?.computedValuesMap ?: emptyMap(),
+      )
+    if (imageConfig != null) {
+      when (imageConfig.type) {
+        ICON_TYPE_LOCAL -> {
+          LocalContext.current.retrieveResourceId(imageConfig.reference)?.let { drawableId ->
+            Icon(
+              modifier =
+                Modifier.testTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG)
+                  .conditional(paddingEnd != null, { padding(end = paddingEnd?.dp!!) })
+                  .align(Alignment.Center)
+                  .fillMaxSize(0.9f),
+              painter = painterResource(id = drawableId),
+              contentDescription = SIDE_MENU_ICON,
+              tint = tint,
+            )
+          }
         }
-      }
-      ICON_TYPE_REMOTE ->
-        if (decodedImageMap.isNotEmpty()) {
-          val imageType = imageProperties.imageConfig?.imageType
+        ICON_TYPE_REMOTE -> {
+          val imageType = imageConfig.imageType
           val colorFilter =
             if (imageType == ImageType.SVG || imageType == ImageType.PNG) tint else null
-          val contentScale =
-            convertContentScaleTypeToContentScale(imageProperties.imageConfig!!.contentScale)
+          val contentScale = convertContentScaleTypeToContentScale(imageConfig.contentScale)
           val decodedImage =
-            decodedImageMap[
-              imageConfig.reference
-                ?.interpolate(resourceData!!.computedValuesMap)
-                ?.extractLogicalIdUuid(),
-            ]
+            imageConfig.reference?.extractLogicalIdUuid()?.let { decodeImage?.invoke(it) }
           if (decodedImage != null) {
             Image(
               modifier =
@@ -204,12 +200,13 @@ fun ClickableImageIcon(
                   .fillMaxSize(0.9f),
               bitmap = decodedImage.asImageBitmap(),
               contentDescription = null,
-              alpha = imageProperties.imageConfig!!.alpha,
+              alpha = imageConfig.alpha,
               contentScale = contentScale,
               colorFilter = colorFilter?.let { ColorFilter.tint(it) },
             )
           }
         }
+      }
     }
   }
 }
@@ -242,6 +239,7 @@ fun ImagePreview() {
     tint = DangerColor.copy(0.1f),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
+    decodeImage = null,
   )
 }
 
@@ -262,5 +260,6 @@ fun ClickableImageWithTextPreview() {
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
+    decodeImage = null,
   )
 }

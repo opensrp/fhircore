@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -72,9 +73,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
+import org.smartregister.fhircore.engine.util.extension.DEFAULT_FORMAT_SDF_DD_MM_YYYY
+import org.smartregister.fhircore.engine.util.extension.formatDate
 
 const val USER_INSIGHT_TOP_APP_BAR = "userInsightToAppBar"
 const val INSIGHT_UNSYNCED_DATA = "insightUnsyncedData"
+const val CIRCULAR_PROGRESS_INDICATOR = "progressIndicator"
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -92,7 +96,9 @@ fun UserSettingInsightScreen(
   dividerColor: Color = DividerColor,
   unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
   navController: NavController,
+  showProgressIndicator: Boolean = false,
   onRefreshRequest: () -> Unit,
+  dateFormat: String = DEFAULT_FORMAT_SDF_DD_MM_YYYY,
 ) {
   val unsyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
 
@@ -120,7 +126,32 @@ fun UserSettingInsightScreen(
       horizontalAlignment = Alignment.Start,
       contentPadding = PaddingValues(vertical = 24.dp, horizontal = 16.dp),
     ) {
-      if (unsyncedResources.isNotEmpty()) {
+      if (showProgressIndicator) {
+        item {
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth(),
+          ) {
+            Text(
+              text = stringResource(id = R.string.loading_ellipsis),
+              style = TextStyle(color = Color.Black, fontSize = 20.sp),
+              fontWeight = FontWeight.Bold,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            CircularProgressIndicator(
+              modifier =
+                Modifier.testTag(CIRCULAR_PROGRESS_INDICATOR).size(24.dp).wrapContentWidth(),
+              strokeWidth = 1.6.dp,
+            )
+          }
+        }
+        item {
+          Spacer(modifier = Modifier.height(16.dp))
+          Divider(color = dividerColor)
+          Spacer(modifier = Modifier.height(24.dp))
+        }
+      } else if (unsyncedResources.isNotEmpty()) {
         item {
           Text(
             text = stringResource(id = R.string.unsynced_resources),
@@ -235,7 +266,8 @@ fun UserSettingInsightScreen(
               (if (Build.DEVICE.isNullOrEmpty()) "-" else Build.DEVICE),
             stringResource(R.string.os_version) to
               (if (Build.VERSION.BASE_OS.isNullOrEmpty()) "-" else Build.VERSION.BASE_OS),
-            stringResource(R.string.device_date) to (formatTimestamp(Build.TIME).ifEmpty { "-" }),
+            stringResource(R.string.device_date) to
+              (formatDate(Build.TIME, desireFormat = dateFormat).ifEmpty { "-" }),
           )
         InsightInfoView(
           title = stringResource(id = R.string.device_info),
@@ -364,7 +396,9 @@ fun UserSettingInsightScreenPreview() {
       buildDate = "29 Jan 2023",
       unsyncedResourcesFlow = MutableSharedFlow(),
       navController = rememberNavController(),
+      showProgressIndicator = true,
       onRefreshRequest = {},
+      dateFormat = DEFAULT_FORMAT_SDF_DD_MM_YYYY,
     )
   }
 }

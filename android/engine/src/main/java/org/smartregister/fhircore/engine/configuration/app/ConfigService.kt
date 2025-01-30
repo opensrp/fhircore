@@ -34,6 +34,9 @@ interface ConfigService {
   /** Define a list of [ResourceTag] for the application. */
   fun defineResourceTags(): List<ResourceTag>
 
+  /** Return the App's launcher icon for use in notifications */
+  fun getLauncherIcon(): Int
+
   /**
    * Provide a list of [Coding] that represents [ResourceTag]. [Coding] can be directly appended to
    * a FHIR resource.
@@ -98,12 +101,42 @@ interface ConfigService {
         description = "Search the status field"
       }
 
-    return listOf(activeGroupSearchParameter, flagStatusSearchParameter)
+    val medicationSortSearchParameter =
+      SearchParameter().apply {
+        url = MEDICATION_SORT_URL
+        addBase("Medication")
+        name = SORT_SEARCH_PARAM
+        code = SORT_SEARCH_PARAM
+        type = Enumerations.SearchParamType.NUMBER
+        expression = "Medication.extension.where(url = '$MEDICATION_SORT_URL').value"
+        description = "Search the sort field"
+      }
+
+    val patientSearchParameter =
+      SearchParameter().apply {
+        url = "http://smartregister.org/SearchParameter/patient-search"
+        addBase("Patient")
+        name = SEARCH_PARAM
+        code = SEARCH_PARAM
+        type = Enumerations.SearchParamType.STRING
+        expression = "Patient.name.text | Patient.identifier.value"
+        description = "Search patients by name and identifier fields"
+      }
+
+    return listOf(
+      activeGroupSearchParameter,
+      flagStatusSearchParameter,
+      medicationSortSearchParameter,
+      patientSearchParameter,
+    )
   }
 
   companion object {
     const val ACTIVE_SEARCH_PARAM = "active"
     const val APP_VERSION = "AppVersion"
     const val STATUS_SEARCH_PARAM = "status"
+    const val SORT_SEARCH_PARAM = "sort"
+    const val SEARCH_PARAM = "search"
+    const val MEDICATION_SORT_URL = "http://smartregister.org/SearchParameter/medication-sort"
   }
 }

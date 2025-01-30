@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="style_map_fhir_core">asset://fhircore_style.json</string>
-    <string name="data_set_quest">quest-data-set</string>
-    <string name="quest_data_points">quest-data-points</string>
-</resources>

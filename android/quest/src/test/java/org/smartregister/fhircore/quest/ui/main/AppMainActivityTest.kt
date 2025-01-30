@@ -37,7 +37,6 @@ import io.mockk.slot
 import io.mockk.spyk
 import java.io.Serializable
 import java.time.OffsetDateTime
-import kotlin.test.assertNotNull
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
@@ -125,14 +124,15 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSyncWithSyncStateSucceded() {
+  fun testOnSyncWithSyncStateSucceeded() {
+    // Arrange
     val viewModel = appMainActivity.appMainViewModel
     val stateSucceded = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())
     appMainActivity.onSync(stateSucceded)
 
     Assert.assertEquals(
-      viewModel.formatLastSyncTimestamp(timestamp = stateSucceded.timestamp),
-      viewModel.retrieveLastSyncTimestamp(),
+      viewModel.formatLastSyncTimestamp(timestamp = stateSucceded.timestamp) + " (0s)",
+      viewModel.getSyncTime(),
     )
   }
 
@@ -195,11 +195,5 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     val onSubmitQuestionnaireSlot = slot<AppEvent.OnSubmitQuestionnaire>()
     coVerify { eventBus.triggerEvent(capture(onSubmitQuestionnaireSlot)) }
     Assert.assertNotNull(onSubmitQuestionnaireSlot)
-  }
-
-  @Test
-  fun testStartForResult() {
-    val resultLauncher = appMainActivity.startForResult
-    Assert.assertNotNull(resultLauncher)
   }
 }

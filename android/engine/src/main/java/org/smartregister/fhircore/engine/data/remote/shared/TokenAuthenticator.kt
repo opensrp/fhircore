@@ -41,6 +41,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import javax.net.ssl.SSLHandshakeException
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
@@ -199,22 +200,25 @@ constructor(
     }
   }
 
-  private fun saveToken(
+  private suspend fun saveToken(
     username: String,
     password: CharArray,
     oAuthResponse: OAuthResponse,
   ) {
-    accountManager.run {
-      val account =
-        accounts.find { it.name == username && it.type == authConfiguration.accountType }
-      if (account != null) {
-        setPassword(account, oAuthResponse.refreshToken)
-        setAuthToken(account, AUTH_TOKEN_TYPE, oAuthResponse.accessToken)
-      } else {
-        val newAccount = Account(username, authConfiguration.accountType)
-        addAccountExplicitly(newAccount, oAuthResponse.refreshToken, null)
-        setAuthToken(newAccount, AUTH_TOKEN_TYPE, oAuthResponse.accessToken)
+    withContext(dispatcherProvider.io()) {
+      with(accountManager) {
+        val account =
+          accounts.find { it.name == username && it.type == authConfiguration.accountType }
+        if (account != null) {
+          setPassword(account, oAuthResponse.refreshToken)
+          setAuthToken(account, AUTH_TOKEN_TYPE, oAuthResponse.accessToken)
+        } else {
+          val newAccount = Account(username, authConfiguration.accountType)
+          addAccountExplicitly(newAccount, oAuthResponse.refreshToken, null)
+          setAuthToken(newAccount, AUTH_TOKEN_TYPE, oAuthResponse.accessToken)
+        }
       }
+
       // Save credentials
       secureSharedPreference.saveCredentials(username, password)
     }

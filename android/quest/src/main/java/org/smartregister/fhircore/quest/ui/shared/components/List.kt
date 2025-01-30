@@ -31,12 +31,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -51,7 +48,7 @@ import org.smartregister.fhircore.engine.configuration.register.RegisterCardConf
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ListOrientation
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
-import org.smartregister.fhircore.engine.configuration.view.ListResource
+import org.smartregister.fhircore.engine.configuration.view.ListResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -70,17 +67,20 @@ fun List(
   viewProperties: ListProperties,
   resourceData: ResourceData,
   navController: NavController,
-  decodedImageMap: SnapshotStateMap<String, Bitmap> = mutableStateMapOf(),
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   val density = LocalDensity.current
   val currentListResourceData = resourceData.listResourceDataMap?.get(viewProperties.id)
   if (currentListResourceData.isNullOrEmpty()) {
     if (!viewProperties.emptyList?.message.isNullOrEmpty()) {
-      Box(contentAlignment = Alignment.Center, modifier = modifier.wrapContentSize()) {
+      Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
         Text(
           text = viewProperties.emptyList?.message!!,
-          modifier = modifier.padding(8.dp).align(Alignment.Center),
-          color = DefaultColor,
+          modifier =
+            modifier
+              .conditional(viewProperties.enableTopBottomSpacing, { padding(8.dp) })
+              .align(Alignment.Center),
+          color = viewProperties.emptyList?.textColor?.parseColor() ?: DefaultColor,
           fontStyle = FontStyle.Italic,
         )
       }
@@ -118,7 +118,11 @@ fun List(
                   viewProperty.visible.toBooleanStrict()
                 }
               if (areChildViewsVisible) {
-                Spacer(modifier = modifier.height(6.dp))
+                // Add spacing before each item, except for first item when enableTopBottomSpacing
+                // is false
+                if (index != 0 || viewProperties.enableTopBottomSpacing) {
+                  Spacer(modifier = modifier.height(viewProperties.spacerHeight.dp))
+                }
                 Column(
                   modifier =
                     Modifier.padding(
@@ -138,14 +142,20 @@ fun List(
                       viewProperties = interpolatedChildViewProperties,
                       resourceData = listResourceData,
                       navController = navController,
-                      decodedImageMap = decodedImageMap,
+                      decodeImage = decodeImage,
                       areViewPropertiesInterpolated =
                         true, // Prevents double interpolation (in this function and inside the
                       // ViewRenderer) which is a waste
                     )
                   }
                 }
-                Spacer(modifier = modifier.height(6.dp))
+                // Add spacer after each item except last one when enableTopBottomSpacing is false
+                if (
+                  index != currentListResourceData.lastIndex ||
+                    viewProperties.enableTopBottomSpacing
+                ) {
+                  Spacer(modifier = modifier.height(viewProperties.spacerHeight.dp))
+                }
                 // viewProperties in this case belongs to the List, setting the showDivider will
                 // apply to all child items under the List
                 if (index < currentListResourceData.lastIndex && viewProperties.showDivider) {
@@ -161,7 +171,7 @@ fun List(
                 viewProperties = viewProperties.registerCard.views,
                 resourceData = listResourceData,
                 navController = navController,
-                decodedImageMap = mutableStateMapOf(),
+                decodeImage = decodeImage,
               )
             }
           }
@@ -187,7 +197,7 @@ private fun ListWithHorizontalOrientationPreview() {
           borderRadius = 10,
           emptyList = NoResultsConfig(message = ""),
           resources =
-            listOf(ListResource(id = "carePlanList", resourceType = ResourceType.CarePlan)),
+            listOf(ListResourceConfig(id = "carePlanList", resourceType = ResourceType.CarePlan)),
           fillMaxHeight = true,
           registerCard =
             RegisterCardConfig(
@@ -231,6 +241,7 @@ private fun ListWithHorizontalOrientationPreview() {
           baseResourceType = ResourceType.Patient,
           computedValuesMap = emptyMap(),
         ),
+      decodeImage = null,
     )
   }
 }
@@ -251,7 +262,7 @@ private fun ListWithVerticalOrientationPreview() {
           borderRadius = 10,
           emptyList = NoResultsConfig(message = "No care Plans"),
           resources =
-            listOf(ListResource(id = "carePlanList", resourceType = ResourceType.CarePlan)),
+            listOf(ListResourceConfig(id = "carePlanList", resourceType = ResourceType.CarePlan)),
           fillMaxWidth = true,
           registerCard =
             RegisterCardConfig(
@@ -282,6 +293,7 @@ private fun ListWithVerticalOrientationPreview() {
           baseResourceType = ResourceType.Patient,
           computedValuesMap = emptyMap(),
         ),
+      decodeImage = null,
     )
   }
 }

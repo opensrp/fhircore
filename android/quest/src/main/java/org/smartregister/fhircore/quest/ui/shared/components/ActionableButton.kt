@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -33,6 +34,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,6 +59,7 @@ import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.util.extensions.conditional
@@ -70,6 +73,7 @@ fun ActionableButton(
   buttonProperties: ButtonProperties,
   resourceData: ResourceData,
   navController: NavController,
+  decodeImage: ((String) -> Bitmap?)?,
 ) {
   if (buttonProperties.visible.toBoolean()) {
     val status = buttonProperties.status
@@ -137,10 +141,30 @@ fun ActionableButton(
       border = BorderStroke(width = 0.8.dp, color = statusColor.copy(alpha = 0.1f)),
       elevation = null,
       contentPadding =
-        if (buttonProperties.buttonType == ButtonType.TINY) {
-          PaddingValues(vertical = 2.4.dp, horizontal = 4.dp)
-        } else {
-          PaddingValues(vertical = 4.8.dp, horizontal = 8.dp)
+        run {
+          // Determine default padding based on button type
+          val defaultPadding: PaddingValues =
+            when (buttonProperties.buttonType) {
+              ButtonType.TINY -> PaddingValues(vertical = 2.4.dp, horizontal = 4.dp)
+              else -> PaddingValues(vertical = 4.8.dp, horizontal = 8.dp)
+            }
+
+          // Check if custom padding values are provided
+          val customPadding: PaddingValues? =
+            if (
+              buttonProperties.contentPaddingHorizontal != null &&
+                buttonProperties.contentPaddingVertical != null
+            ) {
+              PaddingValues(
+                vertical = buttonProperties.contentPaddingVertical!!.dp,
+                horizontal = buttonProperties.contentPaddingHorizontal!!.dp,
+              )
+            } else {
+              null
+            }
+
+          // Use custom padding if available; otherwise, fallback to default padding
+          customPadding ?: defaultPadding
         },
       shape = RoundedCornerShape(buttonProperties.borderRadius),
     ) {
@@ -150,6 +174,7 @@ fun ActionableButton(
         if (isButtonEnabled) {
           when (status) {
             ServiceStatus.COMPLETED.name -> SuccessColor
+            ServiceStatus.IN_PROGRESS.name -> WarningColor
             ServiceStatus.FAILED.name -> DangerColor
             else -> statusColor
           }
@@ -158,10 +183,15 @@ fun ActionableButton(
         }
       if (buttonProperties.startIcon != null) {
         Image(
-          imageProperties = ImageProperties(imageConfig = buttonProperties.startIcon, size = 16),
+          imageProperties =
+            ImageProperties(
+              imageConfig = buttonProperties.startIcon,
+              size = buttonProperties.statusIconSize,
+            ),
           tint = iconTintColor,
           resourceData = resourceData,
           navController = navController,
+          decodeImage = decodeImage,
         )
       } else {
         Icon(
@@ -170,6 +200,9 @@ fun ActionableButton(
               ServiceStatus.COMPLETED.name -> {
                 Icons.Filled.Check
               }
+              ServiceStatus.IN_PROGRESS.name -> {
+                Icons.Outlined.Edit
+              }
               ServiceStatus.FAILED.name -> {
                 Icons.Filled.Clear
               }
@@ -177,7 +210,7 @@ fun ActionableButton(
             },
           contentDescription = null,
           tint = iconTintColor,
-          modifier = Modifier.size(16.dp),
+          modifier = Modifier.size(buttonProperties.statusIconSize.dp),
         )
       }
       Text(
@@ -219,6 +252,7 @@ fun ActionableButtonPreview() {
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
+    decodeImage = null,
   )
 }
 
@@ -235,6 +269,7 @@ fun ActionableButtonTinyButtonPreview() {
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
+    decodeImage = null,
   )
 }
 
@@ -257,6 +292,7 @@ fun DisabledActionableButtonPreview() {
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodeImage = null,
     )
   }
 }
@@ -276,6 +312,7 @@ fun SmallActionableButtonPreview() {
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodeImage = null,
     )
     ActionableButton(
       modifier = Modifier.weight(1.0f),
@@ -288,6 +325,7 @@ fun SmallActionableButtonPreview() {
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
+      decodeImage = null,
     )
   }
 }

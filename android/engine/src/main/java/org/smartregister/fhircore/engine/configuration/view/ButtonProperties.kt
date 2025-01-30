@@ -43,6 +43,7 @@ data class ButtonProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   override val visible: String = "true",
+  override val opacity: Float? = null,
   val contentColor: String? = null,
   val enabled: String = "true",
   val text: String? = null,
@@ -55,6 +56,8 @@ data class ButtonProperties(
   val backgroundOpacity: Float = 0f,
   val colorOpacity: Float = 0f,
   val statusIconSize: Int = 16,
+  val contentPaddingVertical: Float? = null,
+  val contentPaddingHorizontal: Float? = null,
 ) : ViewProperties(), Parcelable {
   /**
    * This function determines the status color to display depending on the value of the service

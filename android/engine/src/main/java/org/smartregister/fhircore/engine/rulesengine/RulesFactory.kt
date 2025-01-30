@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.rulesengine
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.extensions.logicalId
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Order
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
@@ -30,12 +31,15 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.system.measureTimeMillis
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.apache.commons.jexl3.JexlEngine
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
@@ -63,6 +67,7 @@ import org.smartregister.fhircore.engine.util.extension.extractBirthDate
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.generateRules
 import org.smartregister.fhircore.engine.util.extension.isOverDue
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
@@ -71,6 +76,7 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import timber.log.Timber
 
+@Singleton
 class RulesFactory
 @Inject
 constructor(
@@ -80,10 +86,14 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val locationService: LocationService,
   val fhirContext: FhirContext,
+  val jexlEngine: JexlEngine,
   val defaultRepository: DefaultRepository,
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
-  private var facts: Facts = Facts()
+
+  @get:Synchronized @set:Synchronized private var facts: Facts = Facts()
+
+  fun generateRules(ruleConfigs: List<RuleConfig>): Rules = ruleConfigs.generateRules(jexlEngine)
 
   /**
    * This function executes the actions defined in the [Rule] s generated from the provided list of
@@ -92,11 +102,13 @@ constructor(
    * [RepositoryResourceData.relatedResourcesCountMap]. All related resources of same type are
    * flattened in a map for ease of usage in the rule engine.
    */
+  @Synchronized
   fun fireRules(
     rules: Rules,
     repositoryResourceData: RepositoryResourceData?,
     params: Map<String, String>,
   ): Map<String, Any> {
+    facts.clear() // Reset current facts
     facts =
       Facts().apply {
         put(FHIR_PATH, fhirPathDataExtractor)
@@ -108,14 +120,14 @@ constructor(
     if (repositoryResourceData != null) {
       with(repositoryResourceData) {
         facts.apply {
-          put(resourceRulesEngineFactId ?: resource.resourceType.name, resource)
+          put(resourceConfigId ?: resource.resourceType.name, resource)
           relatedResourcesMap.addToFacts(this)
           relatedResourcesCountMap.addToFacts(this)
 
           // Populate the facts map with secondary resource data flatten base and related
           // resources
           secondaryRepositoryResourceData
-            ?.groupBy { it.resourceRulesEngineFactId ?: it.resource.resourceType.name }
+            ?.groupBy { it.resourceConfigId ?: it.resource.resourceType.name }
             ?.forEach { entry -> put(entry.key, entry.value.map { it.resource }) }
 
           secondaryRepositoryResourceData?.forEach { repoResourceData ->
@@ -139,6 +151,26 @@ constructor(
         }
       }
     }
+    if (BuildConfig.DEBUG) {
+      val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+      Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+    } else {
+      rulesEngine.fire(rules, facts)
+    }
+    return facts.get(DATA) as Map<String, Any>
+  }
+
+  fun fireRules(rules: Rules, baseResource: Resource? = null): Map<String, Any> {
+    facts.clear() // Reset current facts
+    facts =
+      Facts().apply {
+        put(FHIR_PATH, fhirPathDataExtractor)
+        put(DATA, mutableMapOf<String, Any>())
+        put(DATE_SERVICE, DateService)
+        if (baseResource != null) {
+          put(baseResource.resourceType.name, baseResource)
+        }
+      }
     if (BuildConfig.DEBUG) {
       val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
       Timber.d("Rule executed in $timeToFireRules millisecond(s)")
@@ -183,23 +215,33 @@ constructor(
       relatedResourceKey: String,
       referenceFhirPathExpression: String?,
       relatedResourcesMap: Map<String, List<Resource>>? = null,
+      isRevInclude: Boolean = true,
     ): List<Resource> {
       val value: List<Resource> =
         relatedResourcesMap?.get(relatedResourceKey)
           ?: if (facts.getFact(relatedResourceKey) != null) {
-            facts.getFact(relatedResourceKey).value as List<Resource>
+            facts.getFact(relatedResourceKey).value as List<Resource>? ?: emptyList()
           } else {
             emptyList()
           }
 
-      return if (referenceFhirPathExpression.isNullOrEmpty()) {
-        value
+      if (referenceFhirPathExpression.isNullOrEmpty()) {
+        return value
+      }
+
+      // Reverse search; look for related resource that references the provided resource
+      return if (isRevInclude) {
+        value.filter { res ->
+          fhirPathDataExtractor.extractData(res, referenceFhirPathExpression).all {
+            resource.logicalId == it.primitiveValue().extractLogicalIdUuid()
+          }
+        }
       } else {
-        value.filter {
-          resource.logicalId ==
-            fhirPathDataExtractor
-              .extractValue(it, referenceFhirPathExpression)
-              .extractLogicalIdUuid()
+        // Forward search; extract value provided resource, then search resources with matching id
+        value.filter { res ->
+          fhirPathDataExtractor.extractData(resource, referenceFhirPathExpression).all {
+            res.logicalId == it.primitiveValue().extractLogicalIdUuid()
+          }
         }
       }
     }
@@ -425,14 +467,15 @@ constructor(
 
     /**
      * This function filters resources provided the condition extracted from the
-     * [conditionalFhirPathExpression] is met
+     * [conditionalFhirPathExpression] is met. Returns the original source or empty resources list
+     * if FHIR path expression is null.
      */
     fun filterResources(
       resources: List<Resource>?,
-      conditionalFhirPathExpression: String,
+      conditionalFhirPathExpression: String?,
     ): List<Resource> {
-      if (conditionalFhirPathExpression.isEmpty()) {
-        return emptyList()
+      if (conditionalFhirPathExpression.isNullOrBlank()) {
+        return resources ?: emptyList()
       }
       return resources?.filter {
         fhirPathDataExtractor.extractValue(it, conditionalFhirPathExpression).toBoolean()
@@ -546,6 +589,7 @@ constructor(
       return source?.take(limit) ?: emptyList()
     }
 
+    @JvmOverloads
     fun mapResourcesToExtractedValues(
       resources: List<Resource>?,
       fhirPathExpression: String,
@@ -555,6 +599,31 @@ constructor(
       }
       return resources?.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
         ?: emptyList()
+    }
+
+    /**
+     * This function combines all the string values retrieved from the [resources] using the
+     * [fhirPathExpression] to a list separated by the [separator]
+     *
+     * e.g for a provided list of Patients we can extract a string containing the family names using
+     * the 'Patient.name.family' as the [fhirPathExpression] and [ | ] as the [separator] the
+     * returned string would be [John | Jane | James]
+     */
+    @JvmOverloads
+    fun mapResourcesToExtractedValues(
+      resources: List<Resource>?,
+      fhirPathExpression: String,
+      separator: String = ",",
+    ): String {
+      if (fhirPathExpression.isEmpty()) {
+        return ""
+      }
+      val results: List<Any> =
+        mapResourcesToExtractedValues(
+          resources = resources,
+          fhirPathExpression = fhirPathExpression,
+        )
+      return results.joinToString(separator)
     }
 
     fun computeTotalCount(relatedResourceCounts: List<RelatedResourceCount>?): Long =
@@ -676,8 +745,8 @@ constructor(
               set(idPath, resource.id.replace("#", ""))
             }
           }
-        } catch (e: PathNotFoundException) {
-          Timber.e(e, "Path $path not found")
+        } catch (pathNotFoundException: PathNotFoundException) {
+          Timber.e(pathNotFoundException, "Path $path not found")
           jsonParse
         }
 
@@ -685,7 +754,8 @@ constructor(
         fhirContext
           .newJsonParser()
           .parseResource(resource::class.java, updatedResourceDocument.jsonString())
-      CoroutineScope(dispatcherProvider.io()).launch {
+
+      runBlocking {
         if (purgeAffectedResources) {
           defaultRepository.purge(updatedResource as Resource, forcePurge = true)
         }
@@ -704,6 +774,39 @@ constructor(
           ServiceStatus.valueOf(status) in serviceStatus.map { item -> ServiceStatus.valueOf(item) }
         } else {
           false
+        }
+      }
+    }
+
+    fun getResourceByReference(
+      resourceReference: String?,
+    ): Resource? {
+      if (resourceReference.isNullOrEmpty()) {
+        return null
+      }
+
+      return runBlocking {
+        try {
+          defaultRepository.loadResource(Reference().apply { reference = resourceReference })
+        } catch (e: ResourceNotFoundException) {
+          null
+        }
+      }
+    }
+
+    fun getResourceByIdAndType(
+      resourceId: String?,
+      resourceType: String?,
+    ): Resource? {
+      if (resourceId.isNullOrEmpty() || resourceType.isNullOrEmpty()) {
+        return null
+      }
+
+      return runBlocking {
+        try {
+          defaultRepository.loadResource(resourceId, ResourceType.valueOf(resourceType))
+        } catch (e: ResourceNotFoundException) {
+          null
         }
       }
     }

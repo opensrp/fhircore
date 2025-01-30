@@ -35,6 +35,7 @@ data class CompoundTextProperties(
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
+  override val opacity: Float? = null,
   override val clickable: String = "false",
   override val visible: String = "true",
   val primaryText: String? = null,
@@ -54,6 +55,7 @@ data class CompoundTextProperties(
   val textCase: TextCase? = null,
   val overflow: TextOverFlow? = null,
   val letterSpacing: Int = 0,
+  val textInnerPadding: Int = 0,
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): CompoundTextProperties {
     return this.copy(

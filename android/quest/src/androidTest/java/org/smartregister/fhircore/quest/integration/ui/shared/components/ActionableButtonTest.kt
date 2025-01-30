@@ -123,6 +123,7 @@ class ActionableButtonTest {
             ),
           resourceData = ResourceData("id", ResourceType.Patient, computedValuesMap),
           navController = TestNavHostController(LocalContext.current),
+          decodeImage = null,
         )
       }
     }

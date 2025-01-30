@@ -22,6 +22,7 @@ import com.google.android.fhir.search.StringFilterModifier
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -54,7 +55,8 @@ import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -65,7 +67,9 @@ import org.smartregister.fhircore.quest.ui.shared.models.SearchQuery
 class RegisterViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  @Inject lateinit var rulesExecutor: RulesExecutor
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var registerViewModel: RegisterViewModel
@@ -86,7 +90,8 @@ class RegisterViewModelTest : RobolectricTest() {
           registerRepository = registerRepository,
           configurationRegistry = configurationRegistry,
           sharedPreferencesHelper = sharedPreferencesHelper,
-          resourceDataRulesExecutor = resourceDataRulesExecutor,
+          rulesExecutor = rulesExecutor,
+          dispatcherProvider = dispatcherProvider,
         ),
       )
 
@@ -114,7 +119,7 @@ class RegisterViewModelTest : RobolectricTest() {
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testRetrieveRegisterUiState() = runTest {
-    every { registerViewModel.retrieveRegisterConfiguration(any()) } returns
+    val registerConfig =
       RegisterConfiguration(
         appId = "app",
         id = registerId,
@@ -122,6 +127,10 @@ class RegisterViewModelTest : RobolectricTest() {
           FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Patient)),
         pageSize = 10,
       )
+    configurationRegistry.configCacheMap[registerId] = registerConfig
+    registerViewModel.registerUiState.value =
+      registerViewModel.registerUiState.value.copy(registerId = registerId)
+
     every { registerViewModel.paginateRegisterData(any(), any()) } just runs
     coEvery { registerRepository.countRegisterData(any()) } returns 200
     registerViewModel.retrieveRegisterUiState(
@@ -138,13 +147,11 @@ class RegisterViewModelTest : RobolectricTest() {
     val registerConfiguration = registerUiState.registerConfiguration
     Assert.assertNotNull(registerConfiguration)
     Assert.assertEquals("app", registerConfiguration?.appId)
-    Assert.assertEquals(200, registerUiState.totalRecordsCount)
-    Assert.assertEquals(20, registerUiState.pagesCount)
   }
 
   @Test
-  fun testOnEventSearchRegister() {
-    every { registerViewModel.retrieveRegisterConfiguration(any()) } returns
+  fun testPerformSearchWithEmptyQuery() = runTest {
+    val registerConfig =
       RegisterConfiguration(
         appId = "app",
         id = registerId,
@@ -152,15 +159,30 @@ class RegisterViewModelTest : RobolectricTest() {
           FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Patient)),
         pageSize = 10,
       )
-    every { registerViewModel.registerUiState } returns
-      mutableStateOf(RegisterUiState(registerId = registerId))
+    configurationRegistry.configCacheMap[registerId] = registerConfig
+    coEvery { registerRepository.countRegisterData(any()) } returns 0L
+
     // Search with empty string should paginate the data
-    registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery.emptyText))
-    verify { registerViewModel.paginateRegisterData(any(), any()) }
+    registerViewModel.performSearch(registerId, SearchQuery.emptyText)
+    verify { registerViewModel.retrieveRegisterUiState(any(), any(), any(), any()) }
+  }
+
+  @Test
+  fun testPerformSearchWithNonEmptyQuery() = runTest {
+    val registerConfig =
+      RegisterConfiguration(
+        appId = "app",
+        id = registerId,
+        fhirResource =
+          FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Patient)),
+        pageSize = 10,
+      )
+    configurationRegistry.configCacheMap[registerId] = registerConfig
+    coEvery { registerRepository.countRegisterData(any()) } returns 0L
 
     // Search for the word 'Khan' should call the filterRegisterData function
-    registerViewModel.onEvent(RegisterEvent.SearchRegister(SearchQuery("Khan")))
-    verify { registerViewModel.filterRegisterData(any()) }
+    registerViewModel.performSearch(registerId, SearchQuery("Khan"))
+    coVerify { registerViewModel.filterRegisterData(any()) }
   }
 
   @Test

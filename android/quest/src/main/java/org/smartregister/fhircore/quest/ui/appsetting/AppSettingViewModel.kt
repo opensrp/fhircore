@@ -29,7 +29,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.apache.commons.lang3.StringUtils
-import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
@@ -70,6 +69,7 @@ constructor(
 ) : ViewModel() {
 
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
+  private val exceptionHandler = CoroutineExceptionHandler { _, exception -> Timber.e(exception) }
 
   val showProgressBar = MutableLiveData(false)
 
@@ -101,8 +101,6 @@ constructor(
       }
     }
   }
-
-  private val exceptionHandler = CoroutineExceptionHandler { _, exception -> Timber.e(exception) }
 
   private fun fetchRemoteConfigurations(appId: String?, context: Context) {
     viewModelScope.launch(exceptionHandler) {
@@ -150,6 +148,9 @@ constructor(
           return@launch
         }
 
+        // Save composition
+        defaultRepository.createRemote(false, compositionResource)
+
         compositionResource
           .retrieveCompositionSections()
           .asSequence()
@@ -192,8 +193,6 @@ constructor(
             }
           }
 
-        // Save composition after fetching all the referenced section resources
-        defaultRepository.createRemote(false, compositionResource)
         Timber.d("Done fetching application configurations remotely")
         loadConfigurations(context)
       } catch (unknownHostException: UnknownHostException) {

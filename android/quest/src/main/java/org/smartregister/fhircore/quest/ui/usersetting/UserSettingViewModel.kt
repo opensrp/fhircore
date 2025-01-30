@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.usersetting
 
 import android.content.Context
+import android.os.Environment
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -24,6 +25,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.File
+import java.io.IOException
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -33,6 +36,9 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import net.lingala.zip4j.model.ZipParameters
+import net.lingala.zip4j.model.enums.CompressionLevel
+import net.lingala.zip4j.model.enums.EncryptionMethod
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -46,20 +52,30 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYYMMDD_HHMMSS
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MMM_DD_HH_MM_SS
 import org.smartregister.fhircore.engine.util.extension.countUnSyncedResources
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
+import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
+import org.smartregister.fhircore.engine.util.extension.reformatDate
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
+import org.smartregister.fhircore.quest.util.DBUtils
+import org.smartregister.fhircore.quest.util.FileUtils
 import org.smartregister.p2p.utils.startP2PScreen
+import timber.log.Timber
+
+private const val FHIR_ENGINE_DB_PASSPHRASE = "fhirEngineDbPassphrase"
 
 @HiltViewModel
 class UserSettingViewModel
@@ -89,7 +105,6 @@ constructor(
 
   val appVersionCode = BuildConfig.VERSION_CODE
   val appVersionName = BuildConfig.VERSION_NAME
-  val buildDate = BuildConfig.BUILD_DATE
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
@@ -176,6 +191,10 @@ constructor(
       is UserSettingsEvent.ShowInsightsScreen -> {
         event.navController.navigate(MainNavigationScreen.Insight.route)
       }
+      is UserSettingsEvent.ExportDB -> {
+        updateProgressBarState(true, R.string.exporting_db)
+        copyDatabase(event.context) { updateProgressBarState(false, R.string.exporting_db) }
+      }
     }
   }
 
@@ -204,6 +223,15 @@ constructor(
 
   fun enabledDeviceToDeviceSync(): Boolean = applicationConfiguration.deviceToDeviceSync != null
 
+  fun getDateFormat() = applicationConfiguration.dateFormat
+
+  fun getBuildDate() =
+    reformatDate(
+      inputDateString = BuildConfig.BUILD_DATE,
+      currentFormat = SDF_YYYY_MMM_DD_HH_MM_SS,
+      desiredFormat = applicationConfiguration.dateFormat,
+    )
+
   fun fetchUnsyncedResources() {
     viewModelScope.launch {
       withContext(dispatcherProvider.io()) {
@@ -217,5 +245,64 @@ constructor(
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
+  }
+
+  private fun copyDatabase(context: Context, onCopyCompleteListener: () -> Unit) {
+    viewModelScope.launch(dispatcherProvider.io()) {
+      try {
+        val passphrase = DBUtils.getEncryptionPassphrase(FHIR_ENGINE_DB_PASSPHRASE)
+        val dbFilename = if (BuildConfig.DEBUG) "resources" else "resources_encrypted"
+        val dbFile = File("/data/data/${context.packageName}/databases/$dbFilename.db")
+
+        val downloadsDir =
+          Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+
+        val username = secureSharedPreference.retrieveSessionUsername()
+        val practitionerId =
+          sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, username)
+
+        val appName = applicationConfiguration.appTitle.replace(" ", "_")
+        val fileTimestamp = today().formatDate(SDF_YYYYMMDD_HHMMSS)
+        val filename = "${appName}_${username}_${practitionerId}_$fileTimestamp.db"
+        val backupFile =
+          File(
+            downloadsDir,
+            filename,
+          )
+
+        val dbCopied =
+          if (BuildConfig.DEBUG) {
+            DBUtils.copyUnencryptedDb(dbFile, backupFile)
+          } else {
+            DBUtils.decryptDb(dbFile, backupFile, passphrase)
+          }
+
+        if (dbCopied) {
+          val zipFile = File("${backupFile.absolutePath}.zip")
+          val practitionerUuid = practitionerId!!.substring(0, practitionerId.indexOf("-"))
+          val zipPassword = "${username}_$practitionerUuid".toCharArray()
+          val zipParameters =
+            ZipParameters().apply {
+              isEncryptFiles = true
+              compressionLevel = CompressionLevel.HIGHER
+              encryptionMethod = EncryptionMethod.AES
+            }
+
+          FileUtils.zipFiles(
+            zipFile,
+            listOf(backupFile),
+            zipPassword,
+            zipParameters,
+            true,
+          )
+
+          if (zipFile.exists()) FileUtils.shareFile(context, zipFile)
+        }
+      } catch (e: IOException) {
+        Timber.e(e, "Failed to copy application's database")
+      } finally {
+        onCopyCompleteListener.invoke()
+      }
+    }
   }
 }

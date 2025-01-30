@@ -39,10 +39,10 @@ import java.time.OffsetDateTime
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -52,14 +52,13 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.SyncStrategy
-import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.domain.model.LauncherType
+import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
 import org.smartregister.fhircore.engine.sync.CustomSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
@@ -74,9 +73,12 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.countUnSyncedResources
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
+import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.reformatDate
 import org.smartregister.fhircore.engine.util.extension.refresh
+import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.tryParse
@@ -86,7 +88,6 @@ import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMo
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
-import org.smartregister.fhircore.quest.util.extensions.resourceReferenceToBitMap
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
 
 @HiltViewModel
@@ -133,23 +134,6 @@ constructor(
     configurationRegistry.retrieveConfigurations(ConfigType.MeasureReport)
   }
 
-  fun retrieveIconsAsBitmap() {
-    viewModelScope.launch(dispatcherProvider.io()) {
-      navigationConfiguration.clientRegisters
-        .asSequence()
-        .filter {
-          it.menuIconConfig != null &&
-            it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
-            !it.menuIconConfig?.reference.isNullOrBlank()
-        }
-        .mapNotNull { it.menuIconConfig!!.reference }
-        .resourceReferenceToBitMap(
-          fhirEngine = fhirEngine,
-          decodedImageMap = configurationRegistry.decodedImageMap,
-        )
-    }
-  }
-
   fun retrieveAppMainUiState(refreshAll: Boolean = true) {
     if (refreshAll) {
       appMainUiState.value =
@@ -157,7 +141,7 @@ constructor(
           appTitle = applicationConfiguration.appTitle,
           currentLanguage = loadCurrentLanguage(),
           username = secureSharedPreference.retrieveSessionUsername() ?: "",
-          lastSyncTime = retrieveLastSyncTimestamp() ?: "",
+          lastSyncTime = getSyncTime(),
           languages = configurationRegistry.fetchLanguages(),
           navigationConfiguration = navigationConfiguration,
           registerCountMap = registerCountMap,
@@ -165,6 +149,66 @@ constructor(
     }
 
     countRegisterData()
+  }
+  // todo - if we can move this method to somewhere else where it can be accessed easily on multiple
+  // view models
+  /**
+   * Retrieves the last sync time from shared preferences and returns it in a formatted way. This
+   * method handles both cases:
+   * 1. The time stored as a timestamp in milliseconds (preferred).
+   * 2. Backward compatibility where the time is stored in a formatted string.
+   *
+   * @return A formatted sync time string.
+   */
+  fun getSyncTime(): String {
+    var result = ""
+
+    // First, check if we have any previously stored sync time in SharedPreferences.
+    retrieveLastSyncTimestamp()?.let { storedDate ->
+
+      // Try to treat the stored time as a timestamp (in milliseconds).
+      runCatching {
+          // Attempt to convert the stored date to Long (i.e., millis format) and format it.
+          result =
+            formatDate(
+              timeMillis = storedDate.toLong(),
+              desireFormat = applicationConfiguration.dateFormat,
+            )
+        }
+        .onFailure {
+          // If conversion to Long fails, it's likely that the stored date is in a formatted string
+          // (backward compatibility).
+          // Reformat the stored date using the provided SYNC_TIMESTAMP_OUTPUT_FORMAT.
+          result =
+            reformatDate(
+              inputDateString = storedDate,
+              currentFormat = SYNC_TIMESTAMP_OUTPUT_FORMAT,
+              desiredFormat = applicationConfiguration.dateFormat,
+            )
+        }
+    }
+
+    val syncStart = sharedPreferencesHelper.read(SharedPreferenceKey.SYNC_START_TIMESTAMP.name, 0)
+    val syncEnd = sharedPreferencesHelper.read(SharedPreferenceKey.SYNC_END_TIMESTAMP.name, 0)
+
+    result += " (${getTimeDifference(syncStart,syncEnd)})"
+
+    // Return the result (either formatted time in millis or re-formatted backward-compatible date).
+    return result
+  }
+
+  private fun getTimeDifference(startTime: Long, endTime: Long): String {
+    val diffInMillis = endTime - startTime
+
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(diffInMillis) % 60
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(diffInMillis) % 60
+    val hours = TimeUnit.MILLISECONDS.toHours(diffInMillis)
+
+    return when {
+      hours > 0 -> "${hours}h ${minutes}m ${seconds}s"
+      minutes > 0 -> "${minutes}m ${seconds}s"
+      else -> "${seconds}s"
+    }
   }
 
   fun countRegisterData() {
@@ -205,7 +249,7 @@ constructor(
         if (event.state is CurrentSyncJobStatus.Succeeded) {
           sharedPreferencesHelper.write(
             SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-            formatLastSyncTimestamp(event.state.timestamp),
+            event.state.timestamp.toInstant().toEpochMilli().toString(),
           )
           retrieveAppMainUiState()
           viewModelScope.launch { retrieveAppMainUiState() }
@@ -385,7 +429,9 @@ constructor(
       if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
         if (
           applicationConfiguration.usePractitionerAssignedLocationOnSync ||
-            context.syncLocationIdsProtoStore.data.firstOrNull()?.isNotEmpty() == true
+            context
+              .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA)
+              .isNotEmpty()
         ) {
           schedulePeriodicSync()
         }

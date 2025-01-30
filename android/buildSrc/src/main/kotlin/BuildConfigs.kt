@@ -2,8 +2,8 @@ object BuildConfigs {
     const val minSdk = 26
     const val compileSdk = 34
     const val targetSdk = 34
-    const val versionCode = 11
-    const val versionName = "2.0.0"
+    const val versionCode = 14
+    const val versionName = "2.1.1"
     const val applicationId = "org.smartregister.opensrp"
     const val jvmToolchain = 17
     const val kotlinCompilerExtensionVersion = "1.5.8"
@@ -12,3 +12,4 @@ object BuildConfigs {
     const val enableUnitTestCoverage = true
     const val enableAndroidTestCoverage = false
 }
+

@@ -51,6 +51,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -65,6 +66,8 @@ class RegisterFragmentTest : RobolectricTest() {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var eventBus: EventBus
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -86,7 +89,8 @@ class RegisterFragmentTest : RobolectricTest() {
           registerRepository = mockk(relaxed = true),
           configurationRegistry = configurationRegistry,
           sharedPreferencesHelper = Faker.buildSharedPreferencesHelper(),
-          resourceDataRulesExecutor = mockk(),
+          rulesExecutor = mockk(),
+          dispatcherProvider = dispatcherProvider,
         ),
       )
     registerFragmentMock = mockk()
