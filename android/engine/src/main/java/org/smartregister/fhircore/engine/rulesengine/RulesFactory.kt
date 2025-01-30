@@ -33,8 +33,6 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.system.measureTimeMillis
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.jexl3.JexlEngine
 import org.hl7.fhir.r4.model.Base
