@@ -19,10 +19,13 @@ package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import com.google.ai.client.generativeai.GenerativeModel
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import java.io.File
+import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -31,16 +34,32 @@ import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.medintel.speech.models.GeminiModel
 import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
+@HiltAndroidTest
 class TextToFormTest : RobolectricTest() {
+
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   private lateinit var mockLlmModel: LlmModel<GenerativeModel>
   private val fhirContext = FhirContext.forR4()
   private val useGeminiApi = System.getProperty("USE_GEMINI_API")?.toBoolean() ?: false
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+  private lateinit var textToForm: TextToForm
+
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+
+    textToForm = TextToForm(dispatcherProvider)
+  }
 
   @After
   override fun tearDown() {
@@ -66,7 +85,7 @@ class TextToFormTest : RobolectricTest() {
       "id": "test-id"
     }
     ```"""
-    val jsonBlock = TextToForm.extractJsonBlock(responseText)
+    val jsonBlock = textToForm.extractJsonBlock(responseText)
     assertNotNull(jsonBlock, "JSON block should not be null")
     assertEquals(
       """{
@@ -83,7 +102,7 @@ class TextToFormTest : RobolectricTest() {
   @Test
   fun testExtractJsonBlockWithInvalidJson() {
     val responseText = "Invalid text without JSON block"
-    val jsonBlock = TextToForm.extractJsonBlock(responseText)
+    val jsonBlock = textToForm.extractJsonBlock(responseText)
     assertEquals(null, jsonBlock, "JSON block should be null for invalid input")
   }
 
@@ -96,7 +115,7 @@ class TextToFormTest : RobolectricTest() {
       "id": "valid-id"
     }
     """
-    val questionnaireResponse = TextToForm.parseQuestionnaireResponse(json, fhirContext)
+    val questionnaireResponse = textToForm.parseQuestionnaireResponse(json, fhirContext)
     assertNotNull(questionnaireResponse, "QuestionnaireResponse should not be null")
     assertEquals(
       "QuestionnaireResponse/valid-id",
@@ -109,7 +128,7 @@ class TextToFormTest : RobolectricTest() {
   fun testParseQuestionnaireResponseWithInvalidJson() {
     val json = "{ invalid-json }"
     try {
-      TextToForm.parseQuestionnaireResponse(json, fhirContext)
+      textToForm.parseQuestionnaireResponse(json, fhirContext)
       fail("Exception should have been thrown for invalid JSON")
     } catch (e: Exception) {
       assertTrue(
@@ -131,7 +150,7 @@ class TextToFormTest : RobolectricTest() {
     val invalidResponse = jsonParser.encodeResourceToString(invalidQuestionnaire)
 
     val prompt =
-      TextToForm.buildRetryPrompt(transcript, errors, invalidResponse, questionnaire, fhirContext)
+      textToForm.buildRetryPrompt(transcript, errors, invalidResponse, questionnaire, fhirContext)
     assertTrue(
       prompt.contains("<errors>Error 1\nError 2</errors>"),
       "Prompt should include errors",
@@ -166,7 +185,7 @@ class TextToFormTest : RobolectricTest() {
     val geminiModel = GeminiModel()
 
     val result =
-      TextToForm.generateQuestionnaireResponse(
+      textToForm.generateQuestionnaireResponse(
         transcriptFile = testFile,
         questionnaire = mockQuestionnaire,
         context = ApplicationProvider.getApplicationContext(),
@@ -196,13 +215,13 @@ class TextToFormTest : RobolectricTest() {
         )
         .readText()
 
-    val questionnaire = TextToForm.parseQuestionnaire(questionnaireContent, fhirContext)
+    val questionnaire = textToForm.parseQuestionnaire(questionnaireContent, fhirContext)
 
     coEvery { mockLlmModel.generateContent(any(String::class)) } returns
       "```json\n$questionnaireResponseContent\n```"
 
     val result =
-      TextToForm.generateQuestionnaireResponse(
+      textToForm.generateQuestionnaireResponse(
         transcriptFile = transcript,
         questionnaire = questionnaire,
         context = ApplicationProvider.getApplicationContext(),

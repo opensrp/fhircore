@@ -279,6 +279,13 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     }
   }
 
+  private fun removeSpeechToTextFragment() {
+    supportFragmentManager.commit {
+      setReorderingAllowed(true)
+      supportFragmentManager.findFragmentByTag(SpeechToText_FRAGMENT_TAG)?.let { remove(it) }
+    }
+  }
+
   private suspend fun launchQuestionnaire() {
     showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(true))
 
@@ -374,6 +381,8 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           } catch (e: IllegalArgumentException) {
             Timber.e(e)
             showToast(e.message.toString())
+          } finally {
+            removeSpeechToTextFragment()
           }
         }
       }

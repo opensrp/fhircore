@@ -18,25 +18,44 @@ package org.smartregister.fhircore.quest.medintel.summarization
 
 import ca.uhn.fhir.context.FhirContext
 import com.google.ai.client.generativeai.GenerativeModel
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import java.io.File
+import javax.inject.Inject
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.medintel.speech.models.GeminiModel
 import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel
 import org.smartregister.fhircore.quest.medintel.speech.speechtoform.TextToForm
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
+@HiltAndroidTest
 class SummarizeTest : RobolectricTest() {
+
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   private lateinit var llmModel: LlmModel<GenerativeModel>
   private val fhirContext = FhirContext.forR4()
   private val useGeminiApi = System.getProperty("USE_GEMINI_API")?.toBoolean() ?: false
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+  private lateinit var textToForm: TextToForm
+
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+
+    textToForm = TextToForm(dispatcherProvider)
+  }
 
   @After
   override fun tearDown() {
@@ -69,9 +88,9 @@ class SummarizeTest : RobolectricTest() {
           "src/test/java/org/smartregister/fhircore/quest/resources/sample_questionnaire_response.json",
         )
         .readText()
-    val questionnaire = TextToForm.parseQuestionnaire(questionnaireContent, fhirContext)
+    val questionnaire = textToForm.parseQuestionnaire(questionnaireContent, fhirContext)
     val questionnaireResponse =
-      TextToForm.parseQuestionnaireResponse(questionnaireResponseContent, fhirContext)
+      textToForm.parseQuestionnaireResponse(questionnaireResponseContent, fhirContext)
     val summary =
       Summarize.summarize(
         questionnaire = questionnaire,
@@ -97,9 +116,9 @@ class SummarizeTest : RobolectricTest() {
           "src/test/java/org/smartregister/fhircore/quest/resources/sample_questionnaire_response.json",
         )
         .readText()
-    val questionnaire = TextToForm.parseQuestionnaire(questionnaireContent, fhirContext)
+    val questionnaire = textToForm.parseQuestionnaire(questionnaireContent, fhirContext)
     val questionnaireResponse =
-      TextToForm.parseQuestionnaireResponse(questionnaireResponseContent, fhirContext)
+      textToForm.parseQuestionnaireResponse(questionnaireResponseContent, fhirContext)
     val mockSummary =
       "The patient, John Doe Smith, is a 39-year-old male caregiver who registered with the system. He provided his national ID number, mobile phone number, and GPS location. He also selected his location as Province 1, District 2, and Village 3."
 

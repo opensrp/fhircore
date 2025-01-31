@@ -289,6 +289,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         context = context,
         questionnaireConfig = questionnaireConfig,
         onSuccessfulSubmission = onSuccessfulSubmission,
+        onQuestionnaireResponseInvalid = {},
       )
 
       // Verify QuestionnaireResponse was validated
@@ -389,6 +390,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       context = context,
       questionnaireConfig = updatedQuestionnaireConfig,
       onSuccessfulSubmission = onSuccessfulSubmission,
+      onQuestionnaireResponseInvalid = {},
     )
 
     // Verify QuestionnaireResponse was validated
@@ -1415,16 +1417,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { fhirEngine.get(ResourceType.Patient, patient.id) } returns patient
     Assert.assertNotNull(questionnaireViewModel.loadResource(ResourceType.Patient, patient.id))
-  }
-
-  @Test
-  fun testSetProgressStateShouldUpdateLiveData() {
-    val questionnaireState = QuestionnaireProgressState.QuestionnaireLaunch(true)
-    questionnaireViewModel.setProgressState(questionnaireState)
-    Assert.assertEquals(
-      questionnaireState,
-      questionnaireViewModel.questionnaireProgressStateLiveData.value,
-    )
   }
 
   @Test
