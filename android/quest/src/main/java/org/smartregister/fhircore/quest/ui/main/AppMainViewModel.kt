@@ -45,7 +45,6 @@ import kotlin.time.Duration
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.R
@@ -408,7 +407,7 @@ constructor(
       AppDrawerUIState(
         isSyncUpload = isSyncUpload,
         syncCounter = syncCounter,
-        totalSyncCount = retrieveTotalSyncCount(),
+        totalSyncCount = configurationRegistry.retrieveTotalSyncCount(),
         currentSyncJobStatus = currentSyncJobStatus,
         percentageProgress = percentageProgress,
       )
@@ -485,23 +484,6 @@ constructor(
         }
       }
     }
-  }
-
-  /**
-   * This function returns either '1' or '2' depending on whether there are custom resources (not
-   * included in ResourceType enum) in the sync configuration. The custom resources are configured
-   * in the sync configuration JSON file as valid FHIR SearchParameter of type 'special'. If there
-   * are custom resources to be synced with the data, the application will first download the custom
-   * resources then the rest of the app data.
-   */
-  private fun retrieveTotalSyncCount(): Int {
-    val totalSyncCount = sharedPreferencesHelper.read(SharedPreferenceKey.TOTAL_SYNC_COUNT.name, "")
-    return if (totalSyncCount.isNullOrBlank()) {
-      configurationRegistry
-        .retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
-        .parameter
-        .count { it.hasType() }
-    } else totalSyncCount.toInt()
   }
 
   companion object {
