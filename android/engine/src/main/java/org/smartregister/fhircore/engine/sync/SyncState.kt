@@ -19,6 +19,5 @@ package org.smartregister.fhircore.engine.sync
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 
 const val SYNC_COUNTER_1 = 1
-const val SYNC_COUNTER_2 = 2
 
 data class SyncState(val counter: Int, val currentSyncJobStatus: CurrentSyncJobStatus)

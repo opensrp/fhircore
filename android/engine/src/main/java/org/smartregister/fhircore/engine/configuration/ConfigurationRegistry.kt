@@ -851,6 +851,23 @@ constructor(
     return Pair(customResourceSearchParams, fhirResourceSearchParams)
   }
 
+  /**
+   * This function returns either '1' or '2' depending on whether there are custom resources (not
+   * included in ResourceType enum) in the sync configuration. The custom resources are configured
+   * in the sync configuration JSON file as valid FHIR SearchParameter of type 'special'. If there
+   * are custom resources to be synced with the data, the application will first download the custom
+   * resources then the rest of the app data.
+   */
+  fun retrieveTotalSyncCount(): Int {
+    val totalSyncCount = sharedPreferencesHelper.read(SharedPreferenceKey.TOTAL_SYNC_COUNT.name, "")
+    return if (totalSyncCount.isNullOrBlank()) {
+      retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
+        .parameter
+        .map { it.resource as SearchParameter }
+        .count { it.hasType() && it.type == Enumerations.SearchParamType.SPECIAL }
+    } else totalSyncCount.toInt()
+  }
+
   companion object {
     const val BASE_CONFIG_PATH = "configs/%s"
     const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"

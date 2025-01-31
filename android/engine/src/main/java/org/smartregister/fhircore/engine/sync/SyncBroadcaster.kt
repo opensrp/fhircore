@@ -119,7 +119,7 @@ constructor(
             }
           onSyncListener.onSync(
             SyncState(
-              counter = SYNC_COUNTER_2,
+              counter = configurationRegistry.retrieveTotalSyncCount(),
               currentSyncJobStatus = currentSyncJobStatus,
             ),
           )
@@ -137,7 +137,7 @@ constructor(
         syncListenerManager.onSyncListeners.forEach { onSyncListener ->
           onSyncListener.onSync(
             SyncState(
-              counter = SYNC_COUNTER_2,
+              counter = configurationRegistry.retrieveTotalSyncCount(),
               currentSyncJobStatus = currentSyncJobStatus,
             ),
           )
