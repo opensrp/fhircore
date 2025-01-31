@@ -174,13 +174,14 @@ fun SyncBottomBar(
         val context = LocalContext.current
         when (currentSyncJobStatus) {
           is CurrentSyncJobStatus.Running -> {
+            val maxPercentage = appDrawerUIState.percentageProgress?.coerceAtMost(100) ?: 0
             SyncStatusView(
               isSyncUpload = appDrawerUIState.isSyncUpload,
               syncCounter = appDrawerUIState.syncCounter,
               totalSyncCount = totalSyncCount,
               currentSyncJobStatus = currentSyncJobStatus,
               minimized = !syncNotificationBarExpanded,
-              progressPercentage = appDrawerUIState.percentageProgress,
+              progressPercentage = maxPercentage,
               onCancel = { onAppMainEvent(AppMainEvent.CancelSyncData(context)) },
             )
             SideEffect { hideSyncCompleteStatus.value = false }
