@@ -20,7 +20,6 @@ import android.content.Context
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
-import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.download.ResourceSearchParams
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -107,7 +106,7 @@ constructor(
     return resourceSearchParams
   }
 
-  fun emitSyncStatus(currentSyncJobStatus: CurrentSyncJobStatus) {
-    _onSyncListeners.forEach { it.get()?.onSync(currentSyncJobStatus) }
+  fun emitSyncStatus(syncState: SyncState) {
+    _onSyncListeners.forEach { it.get()?.onSync(syncState) }
   }
 }

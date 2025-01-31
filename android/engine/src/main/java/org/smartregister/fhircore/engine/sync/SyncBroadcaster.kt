@@ -107,14 +107,21 @@ constructor(
   private fun Flow<PeriodicSyncJobStatus>.handlePeriodicSyncJobStatus(
     coroutineScope: CoroutineScope,
   ) {
-    this.onEach {
+    this.onEach { periodicSyncJobStatus ->
         syncListenerManager.onSyncListeners.forEach { onSyncListener ->
-          onSyncListener.onSync(
-            if (it.lastSyncJobStatus as? LastSyncJobStatus.Succeeded != null) {
-              CurrentSyncJobStatus.Succeeded((it.lastSyncJobStatus as LastSyncJobStatus).timestamp)
+          val currentSyncJobStatus =
+            if (periodicSyncJobStatus.lastSyncJobStatus as? LastSyncJobStatus.Succeeded != null) {
+              CurrentSyncJobStatus.Succeeded(
+                (periodicSyncJobStatus.lastSyncJobStatus as LastSyncJobStatus).timestamp,
+              )
             } else {
-              it.currentSyncJobStatus
-            },
+              periodicSyncJobStatus.currentSyncJobStatus
+            }
+          onSyncListener.onSync(
+            SyncState(
+              counter = SYNC_COUNTER_2,
+              currentSyncJobStatus = currentSyncJobStatus,
+            ),
           )
         }
       }
@@ -126,8 +133,15 @@ constructor(
   private fun Flow<CurrentSyncJobStatus>.handleOneTimeSyncJobStatus(
     coroutineScope: CoroutineScope,
   ) {
-    this.onEach {
-        syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
+    this.onEach { currentSyncJobStatus ->
+        syncListenerManager.onSyncListeners.forEach { onSyncListener ->
+          onSyncListener.onSync(
+            SyncState(
+              counter = SYNC_COUNTER_2,
+              currentSyncJobStatus = currentSyncJobStatus,
+            ),
+          )
+        }
       }
       .catch { throwable -> Timber.e("Encountered an error during one time sync:", throwable) }
       .shareIn(coroutineScope, SharingStarted.Eagerly, 1)

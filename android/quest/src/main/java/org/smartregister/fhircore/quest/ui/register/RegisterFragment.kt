@@ -55,6 +55,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
+import org.smartregister.fhircore.engine.sync.SyncState
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
@@ -195,8 +196,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
     syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
-  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
-    when (syncJobStatus) {
+  override fun onSync(syncState: SyncState) {
+    when (val syncJobStatus = syncState.currentSyncJobStatus) {
       is CurrentSyncJobStatus.Running -> {
         if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
           val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
@@ -204,6 +205,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
           val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
           appMainViewModel.updateAppDrawerUIState(
             isSyncUpload = isSyncUpload,
+            syncCounter = syncState.counter,
             currentSyncJobStatus = syncJobStatus,
             percentageProgress = progressPercentage,
           )
@@ -211,13 +213,23 @@ class RegisterFragment : Fragment(), OnSyncListener {
       }
       is CurrentSyncJobStatus.Succeeded -> {
         refreshRegisterData()
-        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+        appMainViewModel.updateAppDrawerUIState(
+          syncCounter = syncState.counter,
+          currentSyncJobStatus = syncJobStatus,
+        )
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
-        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+        appMainViewModel.updateAppDrawerUIState(
+          syncCounter = syncState.counter,
+          currentSyncJobStatus = syncJobStatus,
+        )
       }
-      else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+      else ->
+        appMainViewModel.updateAppDrawerUIState(
+          syncCounter = syncState.counter,
+          currentSyncJobStatus = syncJobStatus,
+        )
     }
   }
 
@@ -273,12 +285,12 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
   override fun onPause() {
     super.onPause()
-    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    appMainViewModel.updateAppDrawerUIState(false, null, null, 0)
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    appMainViewModel.updateAppDrawerUIState(false, null, null, 0)
   }
 
   suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {

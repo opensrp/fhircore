@@ -41,11 +41,14 @@ import com.google.android.fhir.sync.upload.UploadStrategy
 import com.ibm.icu.util.Calendar
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import java.time.OffsetDateTime
 import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.util.NotificationConstants
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import retrofit2.HttpException
+import timber.log.Timber
 
 @HiltWorker
 class AppSyncWorker
@@ -75,11 +78,38 @@ constructor(
     )
 
   override suspend fun doWork(): Result {
-    saveSyncStartTimestamp()
-    setForeground(getForegroundInfo())
-    customResourceSyncService.runCustomResourceSync()
-    return super.doWork()
+    kotlin
+      .runCatching {
+        saveSyncStartTimestamp()
+        setForeground(getForegroundInfo())
+        customResourceSyncService.runCustomResourceSync()
+      }
+      .onSuccess {
+        return super.doWork()
+      }
+      .onFailure { exception ->
+        when (exception) {
+          is HttpException -> {
+            val response = exception.response()
+            if (response != null && (400..503).contains(response.code())) {
+              Timber.e("HTTP exception ${response.code()} -> ${response.errorBody()}")
+            }
+          }
+          else -> Timber.e(exception)
+        }
+        syncListenerManager.emitSyncStatus(
+          SyncState(
+            counter = SYNC_COUNTER_1,
+            currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
+          ),
+        )
+        return result()
+      }
+    return Result.success()
   }
+
+  private fun result(): Result =
+    if (inputData.getInt(MAX_RETRIES, 3) > runAttemptCount) Result.retry() else Result.failure()
 
   private fun saveSyncStartTimestamp() {
     syncListenerManager.sharedPreferencesHelper.write(
@@ -133,8 +163,8 @@ constructor(
   private fun getSyncProgress(completed: Int, total: Int) =
     completed * 100 / if (total > 0) total else 1
 
-  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
-    when (syncJobStatus) {
+  override fun onSync(syncState: SyncState) {
+    when (val syncJobStatus = syncState.currentSyncJobStatus) {
       is CurrentSyncJobStatus.Running -> {
         if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
           val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
@@ -176,5 +206,9 @@ constructor(
     val notification =
       buildNotification(progress = progress, isSyncUpload = isSyncUpload, isInitial = false)
     notificationManager.notify(NotificationConstants.NotificationId.DATA_SYNC, notification)
+  }
+
+  companion object {
+    const val MAX_RETRIES = "max_retires"
   }
 }

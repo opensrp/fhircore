@@ -842,6 +842,12 @@ constructor(
             }
           }
       }
+
+    // If there are custom resources to be synced return 2 otherwise 1
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.TOTAL_SYNC_COUNT.name,
+      if (customResourceSearchParams.isEmpty()) "1" else "2",
+    )
     return Pair(customResourceSearchParams, fhirResourceSearchParams)
   }
 

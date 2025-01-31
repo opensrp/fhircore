@@ -144,4 +144,5 @@
     <string name="error_rendering_profile">Error rendering profile</string>
     <string name="questionnaire_submission_confirmation_message">Are you sure you want to submit?</string>
     <string name="questionnaire_submission_confirmation_title">You are about to submit</string>
+    <string name="sync_counter"><b>Sync %1$d</b> of <b>%2$d </b></string>
 </resources>
