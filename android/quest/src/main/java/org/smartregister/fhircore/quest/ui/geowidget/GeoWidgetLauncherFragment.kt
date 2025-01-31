@@ -180,12 +180,13 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                 searchQuery = searchViewModel.searchQuery,
                 search = { searchText ->
                   geoWidgetLauncherViewModel.run {
-                    onEvent(GeoWidgetEvent.ClearMap)
+                    onEvent(GeoWidgetEvent.ClearMap, context)
                     onEvent(
                       GeoWidgetEvent.RetrieveFeatures(
                         searchQuery = SearchQuery(searchText, SearchMode.KeyboardInput),
                         geoWidgetConfig = geoWidgetConfiguration,
                       ),
+                      context,
                     )
                   }
                 },
@@ -241,11 +242,18 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
       }
       is CurrentSyncJobStatus.Failed -> {
         appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+<<<<<<< HEAD
+=======
+        if (syncJobStatus is CurrentSyncJobStatus.Succeeded) {
+          geoWidgetLauncherViewModel.onEvent(GeoWidgetEvent.ClearMap, context = requireContext())
+        }
+>>>>>>> 4359a24aa4ff90a5550d3b26530d2b92c0a4e11f
         geoWidgetLauncherViewModel.onEvent(
           GeoWidgetEvent.RetrieveFeatures(
             geoWidgetConfig = geoWidgetConfiguration,
             searchQuery = searchViewModel.searchQuery.value,
           ),
+          context = requireContext(),
         )
       }
       else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
@@ -256,6 +264,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
     super.onViewCreated(view, savedInstanceState)
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+<<<<<<< HEAD
         launch {
           configurationRegistry.syncState
             .onEach { syncJobStatus -> onSync(syncJobStatus, true) }
@@ -278,6 +287,24 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                       ),
                     )
                   }
+=======
+        eventBus.events
+          .getFor(MainNavigationScreen.GeoWidgetLauncher.eventId(navArgs.geoWidgetId))
+          .onEach { appEvent ->
+            when (appEvent) {
+              is AppEvent.RefreshData,
+              is AppEvent.OnSubmitQuestionnaire, -> {
+                appMainViewModel.countRegisterData()
+                geoWidgetLauncherViewModel.run {
+                  onEvent(GeoWidgetEvent.ClearMap, context = requireContext())
+                  onEvent(
+                    GeoWidgetEvent.RetrieveFeatures(
+                      geoWidgetConfig = geoWidgetConfiguration,
+                      searchQuery = searchViewModel.searchQuery.value,
+                    ),
+                    context = requireContext(),
+                  )
+>>>>>>> 4359a24aa4ff90a5550d3b26530d2b92c0a4e11f
                 }
               }
             }
@@ -315,6 +342,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         geoWidgetConfig = geoWidgetConfiguration,
         searchQuery = searchViewModel.searchQuery.value,
       ),
+      context = requireContext(),
     )
   }
 
