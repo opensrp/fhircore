@@ -180,12 +180,13 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                 searchQuery = searchViewModel.searchQuery,
                 search = { searchText ->
                   geoWidgetLauncherViewModel.run {
-                    onEvent(GeoWidgetEvent.ClearMap)
+                    onEvent(GeoWidgetEvent.ClearMap, context)
                     onEvent(
                       GeoWidgetEvent.RetrieveFeatures(
                         searchQuery = SearchQuery(searchText, SearchMode.KeyboardInput),
                         geoWidgetConfig = geoWidgetConfiguration,
                       ),
+                      context,
                     )
                   }
                 },
@@ -241,6 +242,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
             geoWidgetConfig = geoWidgetConfiguration,
             searchQuery = searchViewModel.searchQuery.value,
           ),
+          context = requireContext(),
         )
       }
       else ->
@@ -255,28 +257,27 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
     super.onViewCreated(view, savedInstanceState)
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
-        launch {
-          eventBus.events
-            .getFor(MainNavigationScreen.GeoWidgetLauncher.eventId(navArgs.geoWidgetId))
-            .onEach { appEvent ->
-              when (appEvent) {
-                is AppEvent.RefreshData,
-                is AppEvent.OnSubmitQuestionnaire, -> {
-                  appMainViewModel.countRegisterData()
-                  geoWidgetLauncherViewModel.run {
-                    onEvent(GeoWidgetEvent.ClearMap)
-                    onEvent(
-                      GeoWidgetEvent.RetrieveFeatures(
-                        geoWidgetConfig = geoWidgetConfiguration,
-                        searchQuery = searchViewModel.searchQuery.value,
-                      ),
-                    )
-                  }
+        eventBus.events
+          .getFor(MainNavigationScreen.GeoWidgetLauncher.eventId(navArgs.geoWidgetId))
+          .onEach { appEvent ->
+            when (appEvent) {
+              is AppEvent.RefreshData,
+              is AppEvent.OnSubmitQuestionnaire, -> {
+                appMainViewModel.countRegisterData()
+                geoWidgetLauncherViewModel.run {
+                  onEvent(GeoWidgetEvent.ClearMap, context = requireContext())
+                  onEvent(
+                    GeoWidgetEvent.RetrieveFeatures(
+                      geoWidgetConfig = geoWidgetConfiguration,
+                      searchQuery = searchViewModel.searchQuery.value,
+                    ),
+                    context = requireContext(),
+                  )
                 }
               }
             }
-            .launchIn(this)
-        }
+          }
+          .launchIn(this)
       }
     }
     geoWidgetLauncherViewModel.noLocationFoundDialog.observe(viewLifecycleOwner) { show ->
@@ -309,16 +310,27 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         geoWidgetConfig = geoWidgetConfiguration,
         searchQuery = searchViewModel.searchQuery.value,
       ),
+      context = requireContext(),
     )
   }
 
   override fun onPause() {
     super.onPause()
-    appMainViewModel.updateAppDrawerUIState(false, null, null, 0)
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = false,
+      syncCounter = null,
+      currentSyncJobStatus = null,
+      percentageProgress = 0,
+    )
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    appMainViewModel.updateAppDrawerUIState(false, null, null, 0)
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = false,
+      syncCounter = null,
+      currentSyncJobStatus = null,
+      percentageProgress = 0,
+    )
   }
 }
