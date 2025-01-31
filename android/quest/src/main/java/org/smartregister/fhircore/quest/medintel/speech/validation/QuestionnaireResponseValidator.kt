@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.medintel.speech.validation
 
 import android.content.Context
+import com.google.android.fhir.datacapture.validation.Invalid
 import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
@@ -28,13 +29,12 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComponent
 import org.smartregister.fhircore.engine.util.extension.packRepeatedGroups
 
-class QuestionnaireResponseValidator {
+object QuestionnaireResponseValidator {
   /**
    * This function validates all [QuestionnaireResponse] and returns true if all the validation
    * result of [QuestionnaireResponseValidator] are [Valid] or [NotValidated] (validation is
    * optional on [Questionnaire] fields)
    */
-  companion object {
     suspend fun validateQuestionnaireResponse(
       questionnaire: Questionnaire,
       questionnaireResponse: QuestionnaireResponse,
@@ -48,7 +48,7 @@ class QuestionnaireResponseValidator {
         .isEmpty()
     }
 
-    suspend fun getQuestionnaireResponseErrors(
+    private suspend fun getQuestionnaireResponseErrors(
       questionnaire: Questionnaire,
       questionnaireResponse: QuestionnaireResponse,
       context: Context,
@@ -78,7 +78,7 @@ class QuestionnaireResponseValidator {
           )
           .values
           .flatten()
-          .filter { it !is Valid }
+          .filterNot { it is Invalid }
       }
     }
 
@@ -94,5 +94,4 @@ class QuestionnaireResponseValidator {
         )
         .map { it.toString() }
     }
-  }
 }

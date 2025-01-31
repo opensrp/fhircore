@@ -331,7 +331,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testHandleQuestionnaireSubmission() = runTest {
     mockkObject(ResourceMapper)
-    mockkObject(QuestionnaireResponseValidator.Companion)
+    mockkObject(QuestionnaireResponseValidator)
     val questionnaire =
       extractionQuestionnaire().apply {
         // Use StructureMap for extraction
