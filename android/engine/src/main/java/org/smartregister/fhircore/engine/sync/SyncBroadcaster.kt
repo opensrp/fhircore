@@ -20,7 +20,6 @@ import android.content.Context
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.BackoffCriteria
@@ -74,19 +73,6 @@ constructor(
   suspend fun runOneTimeSync(): Unit = coroutineScope {
     Timber.i("Running one time sync...")
     Sync.oneTimeSync<AppSyncWorker>(context).handleOneTimeSyncJobStatus(this)
-
-    workManager.enqueue(
-      OneTimeWorkRequestBuilder<CustomSyncWorker>()
-        .setConstraints(
-          Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
-        )
-        .setBackoffCriteria(
-          BackoffPolicy.LINEAR,
-          10,
-          TimeUnit.SECONDS,
-        )
-        .build(),
-    )
   }
 
   /**
@@ -121,14 +107,21 @@ constructor(
   private fun Flow<PeriodicSyncJobStatus>.handlePeriodicSyncJobStatus(
     coroutineScope: CoroutineScope,
   ) {
-    this.onEach {
+    this.onEach { periodicSyncJobStatus ->
         syncListenerManager.onSyncListeners.forEach { onSyncListener ->
-          onSyncListener.onSync(
-            if (it.lastSyncJobStatus as? LastSyncJobStatus.Succeeded != null) {
-              CurrentSyncJobStatus.Succeeded((it.lastSyncJobStatus as LastSyncJobStatus).timestamp)
+          val currentSyncJobStatus =
+            if (periodicSyncJobStatus.lastSyncJobStatus as? LastSyncJobStatus.Succeeded != null) {
+              CurrentSyncJobStatus.Succeeded(
+                (periodicSyncJobStatus.lastSyncJobStatus as LastSyncJobStatus).timestamp,
+              )
             } else {
-              it.currentSyncJobStatus
-            },
+              periodicSyncJobStatus.currentSyncJobStatus
+            }
+          onSyncListener.onSync(
+            SyncState(
+              counter = configurationRegistry.retrieveTotalSyncCount(),
+              currentSyncJobStatus = currentSyncJobStatus,
+            ),
           )
         }
       }
@@ -140,8 +133,15 @@ constructor(
   private fun Flow<CurrentSyncJobStatus>.handleOneTimeSyncJobStatus(
     coroutineScope: CoroutineScope,
   ) {
-    this.onEach {
-        syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
+    this.onEach { currentSyncJobStatus ->
+        syncListenerManager.onSyncListeners.forEach { onSyncListener ->
+          onSyncListener.onSync(
+            SyncState(
+              counter = configurationRegistry.retrieveTotalSyncCount(),
+              currentSyncJobStatus = currentSyncJobStatus,
+            ),
+          )
+        }
       }
       .catch { throwable -> Timber.e("Encountered an error during one time sync:", throwable) }
       .shareIn(coroutineScope, SharingStarted.Eagerly, 1)

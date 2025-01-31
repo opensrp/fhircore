@@ -20,6 +20,8 @@ import com.google.android.fhir.sync.CurrentSyncJobStatus
 
 data class AppDrawerUIState(
   val isSyncUpload: Boolean? = false,
+  val syncCounter: Int? = null,
+  val totalSyncCount: Int = 1,
   val currentSyncJobStatus: CurrentSyncJobStatus? = null,
   val percentageProgress: Int? = 0,
 )

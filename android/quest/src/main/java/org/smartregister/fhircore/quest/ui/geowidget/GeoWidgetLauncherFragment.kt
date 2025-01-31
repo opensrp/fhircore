@@ -53,6 +53,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
+import org.smartregister.fhircore.engine.sync.SyncState
 import org.smartregister.fhircore.engine.ui.base.AlertDialogButton
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
@@ -210,8 +211,8 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
     syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
-  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
-    when (syncJobStatus) {
+  override fun onSync(syncState: SyncState) {
+    when (val syncJobStatus = syncState.currentSyncJobStatus) {
       is CurrentSyncJobStatus.Running -> {
         if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
           val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
@@ -219,17 +220,23 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
           val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
           appMainViewModel.updateAppDrawerUIState(
             isSyncUpload = isSyncUpload,
+            syncCounter = syncState.counter,
             currentSyncJobStatus = syncJobStatus,
             percentageProgress = progressPercentage,
           )
         }
       }
-      is CurrentSyncJobStatus.Succeeded,
-      is CurrentSyncJobStatus.Failed, -> {
-        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
-        if (syncJobStatus is CurrentSyncJobStatus.Succeeded) {
-          geoWidgetLauncherViewModel.onEvent(GeoWidgetEvent.ClearMap, context = requireContext())
-        }
+      is CurrentSyncJobStatus.Succeeded -> {
+        appMainViewModel.updateAppDrawerUIState(
+          syncCounter = syncState.counter,
+          currentSyncJobStatus = syncJobStatus,
+        )
+      }
+      is CurrentSyncJobStatus.Failed -> {
+        appMainViewModel.updateAppDrawerUIState(
+          syncCounter = syncState.counter,
+          currentSyncJobStatus = syncJobStatus,
+        )
         geoWidgetLauncherViewModel.onEvent(
           GeoWidgetEvent.RetrieveFeatures(
             geoWidgetConfig = geoWidgetConfiguration,
@@ -238,7 +245,11 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
           context = requireContext(),
         )
       }
-      else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+      else ->
+        appMainViewModel.updateAppDrawerUIState(
+          syncCounter = syncState.counter,
+          currentSyncJobStatus = syncJobStatus,
+        )
     }
   }
 
@@ -266,7 +277,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
               }
             }
           }
-          .launchIn(lifecycleScope)
+          .launchIn(this)
       }
     }
     geoWidgetLauncherViewModel.noLocationFoundDialog.observe(viewLifecycleOwner) { show ->
@@ -305,11 +316,21 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   override fun onPause() {
     super.onPause()
-    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = false,
+      syncCounter = null,
+      currentSyncJobStatus = null,
+      percentageProgress = 0,
+    )
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = false,
+      syncCounter = null,
+      currentSyncJobStatus = null,
+      percentageProgress = 0,
+    )
   }
 }

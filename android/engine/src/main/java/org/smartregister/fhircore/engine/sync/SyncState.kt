@@ -14,28 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util
+package org.smartregister.fhircore.engine.sync
 
-enum class SharedPreferenceKey {
-  APP_ID,
-  LAST_SYNC_TIMESTAMP,
-  LANG,
-  PRACTITIONER_ID,
-  PRACTITIONER_DETAILS,
-  PRACTITIONER_LOCATION_HIERARCHIES,
-  PRACTITIONER_LOCATION,
-  PRACTITIONER_LOCATION_ID,
-  LOGIN_CREDENTIAL_KEY,
-  LOGIN_PIN_KEY,
-  LOGIN_PIN_SALT,
-  LAST_OFFSET,
-  USER_INFO,
-  CARE_TEAM,
-  ORGANIZATION,
-  GEO_LOCATION,
-  SELECTED_LOCATION_ID,
-  SYNC_START_TIMESTAMP,
-  SYNC_END_TIMESTAMP,
-  LAST_CONFIG_SYNC_TIMESTAMP,
-  TOTAL_SYNC_COUNT,
-}
+import com.google.android.fhir.sync.CurrentSyncJobStatus
+
+const val SYNC_COUNTER_1 = 1
+
+data class SyncState(val counter: Int, val currentSyncJobStatus: CurrentSyncJobStatus)

@@ -59,7 +59,6 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
-import org.smartregister.fhircore.engine.sync.CustomSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
@@ -113,13 +112,8 @@ constructor(
           ),
       ),
     )
-  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
-  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
-
   val appDrawerUiState = mutableStateOf(AppDrawerUIState())
-
   val resetRegisterFilters = MutableLiveData(false)
-
   val unSyncedResourcesCount = mutableIntStateOf(0)
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
@@ -133,6 +127,9 @@ constructor(
   private val measureReportConfigurations: List<MeasureReportConfiguration> by lazy {
     configurationRegistry.retrieveConfigurations(ConfigType.MeasureReport)
   }
+
+  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
+  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
 
   fun retrieveAppMainUiState(refreshAll: Boolean = true) {
     if (refreshAll) {
@@ -237,19 +234,20 @@ constructor(
         }
       }
       is AppMainEvent.CancelSyncData -> {
-        viewModelScope.launch {
-          workManager.cancelUniqueWork(
-            "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
-          )
-          updateAppDrawerUIState(currentSyncJobStatus = CurrentSyncJobStatus.Cancelled)
-        }
+        workManager.cancelUniqueWork(
+          "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
+        )
+        updateAppDrawerUIState(
+          syncCounter = null,
+          currentSyncJobStatus = CurrentSyncJobStatus.Cancelled,
+        )
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
-        if (event.state is CurrentSyncJobStatus.Succeeded) {
+        if (event.currentSyncJobStatus is CurrentSyncJobStatus.Succeeded) {
           sharedPreferencesHelper.write(
             SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-            event.state.timestamp.toInstant().toEpochMilli().toString(),
+            event.currentSyncJobStatus.timestamp.toInstant().toEpochMilli().toString(),
           )
           retrieveAppMainUiState()
           viewModelScope.launch { retrieveAppMainUiState() }
@@ -319,7 +317,7 @@ constructor(
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
-  fun schedulePeriodicSync() {
+  private fun schedulePeriodicSync() {
     viewModelScope.launch {
       syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
     }
@@ -401,12 +399,15 @@ constructor(
 
   fun updateAppDrawerUIState(
     isSyncUpload: Boolean? = null,
+    syncCounter: Int?,
     currentSyncJobStatus: CurrentSyncJobStatus?,
     percentageProgress: Int? = null,
   ) {
     appDrawerUiState.value =
       AppDrawerUIState(
         isSyncUpload = isSyncUpload,
+        syncCounter = syncCounter,
+        totalSyncCount = configurationRegistry.retrieveTotalSyncCount(),
         currentSyncJobStatus = currentSyncJobStatus,
         percentageProgress = percentageProgress,
       )
@@ -466,12 +467,6 @@ constructor(
         duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
         requiresNetwork = false,
         initialDelay = INITIAL_DELAY,
-      )
-
-      schedulePeriodically<CustomSyncWorker>(
-        workId = CustomSyncWorker.WORK_ID,
-        repeatInterval = applicationConfiguration.syncInterval,
-        initialDelay = 0,
       )
 
       measureReportConfigurations.forEach { measureReportConfig ->

@@ -33,8 +33,11 @@ sealed class AppMainEvent {
     val registersList: List<NavigationMenuConfig>?,
   ) : AppMainEvent()
 
-  data class UpdateSyncState(val state: CurrentSyncJobStatus, val lastSyncTime: String?) :
-    AppMainEvent()
+  data class UpdateSyncState(
+    val syncCounter: Int,
+    val currentSyncJobStatus: CurrentSyncJobStatus,
+    val lastSyncTime: String?,
+  ) : AppMainEvent()
 
   data class TriggerWorkflow(val navController: NavController, val navMenu: NavigationMenuConfig) :
     AppMainEvent()
