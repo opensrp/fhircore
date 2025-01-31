@@ -577,6 +577,7 @@ constructor(
           configComputedRuleValues = configComputedRuleValues,
           activeResourceFilters = null,
           filterByRelatedEntityLocationMetaTag = false,
+          filterDataByLocationLineageMetaTag = false,
           currentPage = null,
           pageSize = null,
         )
@@ -743,13 +744,14 @@ constructor(
     configComputedRuleValues: Map<String, Any>,
     activeResourceFilters: List<ActiveResourceFilterConfig>?,
     filterByRelatedEntityLocationMetaTag: Boolean,
+    filterDataByLocationLineageMetaTag: Boolean = false,
     currentPage: Int?,
     pageSize: Int?,
   ): List<RepositoryResourceData> {
     //  Important!! Used LinkedHashMap to maintain the order of insertion.
     val resultsDataMap = LinkedHashMap<String, RepositoryResourceData>()
     if (filterByRelatedEntityLocationMetaTag) {
-      val syncLocationIds = retrieveRelatedEntitySyncLocationIds()
+      val syncLocationIds = retrieveRelatedEntitySyncLocationIds(filterDataByLocationLineageMetaTag)
       if (currentPage != null && pageSize != null) {
         val requiredSize = (currentPage + 1) * pageSize
         var page = 0
@@ -1305,25 +1307,40 @@ constructor(
     return null
   }
 
-  protected suspend fun retrieveRelatedEntitySyncLocationIds(): HashSet<String> =
+  protected suspend fun retrieveRelatedEntitySyncLocationIds(
+    filterDataByLocationLineageMetaTag: Boolean = false,
+  ): HashSet<String> =
     withContext(dispatcherProvider.io()) {
       context
         .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.FILTER_DATA)
         .asSequence()
         .chunked(SQL_WHERE_CLAUSE_LIMIT)
         .map { it.map { state -> state.locationId } }
-        .flatMapTo(HashSet()) { retrieveFlattenedSubLocationIds(it) }
+        .flatMapTo(HashSet()) {
+          retrieveFlattenedSubLocationIds(it, filterDataByLocationLineageMetaTag)
+        }
     }
 
-  suspend fun retrieveFlattenedSubLocationIds(locationIds: List<String>): HashSet<String> {
+  suspend fun retrieveFlattenedSubLocationIds(
+    locationIds: List<String>,
+    filterDataByLocationLineageMetaTag: Boolean = false,
+  ): HashSet<String> {
     val locations = HashSet<String>(locationIds)
     val queue = ArrayDeque<List<String>>()
+    if (filterDataByLocationLineageMetaTag) {
+      locations.addAll(
+        retrieveSubLocationsByMetaTags(
+          listOf("98339515-4ba2-4a33-977f-f799dada3803", "caef5b65-9ce9-4076-880a-7e87aeb8c2a5"),
+        ),
+      )
+      return locations
+    }
     val subLocations = retrieveSubLocations(locationIds)
     if (subLocations.isNotEmpty()) {
       locations.addAll(subLocations)
       queue.add(subLocations)
     }
-    while (queue.isNotEmpty()) {
+    while (queue.isNotEmpty()) { // update this
       val newSubLocations = retrieveSubLocations(queue.removeFirst())
       if (newSubLocations.isNotEmpty()) {
         locations.addAll(newSubLocations)
@@ -1333,7 +1350,7 @@ constructor(
     return locations
   }
 
-  private suspend fun retrieveSubLocations(locationIds: List<String>): List<String> {
+  private suspend fun retrieveSubLocations(locationIds: List<String>): List<String> { // update this
     val search =
       Search(type = ResourceType.Location).apply {
         val filters = createFilters(locationIds)
@@ -1344,6 +1361,19 @@ constructor(
       .search<Location>(search)
       .flatMap { it.revIncluded?.values?.flatten() ?: emptyList() }
       .map { it.logicalId }
+  }
+
+  private suspend fun retrieveSubLocationsByMetaTags(locationIds: List<String>): List<String> {
+    val search =
+      Search(type = ResourceType.Location).apply {
+        val filters =
+          locationIds.map {
+            val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it) }
+            apply
+          }
+        filter(TokenClientParam("_tag"), *filters.toTypedArray())
+      }
+    return fhirEngine.search<Location>(search).map { it.resource.logicalId }
   }
 
   /**
