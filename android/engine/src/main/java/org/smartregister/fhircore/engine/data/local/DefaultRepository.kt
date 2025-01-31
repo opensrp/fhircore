@@ -1371,7 +1371,7 @@ constructor(
             val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it) }
             apply
           }
-        filter(TokenClientParam("_tag"), *filters.toTypedArray())
+        filter(TokenClientParam(TAG), *filters.toTypedArray())
       }
     return fhirEngine.search<Location>(search).map { it.resource.logicalId }
   }

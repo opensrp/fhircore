@@ -1800,7 +1800,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       val location1SubLocations =
         defaultRepository.retrieveFlattenedSubLocationIds(
           listOf(location1.logicalId),
-          filterDataByLocationLineageMetaTag = true
+          filterDataByLocationLineageMetaTag = true,
         )
       Assert.assertEquals(3, location1SubLocations.size)
       Assert.assertTrue(location1SubLocations.contains(location2.logicalId))
@@ -1809,7 +1809,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       val location2SubLocations =
         defaultRepository.retrieveFlattenedSubLocationIds(
           listOf(location2.logicalId),
-          filterDataByLocationLineageMetaTag = true
+          filterDataByLocationLineageMetaTag = true,
         )
       Assert.assertEquals(2, location2SubLocations.size)
       Assert.assertEquals(location5.logicalId, location2SubLocations.last())
