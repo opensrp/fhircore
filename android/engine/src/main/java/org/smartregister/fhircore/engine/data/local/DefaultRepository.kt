@@ -1330,7 +1330,7 @@ constructor(
     if (filterDataByLocationLineageMetaTag) {
       locations.addAll(
         retrieveSubLocationsByMetaTags(
-          listOf("98339515-4ba2-4a33-977f-f799dada3803", "caef5b65-9ce9-4076-880a-7e87aeb8c2a5"),
+          locationIds,
         ),
       )
       return locations
