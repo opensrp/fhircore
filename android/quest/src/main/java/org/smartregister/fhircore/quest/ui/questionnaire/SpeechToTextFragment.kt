@@ -16,26 +16,33 @@
 
 package org.smartregister.fhircore.quest.ui.questionnaire
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.media.AudioFormat
+import android.media.AudioRecord
+import android.media.MediaRecorder
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import java.io.IOException
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.medintel.speech.speechtoform.TextToForm
-import timber.log.Timber
 
+@AndroidEntryPoint
 class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
 
   private val parentViewModel by activityViewModels<QuestionnaireViewModel>()
@@ -46,7 +53,7 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
   private lateinit var processingProgressView: View
   private lateinit var listeningProgressView: View
   private lateinit var progressTextView: TextView
-  private lateinit var stopButton: View
+  private lateinit var endButton: View
   private lateinit var resumeButton: Button
   private lateinit var startButton: Button
   private lateinit var pauseButton: Button
@@ -54,13 +61,15 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
   private val processingProgressStringArray: Array<String>
     get() = resources.getStringArray(R.array.processing_progress)
 
+  private var stopRecording: (() -> Unit)? = null
+
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     speechInputContainer = view.findViewById<View>(R.id.speech_to_text_input_container)
     speechToEditText = view.findViewById<EditText>(R.id.speech_to_text_view)
     processingProgressView = view.findViewById<View>(R.id.processing_progress_view)
     progressTextView = view.findViewById<TextView>(R.id.progress_text_view)
     listeningProgressView = view.findViewById<TextView>(R.id.listening_view)
-    stopButton = view.findViewById<View>(R.id.stop_button)
+    endButton = view.findViewById<View>(R.id.end_button)
     startButton = view.findViewById<Button>(R.id.start_button)
     resumeButton = view.findViewById<Button>(R.id.resume_button)
     pauseButton = view.findViewById<Button>(R.id.pause_button)
@@ -69,8 +78,6 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
 
     startButton.setOnClickListener { startRecording() }
     resumeButton.setOnClickListener { resumeRecording() }
-    pauseButton.setOnClickListener { pauseRecording() }
-    stopButton.setOnClickListener { processTranscriptRecorded() }
 
     lifecycleScope.launch {
       var processingProgressJob: Job? = null
@@ -119,8 +126,6 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
       }
     }
 
-    //    viewModel.setTranscriptText(getString(R.string.test_speech_text).trimIndent())
-    viewModel.setTranscriptText("Yellow")
     startRecording()
   }
 
@@ -141,56 +146,116 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
     }
   }
 
-  override fun onPause() {
-    super.onPause()
-    pauseRecording()
+  override fun onDestroyView() {
+    super.onDestroyView()
+    stopRecording?.invoke()
   }
 
   override fun onStop() {
     super.onStop()
-    stopRecording()
+    stopRecording?.invoke()
   }
 
   private fun startRecording() {
-    viewModel.resetTranscript()
-    viewModel.onRecordingStarted()
+    if (
+      ContextCompat.checkSelfPermission(
+        requireContext(),
+        Manifest.permission.RECORD_AUDIO,
+      ) != PackageManager.PERMISSION_GRANTED
+    ) {
+      requireContext()
+        .showToast(
+          getString(R.string.record_audio_denied),
+          Toast.LENGTH_SHORT,
+        )
+      return
+    }
+
+    val audioRecord =
+      AudioRecord(
+        MIC_SOURCE,
+        SAMPLE_RATE,
+        MIC_CHANNELS,
+        MIC_CHANNEL_ENCODING,
+        CHUNK_SIZE_SAMPLES * BYTES_PER_SAMPLE,
+      )
+
+    val recordingJob = viewModel.startRecording(audioRecord)
+    pauseButton.setOnClickListener {
+      viewModel.onRecordingPaused()
+      recordingJob.cancel()
+    }
+    endButton.setOnClickListener {
+      viewModel.onRecordingStopped()
+      if (recordingJob.isActive) recordingJob.cancel()
+      processTranscriptRecorded()
+    }
+    stopRecording = {
+      viewModel.onRecordingStopped()
+      if (recordingJob.isActive) recordingJob.cancel()
+    }
   }
 
-  private fun resumeRecording() {}
+  private fun resumeRecording() {
+    if (
+      ContextCompat.checkSelfPermission(
+        requireContext(),
+        Manifest.permission.RECORD_AUDIO,
+      ) != PackageManager.PERMISSION_GRANTED
+    ) {
+      requireContext()
+        .showToast(
+          getString(R.string.record_audio_denied),
+          Toast.LENGTH_SHORT,
+        )
+      return
+    }
 
-  private fun pauseRecording() {
-    viewModel.onRecordingPaused()
-  }
-
-  private fun stopRecording() {
-    viewModel.onRecordingStopped()
+    val audioRecord =
+      AudioRecord(
+        MIC_SOURCE,
+        SAMPLE_RATE,
+        MIC_CHANNELS,
+        MIC_CHANNEL_ENCODING,
+        CHUNK_SIZE_SAMPLES * BYTES_PER_SAMPLE,
+      )
+    val recordingJob = viewModel.resumeRecording(audioRecord)
+    pauseButton.setOnClickListener {
+      viewModel.onRecordingPaused()
+      recordingJob.cancel()
+    }
+    endButton.setOnClickListener {
+      viewModel.onRecordingStopped()
+      if (recordingJob.isActive) recordingJob.cancel()
+      processTranscriptRecorded()
+    }
+    stopRecording = {
+      viewModel.onRecordingStopped()
+      if (recordingJob.isActive) recordingJob.cancel()
+    }
   }
 
   private fun processTranscriptRecorded() {
-    lifecycleScope.launch {
-      speechToEditText.text
-        .toString()
-        .takeIf { it.isNotBlank() }
-        ?.let { processTranscriptQuestionnaireResponse(it) }
-    }
+    speechToEditText.text
+      .toString()
+      .takeIf { it.isNotBlank() }
+      ?.let {
+        viewModel.processTranscriptQuestionnaireResponse(
+          requireContext(),
+          parentViewModel.currentQuestionnaire,
+          it,
+          { qr -> parentViewModel.showQuestionnaireResponse(qr) },
+          { e -> requireContext().showToast(e.message.toString()) },
+        )
+      }
   }
 
-  private suspend fun processTranscriptQuestionnaireResponse(transcript: String) {
-    viewModel.showProcessingProgress()
-    try {
-      val result =
-        TextToForm.generateQuestionnaireResponse(
-          transcript,
-          parentViewModel.currentQuestionnaire,
-          requireActivity(),
-          viewModel.geminiModel,
-        )
-      parentViewModel.showQuestionnaireResponse(result)
-    } catch (e: IOException) {
-      Timber.e(e)
-      requireContext().showToast(e.message.toString())
-    } finally {
-      viewModel.hideProcessingProgress()
-    }
+  companion object {
+    private val MIC_CHANNELS = AudioFormat.CHANNEL_IN_MONO
+    private val MIC_CHANNEL_ENCODING = AudioFormat.ENCODING_PCM_16BIT
+    private val MIC_SOURCE = MediaRecorder.AudioSource.VOICE_RECOGNITION
+    private const val SAMPLE_RATE = 16000
+    private const val CHUNK_SIZE_SAMPLES = 1280
+    private const val BYTES_PER_SAMPLE = 2
   }
 }

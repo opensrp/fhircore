@@ -16,16 +16,30 @@
 
 package org.smartregister.fhircore.quest.ui.questionnaire
 
+import android.content.Context
+import android.media.AudioRecord
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
+import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.IOException
+import javax.inject.Inject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.quest.medintel.speech.models.GeminiModel
+import org.smartregister.fhircore.quest.medintel.speech.speechtoform.LiveSpeechToText
+import org.smartregister.fhircore.quest.medintel.speech.speechtoform.TextToForm
+import timber.log.Timber
 
-class SpeechToTextViewModel : ViewModel() {
+@HiltViewModel
+class SpeechToTextViewModel
+@Inject
+constructor(val liveSpeechToText: LiveSpeechToText, val textToForm: TextToForm) : ViewModel() {
 
   val geminiModel: GeminiModel by lazy { GeminiModel() }
 
@@ -53,13 +67,6 @@ class SpeechToTextViewModel : ViewModel() {
     _speechTranscriptTextMutableStateFlow.update { "" }
   }
 
-  fun setTranscriptText(text: String) {
-    viewModelScope.launch {
-      delay(2800)
-      appendToTranscript(text)
-    }
-  }
-
   fun onRecordingStarted() = _recordingStateMutableStateFlow.update { RecordingState.STARTED }
 
   fun onRecordingResumed() = _recordingStateMutableStateFlow.update { RecordingState.RESUMED }
@@ -67,6 +74,54 @@ class SpeechToTextViewModel : ViewModel() {
   fun onRecordingPaused() = _recordingStateMutableStateFlow.update { RecordingState.PAUSED }
 
   fun onRecordingStopped() = _recordingStateMutableStateFlow.update { RecordingState.STOPPED }
+
+  fun startRecording(audioRecord: AudioRecord): Job {
+    return viewModelScope.launch {
+      liveSpeechToText
+        .startTranscription(audioRecord)
+        .onStart {
+          resetTranscript()
+          onRecordingStarted()
+        }
+        .collect { appendToTranscript(it) }
+    }
+  }
+
+  fun resumeRecording(audioRecord: AudioRecord): Job {
+    return viewModelScope.launch {
+      liveSpeechToText
+        .startTranscription(audioRecord)
+        .onStart { onRecordingResumed() }
+        .collect { appendToTranscript(it) }
+    }
+  }
+
+  fun processTranscriptQuestionnaireResponse(
+    context: Context,
+    questionnaire: Questionnaire,
+    transcript: String,
+    onSuccess: (QuestionnaireResponse) -> Unit,
+    onError: (Throwable) -> Unit,
+  ) {
+    viewModelScope.launch {
+      showProcessingProgress()
+      try {
+        val result =
+          textToForm.generateQuestionnaireResponse(
+            transcript,
+            questionnaire,
+            context,
+            geminiModel,
+          )
+        onSuccess(result)
+      } catch (e: IOException) {
+        Timber.e(e)
+        onError(e)
+      } finally {
+        hideProcessingProgress()
+      }
+    }
+  }
 }
 
 enum class RecordingState {

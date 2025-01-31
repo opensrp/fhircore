@@ -16,11 +16,11 @@
 
 package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 
-import com.google.cloud.speech.v1.RecognitionAudio
-import com.google.cloud.speech.v1.RecognitionConfig
-import com.google.cloud.speech.v1.RecognitionConfig.AudioEncoding
-import com.google.cloud.speech.v1.SpeechClient
-import com.google.cloud.speech.v1.SpeechRecognitionResult
+import com.google.cloud.speech.v1p1beta1.RecognitionAudio
+import com.google.cloud.speech.v1p1beta1.RecognitionConfig
+import com.google.cloud.speech.v1p1beta1.RecognitionConfig.AudioEncoding
+import com.google.cloud.speech.v1p1beta1.SpeechClient
+import com.google.cloud.speech.v1p1beta1.SpeechRecognitionResult
 import java.io.File
 import timber.log.Timber
 

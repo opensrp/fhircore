@@ -24,6 +24,7 @@ import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel
 import timber.log.Timber
 
 class SpeechToForm<T>(
+  private val textToForm: TextToForm,
   private val llmModel: LlmModel<T>,
 ) {
 
@@ -51,7 +52,7 @@ class SpeechToForm<T>(
 
     // Step 2: Generate QuestionnaireResponse from the transcript
     val questionnaireResponse =
-      TextToForm.generateQuestionnaireResponse(tempTextFile, questionnaire, context, llmModel)
+      textToForm.generateQuestionnaireResponse(tempTextFile, questionnaire, context, llmModel)
 
     Timber.i("QuestionnaireResponse generated successfully.")
     return questionnaireResponse

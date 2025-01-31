@@ -17,17 +17,21 @@
             android:id="@+id/speech_to_text_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:gravity="center_horizontal|bottom"
+            android:gravity="start"
             android:importantForAutofill="noExcludeDescendants"
             android:inputType="textMultiLine"
             android:paddingBottom="@dimen/action_button_margin_vertical"
             android:textSize="24sp"
             android:background="@null"
+            android:isScrollContainer="true"
+            android:scrollbars="vertical"
+            android:overScrollMode="always"
+            android:scrollbarStyle="insideInset"
             app:layout_constraintBottom_toTopOf="@+id/bottom_action_layout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="@string/test_speech_text"
-            tools:ignore="LabelFor" />
+            tools:ignore="LabelFor"
+            tools:text="@string/alert_message_abort_operation"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/bottom_action_layout"
@@ -83,7 +87,7 @@
             </FrameLayout>
 
             <Button
-                android:id="@+id/stop_button"
+                android:id="@+id/end_button"
                 style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

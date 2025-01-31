@@ -19,21 +19,22 @@ package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import java.io.File
-import kotlinx.coroutines.Dispatchers
+import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.json.JSONObject
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel
 import org.smartregister.fhircore.quest.medintel.speech.validation.QuestionnaireResponseValidator
 import timber.log.Timber
 
-object TextToForm {
+class TextToForm @Inject constructor(val dispatcherProvider: DispatcherProvider) {
 
-  private const val DEFAULT_MAX_RETRIES = 3
-  private const val JSON_CODE_BLOCK_START = "```json"
-  private const val JSON_CODE_BLOCK_END = "```"
-  private const val JSON_CODE_BLOCK_START_LENGTH = JSON_CODE_BLOCK_START.length
+  private val DEFAULT_MAX_RETRIES = 3
+  private val JSON_CODE_BLOCK_START = "```json"
+  private val JSON_CODE_BLOCK_END = "```"
+  private val JSON_CODE_BLOCK_START_LENGTH = JSON_CODE_BLOCK_START.length
 
   /**
    * Generates an HL7 FHIR QuestionnaireResponse from a transcript using the provided Questionnaire.
@@ -76,7 +77,7 @@ object TextToForm {
 
     do {
       Timber.i("Sending request to Gemini...")
-      val generatedText = withContext(Dispatchers.IO) { llmModel.generateContent(prompt) }
+      val generatedText = withContext(dispatcherProvider.io()) { llmModel.generateContent(prompt) }
       val errors: List<String>
       val questionnaireResponseJson = extractJsonBlock(generatedText)
 
@@ -84,7 +85,7 @@ object TextToForm {
         Timber.e("Failed to extract JSON block from Gemini response.")
         errors = listOf("Failed to extract JSON block from Gemini response.")
       } else {
-        withContext(Dispatchers.IO) {
+        withContext(dispatcherProvider.io()) {
           questionnaireResponse = parseQuestionnaireResponse(questionnaireResponseJson, fhirContext)
           errors =
             QuestionnaireResponseValidator.getQuestionnaireResponseErrorsAsStrings(
