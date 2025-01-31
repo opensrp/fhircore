@@ -1340,7 +1340,7 @@ constructor(
       locations.addAll(subLocations)
       queue.add(subLocations)
     }
-    while (queue.isNotEmpty()) { // update this
+    while (queue.isNotEmpty()) {
       val newSubLocations = retrieveSubLocations(queue.removeFirst())
       if (newSubLocations.isNotEmpty()) {
         locations.addAll(newSubLocations)
@@ -1350,7 +1350,7 @@ constructor(
     return locations
   }
 
-  private suspend fun retrieveSubLocations(locationIds: List<String>): List<String> { // update this
+  private suspend fun retrieveSubLocations(locationIds: List<String>): List<String> {
     val search =
       Search(type = ResourceType.Location).apply {
         val filters = createFilters(locationIds)
