@@ -16,15 +16,21 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
+import com.google.android.fhir.datacapture.extensions.logicalId
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Order
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
+import io.mockk.coVerify
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
@@ -34,6 +40,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -43,7 +50,11 @@ class RulesEngineServiceTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var rulesFactory: RulesFactory
+
+  @Inject lateinit var defaultRepository: DefaultRepository
+
   private lateinit var rulesEngineService: RulesFactory.RulesEngineService
+
   private val tasks =
     listOf(
       Task().apply {
@@ -446,5 +457,107 @@ class RulesEngineServiceTest : RobolectricTest() {
       (filteredResources!!.first() as CarePlan).period.end,
     )
     Assert.assertEquals(resources[2].period.end, (filteredResources.last() as CarePlan).period.end)
+  }
+
+  @Test
+  fun testGetResourceByReferenceReturnsNullWhenResourceNotFound() = runTest {
+    val resourceId = "uuid"
+
+    coEvery { defaultRepository.fhirEngine.get(ResourceType.Patient, resourceId) } throws
+      ResourceNotFoundException(ResourceType.Patient.name, resourceId)
+
+    Assert.assertNull(rulesEngineService.getResourceByReference("Patient/uuid"))
+
+    coVerify { defaultRepository.fhirEngine.get(ResourceType.Patient, resourceId) }
+  }
+
+  @Test
+  fun testGetResourceByReferenceReturnsNullWhenReferenceIsNull() = runTest {
+    Assert.assertNull(rulesEngineService.getResourceByReference(null))
+  }
+
+  @Test
+  fun testGetResourceByReferenceReturnsNullWhenReferenceIsEmpty() = runTest {
+    Assert.assertNull(rulesEngineService.getResourceByReference(""))
+  }
+
+  @Test
+  fun testGetResourceByReferenceReturnsResourceWhenReferenceIsValid() = runTest {
+    val expectedResource = Patient().apply { id = "uuid" }
+
+    coEvery {
+      defaultRepository.fhirEngine.get(ResourceType.Patient, expectedResource.logicalId)
+    } answers { expectedResource }
+
+    val result = rulesEngineService.getResourceByReference("Patient/uuid")
+
+    Assert.assertEquals(expectedResource, result)
+
+    coVerify {
+      defaultRepository.fhirEngine.get(expectedResource.resourceType, expectedResource.logicalId)
+    }
+  }
+
+  @Test
+  fun testGetResourceByIdAndTypeReturnsNullWhenResourceIdIsNullAndResourceTypeIsValid() = runTest {
+    Assert.assertNull(
+      rulesEngineService.getResourceByIdAndType(null, ResourceType.Patient.name),
+    )
+  }
+
+  @Test
+  fun testGetResourceByIdAndTypeReturnsNullWhenResourceIdIsEmptyAndResourceTypeIsValid() = runTest {
+    Assert.assertNull(
+      rulesEngineService.getResourceByIdAndType("", ResourceType.Patient.name),
+    )
+  }
+
+  @Test
+  fun testGetResourceByIdAndTypeReturnsNullWhenResourceIdIsValidAndResourceTypeIsNull() = runTest {
+    Assert.assertNull(
+      rulesEngineService.getResourceByIdAndType("uuid", null),
+    )
+  }
+
+  @Test
+  fun testGetResourceByIdAndTypeReturnsNullWhenResourceIdIsValidAndResourceTypeIsEmpty() = runTest {
+    Assert.assertNull(
+      rulesEngineService.getResourceByIdAndType("uuid", ""),
+    )
+  }
+
+  @Test
+  fun testGetResourceByIdAndTypeReturnsNullWhenResourceNotFound() = runTest {
+    val resourceId = "uuid"
+
+    coEvery { defaultRepository.fhirEngine.get(ResourceType.Patient, resourceId) } throws
+      ResourceNotFoundException(ResourceType.Patient.name, resourceId)
+
+    Assert.assertNull(
+      rulesEngineService.getResourceByIdAndType(resourceId, ResourceType.Patient.name),
+    )
+
+    coVerify { defaultRepository.fhirEngine.get(ResourceType.Patient, resourceId) }
+  }
+
+  @Test
+  fun testGetResourceByIdAndTypeReturnsNullWhenResourceIdAndTypeAreValid() = runTest {
+    val expectedResource = Patient().apply { id = "uuid" }
+
+    coEvery {
+      defaultRepository.fhirEngine.get(ResourceType.Patient, expectedResource.logicalId)
+    } answers { expectedResource }
+
+    val result =
+      rulesEngineService.getResourceByIdAndType(
+        expectedResource.logicalId,
+        ResourceType.Patient.name,
+      )
+
+    Assert.assertEquals(expectedResource, result)
+
+    coVerify {
+      defaultRepository.fhirEngine.get(expectedResource.resourceType, expectedResource.logicalId)
+    }
   }
 }
