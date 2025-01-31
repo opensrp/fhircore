@@ -25,23 +25,18 @@ import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
-import com.google.android.fhir.sync.CurrentSyncJobStatus
-import com.google.android.fhir.sync.SyncJobStatus
-import com.google.android.fhir.sync.SyncOperation
+import com.google.android.fhir.sync.ParamMap
 import com.google.android.fhir.sync.SyncDataParams.LAST_UPDATED_KEY
 import com.google.android.fhir.sync.download.ResourceSearchParams
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.net.UnknownHostException
-import java.time.OffsetDateTime
 import java.util.Locale
 import java.util.PropertyResourceBundle
 import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -61,7 +56,6 @@ import org.hl7.fhir.r4.model.SearchParameter
 import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.di.NetworkModule
@@ -108,10 +102,6 @@ constructor(
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
-  private val _syncState = MutableSharedFlow<CurrentSyncJobStatus>()
-  val syncState: SharedFlow<CurrentSyncJobStatus> = _syncState
-
-  suspend fun setSyncState(state: CurrentSyncJobStatus) = _syncState.emit(state)
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -575,81 +565,6 @@ constructor(
     return resultBundle
   }
 
-  suspend fun fetchCustomResources(
-    gatewayModeHeaderValue: String? = null,
-    url: String,
-    totalCustomRecords: Int = 0,
-    completedRecords: Int = 0,
-  ) {
-    if (completedRecords == 0) {
-      Timber.d("Setting state: Started")
-      setSyncState(
-        CurrentSyncJobStatus.Running(
-          SyncJobStatus.Started(),
-        ),
-      )
-    }
-
-    runCatching {
-        Timber.d("Setting state: Running")
-        setSyncState(
-          CurrentSyncJobStatus.Running(
-            SyncJobStatus.InProgress(
-              syncOperation = SyncOperation.DOWNLOAD,
-              total = totalCustomRecords,
-              completed = completedRecords,
-            ),
-          ),
-        )
-        Timber.d("Fetching page with URL: $url")
-        if (gatewayModeHeaderValue.isNullOrEmpty()) {
-          fhirResourceDataSource.getResource(url)
-        } else {
-          fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, url)
-        }
-      }
-      .onFailure { throwable ->
-        Timber.e("Error occurred while retrieving resource via URL $url", throwable)
-        Timber.d("Setting state: Failed")
-        setSyncState(
-          CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
-        )
-        return
-      }
-      .onSuccess { resultBundle ->
-        processResultBundleEntries(resultBundle.entry)
-        val newCompletedRecords = completedRecords + resultBundle.entry.size
-
-        Timber.d("Updating state: Running")
-        setSyncState(
-          CurrentSyncJobStatus.Running(
-            SyncJobStatus.InProgress(
-              syncOperation = SyncOperation.DOWNLOAD,
-              total = totalCustomRecords,
-              completed = newCompletedRecords,
-            ),
-          ),
-        )
-
-        val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url
-
-        if (!nextPageUrl.isNullOrEmpty()) {
-          fetchCustomResources(
-            gatewayModeHeaderValue = gatewayModeHeaderValue,
-            url = nextPageUrl,
-            totalCustomRecords = totalCustomRecords,
-            completedRecords = newCompletedRecords, // Pass the new value
-          )
-        } else {
-          Timber.d("No more pages to fetch. Fetching completed.")
-          Timber.d("Setting state: Succeeded")
-          setSyncState(
-            CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
-          )
-        }
-      }
-  }
-
   private suspend fun fetchResources(
     gatewayModeHeaderValue: String? = null,
     url: String,
@@ -676,7 +591,7 @@ constructor(
     }
   }
 
-  private suspend fun processResultBundleEntries(
+  suspend fun processResultBundleEntries(
     resultBundleEntries: List<Bundle.BundleEntryComponent>,
   ) {
     resultBundleEntries.forEach { bundleEntryComponent ->
@@ -866,10 +781,8 @@ constructor(
     }
   }
 
-  suspend fun loadResourceSearchParams():
-    Pair<Map<String, Map<String, String>>, ResourceSearchParams> {
+  suspend fun loadResourceSearchParams(): Pair<Map<String, ParamMap>, ResourceSearchParams> {
     val syncConfig = retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
-    val appConfig = retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
     val customResourceSearchParams = mutableMapOf<String, MutableMap<String, String>>()
     val fhirResourceSearchParams = mutableMapOf<ResourceType, MutableMap<String, String>>()
     val organizationResourceTag =
@@ -929,6 +842,12 @@ constructor(
             }
           }
       }
+
+    // If there are custom resources to be synced return 2 otherwise 1
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.TOTAL_SYNC_COUNT.name,
+      if (customResourceSearchParams.isEmpty()) "1" else "2",
+    )
     return Pair(customResourceSearchParams, fhirResourceSearchParams)
   }
 

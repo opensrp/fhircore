@@ -51,9 +51,9 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
-import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
+import org.smartregister.fhircore.engine.sync.SyncState
 import org.smartregister.fhircore.engine.ui.base.AlertDialogButton
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
@@ -211,43 +211,32 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
     syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
-  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
-    onSync(syncJobStatus, isCustomSync = false)
-  }
-
-  private fun onSync(syncJobStatus: CurrentSyncJobStatus, isCustomSync: Boolean) {
-    when (syncJobStatus) {
+  override fun onSync(syncState: SyncState) {
+    when (val syncJobStatus = syncState.currentSyncJobStatus) {
       is CurrentSyncJobStatus.Running -> {
-        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
-          lifecycleScope.launch {
-            if (isCustomSync) {
-              geoWidgetLauncherViewModel.emitSnackBarState(
-                SnackBarMessageConfig(message = getString(R.string.syncing_custom_resources_toast)),
-              )
-            }
-          }
-        } else {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
           val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
           val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
           val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
           appMainViewModel.updateAppDrawerUIState(
             isSyncUpload = isSyncUpload,
+            syncCounter = syncState.counter,
             currentSyncJobStatus = syncJobStatus,
             percentageProgress = progressPercentage,
           )
         }
       }
       is CurrentSyncJobStatus.Succeeded -> {
-        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+        appMainViewModel.updateAppDrawerUIState(
+          syncCounter = syncState.counter,
+          currentSyncJobStatus = syncJobStatus,
+        )
       }
       is CurrentSyncJobStatus.Failed -> {
-        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
-<<<<<<< HEAD
-=======
-        if (syncJobStatus is CurrentSyncJobStatus.Succeeded) {
-          geoWidgetLauncherViewModel.onEvent(GeoWidgetEvent.ClearMap, context = requireContext())
-        }
->>>>>>> 4359a24aa4ff90a5550d3b26530d2b92c0a4e11f
+        appMainViewModel.updateAppDrawerUIState(
+          syncCounter = syncState.counter,
+          currentSyncJobStatus = syncJobStatus,
+        )
         geoWidgetLauncherViewModel.onEvent(
           GeoWidgetEvent.RetrieveFeatures(
             geoWidgetConfig = geoWidgetConfiguration,
@@ -256,7 +245,11 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
           context = requireContext(),
         )
       }
-      else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+      else ->
+        appMainViewModel.updateAppDrawerUIState(
+          syncCounter = syncState.counter,
+          currentSyncJobStatus = syncJobStatus,
+        )
     }
   }
 
@@ -264,30 +257,6 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
     super.onViewCreated(view, savedInstanceState)
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
-<<<<<<< HEAD
-        launch {
-          configurationRegistry.syncState
-            .onEach { syncJobStatus -> onSync(syncJobStatus, true) }
-            .launchIn(this)
-        }
-        launch {
-          eventBus.events
-            .getFor(MainNavigationScreen.GeoWidgetLauncher.eventId(navArgs.geoWidgetId))
-            .onEach { appEvent ->
-              when (appEvent) {
-                is AppEvent.RefreshData,
-                is AppEvent.OnSubmitQuestionnaire, -> {
-                  appMainViewModel.countRegisterData()
-                  geoWidgetLauncherViewModel.run {
-                    onEvent(GeoWidgetEvent.ClearMap)
-                    onEvent(
-                      GeoWidgetEvent.RetrieveFeatures(
-                        geoWidgetConfig = geoWidgetConfiguration,
-                        searchQuery = searchViewModel.searchQuery.value,
-                      ),
-                    )
-                  }
-=======
         eventBus.events
           .getFor(MainNavigationScreen.GeoWidgetLauncher.eventId(navArgs.geoWidgetId))
           .onEach { appEvent ->
@@ -304,12 +273,11 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                     ),
                     context = requireContext(),
                   )
->>>>>>> 4359a24aa4ff90a5550d3b26530d2b92c0a4e11f
                 }
               }
             }
-            .launchIn(this)
-        }
+          }
+          .launchIn(this)
       }
     }
     geoWidgetLauncherViewModel.noLocationFoundDialog.observe(viewLifecycleOwner) { show ->
@@ -348,11 +316,21 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
   override fun onPause() {
     super.onPause()
-    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = false,
+      syncCounter = null,
+      currentSyncJobStatus = null,
+      percentageProgress = 0,
+    )
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = false,
+      syncCounter = null,
+      currentSyncJobStatus = null,
+      percentageProgress = 0,
+    )
   }
 }

@@ -45,6 +45,7 @@ import kotlin.time.Duration
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.R
@@ -59,7 +60,6 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
-import org.smartregister.fhircore.engine.sync.CustomSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
@@ -113,13 +113,8 @@ constructor(
           ),
       ),
     )
-  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
-  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
-
   val appDrawerUiState = mutableStateOf(AppDrawerUIState())
-
   val resetRegisterFilters = MutableLiveData(false)
-
   val unSyncedResourcesCount = mutableIntStateOf(0)
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
@@ -133,6 +128,9 @@ constructor(
   private val measureReportConfigurations: List<MeasureReportConfiguration> by lazy {
     configurationRegistry.retrieveConfigurations(ConfigType.MeasureReport)
   }
+
+  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
+  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
 
   fun retrieveAppMainUiState(refreshAll: Boolean = true) {
     if (refreshAll) {
@@ -237,19 +235,20 @@ constructor(
         }
       }
       is AppMainEvent.CancelSyncData -> {
-        viewModelScope.launch {
-          workManager.cancelUniqueWork(
-            "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
-          )
-          updateAppDrawerUIState(currentSyncJobStatus = CurrentSyncJobStatus.Cancelled)
-        }
+        workManager.cancelUniqueWork(
+          "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
+        )
+        updateAppDrawerUIState(
+          syncCounter = null,
+          currentSyncJobStatus = CurrentSyncJobStatus.Cancelled,
+        )
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
-        if (event.state is CurrentSyncJobStatus.Succeeded) {
+        if (event.currentSyncJobStatus is CurrentSyncJobStatus.Succeeded) {
           sharedPreferencesHelper.write(
             SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-            event.state.timestamp.toInstant().toEpochMilli().toString(),
+            event.currentSyncJobStatus.timestamp.toInstant().toEpochMilli().toString(),
           )
           retrieveAppMainUiState()
           viewModelScope.launch { retrieveAppMainUiState() }
@@ -319,7 +318,7 @@ constructor(
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
-  fun schedulePeriodicSync() {
+  private fun schedulePeriodicSync() {
     viewModelScope.launch {
       syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
     }
@@ -401,12 +400,15 @@ constructor(
 
   fun updateAppDrawerUIState(
     isSyncUpload: Boolean? = null,
+    syncCounter: Int?,
     currentSyncJobStatus: CurrentSyncJobStatus?,
     percentageProgress: Int? = null,
   ) {
     appDrawerUiState.value =
       AppDrawerUIState(
         isSyncUpload = isSyncUpload,
+        syncCounter = syncCounter,
+        totalSyncCount = retrieveTotalSyncCount(),
         currentSyncJobStatus = currentSyncJobStatus,
         percentageProgress = percentageProgress,
       )
@@ -468,12 +470,6 @@ constructor(
         initialDelay = INITIAL_DELAY,
       )
 
-      schedulePeriodically<CustomSyncWorker>(
-        workId = CustomSyncWorker.WORK_ID,
-        repeatInterval = applicationConfiguration.syncInterval,
-        initialDelay = 0,
-      )
-
       measureReportConfigurations.forEach { measureReportConfig ->
         measureReportConfig.scheduledGenerationDuration?.let { scheduledGenerationDuration ->
           schedulePeriodically<MeasureReportMonthPeriodWorker>(
@@ -489,6 +485,23 @@ constructor(
         }
       }
     }
+  }
+
+  /**
+   * This function returns either '1' or '2' depending on whether there are custom resources (not
+   * included in ResourceType enum) in the sync configuration. The custom resources are configured
+   * in the sync configuration JSON file as valid FHIR SearchParameter of type 'special'. If there
+   * are custom resources to be synced with the data, the application will first download the custom
+   * resources then the rest of the app data.
+   */
+  private fun retrieveTotalSyncCount(): Int {
+    val totalSyncCount = sharedPreferencesHelper.read(SharedPreferenceKey.TOTAL_SYNC_COUNT.name, "")
+    return if (totalSyncCount.isNullOrBlank()) {
+      configurationRegistry
+        .retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
+        .parameter
+        .count { it.hasType() }
+    } else totalSyncCount.toInt()
   }
 
   companion object {

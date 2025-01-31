@@ -53,11 +53,10 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
+import org.smartregister.fhircore.engine.sync.SyncState
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -197,27 +196,16 @@ class RegisterFragment : Fragment(), OnSyncListener {
     syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
-  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
-    onSync(syncJobStatus, isCustomSync = false)
-  }
-
-  private fun onSync(syncJobStatus: CurrentSyncJobStatus, isCustomSync: Boolean) {
-    when (syncJobStatus) {
+  override fun onSync(syncState: SyncState) {
+    when (val syncJobStatus = syncState.currentSyncJobStatus) {
       is CurrentSyncJobStatus.Running -> {
-        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
-          lifecycleScope.launch {
-            if (isCustomSync) {
-              registerViewModel.emitSnackBarState(
-                SnackBarMessageConfig(message = getString(R.string.syncing_custom_resources_toast)),
-              )
-            }
-          }
-        } else {
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
           val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
           val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
           val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
           appMainViewModel.updateAppDrawerUIState(
             isSyncUpload = isSyncUpload,
+            syncCounter = syncState.counter,
             currentSyncJobStatus = syncJobStatus,
             percentageProgress = progressPercentage,
           )
@@ -225,13 +213,23 @@ class RegisterFragment : Fragment(), OnSyncListener {
       }
       is CurrentSyncJobStatus.Succeeded -> {
         refreshRegisterData()
-        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+        appMainViewModel.updateAppDrawerUIState(
+          syncCounter = syncState.counter,
+          currentSyncJobStatus = syncJobStatus,
+        )
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
-        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+        appMainViewModel.updateAppDrawerUIState(
+          syncCounter = syncState.counter,
+          currentSyncJobStatus = syncJobStatus,
+        )
       }
-      else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+      else ->
+        appMainViewModel.updateAppDrawerUIState(
+          syncCounter = syncState.counter,
+          currentSyncJobStatus = syncJobStatus,
+        )
     }
   }
 
@@ -257,11 +255,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
-        launch {
-          configurationRegistry.syncState
-            .onEach { syncJobStatus -> onSync(syncJobStatus, true) }
-            .launchIn(this)
-        }
         // Each register should have unique eventId
         launch {
           eventBus.events
@@ -292,12 +285,12 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
   override fun onPause() {
     super.onPause()
-    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    appMainViewModel.updateAppDrawerUIState(false, null, null, 0)
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    appMainViewModel.updateAppDrawerUIState(false, null, null, 0)
   }
 
   suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
