@@ -43,6 +43,7 @@ class WorkManagerRule : TestRule {
           base.evaluate()
         } finally {
           WorkManager.getInstance(ApplicationProvider.getApplicationContext()).cancelAllWork()
+          WorkManagerTestInitHelper.closeWorkDatabase()
         }
       }
     }
