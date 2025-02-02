@@ -105,7 +105,6 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferencesHelper,
         rulesExecutor = rulesExecutor,
         configurationRegistry = configurationRegistry,
-        context = applicationContext,
       )
     runBlocking { defaultRepository.addOrUpdate(resource = location) }
   }
@@ -125,7 +124,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
         servicePointConfig = null,
       )
 
-    viewModel.showNoLocationDialog(geoWidgetConfiguration)
+    viewModel.showNoLocationDialog(geoWidgetConfiguration, context = applicationContext)
 
     val value = viewModel.noLocationFoundDialog.value
     assertNull(value)
@@ -133,7 +132,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
 
   @Test
   fun testShowNoLocationDialogShouldSetLiveDataValueWhenConfigIsPresent() = runTest {
-    viewModel.showNoLocationDialog(geoWidgetConfiguration)
+    viewModel.showNoLocationDialog(geoWidgetConfiguration, applicationContext)
     val value = viewModel.noLocationFoundDialog.value
     assertNotNull(value)
     assertTrue(value!!)

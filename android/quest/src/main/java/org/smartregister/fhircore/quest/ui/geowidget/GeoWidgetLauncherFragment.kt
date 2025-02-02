@@ -179,12 +179,13 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                 searchQuery = searchViewModel.searchQuery,
                 search = { searchText ->
                   geoWidgetLauncherViewModel.run {
-                    onEvent(GeoWidgetEvent.ClearMap)
+                    onEvent(GeoWidgetEvent.ClearMap, context)
                     onEvent(
                       GeoWidgetEvent.RetrieveFeatures(
                         searchQuery = SearchQuery(searchText, SearchMode.KeyboardInput),
                         geoWidgetConfig = geoWidgetConfiguration,
                       ),
+                      context,
                     )
                   }
                 },
@@ -227,13 +228,14 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
       is CurrentSyncJobStatus.Failed, -> {
         appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
         if (syncJobStatus is CurrentSyncJobStatus.Succeeded) {
-          geoWidgetLauncherViewModel.onEvent(GeoWidgetEvent.ClearMap)
+          geoWidgetLauncherViewModel.onEvent(GeoWidgetEvent.ClearMap, context = requireContext())
         }
         geoWidgetLauncherViewModel.onEvent(
           GeoWidgetEvent.RetrieveFeatures(
             geoWidgetConfig = geoWidgetConfiguration,
             searchQuery = searchViewModel.searchQuery.value,
           ),
+          context = requireContext(),
         )
       }
       else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
@@ -252,12 +254,13 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
               is AppEvent.OnSubmitQuestionnaire, -> {
                 appMainViewModel.countRegisterData()
                 geoWidgetLauncherViewModel.run {
-                  onEvent(GeoWidgetEvent.ClearMap)
+                  onEvent(GeoWidgetEvent.ClearMap, context = requireContext())
                   onEvent(
                     GeoWidgetEvent.RetrieveFeatures(
                       geoWidgetConfig = geoWidgetConfiguration,
                       searchQuery = searchViewModel.searchQuery.value,
                     ),
+                    context = requireContext(),
                   )
                 }
               }
@@ -296,6 +299,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         geoWidgetConfig = geoWidgetConfiguration,
         searchQuery = searchViewModel.searchQuery.value,
       ),
+      context = requireContext(),
     )
   }
 
