@@ -41,7 +41,6 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
-import org.smartregister.fhircore.quest.medintel.speech.models.GemmaModel
 
 class GemmaModelTest {
 
