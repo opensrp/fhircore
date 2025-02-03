@@ -114,6 +114,8 @@ constructor(
             activeResourceFilters = null,
             filterByRelatedEntityLocationMetaTag =
               geoWidgetConfig.filterDataByRelatedEntityLocation == true,
+            filterDataByLocationLineageMetaTag =
+              geoWidgetConfig.filterDataByLocationLineage == true,
             currentPage = null,
             pageSize = null,
           )

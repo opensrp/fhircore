@@ -61,6 +61,7 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Location
+import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
@@ -1752,5 +1753,65 @@ class DefaultRepositoryTest : RobolectricTest() {
         )
       Assert.assertNotNull(latestQuestionnaireResponse)
       Assert.assertEquals("QuestionnaireResponse/qr1", latestQuestionnaireResponse?.id)
+    }
+
+  @Test
+  fun testRetrieveFlattenedSubLocationsShouldReturnCorrectLocationIdsWhenFilterDataByLocationLineageMetaTagIsTrue() =
+    runTest(timeout = 120.seconds) {
+      val location1 = Location().apply { id = "loc1" }
+      val location1LineageTag =
+        Coding().apply {
+          system = "http://example.org/location-lineage"
+          code = location1.logicalId
+          display = "Location 1"
+        }
+      val location2 =
+        Location().apply {
+          id = "loc2"
+          meta = Meta().apply { tag.add(location1LineageTag) }
+          partOf = location1.asReference()
+        }
+      val location2LineageTag =
+        Coding().apply {
+          system = "http://example.org/location-lineage"
+          code = location2.logicalId
+          display = "Location 2"
+        }
+      val location3 =
+        Location().apply {
+          id = "loc3"
+          meta = Meta().apply { tag.add(location1LineageTag) }
+          partOf = location2.asReference()
+        }
+      val location4 =
+        Location().apply {
+          id = "loc4"
+          partOf = location3.asReference()
+        }
+      val location5 =
+        Location().apply {
+          id = "loc5"
+          meta = Meta().apply { tag.add(location2LineageTag) }
+          partOf = location4.asReference()
+        }
+
+      fhirEngine.create(location1, location2, location3, location4, location5, isLocalOnly = true)
+
+      val location1SubLocations =
+        defaultRepository.retrieveFlattenedSubLocationIds(
+          listOf(location1.logicalId),
+          filterDataByLocationLineageMetaTag = true,
+        )
+      Assert.assertEquals(3, location1SubLocations.size)
+      Assert.assertTrue(location1SubLocations.contains(location2.logicalId))
+      Assert.assertTrue(location1SubLocations.contains(location3.logicalId))
+
+      val location2SubLocations =
+        defaultRepository.retrieveFlattenedSubLocationIds(
+          listOf(location2.logicalId),
+          filterDataByLocationLineageMetaTag = true,
+        )
+      Assert.assertEquals(2, location2SubLocations.size)
+      Assert.assertEquals(location5.logicalId, location2SubLocations.last())
     }
 }
