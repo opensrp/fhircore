@@ -431,18 +431,16 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       .setShowSubmitAnywayButton(questionnaireConfig.showSubmitAnywayButton.toBooleanStrict())
       .apply {
         if (questionnaireResponse != null) {
-          //          questionnaireResponse
-          //            .takeIf {
-          //              QuestionnaireResponseValidator.validateQuestionnaireResponse(
-          //                questionnaire,
-          //                it,
-          //                this@QuestionnaireActivity,
-          //              )
-          //            }
-          //            ?.let {
-          setQuestionnaireResponse(questionnaireResponse.json())
-          //            }
-          //            ?: showToast(getString(R.string.error_populating_questionnaire))
+          questionnaireResponse
+            .takeIf {
+              viewModel.validateQuestionnaireResponse(
+                questionnaire,
+                it,
+                this@QuestionnaireActivity,
+              )
+            }
+            ?.let { setQuestionnaireResponse(questionnaireResponse.json()) }
+            ?: showToast(getString(R.string.error_populating_questionnaire))
         }
 
         launchContextResources

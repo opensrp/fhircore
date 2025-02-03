@@ -100,7 +100,7 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequest
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequestHandler
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.medintel.speech.validation.QuestionnaireResponseValidator
+import org.smartregister.fhircore.quest.util.QuestionnaireResponseUtils
 import timber.log.Timber
 
 @HiltViewModel
@@ -180,10 +180,10 @@ constructor(
   ) {
     viewModelScope.launch(SupervisorJob()) {
       val questionnaireResponseValid =
-        QuestionnaireResponseValidator.validateQuestionnaireResponse(
-          questionnaire = questionnaire,
-          questionnaireResponse = currentQuestionnaireResponse,
-          context = context,
+        validateQuestionnaireResponse(
+          questionnaire,
+          currentQuestionnaireResponse,
+          context,
         )
 
       if (questionnaireConfig.saveQuestionnaireResponse && !questionnaireResponseValid) {
@@ -771,8 +771,11 @@ constructor(
           }
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
-        Timber.e("Unable to update resource's _lastUpdated", resourceNotFoundException)
-      } catch (illegalArgumentException: IllegalArgumentException) {
+        Timber.e(
+          resourceNotFoundException,
+          "Unable to update ${param.value} resource's _lastUpdated",
+        )
+      } catch (_: IllegalArgumentException) {
         Timber.e(
           "No enum constant org.hl7.fhir.r4.model.ResourceType.${
                         param.value.substringBefore(
@@ -783,6 +786,19 @@ constructor(
       }
     }
   }
+
+  suspend fun validateQuestionnaireResponse(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    context: Context,
+  ) =
+    withContext(dispatcherProvider.default()) {
+      QuestionnaireResponseUtils.validateQuestionnaireResponse(
+        questionnaire = questionnaire,
+        questionnaireResponse = questionnaireResponse,
+        context = context,
+      )
+    }
 
   suspend fun executeCql(
     subject: Resource,

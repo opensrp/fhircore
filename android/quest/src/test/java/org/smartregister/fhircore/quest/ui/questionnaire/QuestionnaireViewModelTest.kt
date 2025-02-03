@@ -120,9 +120,9 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequestHandler
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.assertResourceEquals
-import org.smartregister.fhircore.quest.medintel.speech.validation.QuestionnaireResponseValidator
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
+import org.smartregister.fhircore.quest.util.QuestionnaireResponseUtils
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber
@@ -247,7 +247,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testHandleQuestionnaireSubmissionHasValidationErrorsExtractedResourcesContainingInvalidWhenInDebug() =
     runTest {
       mockkObject(ResourceMapper)
-      mockkObject(QuestionnaireResponseValidator.Companion)
+      mockkObject(QuestionnaireResponseUtils)
       val questionnaire =
         extractionQuestionnaire().apply { extension = samplePatientRegisterQuestionnaire.extension }
       val questionnaireResponse = extractionQuestionnaireResponse()
@@ -282,6 +282,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       coEvery { defaultRepository.loadResource(any<String>(), ResourceType.Patient) } returns
         Patient()
 
+      coEvery {
+        QuestionnaireResponseUtils.validateQuestionnaireResponse(any(), any(), any())
+      } returns true
+
       questionnaireViewModel.handleQuestionnaireSubmission(
         questionnaire = questionnaire,
         currentQuestionnaireResponse = questionnaireResponse,
@@ -293,9 +297,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
 
       // Verify QuestionnaireResponse was validated
-      coEvery {
-        QuestionnaireResponseValidator.validateQuestionnaireResponse(any(), any(), any())
-      } returns true
+      coVerify {
+        QuestionnaireResponseUtils.validateQuestionnaireResponse(
+          questionnaire = questionnaire,
+          questionnaireResponse = questionnaireResponse,
+          context = context,
+        )
+      }
+
       // Verify perform extraction was invoked
       coVerify {
         questionnaireViewModel.performExtraction(
@@ -324,6 +333,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
 
       coVerify { onSuccessfulSubmission(any(), questionnaireResponse) }
+      unmockkObject(QuestionnaireResponseUtils)
       unmockkObject(ResourceMapper)
     }
 
@@ -331,7 +341,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testHandleQuestionnaireSubmission() = runTest {
     mockkObject(ResourceMapper)
-    mockkObject(QuestionnaireResponseValidator.Companion)
+    mockkObject(QuestionnaireResponseUtils)
     val questionnaire =
       extractionQuestionnaire().apply {
         // Use StructureMap for extraction
@@ -383,6 +393,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
+    coEvery {
+      QuestionnaireResponseUtils.validateQuestionnaireResponse(any(), any(), any())
+    } returns true
+
     questionnaireViewModel.handleQuestionnaireSubmission(
       questionnaire = questionnaire,
       currentQuestionnaireResponse = questionnaireResponse,
@@ -394,9 +408,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
 
     // Verify QuestionnaireResponse was validated
-    coEvery {
-      QuestionnaireResponseValidator.validateQuestionnaireResponse(any(), any(), any())
-    } returns true
+    coVerify {
+      QuestionnaireResponseUtils.validateQuestionnaireResponse(
+        questionnaire,
+        questionnaireResponse,
+        context,
+      )
+    }
 
     // Assert that the QuestionnaireResponse metadata were set
     Assert.assertEquals(
@@ -521,6 +539,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // ID of extracted resources passed to the onSuccessfulSubmission callback
     Assert.assertEquals(idsTypesSlot.captured.firstOrNull()?.idPart, patient.logicalId)
 
+    unmockkObject(QuestionnaireResponseUtils)
     unmockkObject(ResourceMapper)
   }
 
@@ -898,7 +917,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testValidateQuestionnaireResponse() {
+  fun testValidateQuestionnaireResponse() = runTest {
     val questionnaire =
       Questionnaire().apply {
         addItem(
@@ -917,31 +936,29 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
-    runBlocking {
-      // No answer provided
-      Assert.assertFalse(
-        QuestionnaireResponseValidator.validateQuestionnaireResponse(
-          questionnaire,
-          questionnaireResponse,
-          context,
-        ),
-      )
+    // No answer provided
+    Assert.assertFalse(
+      QuestionnaireResponseUtils.validateQuestionnaireResponse(
+        questionnaire,
+        questionnaireResponse,
+        context,
+      ),
+    )
 
-      // With an answer provided
-      Assert.assertTrue(
-        QuestionnaireResponseValidator.validateQuestionnaireResponse(
-          questionnaire,
-          questionnaireResponse.apply {
-            itemFirstRep.answer =
-              listOf(
-                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
-                  .setValue(StringType("Answer")),
-              )
-          },
-          context,
-        ),
-      )
-    }
+    // With an answer provided
+    Assert.assertTrue(
+      QuestionnaireResponseUtils.validateQuestionnaireResponse(
+        questionnaire,
+        questionnaireResponse.apply {
+          itemFirstRep.answer =
+            listOf(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
+                .setValue(StringType("Answer")),
+            )
+        },
+        context,
+      ),
+    )
   }
 
   @Test
@@ -1033,7 +1050,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponse =
       parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
     val result =
-      QuestionnaireResponseValidator.validateQuestionnaireResponse(
+      QuestionnaireResponseUtils.validateQuestionnaireResponse(
         questionnaire,
         questionnaireResponse,
         context,
@@ -1157,7 +1174,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       val actualQuestionnaireResponse =
         parser.parseResource(questionnaireResponseString) as QuestionnaireResponse
       val result =
-        QuestionnaireResponseValidator.validateQuestionnaireResponse(
+        QuestionnaireResponseUtils.validateQuestionnaireResponse(
           questionnaire,
           actualQuestionnaireResponse,
           context,

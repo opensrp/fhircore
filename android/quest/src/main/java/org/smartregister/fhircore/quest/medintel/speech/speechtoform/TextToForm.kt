@@ -26,7 +26,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel
-import org.smartregister.fhircore.quest.medintel.speech.validation.QuestionnaireResponseValidator
+import org.smartregister.fhircore.quest.util.QuestionnaireResponseUtils
 import timber.log.Timber
 
 class TextToForm @Inject constructor(val dispatcherProvider: DispatcherProvider) {
@@ -85,15 +85,15 @@ class TextToForm @Inject constructor(val dispatcherProvider: DispatcherProvider)
         Timber.e("Failed to extract JSON block from Gemini response.")
         errors = listOf("Failed to extract JSON block from Gemini response.")
       } else {
-        withContext(dispatcherProvider.io()) {
-          questionnaireResponse = parseQuestionnaireResponse(questionnaireResponseJson, fhirContext)
-          errors =
-            QuestionnaireResponseValidator.getQuestionnaireResponseErrorsAsStrings(
+        questionnaireResponse = parseQuestionnaireResponse(questionnaireResponseJson, fhirContext)
+        errors =
+          withContext(dispatcherProvider.default()) {
+            QuestionnaireResponseUtils.getQuestionnaireResponseErrorsAsStrings(
               questionnaire = questionnaire,
               questionnaireResponse = questionnaireResponse,
               context = context,
             )
-        }
+          }
       }
       if (errors.isEmpty()) {
         Timber.i("QuestionnaireResponse validated successfully.")
