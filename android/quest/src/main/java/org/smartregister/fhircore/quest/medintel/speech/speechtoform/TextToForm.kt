@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.medintel.speech.models.LlmModel
 import org.smartregister.fhircore.quest.util.QuestionnaireResponseUtils
 import timber.log.Timber
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 
 class TextToForm @Inject constructor(val dispatcherProvider: DispatcherProvider) {
 
@@ -121,6 +122,8 @@ class TextToForm @Inject constructor(val dispatcherProvider: DispatcherProvider)
         retryCount++
       }
     } while (retryCount < DEFAULT_MAX_RETRIES)
+
+    Timber.d("QuestionnaireResponse:%s", questionnaireResponse.encodeResourceToString())
 
     return questionnaireResponse
   }
