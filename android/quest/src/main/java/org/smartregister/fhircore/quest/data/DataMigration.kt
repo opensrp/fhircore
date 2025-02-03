@@ -164,7 +164,6 @@ constructor(
               currentPage = null,
               pageSize = null,
             )
-            .values
             .filterByFhirPathExpression(
               fhirPathDataExtractor = fhirPathDataExtractor,
               conditionalFhirPathExpressions =
@@ -176,6 +175,7 @@ constructor(
           val resource = repositoryResourceData.resource
           val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
           val rules = rulesExecutor.rulesFactory.generateRules(migrationConfig.rules)
+          var baseResourceUpdated = false
           val updatedResourceDocument =
             jsonParse.apply {
               migrationConfig.updateValues.forEach { updateExpression ->
@@ -188,6 +188,7 @@ constructor(
                   )
                 if (updateExpression.jsonPathExpression.startsWith("\$") && value != null) {
                   set(updateExpression.jsonPathExpression, value)
+                  baseResourceUpdated = true
                 }
                 if (
                   updateExpression.jsonPathExpression.startsWith(
@@ -199,23 +200,26 @@ constructor(
                     updateExpression.jsonPathExpression.replace(resource.resourceType.name, "\$"),
                     value,
                   )
+                  baseResourceUpdated = true
                 }
               }
             }
 
-          val resourceDefinition: Class<out IBaseResource>? =
-            FhirContext.forR4Cached().getResourceDefinition(resource).implementingClass
+          if (baseResourceUpdated) {
+            val resourceDefinition: Class<out IBaseResource>? =
+              FhirContext.forR4Cached().getResourceDefinition(resource).implementingClass
 
-          val updatedResource =
-            parser.parseResource(resourceDefinition, updatedResourceDocument.jsonString())
-          withContext(dispatcherProvider.io()) {
-            if (migrationConfig.purgeAffectedResources) {
-              defaultRepository.purge(updatedResource as Resource, forcePurge = true)
-            }
-            if (migrationConfig.createLocalChangeEntitiesAfterPurge) {
-              defaultRepository.addOrUpdate(resource = updatedResource as Resource)
-            } else {
-              defaultRepository.createRemote(resource = arrayOf(updatedResource as Resource))
+            val updatedResource =
+              parser.parseResource(resourceDefinition, updatedResourceDocument.jsonString())
+            withContext(dispatcherProvider.io()) {
+              if (migrationConfig.purgeAffectedResources) {
+                defaultRepository.purge(updatedResource as Resource, forcePurge = true)
+              }
+              if (migrationConfig.createLocalChangeEntitiesAfterPurge) {
+                defaultRepository.addOrUpdate(resource = updatedResource as Resource)
+              } else {
+                defaultRepository.createRemote(resource = arrayOf(updatedResource as Resource))
+              }
             }
           }
         }
