@@ -24,7 +24,8 @@ There can be multiple instances of this configuration type in the application; e
         "saveButtonText": "ADD FAMILY",
         "setPractitionerDetails": true,
         "setOrganizationDetails": true
-    }
+    },
+    "filterDataByLocationLineage": true
 }
 ```
 
@@ -37,3 +38,4 @@ configType | Type of configuration | Yes |  `geoWidget` |
 id | A unique identifier for this multi-config type | Yes | |
 profileId | The identifier for the profile to be opened when a point on the map (representing a household) is clicked | Yes | |
 registrationQuestionnaire | Configuration for the register questionnaire | Yes | |
+filterDataByLocationLineage | Fetch locations to load on the map using lineage location tags | No | false |
