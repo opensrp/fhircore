@@ -60,11 +60,15 @@ constructor(val liveSpeechToText: LiveSpeechToText, val textToForm: TextToForm) 
   fun hideProcessingProgress() = _showProcessingProgressMutableStateFlow.update { false }
 
   fun appendToTranscript(text: String) {
-    _speechTranscriptTextMutableStateFlow.update { "$it $text" }
+    _speechTranscriptTextMutableStateFlow.update { "$it\n$text" }
   }
 
   fun resetTranscript() {
     _speechTranscriptTextMutableStateFlow.update { "" }
+  }
+
+  fun setCurrentTranscript(text: String) {
+    _speechTranscriptTextMutableStateFlow.update { text }
   }
 
   fun onRecordingStarted() = _recordingStateMutableStateFlow.update { RecordingState.STARTED }

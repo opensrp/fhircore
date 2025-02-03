@@ -183,10 +183,12 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
     val recordingJob = viewModel.startRecording(audioRecord)
     pauseButton.setOnClickListener {
       viewModel.onRecordingPaused()
+      viewModel.setCurrentTranscript(speechToEditText.text.toString().trim())
       recordingJob.cancel()
     }
     endButton.setOnClickListener {
       viewModel.onRecordingStopped()
+      viewModel.setCurrentTranscript(speechToEditText.text.toString().trim())
       if (recordingJob.isActive) recordingJob.cancel()
       processTranscriptRecorded()
     }
@@ -219,13 +221,18 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
         MIC_CHANNEL_ENCODING,
         CHUNK_SIZE_SAMPLES * BYTES_PER_SAMPLE,
       )
+
+    viewModel.setCurrentTranscript(speechToEditText.text.toString().trim())
+
     val recordingJob = viewModel.resumeRecording(audioRecord)
     pauseButton.setOnClickListener {
       viewModel.onRecordingPaused()
+      viewModel.setCurrentTranscript(speechToEditText.text.toString().trim())
       recordingJob.cancel()
     }
     endButton.setOnClickListener {
       viewModel.onRecordingStopped()
+      viewModel.setCurrentTranscript(speechToEditText.text.toString().trim())
       if (recordingJob.isActive) recordingJob.cancel()
       processTranscriptRecorded()
     }
@@ -251,9 +258,9 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
   }
 
   companion object {
-    private val MIC_CHANNELS = AudioFormat.CHANNEL_IN_MONO
-    private val MIC_CHANNEL_ENCODING = AudioFormat.ENCODING_PCM_16BIT
-    private val MIC_SOURCE = MediaRecorder.AudioSource.VOICE_RECOGNITION
+    private const val MIC_CHANNELS = AudioFormat.CHANNEL_IN_MONO
+    private const val MIC_CHANNEL_ENCODING = AudioFormat.ENCODING_PCM_16BIT
+    private const val MIC_SOURCE = MediaRecorder.AudioSource.VOICE_RECOGNITION
     private const val SAMPLE_RATE = 16000
     private const val CHUNK_SIZE_SAMPLES = 1280
     private const val BYTES_PER_SAMPLE = 2

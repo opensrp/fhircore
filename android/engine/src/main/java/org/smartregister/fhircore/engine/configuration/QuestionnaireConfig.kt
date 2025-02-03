@@ -68,6 +68,7 @@ data class QuestionnaireConfig(
   val linkIds: List<LinkIdConfig>? = null,
   val showSubmitAnywayButton: String = "false",
   val showSubmissionConfirmationDialog: String = "false",
+  val enableSpeechToText: Boolean = false,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =

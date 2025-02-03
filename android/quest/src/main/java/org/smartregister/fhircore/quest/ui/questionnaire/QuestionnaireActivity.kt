@@ -144,11 +144,12 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     viewBinding.clearAll.visibility =
       if (questionnaireConfig.showClearAll) View.VISIBLE else View.GONE
 
-    viewBinding.recordSpeechActionButton.setOnClickListener {
-      reviewRecordAudioPermissionToLaunchSpeechToText()
+    if (questionnaireConfig.enableSpeechToText) {
+      viewBinding.recordSpeechActionButton.setOnClickListener {
+        reviewRecordAudioPermissionToLaunchSpeechToText()
+      }
+      viewBinding.editFormActionButton.setOnClickListener { viewModel.hideSpeechToText() }
     }
-
-    viewBinding.editFormActionButton.setOnClickListener { viewModel.hideSpeechToText() }
 
     if (savedInstanceState == null) {
       lifecycleScope.launch { launchQuestionnaire() }
@@ -275,14 +276,14 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private fun renderSpeechToTextFragment() {
     supportFragmentManager.commit {
       setReorderingAllowed(true)
-      replace(R.id.speechToTextContainer, SpeechToTextFragment(), SpeechToText_FRAGMENT_TAG)
+      replace(R.id.speechToTextContainer, SpeechToTextFragment(), SPEECH_TO_TEXT_FRAGMENT_TAG)
     }
   }
 
   private fun removeSpeechToTextFragment() {
     supportFragmentManager.commit {
       setReorderingAllowed(true)
-      supportFragmentManager.findFragmentByTag(SpeechToText_FRAGMENT_TAG)?.let { remove(it) }
+      supportFragmentManager.findFragmentByTag(SPEECH_TO_TEXT_FRAGMENT_TAG)?.let { remove(it) }
     }
   }
 
@@ -374,10 +375,13 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
               it.newQuestionnaireResponse,
               launchContextResources,
             )
-            handler.postDelayed(
-              { viewBinding.recordSpeechActionButton.visibility = View.VISIBLE },
-              200,
-            )
+
+            if (questionnaireConfig.enableSpeechToText) {
+              handler.postDelayed(
+                { viewBinding.recordSpeechActionButton.visibility = View.VISIBLE },
+                200,
+              )
+            }
           } catch (e: IllegalArgumentException) {
             Timber.e(e)
             showToast(e.message.toString())
@@ -598,7 +602,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   companion object {
 
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaireFragment"
-    const val SpeechToText_FRAGMENT_TAG = "speechToTextFragment"
+    const val SPEECH_TO_TEXT_FRAGMENT_TAG = "speechToTextFragment"
     const val QUESTIONNAIRE_CONFIG = "questionnaireConfig"
     const val QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS = "questionnaireExtractedResourceIds"
     const val QUESTIONNAIRE_RESPONSE = "questionnaireResponse"
