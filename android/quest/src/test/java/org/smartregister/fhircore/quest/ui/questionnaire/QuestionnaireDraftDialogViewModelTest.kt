@@ -29,8 +29,8 @@ import io.mockk.spyk
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.AuditEvent
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
@@ -144,7 +144,7 @@ class QuestionnaireDraftDialogViewModelTest : RobolectricTest() {
       assertEquals("Questionnaire/dc-clinic-medicines", savedDraft.questionnaire)
       assertEquals("in-progress", savedDraft.status.toCode())
 
-      runBlocking {
+      withContext(dispatcherProvider.io()) {
         questionnaireDraftDialogViewModel.deleteDraft(questionnaireConfig = questionnaireConfig)
       }
 

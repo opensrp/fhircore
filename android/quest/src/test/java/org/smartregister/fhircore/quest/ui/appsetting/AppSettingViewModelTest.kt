@@ -398,8 +398,8 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `fetchConfigurations() with an ImplementationGuide should call fetchRemoteCompositionById()`() {
-    runBlocking {
+  fun `fetchConfigurations() with an ImplementationGuide should call fetchRemoteCompositionById()`() =
+    runTest {
       appSettingViewModel.run {
         onApplicationIdChanged("app")
         fetchConfigurations(context)
@@ -427,19 +427,26 @@ class AppSettingViewModelTest : RobolectricTest() {
       } returns implementationGuide
       coEvery { appSettingViewModel.configurationRegistry.addOrUpdate(any()) } just runs
       coEvery {
+        appSettingViewModel.configurationRegistry.loadConfigurations(any(), any(), any())
+      } just runs
+      coEvery {
         appSettingViewModel.configurationRegistry.fetchRemoteCompositionById(any(), any())
       } returns composition
       coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
+
       appSettingViewModel.fetchConfigurations(context)
+
       coVerify {
         appSettingViewModel.configurationRegistry.fetchRemoteCompositionById(any(), any())
       }
+      coVerify {
+        appSettingViewModel.configurationRegistry.loadConfigurations("app", context, any())
+      }
     }
-  }
 
   @Test
-  fun `fetchConfigurations() without ImplementationGuide should call fetchRemoteCompositionByAppId()`() {
-    runBlocking {
+  fun `fetchConfigurations() without ImplementationGuide should call fetchRemoteCompositionByAppId()`() =
+    runTest {
       appSettingViewModel.run {
         onApplicationIdChanged("app")
         fetchConfigurations(context)
@@ -454,9 +461,16 @@ class AppSettingViewModelTest : RobolectricTest() {
       coEvery {
         appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any())
       } returns composition
+      coEvery {
+        appSettingViewModel.configurationRegistry.loadConfigurations(any(), any(), any())
+      } just runs
       coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
+
       appSettingViewModel.fetchConfigurations(context)
+
       coVerify { appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any()) }
+      coVerify {
+        appSettingViewModel.configurationRegistry.loadConfigurations("app", context, any())
+      }
     }
-  }
 }

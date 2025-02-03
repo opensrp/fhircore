@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.robolectric
 
 import android.util.Log
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.work.Configuration
 import androidx.work.WorkManager
@@ -42,7 +41,7 @@ class WorkManagerRule : TestRule {
         try {
           base.evaluate()
         } finally {
-          WorkManager.getInstance(ApplicationProvider.getApplicationContext()).cancelAllWork()
+          WorkManager.getInstance(context).cancelAllWork()
           WorkManagerTestInitHelper.closeWorkDatabase()
         }
       }
