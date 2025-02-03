@@ -42,7 +42,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -60,6 +59,8 @@ fun ClearDataScreen(
   viewModel: ClearDataViewModel,
   unsyncedResourceCount: Int = 0,
   appName: String,
+  isDebug: Boolean = false,
+  onSyncData: () -> Unit = {},
   onDeleteData: () -> Unit = {},
 ) {
   val dataCleared = viewModel.dataCleared.collectAsState()
@@ -75,6 +76,8 @@ fun ClearDataScreen(
   ClearData(
     unsyncedResourceCount,
     appName,
+    isDebug,
+    onSyncData,
     onDeleteData,
     isClearing,
   )
@@ -84,10 +87,12 @@ fun ClearDataScreen(
 fun ClearData(
   unsyncedResourceCount: Int,
   appName: String,
+  isDebug: Boolean,
+  onSyncData: () -> Unit,
   onDeleteData: () -> Unit,
   isClearing: Boolean = false,
 ) {
-  val isDeleteEnabled = unsyncedResourceCount == 0
+  val hasUnsyncedData = unsyncedResourceCount >= 1
 
   Scaffold(
     topBar = {
@@ -103,7 +108,7 @@ fun ClearData(
       Row(
         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
         horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.Top,
+        //        verticalAlignment = Alignment.Top,
       ) {
         Image(
           painter = painterResource(R.drawable.ic_app_logo),
@@ -112,10 +117,10 @@ fun ClearData(
           modifier = Modifier.requiredHeight(120.dp).requiredWidth(140.dp).testTag(APP_LOGO_TAG),
         )
       }
-      Spacer(modifier = Modifier.height(20.dp))
+      //      Spacer(modifier = Modifier.height(20.dp))
       Text(
         text =
-          if (isDeleteEnabled) {
+          if (!hasUnsyncedData) {
             stringResource(R.string.clear_data_all_data_synced)
           } else {
             stringResource(
@@ -131,7 +136,7 @@ fun ClearData(
           ),
       )
 
-      if (!isDeleteEnabled) {
+      if (hasUnsyncedData) {
         Spacer(modifier = Modifier.height(24.dp))
         Text(
           text =
@@ -150,9 +155,27 @@ fun ClearData(
       }
 
       Spacer(modifier = Modifier.weight(1f))
+
+      Button(
+        onClick = onSyncData,
+        enabled = hasUnsyncedData,
+        shape = RoundedCornerShape(8.dp),
+        modifier = Modifier.fillMaxWidth().height(50.dp).padding(horizontal = 16.dp),
+      ) {
+        Text(
+          text =
+            stringResource(
+              R.string.clear_data_sync,
+              appName,
+            ),
+        )
+      }
+
+      Spacer(modifier = Modifier.height(12.dp))
+
       Button(
         onClick = onDeleteData,
-        enabled = isDeleteEnabled,
+        enabled = !hasUnsyncedData || isDebug,
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier.fillMaxWidth().height(50.dp).padding(horizontal = 16.dp),
       ) {
@@ -181,6 +204,8 @@ private fun ClearDataScreenSyncedPreview() {
   ClearData(
     unsyncedResourceCount = 0,
     appName = "OpenSRP 2",
+    isDebug = false,
+    onSyncData = {},
     onDeleteData = {},
   )
 }
@@ -191,6 +216,8 @@ private fun ClearDataScreenUnsyncedPreview() {
   ClearData(
     unsyncedResourceCount = 77,
     appName = "OpenSRP 2",
+    isDebug = true,
+    onSyncData = {},
     onDeleteData = {},
   )
 }

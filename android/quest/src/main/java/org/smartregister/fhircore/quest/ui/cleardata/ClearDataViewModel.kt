@@ -17,6 +17,9 @@
 package org.smartregister.fhircore.quest.ui.cleardata
 
 import android.app.Application
+import android.content.Context
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat.finishAffinity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -25,16 +28,21 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
 import javax.inject.Inject
 import kotlin.system.exitProcess
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.totalUnsyncedResources
+import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.BuildConfig
 import timber.log.Timber
 
 @HiltViewModel
@@ -45,6 +53,8 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val fhirEngine: FhirEngine,
+  val dispatcherProvider: DispatcherProvider,
+  val syncBroadcaster: SyncBroadcaster,
 ) : ViewModel() {
 
   private val _dataCleared = MutableStateFlow(false)
@@ -55,8 +65,30 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
   }
 
-  fun clearAppData(activity: ClearDataActivity) {
-    viewModelScope.launch(Dispatchers.IO) {
+  fun onEvent(event: ClearDataEvent) {
+    when (event) {
+      is ClearDataEvent.SyncData -> {
+        syncData(event.context)
+      }
+      is ClearDataEvent.ClearAppData -> {
+        event.context.getActivity()?.let { activity -> clearAppData(activity) }
+      }
+    }
+  }
+
+  fun syncData(context: Context){
+    if (context.isDeviceOnline()) {
+      viewModelScope.launch(dispatcherProvider.main()) { syncBroadcaster.runOneTimeSync() }
+    } else {
+      context.showToast(
+        context.getString(R.string.sync_failed),
+        Toast.LENGTH_LONG,
+      )
+    }
+  }
+
+  fun clearAppData(activity: AppCompatActivity) {
+    viewModelScope.launch(dispatcherProvider.io()) {
       try {
         clearCache()
         clearCodeCache()
@@ -139,15 +171,14 @@ constructor(
   }
 
   suspend fun getUnsyncedResourceCount(): Int {
-    return withContext(Dispatchers.IO) { fhirEngine.totalUnsyncedResources() }
+    return withContext(dispatcherProvider.io()) { fhirEngine.getUnsyncedLocalChanges().size }
   }
 
   fun getAppName(): String {
     return try {
       applicationConfiguration.appTitle
     } catch (e: Exception) {
-      Timber.e(e, "Failed to get appTitle")
-      ""
+      BuildConfig.FLAVOR
     }
   }
 }
