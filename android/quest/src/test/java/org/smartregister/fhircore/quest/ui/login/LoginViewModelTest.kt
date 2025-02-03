@@ -711,6 +711,56 @@ internal class LoginViewModelTest : RobolectricTest() {
     }
   }
 
+  @Test
+  fun testSavePractitionerDetailsWhenUserAssignedResourcesAreStoredContainedField() {
+    coEvery { defaultRepository.createRemote(false, any()) } just runs
+    Assert.assertNull(
+      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+    )
+    loginViewModel.savePractitionerDetails(
+      Bundle()
+        .addEntry(
+          Bundle.BundleEntryComponent().apply {
+            resource =
+              practitionerDetails().apply {
+                contained =
+                  listOf(
+                    CareTeam().apply { id = "my-care-team-id" },
+                    Organization().apply { id = "my-organization-id" },
+                    Location().apply { id = "my-organization-id" },
+                    Group().apply { id = "my-group-id" },
+                    PractitionerRole().apply { id = "my-practitioner-role-id" },
+                    OrganizationAffiliation().apply { id = "my-organization-affiliation-id" },
+                    Practitioner().apply {
+                      identifier.add(
+                        Identifier().apply {
+                          use = Identifier.IdentifierUse.SECONDARY
+                          value = "my-test-practitioner-id"
+                        },
+                      )
+                    },
+                  )
+                fhirPractitionerDetails =
+                  FhirPractitionerDetails().apply {
+                    practitioners = listOf()
+                    careTeams = listOf()
+                    organizations = listOf()
+                    locations = listOf()
+                    locationHierarchyList = listOf()
+                    groups = listOf()
+                    practitionerRoles = listOf()
+                    organizationAffiliations = listOf()
+                  }
+              }
+          },
+        ),
+      UserInfo().apply { keycloakUuid = "my-test-practitioner-id" },
+    ) {}
+    Assert.assertNotNull(
+      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+    )
+  }
+
   private fun mockedActivity(isDeviceOnline: Boolean = false): HiltActivityForTest {
     val activity = mockk<HiltActivityForTest>(relaxed = true)
     every { activity.isDeviceOnline() } returns isDeviceOnline
