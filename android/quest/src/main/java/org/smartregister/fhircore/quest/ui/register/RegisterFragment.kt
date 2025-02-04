@@ -52,8 +52,10 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
+import org.smartregister.fhircore.engine.sync.SyncState
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
@@ -75,6 +77,8 @@ import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 class RegisterFragment : Fragment(), OnSyncListener {
 
   @Inject lateinit var syncListenerManager: SyncListenerManager
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   @Inject lateinit var eventBus: EventBus
   private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
@@ -192,31 +196,40 @@ class RegisterFragment : Fragment(), OnSyncListener {
     syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
-  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
-    when (syncJobStatus) {
+  override fun onSync(syncState: SyncState) {
+    when (val syncJobStatus = syncState.currentSyncJobStatus) {
       is CurrentSyncJobStatus.Running -> {
         if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
           val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
           val isSyncUpload = inProgressSyncJob.syncOperation == SyncOperation.UPLOAD
           val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
-          lifecycleScope.launch {
-            appMainViewModel.updateAppDrawerUIState(
-              isSyncUpload = isSyncUpload,
-              currentSyncJobStatus = syncJobStatus,
-              percentageProgress = progressPercentage,
-            )
-          }
+          appMainViewModel.updateAppDrawerUIState(
+            isSyncUpload = isSyncUpload,
+            syncCounter = syncState.counter,
+            currentSyncJobStatus = syncJobStatus,
+            percentageProgress = progressPercentage,
+          )
         }
       }
       is CurrentSyncJobStatus.Succeeded -> {
         refreshRegisterData()
-        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+        appMainViewModel.updateAppDrawerUIState(
+          syncCounter = syncState.counter,
+          currentSyncJobStatus = syncJobStatus,
+        )
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
-        appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+        appMainViewModel.updateAppDrawerUIState(
+          syncCounter = syncState.counter,
+          currentSyncJobStatus = syncJobStatus,
+        )
       }
-      else -> appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+      else ->
+        appMainViewModel.updateAppDrawerUIState(
+          syncCounter = syncState.counter,
+          currentSyncJobStatus = syncJobStatus,
+        )
     }
   }
 
@@ -243,19 +256,21 @@ class RegisterFragment : Fragment(), OnSyncListener {
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
         // Each register should have unique eventId
-        eventBus.events
-          .getFor(MainNavigationScreen.Home.eventId(registerFragmentArgs.registerId))
-          .onEach { appEvent ->
-            when (appEvent) {
-              is AppEvent.OnSubmitQuestionnaire ->
-                handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
-              is AppEvent.RefreshData -> {
-                appMainViewModel.countRegisterData()
-                refreshRegisterData()
+        launch {
+          eventBus.events
+            .getFor(MainNavigationScreen.Home.eventId(registerFragmentArgs.registerId))
+            .onEach { appEvent ->
+              when (appEvent) {
+                is AppEvent.OnSubmitQuestionnaire ->
+                  handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+                is AppEvent.RefreshData -> {
+                  appMainViewModel.countRegisterData()
+                  refreshRegisterData()
+                }
               }
             }
-          }
-          .launchIn(lifecycleScope)
+            .launchIn(this)
+        }
       }
     }
 
@@ -270,12 +285,12 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
   override fun onPause() {
     super.onPause()
-    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    appMainViewModel.updateAppDrawerUIState(false, null, null, 0)
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    appMainViewModel.updateAppDrawerUIState(false, null, 0)
+    appMainViewModel.updateAppDrawerUIState(false, null, null, 0)
   }
 
   suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {

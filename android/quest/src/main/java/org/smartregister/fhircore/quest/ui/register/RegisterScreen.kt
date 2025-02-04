@@ -162,6 +162,7 @@ fun RegisterScreen(
     },
     bottomBar = {
       SyncBottomBar(
+        totalSyncCount = appDrawerUIState.totalSyncCount,
         isFirstTimeSync = registerUiState.isFirstTimeSync,
         appDrawerUIState = appDrawerUIState,
         onAppMainEvent = onAppMainEvent,
