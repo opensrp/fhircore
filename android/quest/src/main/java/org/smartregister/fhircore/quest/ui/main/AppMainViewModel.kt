@@ -82,6 +82,7 @@ import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyn
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.tryParse
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMonthPeriodWorker
@@ -319,12 +320,6 @@ constructor(
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
-  fun schedulePeriodicSync() {
-    viewModelScope.launch {
-      syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
-    }
-  }
-
   fun getStartDestinationArgs(): Bundle {
     val startDestinationConfig = applicationConfiguration.navigationStartDestination
 
@@ -421,27 +416,30 @@ constructor(
   private fun getSyncProgress(completed: Int, total: Int) =
     completed * 100 / if (total > 0) total else 1
 
-  suspend fun schedulePeriodicJobs(context: Context) {
-    if (context.isDeviceOnline()) {
-      // Do not schedule sync until location selected when strategy is RelatedEntityLocation
-      // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
-      // if we need to trigger sync based on assigned locations or not
-      if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
-        if (
-          applicationConfiguration.usePractitionerAssignedLocationOnSync ||
-            context
-              .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA)
-              .isNotEmpty()
-        ) {
-          schedulePeriodicSync()
-        }
-      } else {
-        schedulePeriodicSync()
-      }
-    } else {
-      with(context) {
-        withContext(dispatcherProvider.main()) {
-          showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
+  fun schedulePeriodicJobs(context: Context) {
+    viewModelScope.launch {
+      if (!BuildConfig.SKIP_AUTHENTICATION) {
+        if (context.isDeviceOnline()) {
+          // Do not schedule sync until location selected when strategy is RelatedEntityLocation
+          // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
+          // if we need to trigger sync based on assigned locations or not
+          when {
+            applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation) -> {
+              if (
+                applicationConfiguration.usePractitionerAssignedLocationOnSync ||
+                  context
+                    .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA)
+                    .isNotEmpty()
+              ) {
+                syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
+              }
+            }
+            else -> syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
+          }
+        } else {
+          withContext(dispatcherProvider.main()) {
+            context.showToast(context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
+          }
         }
       }
     }
@@ -468,11 +466,13 @@ constructor(
         initialDelay = INITIAL_DELAY,
       )
 
-      schedulePeriodically<CustomSyncWorker>(
-        workId = CustomSyncWorker.WORK_ID,
-        repeatInterval = applicationConfiguration.syncInterval,
-        initialDelay = 0,
-      )
+      if (!BuildConfig.SKIP_AUTHENTICATION) {
+        schedulePeriodically<CustomSyncWorker>(
+          workId = CustomSyncWorker.WORK_ID,
+          repeatInterval = applicationConfiguration.syncInterval,
+          initialDelay = 0,
+        )
+      }
 
       measureReportConfigurations.forEach { measureReportConfig ->
         measureReportConfig.scheduledGenerationDuration?.let { scheduledGenerationDuration ->

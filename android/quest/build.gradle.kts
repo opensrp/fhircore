@@ -68,7 +68,7 @@ android {
     versionName = BuildConfigs.versionName
     multiDexEnabled = true
 
-    buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
+    buildConfigField("boolean", "SKIP_AUTHENTICATION", "${project.extra["SKIP_AUTHENTICATION"]}")
     buildConfigField("String", "FHIR_BASE_URL", """"${project.extra["FHIR_BASE_URL"]}"""")
     buildConfigField("String", "OAUTH_BASE_URL", """"${project.extra["OAUTH_BASE_URL"]}"""")
     buildConfigField("String", "OAUTH_CLIENT_ID", """"${project.extra["OAUTH_CLIENT_ID"]}"""")
