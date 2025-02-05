@@ -122,6 +122,7 @@ fun GeoWidgetLauncherScreen(
     },
     bottomBar = {
       SyncBottomBar(
+        totalSyncCount = appDrawerUIState.totalSyncCount,
         isFirstTimeSync = isFirstTimeSync,
         appDrawerUIState = appDrawerUIState,
         onAppMainEvent = onAppMainEvent,

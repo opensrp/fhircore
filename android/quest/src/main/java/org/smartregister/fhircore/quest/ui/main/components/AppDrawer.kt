@@ -266,6 +266,8 @@ private fun NavBottomSection(
       is CurrentSyncJobStatus.Running -> {
         SyncStatusView(
           isSyncUpload = appDrawerUIState.isSyncUpload,
+          syncCounter = appDrawerUIState.syncCounter,
+          totalSyncCount = appDrawerUIState.totalSyncCount,
           currentSyncJobStatus = currentSyncJobStatus,
           minimized = false,
           progressPercentage = appDrawerUIState.percentageProgress,
@@ -279,6 +281,8 @@ private fun NavBottomSection(
       is CurrentSyncJobStatus.Failed -> {
         SyncStatusView(
           isSyncUpload = appDrawerUIState.isSyncUpload,
+          syncCounter = appDrawerUIState.syncCounter,
+          totalSyncCount = appDrawerUIState.totalSyncCount,
           currentSyncJobStatus = currentSyncJobStatus,
           minimized = false,
         ) {
@@ -305,6 +309,8 @@ private fun NavBottomSection(
         } else {
           SyncStatusView(
             isSyncUpload = appDrawerUIState.isSyncUpload,
+            syncCounter = appDrawerUIState.syncCounter,
+            totalSyncCount = appDrawerUIState.totalSyncCount,
             currentSyncJobStatus = currentSyncJobStatus,
             minimized = false,
           )
@@ -700,6 +706,7 @@ fun AppDrawerOnSyncCompletePreview() {
         ),
       appDrawerUIState =
         AppDrawerUIState(
+          syncCounter = 1,
           currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
         ),
       navController = rememberNavController(),
@@ -743,6 +750,7 @@ fun AppDrawerOnSyncFailedPreview() {
         ),
       appDrawerUIState =
         AppDrawerUIState(
+          syncCounter = 1,
           currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
         ),
       navController = rememberNavController(),
@@ -786,6 +794,7 @@ fun AppDrawerOnSyncRunningPreview() {
         ),
       appDrawerUIState =
         AppDrawerUIState(
+          syncCounter = 1,
           currentSyncJobStatus =
             CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 200, 35)),
         ),

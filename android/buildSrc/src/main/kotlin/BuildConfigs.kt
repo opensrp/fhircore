@@ -6,7 +6,7 @@ object BuildConfigs {
     const val versionName = "2.1.1"
     const val applicationId = "org.smartregister.opensrp"
     const val jvmToolchain = 17
-    const val kotlinCompilerExtensionVersion = "1.5.8"
+    const val kotlinCompilerExtensionVersion = "1.5.14"
     const val jacocoVersion ="0.8.11"
     const val ktLintVersion = "0.49.0"
     const val enableUnitTestCoverage = true

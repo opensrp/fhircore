@@ -51,6 +51,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
+import org.smartregister.fhircore.engine.sync.SyncState
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.event.EventBus
@@ -130,9 +131,13 @@ class RegisterFragmentTest : RobolectricTest() {
   @Test
   fun testOnSyncState() {
     val syncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())
-    coEvery { registerFragmentMock.onSync(syncJobStatus) } just runs
-    registerFragmentMock.onSync(syncJobStatus = syncJobStatus)
-    verify { registerFragmentMock.onSync(syncJobStatus) }
+    coEvery {
+      registerFragmentMock.onSync(SyncState(currentSyncJobStatus = syncJobStatus, counter = 1))
+    } just runs
+    registerFragmentMock.onSync(SyncState(currentSyncJobStatus = syncJobStatus, counter = 1))
+    verify {
+      registerFragmentMock.onSync(SyncState(currentSyncJobStatus = syncJobStatus, counter = 1))
+    }
   }
 
   @Test
@@ -195,8 +200,10 @@ class RegisterFragmentTest : RobolectricTest() {
   fun testOnSyncWithFailedJobStatusNonAuthErrorRendersSyncFailedMessage() {
     val syncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now())
     val registerFragmentSpy = spyk(registerFragment)
-    registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)
-    verify { registerFragmentSpy.onSync(syncJobStatus) }
+    registerFragmentSpy.onSync(SyncState(currentSyncJobStatus = syncJobStatus, counter = 1))
+    verify {
+      registerFragmentSpy.onSync(SyncState(currentSyncJobStatus = syncJobStatus, counter = 1))
+    }
     verify {
       registerFragmentSpy.getString(
         org.smartregister.fhircore.engine.R.string.sync_completed_with_errors,
@@ -209,8 +216,10 @@ class RegisterFragmentTest : RobolectricTest() {
     val syncJobStatus: CurrentSyncJobStatus.Failed = mockk()
 
     val registerFragmentSpy = spyk(registerFragment)
-    registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)
-    verify { registerFragmentSpy.onSync(syncJobStatus) }
+    registerFragmentSpy.onSync(SyncState(currentSyncJobStatus = syncJobStatus, counter = 1))
+    verify {
+      registerFragmentSpy.onSync(SyncState(currentSyncJobStatus = syncJobStatus, counter = 1))
+    }
     verify {
       registerFragmentSpy.getString(
         org.smartregister.fhircore.engine.R.string.sync_completed_with_errors,

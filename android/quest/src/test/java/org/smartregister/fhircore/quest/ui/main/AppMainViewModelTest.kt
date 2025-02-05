@@ -184,7 +184,8 @@ class AppMainViewModelTest : RobolectricTest() {
 
     appMainViewModel.onEvent(
       AppMainEvent.UpdateSyncState(
-        syncFinishedSyncJobStatus,
+        syncCounter = 1,
+        currentSyncJobStatus = syncFinishedSyncJobStatus,
         appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp),
       ),
     )

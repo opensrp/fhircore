@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.util
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import com.google.gson.Gson
 import com.google.gson.JsonIOException
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -105,18 +104,6 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   /** This method resets/clears all existing values in the shared preferences asynchronously */
   fun resetSharedPrefs() {
     prefs.edit()?.clear()?.apply()
-  }
-
-  fun registerSharedPreferencesListener(
-    onSharedPreferenceChangeListener: OnSharedPreferenceChangeListener,
-  ) {
-    prefs.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
-  }
-
-  fun unregisterSharedPreferencesListener(
-    onSharedPreferenceChangeListener: OnSharedPreferenceChangeListener,
-  ) {
-    prefs.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
   }
 
   fun retrieveApplicationId() = read(SharedPreferenceKey.APP_ID.name, null)
