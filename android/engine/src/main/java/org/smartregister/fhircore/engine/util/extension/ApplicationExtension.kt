@@ -35,6 +35,10 @@ fun ConfigurationRegistry.fetchLanguages() =
     .run { this.languages }
     .map { Language(it, Locale.forLanguageTag(it).displayName) }
 
+fun ConfigurationRegistry.languageIsSupport(lang: String): Boolean {
+  return fetchLanguages().any { it.equals(lang) }
+}
+
 fun URL.getSubDomain() = this.host.substringBeforeLast('.').substringBeforeLast('.')
 
 @Synchronized
