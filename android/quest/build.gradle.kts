@@ -1,4 +1,3 @@
-import android.databinding.tool.ext.capitalizeUS
 import com.android.build.api.variant.FilterConfiguration.FilterType
 import io.sentry.android.gradle.extensions.InstrumentationFeature
 import io.sentry.android.gradle.instrumentation.logcat.LogcatLevel
@@ -407,7 +406,7 @@ android {
 
   applicationVariants.all {
     val variant = this
-    tasks.register("jacocoTestReport${variant.name.capitalizeUS()}")
+    tasks.register("jacocoTestReport${variant.name.replaceFirstChar { it.uppercase() }}")
   }
 
   splits {
