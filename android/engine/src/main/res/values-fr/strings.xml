@@ -23,9 +23,9 @@
     <string name="logout_user">Se déconnecter en tant que %1$s</string>
     <string name="sync_completed">Synchronisation terminée</string>
     <string name="syncing">Synchronisation</string>
-    <string name="syncing_up" >Synchronisation vers le serveur&#8230;</string>
-    <string name="syncing_down" >Synchronisation depuis le serveur&#8230;</string>
-    <string name="syncing_initiated">Synchronisation initiée&#8230;</string>
+    <string name="syncing_up" >Synchronisation&#8230;</string>
+    <string name="syncing_down" >Synchronisation&#8230;</string>
+    <string name="syncing_initiated">Synchronisation initiée&#8230 ;</string>
     <string name="sync_failed">La synchronisation a échoué. Vérifier la connexion internet ou réessayer plus tard</string>
     <string name="sync_completed_with_errors">La synchronisation s\'est terminée avec des erreurs. Réessayer...</string>
     <string name="sync_unauthorised">La synchronisation a échoué car les informations d\'authentification ne sont pas valides.</string>
@@ -56,7 +56,7 @@
     <string name="syncing_in_progress">Synchronisation en cours</string>
     <string name="loading">Chargement</string>
     <string name="loading_ellipsis">Chargement</string>
-    <string name="error_logging_out">Message d\'erreur de déconnexion %1$s</string>
+    <string name="error_logging_out">Erreur de déconnexion %1$s</string>
     <string name="cannot_logout_user">Impossible de se déconnecter : Déjà déconnecté ou l\'appareil est hors ligne.</string>
     <string name="error_loading_config_http_error">Impossible de charger la configuration. Veuillez réessayer plus tard</string>
     <string name="error_loading_config_no_internet">Impossible de charger la configuration. Veuillez vérifier votre connexion internet</string>
@@ -138,9 +138,9 @@
     <string name="weeks">Semaine(s)</string>
     <string name="days">Jour(s)</string>
     <string name="initializing">Initialisation des paramètres &#8230;</string>
-    <string name="initializing_application">Initialisation de l\'application &#8230;</string>
+    <string name="initializing_application">Initialisation de l\'application &#8230 ;</string>
     <string name="error_occurred">Quelque chose a mal tourné...</string>
-    <string name="insights">Aperçus</string>
+    <string name="insights">Insights</string>
     <string name="contact_help">Contacter l\'aide</string>
     <string name="offline_map">Cartes hors connexion</string>
     <string name="dismiss">Rejeter</string>
@@ -159,7 +159,7 @@
     <string name="team">L\'équipe</string>
     <string name="locality" >Localité</string>
     <string name="team_organization">Équipe (Organisation)</string>
-    <string name="care_team"> Équipe de soins</string>
+    <string name="care_team">Care Team</string>
     <string name="location">Localisation</string>
     <string name="app_version_code">Code de version de l\'application</string>
     <string name="build_date">Date de création</string>
@@ -177,8 +177,8 @@
     <string name="sync_complete">Synchronisation terminée</string>
     <string name="sync_error">Erreur de synchronisation</string>
     <string name="minutes_remaining">Calcul des minutes restantes...</string>
-    <string name="sync_up_inprogress">%1$d%% Synchronisation en cours&#8230;</string>
-    <string name="sync_down_inprogress">%1$d%% Synchronisation en cours&#8230;</string>
+    <string name="sync_up_inprogress">%1$d%% Synchronisation...</string>
+    <string name="sync_down_inprogress">%1$d%%Syncing down…</string>
     <string name="default_html_title">fichier</string>
     <string name="retry">REESSAYER</string>
     <string name="unsynced_data_present">Il y a des données non synchronisées</string>
