@@ -448,9 +448,7 @@ androidComponents {
 }
 
 tasks.withType<Test> {
-  testLogging {
-    events = setOf(TestLogEvent.FAILED, TestLogEvent.STANDARD_OUT, TestLogEvent.STANDARD_ERROR)
-  }
+  testLogging { events = setOf(TestLogEvent.FAILED, TestLogEvent.STANDARD_ERROR) }
   minHeapSize = "4608m"
   maxHeapSize = "4608m"
   // maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
