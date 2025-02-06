@@ -18,17 +18,14 @@ package org.smartregister.fhircore.quest.medintel.speech.models
 
 import android.content.Context
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
+import org.smartregister.fhircore.quest.medintel.speech.models.GemmaModel.Companion.DEFAULT_MAX_TOKENS
+import org.smartregister.fhircore.quest.medintel.speech.models.GemmaModel.Companion.DEFAULT_RANDOM_SEED
+import org.smartregister.fhircore.quest.medintel.speech.models.GemmaModel.Companion.DEFAULT_TEMPERATURE
+import org.smartregister.fhircore.quest.medintel.speech.models.GemmaModel.Companion.DEFAULT_TOP_K
 
-class GemmaModel(context: Context, modelPath: String) : LlmModel<LlmInference> {
-  private val options =
-    LlmInference.LlmInferenceOptions.builder()
-      .setModelPath(modelPath)
-      .setMaxTokens(DEFAULT_MAX_TOKENS)
-      .setTopK(DEFAULT_TOP_K)
-      .setTemperature(DEFAULT_TEMPERATURE)
-      .setRandomSeed(DEFAULT_RANDOM_SEED)
-      .build()
-  override var model: LlmInference = LlmInference.createFromOptions(context, options)
+class GemmaModel(llmInferenceType: LlmInferenceType) : LlmModel<LlmInferenceType> {
+
+  override var model: LlmInferenceType = llmInferenceType
 
   override suspend fun generateContent(prompt: String): String? {
     return model.generateResponse(prompt)
@@ -40,4 +37,29 @@ class GemmaModel(context: Context, modelPath: String) : LlmModel<LlmInference> {
     const val DEFAULT_TEMPERATURE = 0.8F
     const val DEFAULT_RANDOM_SEED = 101
   }
+}
+
+fun GemmaModel(context: Context, modelPath: String): GemmaModel {
+  val options =
+    LlmInference.LlmInferenceOptions.builder()
+      .setModelPath(modelPath)
+      .setMaxTokens(DEFAULT_MAX_TOKENS)
+      .setTopK(DEFAULT_TOP_K)
+      .setTemperature(DEFAULT_TEMPERATURE)
+      .setRandomSeed(DEFAULT_RANDOM_SEED)
+      .build()
+  val llmInference = LlmInferenceWrapper(LlmInference.createFromOptions(context, options))
+
+  return GemmaModel(llmInference)
+}
+
+sealed interface LlmInferenceType {
+  fun generateResponse(inputText: String): String?
+}
+
+interface ILlmInference : LlmInferenceType
+
+class LlmInferenceWrapper(val llmInference: LlmInference) : LlmInferenceType {
+  override fun generateResponse(inputText: String): String? =
+    llmInference.generateResponse(inputText)
 }

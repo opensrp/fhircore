@@ -32,70 +32,65 @@ package org.smartregister.fhircore.quest.medintel.speech.models
  * limitations under the License.
  */
 
-import android.content.Context
-import com.google.mediapipe.tasks.genai.llminference.LlmInference
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertNull
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
 
 class GemmaModelTest {
 
   private lateinit var gemmaModel: GemmaModel
-  private lateinit var mockContext: Context
-  private lateinit var mockLlmInference: LlmInference
+  private lateinit var mockLlmInference: ILlmInference
 
   @Before
   fun setUp() {
-    mockContext = mock(Context::class.java)
-    mockLlmInference = mock(LlmInference::class.java)
-    gemmaModel = GemmaModel(mockContext, "model/path").apply { model = mockLlmInference }
+    mockLlmInference = mockk<ILlmInference>()
+    gemmaModel = GemmaModel(mockLlmInference)
   }
 
   @Test
   fun generateContent_returnsGeneratedText() = runBlocking {
     val prompt = "Hello, world!"
     val expectedResponse = "Hello, user!"
-    `when`(mockLlmInference.generateResponse(prompt)).thenReturn(expectedResponse)
+    every { mockLlmInference.generateResponse(prompt) } returns expectedResponse
     val result = gemmaModel.generateContent(prompt)
-    assertEquals(expectedResponse, result)
+    Assert.assertEquals(expectedResponse, result)
   }
 
   @Test
   fun generateContent_handlesNullResponse() = runBlocking {
     val prompt = "Hello, world!"
-    `when`(mockLlmInference.generateResponse(prompt)).thenReturn(null)
+    every { mockLlmInference.generateResponse(prompt) } returns null
     val result = gemmaModel.generateContent(prompt)
-    assertNull(result)
+    Assert.assertNull(result)
   }
 
   @Test
   fun generateContent_handlesEmptyPrompt() = runBlocking {
     val prompt = ""
     val expectedResponse = "Empty prompt response"
-    `when`(mockLlmInference.generateResponse(prompt)).thenReturn(expectedResponse)
+    every { mockLlmInference.generateResponse(prompt) } returns expectedResponse
     val result = gemmaModel.generateContent(prompt)
-    assertEquals(expectedResponse, result)
+    Assert.assertEquals(expectedResponse, result)
   }
 
   @Test
   fun generateContent_handlesLongPrompt() = runBlocking {
     val prompt = "a".repeat(5000)
     val expectedResponse = "Long prompt response"
-    `when`(mockLlmInference.generateResponse(prompt)).thenReturn(expectedResponse)
+    every { mockLlmInference.generateResponse(prompt) } returns expectedResponse
     val result = gemmaModel.generateContent(prompt)
-    assertEquals(expectedResponse, result)
+    Assert.assertEquals(expectedResponse, result)
   }
 
   @Test
   fun generateContent_handlesSpecialCharacters() = runBlocking {
     val prompt = "!@#$%^&*()"
     val expectedResponse = "Special characters response"
-    `when`(mockLlmInference.generateResponse(prompt)).thenReturn(expectedResponse)
+    every { mockLlmInference.generateResponse(prompt) } returns expectedResponse
     val result = gemmaModel.generateContent(prompt)
-    assertEquals(expectedResponse, result)
+    Assert.assertEquals(expectedResponse, result)
   }
 }

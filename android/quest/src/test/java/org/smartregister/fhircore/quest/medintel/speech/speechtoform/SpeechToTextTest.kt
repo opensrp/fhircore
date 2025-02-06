@@ -16,10 +16,10 @@
 
 package org.smartregister.fhircore.quest.medintel.speech.speechtoform
 
-import com.google.cloud.speech.v1.RecognizeResponse
-import com.google.cloud.speech.v1.SpeechClient
-import com.google.cloud.speech.v1.SpeechRecognitionAlternative
-import com.google.cloud.speech.v1.SpeechRecognitionResult
+import com.google.cloud.speech.v1p1beta1.RecognizeResponse
+import com.google.cloud.speech.v1p1beta1.SpeechClient
+import com.google.cloud.speech.v1p1beta1.SpeechRecognitionAlternative
+import com.google.cloud.speech.v1p1beta1.SpeechRecognitionResult
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -29,6 +29,7 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -61,7 +62,7 @@ class SpeechToTextTest {
     }
   }
 
-  private fun testTranscribeAudioToTextRealApi() {
+  private fun testTranscribeAudioToTextRealApi() = runTest {
     val workingDir = System.getProperty("user.dir")
     val testFile =
       File(
@@ -76,7 +77,7 @@ class SpeechToTextTest {
     assertContains(resultFile.readText(), "what is your")
   }
 
-  private fun testTranscribeAudioToTextMock() {
+  private fun testTranscribeAudioToTextMock() = runTest {
     val workingDir = System.getProperty("user.dir")
     val audioFile =
       File(

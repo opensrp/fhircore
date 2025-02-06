@@ -32,46 +32,54 @@ object SpeechToText {
    * @param audioFile The audio file to be transcribed.
    * @return The temporary file containing the transcribed text.
    */
-  fun transcribeAudioToText(audioFile: File): File? {
+  suspend fun transcribeAudioToText(audioFile: File): File? {
     if (!isValidWavFile(audioFile)) {
       Timber.e("Invalid file format. Please provide a WAV file.")
       return null
     }
-    var tempFile: File? = null
+    val outputFile = File.createTempFile("transcription", ".txt")
 
     SpeechClient.create().use { speechClient ->
-      val audioBytes = audioFile.readBytes()
-
-      // Build the recognition audio
-      val recognitionAudio =
-        RecognitionAudio.newBuilder()
-          .setContent(com.google.protobuf.ByteString.copyFrom(audioBytes))
-          .build()
-
-      // Configure recognition settings
-      val config =
-        RecognitionConfig.newBuilder()
-          .setEncoding(AudioEncoding.LINEAR16)
-          .setSampleRateHertz(16000)
-          .setLanguageCode("en-US")
-          .build()
-
-      // Perform transcription
-      val response = speechClient.recognize(config, recognitionAudio)
-      val transcription =
-        response.resultsList.joinToString(" ") { result: SpeechRecognitionResult ->
-          result.alternativesList[0].transcript
-        }
-
-      Timber.i("Transcription: $transcription")
-
-      // Write transcription to a temporary file
-      tempFile = File.createTempFile("transcription", ".txt")
-      tempFile?.writeText(transcription)
-
-      Timber.i("Transcription written to temporary file. ")
+      transcribeAudioToTextFile(speechClient, audioFile, textFile = outputFile)
     }
-    return tempFile
+    return outputFile
+  }
+
+  @Suppress("RedundantSuspendModifier")
+  private suspend fun transcribeAudioToTextFile(
+    speechClient: SpeechClient,
+    audioFile: File,
+    textFile: File,
+  ) {
+    val audioBytes = audioFile.readBytes()
+
+    // Build the recognition audio
+    val recognitionAudio =
+      RecognitionAudio.newBuilder()
+        .setContent(com.google.protobuf.ByteString.copyFrom(audioBytes))
+        .build()
+
+    // Configure recognition settings
+    val config =
+      RecognitionConfig.newBuilder()
+        .setEncoding(AudioEncoding.LINEAR16)
+        .setSampleRateHertz(16000)
+        .setLanguageCode("en-US")
+        .build()
+
+    // Perform transcription
+    val response = speechClient.recognize(config, recognitionAudio)
+    val transcription =
+      response.resultsList.joinToString(" ") { result: SpeechRecognitionResult ->
+        result.alternativesList[0].transcript
+      }
+
+    Timber.i("Transcription: $transcription")
+
+    // Write transcription to a temporary file
+    textFile.writeText(transcription)
+
+    Timber.i("Transcription written to temporary file. ")
   }
 
   /**
