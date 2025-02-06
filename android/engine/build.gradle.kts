@@ -187,7 +187,11 @@ dependencies {
     isTransitive = true
     exclude(group = "org.codelibs", module = "xpp3")
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
+    exclude(module = "cqf-fhir-cql")
   }
+
+  implementation(libs.cqf.fhir.cql)
+
   api(libs.workflow) {
     isTransitive = true
     exclude(group = "xerces")
@@ -197,6 +201,7 @@ dependencies {
     exclude(group = "org.smartregister", module = "engine")
     exclude(group = "com.github.ben-manes.caffeine")
     exclude(group = "com.google.android.fhir", module = "knowledge")
+    exclude(module = "cqf-fhir-cql")
   }
   api(libs.contrib.barcode) {
     isTransitive = true
