@@ -52,6 +52,7 @@ import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
+import org.hl7.fhir.r4.model.MedicationRequest
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -284,6 +285,51 @@ constructor(
     softDeleteResources(questionnaireConfig)
 
     retireUsedQuestionnaireUniqueId(questionnaireConfig, currentQuestionnaireResponse)
+
+    if (questionnaireConfig.repeatGroup != null) {
+      processRepeatGroupItems(
+        questionnaireResponse = currentQuestionnaireResponse,
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
+      )
+    }
+  }
+
+  suspend fun processRepeatGroupItems(
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
+  ) {
+    val listResource = questionnaireResponse.contained[0] as ListResource
+    val containedResourceIds =
+      listResource.entry
+        .filter {
+          it.item.reference.contains("${questionnaireConfig.repeatGroup?.resourceType?.name}")
+        }
+        .mapNotNull { it.item.reference.extractLogicalIdUuid() }
+
+    val idString: String =
+      questionnaire.item
+        .firstOrNull { it.linkId == questionnaireConfig.repeatGroup?.linkId }
+        ?.initial
+        ?.firstOrNull()
+        ?.value
+        .toString()
+
+    if (idString.isBlank()) {
+      return
+    }
+
+    idString.split(DELIMITER).forEach { resourceId ->
+      if (!containedResourceIds.contains(resourceId)) {
+        val medicationRequest =
+          MedicationRequest().apply {
+            id = resourceId
+            status = MedicationRequest.MedicationRequestStatus.STOPPED
+          }
+        defaultRepository.addOrUpdate(resource = medicationRequest)
+      }
+    }
   }
 
   fun validateWithFhirValidator(vararg resource: Resource) {
@@ -1232,5 +1278,6 @@ constructor(
   companion object {
     const val CONTAINED_LIST_TITLE = "GeneratedResourcesList"
     const val OUTPUT_PARAMETER_KEY = "OUTPUT"
+    const val DELIMITER = ","
   }
 }

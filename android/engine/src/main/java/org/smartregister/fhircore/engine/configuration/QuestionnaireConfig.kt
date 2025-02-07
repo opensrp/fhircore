@@ -68,6 +68,7 @@ data class QuestionnaireConfig(
   val linkIds: List<LinkIdConfig>? = null,
   val showSubmitAnywayButton: String = "false",
   val showSubmissionConfirmationDialog: String = "false",
+  val repeatGroup: RepeatGroupConfig? = null,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
@@ -172,3 +173,10 @@ enum class LinkIdType : Parcelable {
   LOCATION,
   PREPOPULATION_EXCLUSION,
 }
+
+@Serializable
+@Parcelize
+data class RepeatGroupConfig(
+  val resourceType: ResourceType,
+  val linkId: String,
+) : java.io.Serializable, Parcelable
