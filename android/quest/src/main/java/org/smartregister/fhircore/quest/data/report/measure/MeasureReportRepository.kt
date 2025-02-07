@@ -103,7 +103,6 @@ constructor(
               startDateFormatted = startDateFormatted,
               endDateFormatted = endDateFormatted,
               subject = it,
-              practitionerId = practitionerId,
             )
           }
           .forEach { subject -> measureReport.add(subject) }
@@ -114,7 +113,6 @@ constructor(
             startDateFormatted = startDateFormatted,
             endDateFormatted = endDateFormatted,
             subject = null,
-            practitionerId = practitionerId,
           )
           .also { measureReport.add(it) }
       }
@@ -153,7 +151,6 @@ constructor(
     startDateFormatted: String,
     endDateFormatted: String,
     subject: String?,
-    practitionerId: String?,
   ): MeasureReport {
     return withContext(dispatcherProvider.io()) {
       try {
@@ -166,7 +163,8 @@ constructor(
           end = endDateFormatted,
           reportType = reportType,
           subjectId = subject,
-          practitioner = practitionerId.takeIf { it?.isNotBlank() == true },
+          additionalData = null,
+          parameters = null,
         )
       } catch (exception: IllegalArgumentException) {
         Timber.e(exception)
