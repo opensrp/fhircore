@@ -340,6 +340,24 @@ constructor(
     }
   }
 
+  /**
+   * This function handles processing of resources that have been deleted from a repeat group widget
+   * A string consisting of comma-separated IDs of resources that are initially loaded on the repeat
+   * group are cross-referenced with IDs of resources in the [QuestionnaireResponse.contained] field
+   * to determine which resources have been deleted. The [QuestionnaireResponse.contained] has a
+   * list of resources that are left when the Questionnaire is submitted.
+   *
+   * The current implementation only handles [MedicationRequest] resources. The logic for updating
+   * these resources is hard-coded at the moment
+   *
+   * @param questionnaireResponse The QuestionnaireResponse generated when the form is submitted
+   * @param questionnaire The Questionnaire being worked on
+   * @param questionnaireConfig The [QuestionnaireConfig] containing the [RepeatGroup] config The
+   *   [RepeatGroup] config contains the following [resourceType] Type of resource
+   *   [initialResourceIdslinkId] String containing comma-separated resource Ids that show which
+   *   resources are available when the Repeat Group widget is initially loaded. Sample of this
+   *   would be ["medication-request-id1,medication-request-id2,medication-request-id3"]
+   */
   suspend fun processRepeatGroupItems(
     questionnaireResponse: QuestionnaireResponse,
     questionnaire: Questionnaire,
