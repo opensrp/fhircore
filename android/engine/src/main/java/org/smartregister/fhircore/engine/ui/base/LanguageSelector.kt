@@ -29,7 +29,6 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 class LanguageSelector
 @Inject
 constructor(
-  val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
 ) {
   fun getDefaultLocale(baseContext: Context): String {
