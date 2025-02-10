@@ -5,6 +5,14 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
+#-dontshrink
+#-dontobfuscate
+-dontoptimize
+#-printmapping
+#-verbose
+-dontpreverify
+#-dontnote
+
 # If your project uses WebView with JS, uncomment the following
 # and specify the fully qualified class name to the JavaScript interface
 # class:
@@ -16,20 +24,14 @@
 # debugging stack traces.
 -keepattributes SourceFile,LineNumberTable
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
--renamesourcefileattribute SourceFile
-
-#-dontshrink
-#-dontobfuscate
-#-dontoptimize
--printmapping
--verbose
-
 -keepattributes Signature, InnerClasses, EnclosingMethod
 -keepattributes RuntimeVisibleAnnotations
 -keepattributes Exceptions
 -keepattributes *Annotation*
+
+# If you keep the line number information, uncomment this to
+# hide the original source file name.
+-renamesourcefileattribute SourceFile
 
 -keep class org.smartregister.fhircore.quest.** { *; }
 
@@ -172,10 +174,6 @@
 
 -keep enum * { *; }
 
--keepclassmembers class * {
-    *;
-}
-
 # Keep constructors for logging classes
 -keepclassmembers class org.apache.commons.logging.** {
     public <init>(...);
@@ -254,3 +252,153 @@
 -keep class * {
     public static final java.lang.String LOGBACK_CONFIG_FILE;
 }
+
+
+# Review keep rules
+-keep class org.smartregister.fhircore.engine.configuration.ConfigType { *; }
+-keep class org.smartregister.fhircore.engine.configuration.Configuration { *; }
+-keep class org.smartregister.fhircore.engine.configuration.app.AuthConfiguration { *; }
+-keep class org.smartregister.fhircore.engine.data.local.ContentCache { *; }
+-keep class org.smartregister.fhircore.engine.data.local.DaggerDefaultRepositoryComponent { *; }
+-keep class org.smartregister.fhircore.engine.data.local.register.RegisterRepository { *; }
+-keep class org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverter { *; }
+-keep class org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory { *; }
+-keep class org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource { *; }
+-keep class org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver { *; }
+-keep class org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse { *; }
+-keep class org.smartregister.fhircore.engine.datastore.ProtoDataStore { *; }
+-keep class org.smartregister.fhircore.engine.di.CoreModule { *; }
+-keep class org.smartregister.fhircore.engine.di.DispatcherModule { *; }
+-keep class org.smartregister.fhircore.engine.di.FhirValidatorModule { *; }
+-keep class org.smartregister.fhircore.engine.di.NetworkModule { *; }
+-keep class org.smartregister.fhircore.engine.domain.model.Language { *; }
+-keep class org.smartregister.fhircore.engine.domain.model.RelatedResourceCount { *; }
+-keep class org.smartregister.fhircore.engine.domain.model.RepositoryResourceData { *; }
+-keep class org.smartregister.fhircore.engine.domain.model.ResourceData { *; }
+-keep class org.smartregister.fhircore.engine.p2p.dao.BaseP2PTransferDao { *; }
+-keep class org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao { *; }
+-keep class org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao { *; }
+-keep class org.smartregister.fhircore.engine.rulesengine.RulesExecutor { *; }
+-keep class org.smartregister.fhircore.engine.sync.AppSyncWorker { *; }
+-keep class org.smartregister.fhircore.engine.sync.AppTimeStampContext { *; }
+-keep class org.smartregister.fhircore.engine.sync.OpenSrpDownloadManager { *; }
+-keep class org.smartregister.fhircore.engine.sync.ResourceTag { *; }
+-keep class org.smartregister.fhircore.engine.sync.SyncBroadcaster { *; }
+-keep class org.smartregister.fhircore.engine.sync.SyncListenerManager { *; }
+-keep class org.smartregister.fhircore.engine.task.FhirCarePlanGenerator { *; }
+-keep class org.smartregister.fhircore.engine.task.FhirResourceUtil { *; }
+-keep class org.smartregister.fhircore.engine.task.WorkflowCarePlanGenerator { *; }
+-keep class org.smartregister.fhircore.engine.ui.base.AlertDialogButton { *; }
+-keep class org.smartregister.fhircore.engine.ui.base.AlertDialogListItem { *; }
+-keep class org.smartregister.fhircore.engine.ui.base.AlertDialogue { *; }
+-keep class org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity { *; }
+-keep class org.smartregister.fhircore.engine.ui.multiselect.TreeNode { *; }
+-keep class org.smartregister.fhircore.engine.util.DefaultDispatcherProvider { *; }
+-keep class org.smartregister.fhircore.engine.util.TimeZoneTypeAdapter { *; }
+-keep class org.smartregister.fhircore.engine.util.adapter.InstantTypeAdapter { *; }
+-keep class org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor { *; }
+-keep class org.smartregister.fhircore.engine.util.helper.TransformSupportServices { *; }
+-keep class org.smartregister.fhircore.engine.util.validation.ResourceValidationRequest { *; }
+-keep class org.smartregister.fhircore.engine.util.validation.ResourceValidationRequestHandler { *; }
+-keep class org.smartregister.fhircore.engine.util.validation.ResourceValidationResult { *; }
+-keep class org.smartregister.fhircore.geowidget.baselayers.MapBoxSatelliteLayer { *; }
+-keep class org.smartregister.fhircore.geowidget.baselayers.StreetSatelliteLayer { *; }
+-keep class org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment { *; }
+-keep class org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel { *; }
+-keep class org.smartregister.fhircore.quest.DaggerQuestApplication** { *; }
+-keep class org.smartregister.fhircore.quest.QuestApplication { *; }
+-keep class org.smartregister.fhircore.quest.QuestConfigService { *; }
+-keep class org.smartregister.fhircore.quest.ReleaseTree { *; }
+-keep class org.smartregister.fhircore.quest.data.DataMigration { *; }
+-keep class org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver { *; }
+-keep class org.smartregister.fhircore.quest.data.register.RegisterPagingSource { *; }
+-keep class org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState { *; }
+-keep class org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository { *; }
+-keep class org.smartregister.fhircore.quest.data.report.measure.MeasureReportSubjectsPagingSource { *; }
+-keep class org.smartregister.fhircore.quest.di.config.ConfigServiceModule { *; }
+-keep class org.smartregister.fhircore.quest.event.AppEvent$OnSubmitQuestionnaire { *; }
+-keep class org.smartregister.fhircore.quest.event.AppEvent { *; }
+-keep class org.smartregister.fhircore.quest.event.EventBus { *; }
+-keep class org.smartregister.fhircore.quest.event.EventQueue { *; }
+-keep class org.smartregister.fhircore.quest.event.OneTimeEvent { *; }
+-keep class org.smartregister.fhircore.quest.event.ToolbarClickEvent$Actions { *; }
+-keep class org.smartregister.fhircore.quest.event.ToolbarClickEvent { *; }
+-keep class org.smartregister.fhircore.quest.navigation.MainNavigationScreen { *; }
+-keep class org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen { *; }
+-keep class org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity { *; }
+-keep class org.smartregister.fhircore.quest.ui.appsetting.AppSettingViewModel { *; }
+-keep class org.smartregister.fhircore.quest.ui.geowidget.GeoWidgetEvent { *; }
+-keep class org.smartregister.fhircore.quest.ui.geowidget.GeoWidgetLauncherFragment** { *; }
+-keep class org.smartregister.fhircore.quest.ui.login.AuthAndroidService { *; }
+-keep class org.smartregister.fhircore.quest.ui.login.ConfigDownloadWorker { *; }
+-keep class org.smartregister.fhircore.quest.ui.login.LoginActivity { *; }
+-keep class org.smartregister.fhircore.quest.ui.login.LoginViewModel { *; }
+-keep class org.smartregister.fhircore.quest.ui.main.AppMainActivity { *; }
+-keep class org.smartregister.fhircore.quest.ui.main.AppMainEvent { *; }
+-keep class org.smartregister.fhircore.quest.ui.main.AppMainUiState { *; }
+-keep class org.smartregister.fhircore.quest.ui.multiselect.** { *; }
+-keep class org.smartregister.fhircore.quest.ui.pdf.PdfGenerator { *; }
+-keep class org.smartregister.fhircore.quest.ui.pin.PinUiState { *; }
+-keep class org.smartregister.fhircore.quest.ui.pin.PinViewModel { *; }
+-keep class org.smartregister.fhircore.quest.ui.profile.** { *; }
+-keep class org.smartregister.fhircore.quest.ui.questionnaire.** { *; }
+-keep class org.smartregister.fhircore.quest.ui.register.** { *; }
+-keep class org.smartregister.fhircore.quest.ui.report.measure.** { *; }
+-keep class org.smartregister.fhircore.quest.ui.sdc.password.** { *; }
+-keep class org.smartregister.fhircore.quest.ui.sdc.qrCode.** { *; }
+-keep class org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState { *; }
+-keep class org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData { *; }
+-keep class org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission { *; }
+-keep class org.smartregister.fhircore.quest.ui.shared.models.SearchMode { *; }
+-keep class org.smartregister.fhircore.quest.ui.shared.viewmodels.SearchViewModel { *; }
+-keep class org.smartregister.fhircore.quest.ui.usersetting.UserInsightScreenFragment { *; }
+-keep class org.smartregister.fhircore.quest.ui.usersetting.UserSettingViewModel { *; }
+-keep class org.smartregister.fhircore.quest.ui.usersetting.UserSettingsEvent$ExportDB { *; }
+-keep class org.smartregister.fhircore.quest.ui.usersetting.UserSettingsEvent$Logout { *; }
+-keep class org.smartregister.fhircore.quest.ui.usersetting.UserSettingsEvent$OnLaunchOfflineMap { *; }
+-keep class org.smartregister.fhircore.quest.ui.usersetting.UserSettingsEvent$ResetDatabaseFlag { *; }
+-keep class org.smartregister.fhircore.quest.ui.usersetting.UserSettingsEvent$ShowContactView { *; }
+-keep class org.smartregister.fhircore.quest.ui.usersetting.UserSettingsEvent$ShowInsightsScreen { *; }
+-keep class org.smartregister.fhircore.quest.ui.usersetting.UserSettingsEvent$ShowLoaderView { *; }
+-keep class org.smartregister.fhircore.quest.ui.usersetting.UserSettingsEvent$ShowResetDatabaseConfirmationDialog { *; }
+-keep class org.smartregister.fhircore.quest.ui.usersetting.UserSettingsEvent$SwitchLanguage { *; }
+-keep class org.smartregister.fhircore.quest.ui.usersetting.UserSettingsEvent$SwitchToP2PScreen { *; }
+-keep class org.smartregister.fhircore.quest.ui.usersetting.UserSettingsEvent$SyncData { *; }
+-keep class org.smartregister.fhircore.quest.ui.usersetting.UserSettingsEvent { *; }
+-keep class org.smartregister.fhircore.quest.util.** { *; }
+-keep class org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper { *; }
+-keep class org.smartregister.model.location.Tree { *; }
+-keep class org.smartregister.p2p.P2PLibrary$Options { *; }
+-keep class org.smartregister.p2p.P2pStatusFragment { *; }
+-keep class org.smartregister.p2p.WifiP2pBroadcastReceiver { *; }
+-keep class org.smartregister.p2p.WifiP2pDeviceAdapter { *; }
+-keep class org.smartregister.p2p.data_sharing.Manifest { *; }
+-keep class org.smartregister.p2p.data_sharing.SyncReceiverHandler { *; }
+-keep class org.smartregister.p2p.data_sharing.SyncSenderHandler { *; }
+-keep class org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy$WifiDirectDevice { *; }
+-keep class org.smartregister.p2p.model.ActionableButtonData { *; }
+-keep class org.smartregister.p2p.model.P2PReceivedHistory { *; }
+-keep class org.smartregister.p2p.model.ProgressIndicator { *; }
+-keep class org.smartregister.p2p.model.RecordCount { *; }
+-keep class org.smartregister.p2p.model.TransferProgress { *; }
+-keep class org.smartregister.p2p.payload.BytePayload { *; }
+-keep class org.smartregister.p2p.payload.StringPayload { *; }
+-keep class org.smartregister.p2p.search.adapter.DeviceListAdapter { *; }
+-keep class org.smartregister.p2p.search.data.JsonData { *; }
+-keep class org.smartregister.p2p.search.ui.BaseViewModel { *; }
+-keep class org.smartregister.p2p.search.ui.P2PDeviceSearchActivity { *; }
+-keep class org.smartregister.p2p.search.ui.P2PReceiverViewModel$Factory { *; }
+-keep class org.smartregister.p2p.search.ui.P2PReceiverViewModel { *; }
+-keep class org.smartregister.p2p.search.ui.P2PSenderViewModel$Factory { *; }
+-keep class org.smartregister.p2p.search.ui.P2PSenderViewModel { *; }
+-keep class org.smartregister.p2p.search.ui.p2p.P2PEvent$PairWithDevice { *; }
+-keep class org.smartregister.p2p.search.ui.p2p.P2PEvent { *; }
+-keep class org.smartregister.p2p.search.ui.p2p.P2PUiState { *; }
+-keep class org.smartregister.p2p.search.ui.p2p.P2PViewModel$Factory { *; }
+-keep class org.smartregister.p2p.search.ui.p2p.P2PViewModel { *; }
+-keep class org.smartregister.p2p.search.ui.p2p.components.DeviceListKt { *; }
+-keep class org.smartregister.p2p.sync.DataType { *; }
+-keep class org.smartregister.p2p.utils.DefaultDispatcherProvider { *; }
+-keep class org.smartregister.p2p.utils.Settings { *; }
+
+-keep class com.google.android.fhir.search.** { *; }
