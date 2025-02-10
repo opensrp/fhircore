@@ -2288,7 +2288,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       val repeatGroupConfig =
         RepeatGroupConfig(
           resourceType = ResourceType.MedicationRequest,
-          linkId = "active-medication-ids",
+          initialResourceIdslinkId = "active-medication-ids",
         )
       val questionnaireConfig =
         QuestionnaireConfig(

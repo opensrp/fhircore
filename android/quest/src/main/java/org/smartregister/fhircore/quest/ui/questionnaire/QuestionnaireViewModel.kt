@@ -295,43 +295,6 @@ constructor(
     }
   }
 
-  suspend fun processRepeatGroupItems(
-    questionnaireResponse: QuestionnaireResponse,
-    questionnaire: Questionnaire,
-    questionnaireConfig: QuestionnaireConfig,
-  ) {
-    val listResource = questionnaireResponse.contained[0] as ListResource
-    val containedResourceIds =
-      listResource.entry
-        .filter {
-          it.item.reference.contains("${questionnaireConfig.repeatGroup?.resourceType?.name}")
-        }
-        .mapNotNull { it.item.reference.extractLogicalIdUuid() }
-
-    val idString: String =
-      questionnaire.item
-        .firstOrNull { it.linkId == questionnaireConfig.repeatGroup?.linkId }
-        ?.initial
-        ?.firstOrNull()
-        ?.value
-        .toString()
-
-    if (idString.isBlank()) {
-      return
-    }
-
-    idString.split(DELIMITER).forEach { resourceId ->
-      if (!containedResourceIds.contains(resourceId)) {
-        val medicationRequest =
-          MedicationRequest().apply {
-            id = resourceId
-            status = MedicationRequest.MedicationRequestStatus.STOPPED
-          }
-        defaultRepository.addOrUpdate(resource = medicationRequest)
-      }
-    }
-  }
-
   fun validateWithFhirValidator(vararg resource: Resource) {
     if (BuildConfig.DEBUG) {
       fhirValidatorRequestHandlerProvider
@@ -374,6 +337,43 @@ constructor(
       Timber.i(
         "ID '$submittedUniqueId' used'",
       )
+    }
+  }
+
+  suspend fun processRepeatGroupItems(
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
+  ) {
+    val listResource = questionnaireResponse.contained[0] as ListResource
+    val containedResourceIds =
+      listResource.entry
+        .filter {
+          it.item.reference.contains("${questionnaireConfig.repeatGroup?.resourceType?.name}")
+        }
+        .mapNotNull { it.item.reference.extractLogicalIdUuid() }
+
+    val initialResourceIdsString: String =
+      questionnaire.item
+        .firstOrNull { it.linkId == questionnaireConfig.repeatGroup?.initialResourceIdslinkId }
+        ?.initial
+        ?.firstOrNull()
+        ?.value
+        .toString()
+
+    if (initialResourceIdsString.isBlank()) {
+      return
+    }
+
+    initialResourceIdsString.split(DELIMITER).forEach { resourceId ->
+      if (!containedResourceIds.contains(resourceId)) {
+        val medicationRequest =
+          MedicationRequest().apply {
+            id = resourceId
+            status = MedicationRequest.MedicationRequestStatus.STOPPED
+          }
+        defaultRepository.addOrUpdate(resource = medicationRequest)
+      }
     }
   }
 

@@ -178,5 +178,5 @@ enum class LinkIdType : Parcelable {
 @Parcelize
 data class RepeatGroupConfig(
   val resourceType: ResourceType,
-  val linkId: String,
+  val initialResourceIdslinkId: String,
 ) : java.io.Serializable, Parcelable
