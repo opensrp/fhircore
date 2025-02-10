@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.login
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -43,7 +42,6 @@ import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBack
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.fhircore.quest.ui.pin.PinLoginActivity
 import org.smartregister.p2p.P2PLibrary
-import timber.log.Timber
 
 @AndroidEntryPoint
 open class LoginActivity : BaseMultiLanguageActivity() {

@@ -21,15 +21,9 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import java.lang.UnsupportedOperationException
-import java.util.Locale
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.util.DependenciesHolder
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
 /**
@@ -57,31 +51,6 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
         applyOverrideConfiguration(this)
       }
     }
-  }
-
-  fun getDefaultLocale(baseContext: Context): String {
-    val sharedPrefLocale =
-      baseContext
-        .getSharedPreferences(SharedPreferencesHelper.PREFS_NAME, Context.MODE_PRIVATE)
-        .getString(SharedPreferenceKey.LANG.name, null)
-    val deviceDefaultLocale = Locale.getDefault()
-    val applicationConfiguration =
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
-    val appConfigDefaultLocale = applicationConfiguration.defaultLocale
-    val firstLocaleInLanguagesList = applicationConfiguration.languages.first()
-
-    return when {
-      !sharedPrefLocale.isNullOrBlank() && isLanguageSupported(sharedPrefLocale) -> sharedPrefLocale
-      isLanguageSupported(deviceDefaultLocale.toLanguageTag()) ->
-        deviceDefaultLocale.toLanguageTag()
-      appConfigDefaultLocale.isNotBlank() && isLanguageSupported(appConfigDefaultLocale) ->
-        appConfigDefaultLocale
-      else -> firstLocaleInLanguagesList
-    }
-  }
-
-  private fun isLanguageSupported(lang: String): Boolean {
-    return configurationRegistry.fetchLanguages().any { it.equals(lang) }
   }
 
   /**
