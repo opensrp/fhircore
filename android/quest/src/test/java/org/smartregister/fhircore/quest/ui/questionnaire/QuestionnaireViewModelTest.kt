@@ -336,7 +336,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         questionnaireViewModel.processRepeatGroupItems(
           questionnaireResponse,
           questionnaire,
-          updatedQuestionnaireConfig
+          updatedQuestionnaireConfig,
         )
       }
       coVerify { onSuccessfulSubmission(any(), questionnaireResponse) }
