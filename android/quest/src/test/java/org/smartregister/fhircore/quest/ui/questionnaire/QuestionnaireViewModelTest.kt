@@ -332,7 +332,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
-      coVerify { questionnaireViewModel.processRepeatGroupItems(questionnaireResponse, questionnaire, updatedQuestionnaireConfig) }
+      coVerify {
+        questionnaireViewModel.processRepeatGroupItems(
+          questionnaireResponse,
+          questionnaire,
+          updatedQuestionnaireConfig
+        )
+      }
       coVerify { onSuccessfulSubmission(any(), questionnaireResponse) }
 
       unmockkObject(ResourceMapper)
