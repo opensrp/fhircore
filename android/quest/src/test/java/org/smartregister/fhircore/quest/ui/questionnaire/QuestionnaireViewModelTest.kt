@@ -2297,14 +2297,72 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
 
       questionnaireViewModel.processRepeatGroupItems(
-        questionnaireResponse,
-        questionnaire,
-        questionnaireConfig,
+        questionnaireResponse = questionnaireResponse,
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
       )
 
       coVerify { defaultRepository.addOrUpdate(true, capture(medRequestSlot)) }
       assertEquals("med-id-2", stringSlot.captured)
       assertEquals("STOPPED", medRequestSlot.captured.status.name)
+    }
+  }
+
+  @Test
+  fun testProcessRepeatGroupItemsWhenInitialResourceIdsStringIsBlank() {
+    runTest {
+      val questionnaireResponse =
+        QuestionnaireResponse().apply {
+          contained =
+            listOf(
+              ListResource().apply {
+                id = "list-id"
+                entry =
+                  listOf(
+                    ListResource.ListEntryComponent().apply {
+                      item = Reference("MedicationRequest/med-id-1")
+                    },
+                  )
+              },
+            )
+        }
+
+      val questionnaire =
+        Questionnaire().apply {
+          id = "questionnaire-id-1"
+          item =
+            listOf(
+              QuestionnaireItemComponent().apply {
+                linkId = "active-medication-ids"
+                initial =
+                  listOf(
+                    Questionnaire.QuestionnaireItemInitialComponent(
+                      StringType(""),
+                    ),
+                  )
+              },
+            )
+        }
+
+      val medRequestSlot = slot<MedicationRequest>()
+      val repeatGroupConfig =
+        RepeatGroupConfig(
+          resourceType = ResourceType.MedicationRequest,
+          initialResourceIdslinkId = "active-medication-ids",
+        )
+      val questionnaireConfig =
+        QuestionnaireConfig(
+          id = "sample-config-id",
+          repeatGroup = repeatGroupConfig,
+        )
+
+      questionnaireViewModel.processRepeatGroupItems(
+        questionnaireResponse = questionnaireResponse,
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
+      )
+
+      coVerify(exactly = 0) { defaultRepository.addOrUpdate(any(), any()) }
     }
   }
 
