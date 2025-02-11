@@ -174,6 +174,12 @@ enum class LinkIdType : Parcelable {
   PREPOPULATION_EXCLUSION,
 }
 
+/**
+ * @property [resourceType] Type of resource
+ * @property [initialResourceIdslinkId] String containing comma-separated resource Ids that show
+ *   which resources are available when the Repeat Group widget is initially loaded. Sample of this
+ *   would be ["medication-request-id1,medication-request-id2,medication-request-id3"]
+ */
 @Serializable
 @Parcelize
 data class RepeatGroupConfig(
