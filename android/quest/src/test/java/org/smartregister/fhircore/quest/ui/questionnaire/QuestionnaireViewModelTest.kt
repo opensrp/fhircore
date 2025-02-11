@@ -284,12 +284,16 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       coEvery { defaultRepository.loadResource(any<String>(), ResourceType.Patient) } returns
         Patient()
 
+      val updatedQuestionnaireConfig =
+        questionnaireConfig.copy(
+          repeatGroup = RepeatGroupConfig(ResourceType.MedicationRequest, "active-med-ids"),
+        )
       questionnaireViewModel.handleQuestionnaireSubmission(
         questionnaire = questionnaire,
         currentQuestionnaireResponse = questionnaireResponse,
         actionParameters = actionParameters,
         context = context,
-        questionnaireConfig = questionnaireConfig,
+        questionnaireConfig = updatedQuestionnaireConfig,
         onSuccessfulSubmission = onSuccessfulSubmission,
       )
 
@@ -317,7 +321,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         questionnaireViewModel.saveExtractedResources(
           bundle = any<Bundle>(),
           questionnaire = questionnaire,
-          questionnaireConfig = questionnaireConfig,
+          questionnaireConfig = updatedQuestionnaireConfig,
           questionnaireResponse = questionnaireResponse,
           context = context,
         )
@@ -328,7 +332,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
+      coVerify { questionnaireViewModel.processRepeatGroupItems(questionnaireResponse, questionnaire, updatedQuestionnaireConfig) }
       coVerify { onSuccessfulSubmission(any(), questionnaireResponse) }
+
       unmockkObject(ResourceMapper)
     }
 
