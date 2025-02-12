@@ -290,8 +290,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
               LinkIdConfig(
                 resourceType = ResourceType.MedicationRequest,
                 linkId = "active-med-ids",
-                type = LinkIdType.REPEATED_GROUP_DELETION
-              )
+                type = LinkIdType.REPEATED_GROUP_DELETION,
+              ),
             ),
         )
       questionnaireViewModel.handleQuestionnaireSubmission(

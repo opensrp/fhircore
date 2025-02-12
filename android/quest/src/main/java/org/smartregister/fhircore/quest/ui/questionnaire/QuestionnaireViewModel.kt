@@ -355,11 +355,10 @@ constructor(
    * @param questionnaireResponse The QuestionnaireResponse generated when the form is submitted
    * @param questionnaire The Questionnaire being worked on
    * @param questionnaireConfig The [QuestionnaireConfig] containing the [LindIds] config The
-   *   [LindIds] config contains the following [resourceType] Type of resource
-   *   [linkId] LinkId for the questionnaire field containing the string of containing comma-separated
-   *   resource Ids that show which
-   *   resources are available when the Repeat Group widget is initially loaded. Sample of this
-   *   would be ["medication-request-id1,medication-request-id2,medication-request-id3"]
+   *   [LindIds] config contains the following [resourceType] Type of resource [linkId] LinkId for
+   *   the questionnaire field containing the string of containing comma-separated resource Ids that
+   *   show which resources are available when the Repeat Group widget is initially loaded. Sample
+   *   of this would be ["medication-request-id1,medication-request-id2,medication-request-id3"]
    */
   suspend fun processRepeatedGroupItems(
     questionnaireResponse: QuestionnaireResponse,
