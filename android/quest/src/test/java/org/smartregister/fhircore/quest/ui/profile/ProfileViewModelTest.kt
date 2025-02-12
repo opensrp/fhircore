@@ -31,8 +31,10 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import io.mockk.runs
 import io.mockk.spyk
+import io.mockk.unmockkConstructor
 import io.mockk.verifyAll
 import javax.inject.Inject
 import kotlin.test.assertEquals
@@ -40,10 +42,12 @@ import kotlin.test.assertNotNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StringType
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -60,7 +64,6 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.BLACK_COLOR_HEX_CODE
-import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -235,30 +238,33 @@ class ProfileViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Fails. Not sure about what was intended in the test")
   fun testThatManagingEntityProfileBottomSheetIsShownOnActionTriggered() = runTest {
-    val navController = mockk<NavController>()
-    val event = mockk<ProfileEvent.OverflowMenuClick>()
     val fragmentManager = mockk<FragmentManager>()
     val fragmentManagerTransaction = mockk<FragmentTransaction>()
-    val overflowMenuItemConfig =
-      OverflowMenuItemConfig(
-        id = 1,
-        title = "open profile bottom sheet",
-        confirmAction = false,
-        icon = null,
-        titleColor = BLACK_COLOR_HEX_CODE,
-        backgroundColor = null,
-        visible = "true",
-        showSeparator = false,
-        enabled = "true",
-        actions = listOf(ActionConfig(trigger = ActionTrigger.ON_CLICK)),
-      )
+    val activity =
+      mockk<AppCompatActivity> {
+        every { supportFragmentManager } returns fragmentManager
+        every { supportFragmentManager.beginTransaction() } returns fragmentManagerTransaction
+      }
+    val navController = mockk<NavController> { every { context } returns activity }
+    mockkConstructor(ProfileBottomSheetFragment::class)
+    every {
+      anyConstructed<ProfileBottomSheetFragment>().show(any<FragmentManager>(), any<String>())
+    } just runs
 
+    val memberPatient =
+      Patient().apply {
+        id = "entity1"
+        active = true
+        addName(
+          HumanName().apply { given = listOf(StringType("member 1")) },
+        )
+      }
     val managingEntityResource =
-      mockk<Group.GroupMemberComponent>() { every { id } returns "entity1" }
-    val profileBottomSheetFragment = mockk<ProfileBottomSheetFragment>()
-    val activity = mockk<AppCompatActivity>()
+      mockk<Group.GroupMemberComponent>() {
+        every { id } returns "entity1"
+        every { entity } returns Reference().apply { reference = "Patient/entity1" }
+      }
 
     val group =
       Group().apply {
@@ -278,7 +284,7 @@ class ProfileViewModelTest : RobolectricTest() {
     val managingEntityConfig =
       ManagingEntityConfig(
         nameFhirPathExpression = "name",
-        eligibilityCriteriaFhirPathExpression = "criteria",
+        eligibilityCriteriaFhirPathExpression = "active",
         resourceType = ResourceType.Patient,
         dialogTitle = "Change Managing Entity",
         dialogWarningMessage = "Warning",
@@ -287,27 +293,50 @@ class ProfileViewModelTest : RobolectricTest() {
         managingEntityReassignedMessage = "Managing entity reassigned",
       )
 
-    coEvery { registerRepository.loadResource<Group>("group1") } returns group
-
-    every {
-      fhirPathDataExtractor.extractValue(
-        managingEntityResource,
-        "name",
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.CHANGE_MANAGING_ENTITY.name,
+        managingEntity = managingEntityConfig,
       )
-    } returns "memebr 1"
-    every { activity.supportFragmentManager } returns fragmentManager
-    every { activity.supportFragmentManager.beginTransaction() } returns fragmentManagerTransaction
+    val overflowMenuItemConfig =
+      OverflowMenuItemConfig(
+        id = 1,
+        title = "open profile bottom sheet",
+        confirmAction = false,
+        icon = null,
+        titleColor = BLACK_COLOR_HEX_CODE,
+        backgroundColor = null,
+        visible = "true",
+        showSeparator = false,
+        enabled = "true",
+        actions = listOf(actionConfig),
+      )
+
+    coEvery { registerRepository.loadResource<Group>("group1") } returns group
+    coEvery { registerRepository.loadResource("entity1", ResourceType.Patient) } returns
+      memberPatient
+
+    val groupResourceData =
+      ResourceData(
+        baseResourceId = "group1",
+        baseResourceType = ResourceType.Group,
+        computedValuesMap = emptyMap(),
+      )
+
     viewModel.onEvent(
       ProfileEvent.OverflowMenuClick(
         navController,
-        resourceData,
+        groupResourceData,
         overflowMenuItemConfig,
       ),
     )
     verifyAll {
       navController.context
-      activity.getActivity()
-      profileBottomSheetFragment.show(fragmentManager, ProfileBottomSheetFragment.TAG)
+      anyConstructed<ProfileBottomSheetFragment>()
+        .show(any<FragmentManager>(), ProfileBottomSheetFragment.TAG)
     }
+
+    unmockkConstructor(ProfileBottomSheetFragment::class)
   }
 }

@@ -86,7 +86,7 @@ import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocat
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.clearText
-import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
+import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -828,7 +828,7 @@ constructor(
     }
 
     val libraryFilters =
-      questionnaire.cqfLibraryUrls().map {
+      questionnaire.cqfLibraryIds().map {
         val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.extractLogicalIdUuid()) }
         apply
       }

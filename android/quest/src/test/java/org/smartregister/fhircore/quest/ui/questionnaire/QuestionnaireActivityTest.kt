@@ -42,7 +42,6 @@ import javax.inject.Inject
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import kotlin.test.assertNotNull
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Enumerations
@@ -51,7 +50,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -75,7 +73,6 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
-@Ignore("Just for now")
 class QuestionnaireActivityTest : RobolectricTest() {
 
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
@@ -174,45 +171,34 @@ class QuestionnaireActivityTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Flaky! When ran in suite")
-  fun testThatActivityRendersConfiguredQuestionnaire() =
-    runTest(timeout = 90.seconds) {
-      // TODO verify that this test executes as expected
+  fun testThatActivityRendersConfiguredQuestionnaire() = runTest {
+    // TODO verify that this test executes as expected
 
-      // Questionnaire will be retrieved from the database
-      fhirEngine.create(questionnaire.apply { id = questionnaireConfig.id })
-
-      setupActivity()
-      val questionnaireFragment =
-        questionnaireActivity.supportFragmentManager.findFragmentByTag(
-          QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG,
-        )
-      Assert.assertNotNull(questionnaireFragment)
-
-      // Questionnaire should be the same
-      val fragmentQuestionnaire =
-        questionnaireFragment
-          ?.arguments
-          ?.getString("questionnaire")
-          ?.decodeResourceFromString<Questionnaire>()
-
-      Assert.assertEquals(questionnaire.id, fragmentQuestionnaire?.id!!.extractLogicalIdUuid())
-      val sortedQuestionnaireItemLinkIds =
-        questionnaire.item.map { it.linkId }.sorted().joinToString(",")
-      val sortedFragmentQuestionnaireItemLinkIds =
-        fragmentQuestionnaire.item?.map { it.linkId }?.sorted()?.joinToString(",")
-
-      Assert.assertEquals(sortedQuestionnaireItemLinkIds, sortedFragmentQuestionnaireItemLinkIds)
-    }
-
-  @Test
-  fun testThatOnBackPressShowsConfirmationAlertDialog() = runTest {
     // Questionnaire will be retrieved from the database
     fhirEngine.create(questionnaire.apply { id = questionnaireConfig.id })
+
     setupActivity()
-    questionnaireActivity.onBackPressedDispatcher.onBackPressed()
-    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
-    Assert.assertNotNull(dialog)
+
+    val questionnaireFragment =
+      questionnaireActivity.supportFragmentManager.findFragmentByTag(
+        QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG,
+      )
+    Assert.assertNotNull(questionnaireFragment)
+
+    // Questionnaire should be the same
+    val fragmentQuestionnaire =
+      questionnaireFragment
+        ?.arguments
+        ?.getString("questionnaire")
+        ?.decodeResourceFromString<Questionnaire>()
+
+    Assert.assertEquals(questionnaire.id, fragmentQuestionnaire?.id!!.extractLogicalIdUuid())
+    val sortedQuestionnaireItemLinkIds =
+      questionnaire.item.map { it.linkId }.sorted().joinToString(",")
+    val sortedFragmentQuestionnaireItemLinkIds =
+      fragmentQuestionnaire.item?.map { it.linkId }?.sorted()?.joinToString(",")
+
+    Assert.assertEquals(sortedQuestionnaireItemLinkIds, sortedFragmentQuestionnaireItemLinkIds)
   }
 
   @Test
@@ -242,6 +228,16 @@ class QuestionnaireActivityTest : RobolectricTest() {
     val expectedIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
 
     assertEquals(expectedIntent.component, startedIntent.component)
+  }
+
+  @Test
+  fun testOnBackPressShowsConfirmationAlertDialog() = runTest {
+    // Questionnaire will be retrieved from the database
+    fhirEngine.create(questionnaire.apply { id = questionnaireConfig.id })
+    setupActivity()
+    questionnaireActivity.onBackPressedDispatcher.onBackPressed()
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+    Assert.assertNotNull(dialog)
   }
 
   private fun setupActivity() {
