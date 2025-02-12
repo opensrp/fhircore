@@ -286,8 +286,10 @@ constructor(
 
     retireUsedQuestionnaireUniqueId(questionnaireConfig, currentQuestionnaireResponse)
 
-    if (questionnaireConfig.repeatGroup != null) {
-      processRepeatGroupItems(
+    if (
+      questionnaireConfig.linkIds?.any { it.type == LinkIdType.REPEATED_GROUP_DELETION } == true
+    ) {
+      processRepeatedGroupItems(
         questionnaireResponse = currentQuestionnaireResponse,
         questionnaire = questionnaire,
         questionnaireConfig = questionnaireConfig,
@@ -352,28 +354,32 @@ constructor(
    *
    * @param questionnaireResponse The QuestionnaireResponse generated when the form is submitted
    * @param questionnaire The Questionnaire being worked on
-   * @param questionnaireConfig The [QuestionnaireConfig] containing the [RepeatGroup] config The
-   *   [RepeatGroup] config contains the following [resourceType] Type of resource
-   *   [initialResourceIdslinkId] String containing comma-separated resource Ids that show which
+   * @param questionnaireConfig The [QuestionnaireConfig] containing the [LindIds] config The
+   *   [LindIds] config contains the following [resourceType] Type of resource
+   *   [linkId] LinkId for the questionnaire field containing the string of containing comma-separated
+   *   resource Ids that show which
    *   resources are available when the Repeat Group widget is initially loaded. Sample of this
    *   would be ["medication-request-id1,medication-request-id2,medication-request-id3"]
    */
-  suspend fun processRepeatGroupItems(
+  suspend fun processRepeatedGroupItems(
     questionnaireResponse: QuestionnaireResponse,
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig,
   ) {
     val listResource = questionnaireResponse.contained[0] as ListResource
+    val repeatedGroupLinkIdConfig =
+      questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.REPEATED_GROUP_DELETION }
+    if (repeatedGroupLinkIdConfig == null) {
+      return
+    }
     val containedResourceIds =
       listResource.entry
-        .filter {
-          it.item.reference.contains("${questionnaireConfig.repeatGroup?.resourceType?.name}")
-        }
+        .filter { it.item.reference.contains("${repeatedGroupLinkIdConfig.resourceType?.name}") }
         .mapNotNull { it.item.reference.extractLogicalIdUuid() }
 
     val initialResourceIdsString: String =
       questionnaire.item
-        .firstOrNull { it.linkId == questionnaireConfig.repeatGroup?.initialResourceIdslinkId }
+        .firstOrNull { it.linkId == repeatedGroupLinkIdConfig.linkId }
         ?.initial
         ?.firstOrNull()
         ?.value

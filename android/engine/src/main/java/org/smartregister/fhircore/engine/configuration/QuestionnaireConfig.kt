@@ -68,7 +68,6 @@ data class QuestionnaireConfig(
   val linkIds: List<LinkIdConfig>? = null,
   val showSubmitAnywayButton: String = "false",
   val showSubmissionConfirmationDialog: String = "false",
-  val repeatGroup: RepeatGroupConfig? = null,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
@@ -163,6 +162,7 @@ data class UniqueIdAssignmentConfig(
 data class LinkIdConfig(
   val linkId: String,
   val type: LinkIdType,
+  val resourceType: ResourceType? = null,
 ) : java.io.Serializable, Parcelable
 
 @Serializable
@@ -172,17 +172,5 @@ enum class LinkIdType : Parcelable {
   BARCODE,
   LOCATION,
   PREPOPULATION_EXCLUSION,
+  REPEATED_GROUP_DELETION,
 }
-
-/**
- * @property [resourceType] Type of resource
- * @property [initialResourceIdslinkId] String containing comma-separated resource Ids that show
- *   which resources are available when the Repeat Group widget is initially loaded. Sample of this
- *   would be ["medication-request-id1,medication-request-id2,medication-request-id3"]
- */
-@Serializable
-@Parcelize
-data class RepeatGroupConfig(
-  val resourceType: ResourceType,
-  val initialResourceIdslinkId: String,
-) : java.io.Serializable, Parcelable

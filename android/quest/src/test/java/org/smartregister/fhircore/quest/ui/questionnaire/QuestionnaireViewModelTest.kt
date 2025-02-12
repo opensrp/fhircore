@@ -95,7 +95,6 @@ import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.configuration.RepeatGroupConfig
 import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.ContentCache
@@ -286,7 +285,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
       val updatedQuestionnaireConfig =
         questionnaireConfig.copy(
-          repeatGroup = RepeatGroupConfig(ResourceType.MedicationRequest, "active-med-ids"),
+          linkIds =
+            listOf(
+              LinkIdConfig(
+                resourceType = ResourceType.MedicationRequest,
+                linkId = "active-med-ids",
+                type = LinkIdType.REPEATED_GROUP_DELETION
+              )
+            ),
         )
       questionnaireViewModel.handleQuestionnaireSubmission(
         questionnaire = questionnaire,
@@ -333,7 +339,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
 
       coVerify {
-        questionnaireViewModel.processRepeatGroupItems(
+        questionnaireViewModel.processRepeatedGroupItems(
           questionnaireResponse,
           questionnaire,
           updatedQuestionnaireConfig,
@@ -2297,18 +2303,19 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
       val medRequestSlot = slot<MedicationRequest>()
       val stringSlot = slot<String>()
-      val repeatGroupConfig =
-        RepeatGroupConfig(
+      val linkIdConfig =
+        LinkIdConfig(
           resourceType = ResourceType.MedicationRequest,
-          initialResourceIdslinkId = "active-medication-ids",
+          linkId = "active-medication-ids",
+          type = LinkIdType.REPEATED_GROUP_DELETION,
         )
       val questionnaireConfig =
         QuestionnaireConfig(
           id = "sample-config-id",
-          repeatGroup = repeatGroupConfig,
+          linkIds = listOf(linkIdConfig),
         )
 
-      questionnaireViewModel.processRepeatGroupItems(
+      questionnaireViewModel.processRepeatedGroupItems(
         questionnaireResponse = questionnaireResponse,
         questionnaire = questionnaire,
         questionnaireConfig = questionnaireConfig,
@@ -2356,19 +2363,19 @@ class QuestionnaireViewModelTest : RobolectricTest() {
             )
         }
 
-      val medRequestSlot = slot<MedicationRequest>()
-      val repeatGroupConfig =
-        RepeatGroupConfig(
+      val linkIdConfig =
+        LinkIdConfig(
           resourceType = ResourceType.MedicationRequest,
-          initialResourceIdslinkId = "active-medication-ids",
+          linkId = "active-medication-ids",
+          type = LinkIdType.REPEATED_GROUP_DELETION,
         )
       val questionnaireConfig =
         QuestionnaireConfig(
           id = "sample-config-id",
-          repeatGroup = repeatGroupConfig,
+          linkIds = listOf(linkIdConfig),
         )
 
-      questionnaireViewModel.processRepeatGroupItems(
+      questionnaireViewModel.processRepeatedGroupItems(
         questionnaireResponse = questionnaireResponse,
         questionnaire = questionnaire,
         questionnaireConfig = questionnaireConfig,
