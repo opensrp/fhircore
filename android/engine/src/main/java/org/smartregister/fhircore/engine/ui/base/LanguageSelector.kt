@@ -30,6 +30,7 @@ class LanguageSelector
 @Inject
 constructor(
   val configurationRegistry: ConfigurationRegistry,
+  val sharedPreferencesHelper: SharedPreferencesHelper
 ) {
   fun getDefaultLocale(baseContext: Context): String {
     val sharedPrefLocale =
@@ -42,7 +43,7 @@ constructor(
     val appConfigDefaultLocale = applicationConfiguration.defaultLocale
     val firstLocaleInLanguagesList = applicationConfiguration.languages.first()
 
-    return when {
+    val selectedLocale =  when {
       !sharedPrefLocale.isNullOrBlank() && isLanguageSupported(sharedPrefLocale) -> sharedPrefLocale
       isLanguageSupported(deviceDefaultLocale.toLanguageTag()) ->
         deviceDefaultLocale.toLanguageTag()
@@ -50,6 +51,8 @@ constructor(
         appConfigDefaultLocale
       else -> firstLocaleInLanguagesList
     }
+    sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, selectedLocale)
+    return selectedLocale
   }
 
   private fun isLanguageSupported(lang: String): Boolean {
