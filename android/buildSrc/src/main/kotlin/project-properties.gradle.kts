@@ -27,7 +27,9 @@ val requiredFhirProperties =
     "OAUTH_SCOPE",
     "MAPBOX_SDK_TOKEN",
     "SENTRY_DSN",
-    "OPENSRP_APP_ID"
+    "OPENSRP_APP_ID",
+    "GEMINI_API_KEY",
+    "SPEECH_TO_TEXT_API_KEY",
   )
 
 val localProperties = readProperties((project.properties["localPropertiesFile"] ?: "${rootProject.projectDir}/local.properties").toString())
