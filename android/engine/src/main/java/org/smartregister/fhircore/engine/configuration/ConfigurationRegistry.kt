@@ -640,7 +640,7 @@ constructor(
      */
     try {
       if (resource is MetadataResource) {
-        knowledgeManager.install(
+        knowledgeManager.index(
           KnowledgeManagerUtil.writeToFile(
             context = context,
             configService = configService,

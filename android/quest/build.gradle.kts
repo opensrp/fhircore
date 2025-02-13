@@ -476,7 +476,11 @@ dependencies {
   coreLibraryDesugaring(libs.core.desugar)
 
   // Application dependencies
-  implementation(project(":engine"))
+  implementation(project(":engine")) {
+    exclude(module = "org.hl7.fhir.r4")
+    exclude(module = "org.hl7.fhir.r4b")
+    exclude(module = "org.hl7.fhir.r5")
+  }
   implementation(project(":geowidget")) { isTransitive = true }
   implementation(libs.core.ktx)
   implementation(libs.appcompat)
@@ -505,6 +509,10 @@ dependencies {
   testImplementation(libs.navigation.testing)
   testImplementation(libs.kotlin.test)
   testImplementation(libs.work.testing)
+  testImplementation(libs.cqf.fhir.cql)
+  testImplementation("ca.uhn.hapi.fhir:org.hl7.fhir.r4:6.0.22")
+  testImplementation("ca.uhn.hapi.fhir:org.hl7.fhir.r4b:6.0.22")
+  testImplementation("ca.uhn.hapi.fhir:org.hl7.fhir.r5:6.0.22")
 
   // To run only on debug builds
   debugImplementation(libs.ui.test.manifest)
