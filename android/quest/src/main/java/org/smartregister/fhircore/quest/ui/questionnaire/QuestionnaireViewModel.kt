@@ -50,6 +50,7 @@ import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
+import org.hl7.fhir.r4.model.MedicationRequest
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -292,6 +293,16 @@ constructor(
     softDeleteResources(questionnaireConfig)
 
     retireUsedQuestionnaireUniqueId(questionnaireConfig, currentQuestionnaireResponse)
+
+    if (
+      questionnaireConfig.linkIds?.any { it.type == LinkIdType.REPEATED_GROUP_DELETION } == true
+    ) {
+      processRepeatedGroupItems(
+        questionnaireResponse = currentQuestionnaireResponse,
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
+      )
+    }
   }
 
   fun validateWithFhirValidator(vararg resource: Resource) {
@@ -336,6 +347,64 @@ constructor(
       Timber.i(
         "ID '$submittedUniqueId' used'",
       )
+    }
+  }
+
+  /**
+   * This function handles processing of resources that have been deleted from a repeat group widget
+   * A string consisting of comma-separated IDs of resources that are initially loaded on the repeat
+   * group are cross-referenced with IDs of resources in the [QuestionnaireResponse.contained] field
+   * to determine which resources have been deleted. The [QuestionnaireResponse.contained] has a
+   * list of resources that are left when the Questionnaire is submitted.
+   *
+   * The current implementation only handles [MedicationRequest] resources. The logic for updating
+   * these resources is hard-coded at the moment
+   *
+   * @param questionnaireResponse The QuestionnaireResponse generated when the form is submitted
+   * @param questionnaire The Questionnaire being worked on
+   * @param questionnaireConfig The [QuestionnaireConfig] containing the [LindIds] config The
+   *   [LindIds] config contains the following [resourceType] Type of resource [linkId] LinkId for
+   *   the questionnaire field containing the string of containing comma-separated resource Ids that
+   *   show which resources are available when the Repeat Group widget is initially loaded. Sample
+   *   of this would be ["medication-request-id1,medication-request-id2,medication-request-id3"]
+   */
+  suspend fun processRepeatedGroupItems(
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
+  ) {
+    val listResource = questionnaireResponse.contained[0] as ListResource
+    val repeatedGroupLinkIdConfig =
+      questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.REPEATED_GROUP_DELETION }
+    if (repeatedGroupLinkIdConfig == null) {
+      return
+    }
+    val containedResourceIds =
+      listResource.entry
+        .filter { it.item.reference.contains("${repeatedGroupLinkIdConfig.resourceType?.name}") }
+        .mapNotNull { it.item.reference.extractLogicalIdUuid() }
+
+    val initialResourceIdsString: String =
+      questionnaire.item
+        .firstOrNull { it.linkId == repeatedGroupLinkIdConfig.linkId }
+        ?.initial
+        ?.firstOrNull()
+        ?.value
+        .toString()
+
+    if (initialResourceIdsString.isBlank()) {
+      return
+    }
+
+    initialResourceIdsString.split(DELIMITER).forEach { resourceId ->
+      if (!containedResourceIds.contains(resourceId)) {
+        val medicationRequest =
+          MedicationRequest().apply {
+            id = resourceId
+            status = MedicationRequest.MedicationRequestStatus.STOPPED
+          }
+        defaultRepository.addOrUpdate(resource = medicationRequest)
+      }
     }
   }
 
@@ -1244,6 +1313,7 @@ constructor(
   companion object {
     const val CONTAINED_LIST_TITLE = "GeneratedResourcesList"
     const val OUTPUT_PARAMETER_KEY = "OUTPUT"
+    const val DELIMITER = ","
   }
 }
 

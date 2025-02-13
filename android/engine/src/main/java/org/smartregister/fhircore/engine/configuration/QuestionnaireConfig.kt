@@ -163,6 +163,7 @@ data class UniqueIdAssignmentConfig(
 data class LinkIdConfig(
   val linkId: String,
   val type: LinkIdType,
+  val resourceType: ResourceType? = null,
 ) : java.io.Serializable, Parcelable
 
 @Serializable
@@ -172,4 +173,5 @@ enum class LinkIdType : Parcelable {
   BARCODE,
   LOCATION,
   PREPOPULATION_EXCLUSION,
+  REPEATED_GROUP_DELETION,
 }
