@@ -379,6 +379,13 @@ android {
       versionNameSuffix = "-kaderJobAids"
       manifestPlaceholders["appLabel"] = "Kader Kesehatan"
     }
+
+    create("bkmChis") {
+      dimension = "apps"
+      applicationIdSuffix = ".bkmchis"
+      versionNameSuffix = "-bkmChis"
+      manifestPlaceholders["appLabel"] = "BKM CHIS"
+    }
   }
 
   applicationVariants.all {
