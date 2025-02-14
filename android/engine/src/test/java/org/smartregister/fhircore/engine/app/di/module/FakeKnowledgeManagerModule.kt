@@ -17,24 +17,21 @@
 package org.smartregister.fhircore.engine.app.di.module
 
 import android.content.Context
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.FhirEngineProvider
+import com.google.android.fhir.knowledge.KnowledgeManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
-import io.mockk.spyk
 import javax.inject.Singleton
-import org.smartregister.fhircore.engine.di.FhirEngineModule
+import org.smartregister.fhircore.engine.di.KnowledgeManagerModule
 
 @Module
-@TestInstallIn(components = [SingletonComponent::class], replaces = [FhirEngineModule::class])
-class FakeFhirEngineModule {
+@TestInstallIn(components = [SingletonComponent::class], replaces = [KnowledgeManagerModule::class])
+class FakeKnowledgeManagerModule {
 
   @Provides
   @Singleton
-  fun provideFhirEngine(@ApplicationContext context: Context): FhirEngine {
-    return spyk(FhirEngineProvider.getInstance(context))
-  }
+  fun provideKnowledgeManager(@ApplicationContext context: Context): KnowledgeManager =
+    KnowledgeManager.create(context, inMemory = true)
 }

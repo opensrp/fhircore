@@ -58,6 +58,8 @@ import org.mockito.ArgumentMatchers.anyString
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.customsearch.ISearchParametersConfigStore
+import org.smartregister.fhircore.engine.configuration.customsearch.SearchParametersConfigService
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -103,6 +105,18 @@ class AppSettingViewModelTest : RobolectricTest() {
           configService = configService,
           configurationRegistry = Faker.buildTestConfigurationRegistry(),
           dispatcherProvider = dispatcherProvider,
+          customSearchParameterService =
+            SearchParametersConfigService(
+              object : ISearchParametersConfigStore {
+                override suspend fun write(bundle: Bundle) {
+                  // no-op
+                }
+
+                override fun read(): Bundle? {
+                  return null
+                }
+              },
+            ),
         ),
       )
   }
@@ -384,8 +398,8 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `fetchConfigurations() with an ImplementationGuide should call fetchRemoteCompositionById()`() {
-    runBlocking {
+  fun `fetchConfigurations() with an ImplementationGuide should call fetchRemoteCompositionById()`() =
+    runTest {
       appSettingViewModel.run {
         onApplicationIdChanged("app")
         fetchConfigurations(context)
@@ -413,19 +427,26 @@ class AppSettingViewModelTest : RobolectricTest() {
       } returns implementationGuide
       coEvery { appSettingViewModel.configurationRegistry.addOrUpdate(any()) } just runs
       coEvery {
+        appSettingViewModel.configurationRegistry.loadConfigurations(any(), any(), any())
+      } just runs
+      coEvery {
         appSettingViewModel.configurationRegistry.fetchRemoteCompositionById(any(), any())
       } returns composition
       coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
+
       appSettingViewModel.fetchConfigurations(context)
+
       coVerify {
         appSettingViewModel.configurationRegistry.fetchRemoteCompositionById(any(), any())
       }
+      coVerify {
+        appSettingViewModel.configurationRegistry.loadConfigurations("app", context, any())
+      }
     }
-  }
 
   @Test
-  fun `fetchConfigurations() without ImplementationGuide should call fetchRemoteCompositionByAppId()`() {
-    runBlocking {
+  fun `fetchConfigurations() without ImplementationGuide should call fetchRemoteCompositionByAppId()`() =
+    runTest {
       appSettingViewModel.run {
         onApplicationIdChanged("app")
         fetchConfigurations(context)
@@ -440,9 +461,16 @@ class AppSettingViewModelTest : RobolectricTest() {
       coEvery {
         appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any())
       } returns composition
+      coEvery {
+        appSettingViewModel.configurationRegistry.loadConfigurations(any(), any(), any())
+      } just runs
       coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
+
       appSettingViewModel.fetchConfigurations(context)
+
       coVerify { appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any()) }
+      coVerify {
+        appSettingViewModel.configurationRegistry.loadConfigurations("app", context, any())
+      }
     }
-  }
 }

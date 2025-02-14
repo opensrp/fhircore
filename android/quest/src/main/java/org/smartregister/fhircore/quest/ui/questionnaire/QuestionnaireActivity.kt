@@ -252,11 +252,17 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           )
           .build()
       viewBinding.clearAll.setOnClickListener { questionnaireFragment.clearAllAnswers() }
-      supportFragmentManager.commit {
-        setReorderingAllowed(true)
-        add(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
-      }
-      registerFragmentResultListener()
+
+      supportFragmentManager
+        .takeIf { !it.isDestroyed }
+        ?.apply {
+          commit {
+            setReorderingAllowed(true)
+            add(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
+          }
+
+          registerFragmentResultListener()
+        }
 
       viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
     }
