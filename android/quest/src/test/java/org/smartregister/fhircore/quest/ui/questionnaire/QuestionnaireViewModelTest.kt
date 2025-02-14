@@ -2276,7 +2276,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       coEvery { defaultRepository.addOrUpdate(any(Boolean::class), any<Resource>()) } just runs
 
       val medRequestSlot = slot<MedicationRequest>()
-      val stringSlot = slot<String>()
       val linkIdConfig =
         LinkIdConfig(
           resourceType = ResourceType.MedicationRequest,
@@ -2296,7 +2295,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
 
       coVerify { defaultRepository.addOrUpdate(true, capture(medRequestSlot)) }
-      assertEquals("med-id-2", stringSlot.captured)
+      assertEquals("med-id-2", medRequestSlot.captured.logicalId)
       assertEquals("STOPPED", medRequestSlot.captured.status.name)
     }
   }
