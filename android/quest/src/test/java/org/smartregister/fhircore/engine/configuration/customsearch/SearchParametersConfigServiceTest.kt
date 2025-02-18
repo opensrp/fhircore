@@ -59,6 +59,16 @@ class SearchParametersConfigServiceTest {
   }
 
   @Test
+  fun getCustomSearchParametersReturnsDefaultSearchParams() {
+    val result = searchParametersConfigService.getCustomSearchParameters()
+    verify { searchParameterConfigStore.read() }
+    Assert.assertTrue(result[0].url.contains("group-active"))
+    Assert.assertTrue(result[1].url.contains("flag-status"))
+    Assert.assertTrue(result[2].url.contains("medication-sort"))
+    Assert.assertTrue(result[3].url.contains("patient-search"))
+  }
+
+  @Test
   fun saveBundle() = runTest {
     val searchParamBundle = Bundle()
     searchParametersConfigService.saveBundle(searchParamBundle)
