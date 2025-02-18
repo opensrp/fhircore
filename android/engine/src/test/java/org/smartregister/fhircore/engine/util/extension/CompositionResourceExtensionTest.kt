@@ -93,7 +93,7 @@ class CompositionResourceExtensionTest : RobolectricTest() {
     Assert.assertEquals(1, filteredCompositionSections.size)
     Assert.assertEquals(
       "custom-search-parameter-bundle",
-      filteredCompositionSections[0].code.coding[0].code
+      filteredCompositionSections[0].code.coding[0].code,
     )
   }
 }
