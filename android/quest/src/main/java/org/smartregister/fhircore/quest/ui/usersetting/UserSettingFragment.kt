@@ -42,6 +42,7 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.SettingsOptions
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
+import org.smartregister.fhircore.engine.sync.SyncState
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
@@ -131,7 +132,8 @@ class UserSettingFragment : Fragment(), OnSyncListener {
     syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
-  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
+  override fun onSync(syncState: SyncState) {
+    val syncJobStatus = syncState.currentSyncJobStatus
     if (syncJobStatus is CurrentSyncJobStatus.Running) {
       if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
         val inProgressSyncJob = syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress
@@ -139,12 +141,16 @@ class UserSettingFragment : Fragment(), OnSyncListener {
         val progressPercentage = appMainViewModel.calculatePercentageProgress(inProgressSyncJob)
         appMainViewModel.updateAppDrawerUIState(
           isSyncUpload = isSyncUpload,
+          syncCounter = syncState.counter,
           currentSyncJobStatus = syncJobStatus,
           percentageProgress = progressPercentage,
         )
       }
     } else {
-      appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+      appMainViewModel.updateAppDrawerUIState(
+        syncCounter = syncState.counter,
+        currentSyncJobStatus = syncJobStatus,
+      )
     }
   }
 
