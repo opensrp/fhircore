@@ -20,8 +20,8 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
-import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
@@ -39,7 +39,7 @@ class SearchParametersConfigServiceTest {
 
   @Before
   fun setUp() {
-    searchParameterConfigStore = mockk {
+    searchParameterConfigStore = spyk {
       every { read() } returns
         Bundle().apply {
           addEntry(
