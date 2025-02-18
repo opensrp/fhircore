@@ -31,7 +31,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.BuildConfig
+import org.smartregister.fhircore.engine.FhirEngineWrapper
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.customsearch.SearchParametersConfigService
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.di.NetworkModule.Companion.AUTHORIZATION
 import org.smartregister.fhircore.engine.di.NetworkModule.Companion.COOKIE
@@ -51,35 +53,39 @@ class FhirEngineModule {
     @ApplicationContext context: Context,
     tokenAuthenticator: TokenAuthenticator,
     configService: ConfigService,
+    customSearchParameterService: SearchParametersConfigService,
   ): FhirEngine {
-    FhirEngineProvider.init(
-      FhirEngineConfiguration(
-        enableEncryptionIfSupported = !BuildConfig.DEBUG,
-        databaseErrorStrategy = DatabaseErrorStrategy.RECREATE_AT_OPEN,
-        ServerConfiguration(
-          baseUrl = configService.provideAuthConfiguration().fhirServerBaseUrl,
-          authenticator = tokenAuthenticator,
-          networkConfiguration =
-            NetworkConfiguration(
-              connectionTimeOut = TIMEOUT_DURATION,
-              readTimeOut = TIMEOUT_DURATION,
-              writeTimeOut = TIMEOUT_DURATION,
-              uploadWithGzip = true,
-            ),
-          httpLogger =
-            HttpLogger(
-              HttpLogger.Configuration(
-                level = if (BuildConfig.DEBUG) HttpLogger.Level.BODY else HttpLogger.Level.BASIC,
-                headersToIgnore = listOf(AUTHORIZATION, COOKIE),
+    return FhirEngineWrapper {
+      FhirEngineProvider.init(
+        FhirEngineConfiguration(
+          enableEncryptionIfSupported = !BuildConfig.DEBUG,
+          databaseErrorStrategy = DatabaseErrorStrategy.RECREATE_AT_OPEN,
+          ServerConfiguration(
+            baseUrl = configService.provideAuthConfiguration().fhirServerBaseUrl,
+            authenticator = tokenAuthenticator,
+            networkConfiguration =
+              NetworkConfiguration(
+                connectionTimeOut = TIMEOUT_DURATION,
+                readTimeOut = TIMEOUT_DURATION,
+                writeTimeOut = TIMEOUT_DURATION,
+                uploadWithGzip = true,
               ),
-            ) {
-              Timber.tag(QUEST_OKHTTP_CLIENT_TAG).d(it)
-            },
+            httpLogger =
+              HttpLogger(
+                HttpLogger.Configuration(
+                  level = if (BuildConfig.DEBUG) HttpLogger.Level.BODY else HttpLogger.Level.BASIC,
+                  headersToIgnore = listOf(AUTHORIZATION, COOKIE),
+                ),
+              ) {
+                Timber.tag(QUEST_OKHTTP_CLIENT_TAG).d(it)
+              },
+          ),
+          customSearchParameters = customSearchParameterService.getCustomSearchParameters(),
         ),
-        customSearchParameters = configService.provideCustomSearchParameters(),
-      ),
-    )
-    return FhirEngineProvider.getInstance(context)
+      )
+
+      FhirEngineProvider.getInstance(context)
+    }
   }
 
   companion object {

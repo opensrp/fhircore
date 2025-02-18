@@ -35,7 +35,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.Serializable
@@ -78,7 +77,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private lateinit var viewBinding: QuestionnaireActivityBinding
   private var questionnaire: Questionnaire? = null
   private var alertDialog: AlertDialog? = null
-  private lateinit var fusedLocationClient: FusedLocationProviderClient
   private var currentLocation: Location? = null
   private val locationPermissionLauncher: ActivityResultLauncher<Array<String>> =
     registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -155,8 +153,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     if (
       viewModel.applicationConfiguration.logGpsLocation.contains(LocationLogOptions.QUESTIONNAIRE)
     ) {
-      fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
       if (!LocationUtils.isLocationEnabled(this)) {
         showLocationSettingsDialog(
           Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
@@ -195,6 +191,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   }
 
   fun fetchLocation(highAccuracy: Boolean = true) {
+    val fusedLocationClient =
+      LocationServices.getFusedLocationProviderClient(this@QuestionnaireActivity)
+
     lifecycleScope.launch {
       try {
         currentLocation =
@@ -252,11 +251,17 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           )
           .build()
       viewBinding.clearAll.setOnClickListener { questionnaireFragment.clearAllAnswers() }
-      supportFragmentManager.commit {
-        setReorderingAllowed(true)
-        add(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
-      }
-      registerFragmentResultListener()
+
+      supportFragmentManager
+        .takeIf { !it.isDestroyed }
+        ?.apply {
+          commit {
+            setReorderingAllowed(true)
+            add(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
+          }
+
+          registerFragmentResultListener()
+        }
 
       viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
     }
