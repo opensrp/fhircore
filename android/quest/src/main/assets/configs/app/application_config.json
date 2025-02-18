@@ -83,8 +83,6 @@
       ]
     }
   ],
-  "logGpsLocation": [
-    "QUESTIONNAIRE"
-  ],
+  "logGpsLocation": [],
   "dateFormat": "MMM d, hh:mm aa"
 }

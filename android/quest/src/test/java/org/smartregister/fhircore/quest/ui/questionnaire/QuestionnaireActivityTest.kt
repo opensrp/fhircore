@@ -25,7 +25,6 @@ import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -57,8 +56,10 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowToast
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
 import org.smartregister.fhircore.engine.data.local.ContentCache
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -205,29 +206,29 @@ class QuestionnaireActivityTest : RobolectricTest() {
   fun `setupLocationServices should open location settings if location is disabled`() = runTest {
     // Questionnaire will be retrieved from the database
     fhirEngine.create(questionnaire.apply { id = questionnaireConfig.id })
+    val initialConfig =
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+    val logQuestionnaireGpsConfig =
+      initialConfig.copy(logGpsLocation = listOf(LocationLogOptions.QUESTIONNAIRE))
+    configurationRegistry.configCacheMap[ConfigType.Application.name] = logQuestionnaireGpsConfig
+
+    shadowOf(context).grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
+    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, false)
+    locationManager.setTestProviderEnabled(LocationManager.NETWORK_PROVIDER, false)
+
     setupActivity()
     assertTrue(
       questionnaireActivity.viewModel.applicationConfiguration.logGpsLocation.contains(
         LocationLogOptions.QUESTIONNAIRE,
       ),
     )
-
-    val fusedLocationProviderClient =
-      LocationServices.getFusedLocationProviderClient(questionnaireActivity)
-    assertNotNull(fusedLocationProviderClient)
-
-    shadowOf(questionnaireActivity)
-      .grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
-    val locationManager =
-      questionnaireActivity.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-    locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, false)
-    locationManager.setTestProviderEnabled(LocationManager.NETWORK_PROVIDER, false)
-
-    questionnaireActivity.fetchLocation()
     val startedIntent = shadowOf(questionnaireActivity).nextStartedActivity
     val expectedIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
 
     assertEquals(expectedIntent.component, startedIntent.component)
+    // reset
+    configurationRegistry.configCacheMap[ConfigType.Application.name] = initialConfig
   }
 
   @Test
