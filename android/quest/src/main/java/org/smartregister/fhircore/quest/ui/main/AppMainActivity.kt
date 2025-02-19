@@ -51,6 +51,7 @@ import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
+import org.smartregister.fhircore.engine.sync.SyncState
 import org.smartregister.fhircore.engine.ui.base.AlertDialogButton
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
@@ -276,27 +277,35 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     }
   }
 
-  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
-    when (syncJobStatus) {
+  override fun onSync(syncState: SyncState) {
+    when (val syncJobStatus = syncState.currentSyncJobStatus) {
       is CurrentSyncJobStatus.Succeeded ->
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
-              state = syncJobStatus,
+              syncCounter = syncState.counter,
+              currentSyncJobStatus = syncState.currentSyncJobStatus,
               lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
             ),
           )
-          appMainViewModel.updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+          appMainViewModel.updateAppDrawerUIState(
+            syncCounter = syncState.counter,
+            currentSyncJobStatus = syncJobStatus,
+          )
         }
       is CurrentSyncJobStatus.Failed ->
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
-              state = syncJobStatus,
+              syncCounter = syncState.counter,
+              currentSyncJobStatus = syncState.currentSyncJobStatus,
               lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
             ),
           )
-          updateAppDrawerUIState(currentSyncJobStatus = syncJobStatus)
+          updateAppDrawerUIState(
+            syncCounter = syncState.counter,
+            currentSyncJobStatus = syncJobStatus,
+          )
         }
       else -> {
         // Do Nothing
