@@ -146,6 +146,7 @@ dependencies {
   implementation(libs.hilt.work)
   implementation(libs.slf4j.nop)
   implementation(libs.fhir.sdk.common)
+  implementation(libs.commons.logging)
 
   // Shared dependencies
   api(libs.bundles.datastore.kt)
