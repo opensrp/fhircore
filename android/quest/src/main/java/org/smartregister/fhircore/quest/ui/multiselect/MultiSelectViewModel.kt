@@ -72,17 +72,15 @@ constructor(
       }
 
       val repositoryResourceDataList =
-        defaultRepository
-          .searchNestedResources(
-            baseResourceIds = null,
-            fhirResourceConfig = multiSelectViewConfig.resourceConfig,
-            configComputedRuleValues = emptyMap(),
-            activeResourceFilters = null,
-            filterByRelatedEntityLocationMetaTag = false,
-            currentPage = null,
-            pageSize = null,
-          )
-          .values
+        defaultRepository.searchNestedResources(
+          baseResourceIds = null,
+          fhirResourceConfig = multiSelectViewConfig.resourceConfig,
+          configComputedRuleValues = emptyMap(),
+          activeResourceFilters = null,
+          filterByRelatedEntityLocationMetaTag = false,
+          currentPage = null,
+          pageSize = null,
+        )
 
       val resourcesMap =
         repositoryResourceDataList.associateByTo(

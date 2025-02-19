@@ -46,6 +46,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.sync.SyncState
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -94,7 +95,11 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     val initialSyncTime = viewModel.appMainUiState.value.lastSyncTime
 
     appMainActivity.onSync(
-      CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD)),
+      SyncState(
+        currentSyncJobStatus =
+          CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD)),
+        counter = 1,
+      ),
     )
 
     // Timestamp will only updated for Finished.
@@ -110,7 +115,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     )
     val initialTimestamp = viewModel.appMainUiState.value.lastSyncTime
     val syncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now())
-    appMainActivity.onSync(syncJobStatus)
+    appMainActivity.onSync(SyncState(currentSyncJobStatus = syncJobStatus, counter = 1))
 
     // Timestamp not update if status is Failed. Initial timestamp remains the same
     Assert.assertEquals(initialTimestamp, viewModel.appMainUiState.value.lastSyncTime)
@@ -119,7 +124,13 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnSyncWithSyncStateFailedWhenTimestampIsNotNull() {
     val viewModel = appMainActivity.appMainViewModel
-    appMainActivity.onSync(CurrentSyncJobStatus.Failed(OffsetDateTime.now()))
+    appMainActivity.onSync(
+      syncState =
+        SyncState(
+          counter = 1,
+          currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
+        ),
+    )
     Assert.assertNotNull(viewModel.appMainUiState.value.lastSyncTime)
   }
 
@@ -127,11 +138,13 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   fun testOnSyncWithSyncStateSucceeded() {
     // Arrange
     val viewModel = appMainActivity.appMainViewModel
-    val stateSucceded = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())
-    appMainActivity.onSync(stateSucceded)
+    val stateSucceeded = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())
+    appMainActivity.onSync(
+      syncState = SyncState(counter = 1, currentSyncJobStatus = stateSucceeded),
+    )
 
     Assert.assertEquals(
-      viewModel.formatLastSyncTimestamp(timestamp = stateSucceded.timestamp) + " (0s)",
+      viewModel.formatLastSyncTimestamp(timestamp = stateSucceeded.timestamp) + " (0s)",
       viewModel.getSyncTime(),
     )
   }
@@ -195,11 +208,5 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     val onSubmitQuestionnaireSlot = slot<AppEvent.OnSubmitQuestionnaire>()
     coVerify { eventBus.triggerEvent(capture(onSubmitQuestionnaireSlot)) }
     Assert.assertNotNull(onSubmitQuestionnaireSlot)
-  }
-
-  @Test
-  fun testStartForResult() {
-    val resultLauncher = appMainActivity.startForResult
-    Assert.assertNotNull(resultLauncher)
   }
 }

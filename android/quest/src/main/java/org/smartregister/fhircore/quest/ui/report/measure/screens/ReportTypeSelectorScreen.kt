@@ -43,6 +43,8 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -166,7 +168,7 @@ fun ReportFilterSelector(
           )
         },
         navigationIcon = {
-          IconButton(onClick = onBackPressed) { Icon(Icons.Filled.ArrowBack, null) }
+          IconButton(onClick = onBackPressed) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) }
         },
         contentColor = Color.White,
         backgroundColor = MaterialTheme.colors.primary,
@@ -390,7 +392,7 @@ private fun ListItem(
       modifier = Modifier.testTag(MONTH_TEST_TAG),
     )
     Icon(
-      imageVector = Icons.Filled.KeyboardArrowRight,
+      imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
       contentDescription = null,
       tint = DefaultColor.copy(alpha = 0.7f),
     )

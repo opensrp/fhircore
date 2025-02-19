@@ -21,9 +21,12 @@ import android.database.SQLException
 import ca.uhn.fhir.context.ConfigurationException
 import ca.uhn.fhir.parser.DataFormatException
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
+import com.google.android.fhir.sync.ParamMap
+import com.google.android.fhir.sync.SyncDataParams.LAST_UPDATED_KEY
 import com.google.android.fhir.sync.download.ResourceSearchParams
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.FileNotFoundException
@@ -53,7 +56,6 @@ import org.hl7.fhir.r4.model.SearchParameter
 import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.di.NetworkModule
@@ -74,6 +76,7 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
+import org.smartregister.fhircore.engine.util.extension.toTimeZoneString
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import retrofit2.HttpException
@@ -562,7 +565,7 @@ constructor(
     return resultBundle
   }
 
-  suspend fun fetchResources(
+  private suspend fun fetchResources(
     gatewayModeHeaderValue: String? = null,
     url: String,
   ) {
@@ -578,11 +581,8 @@ constructor(
           Timber.e("Error occurred while retrieving resource via URL $url", throwable)
         }
         .getOrThrow()
-
     val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url
-
     processResultBundleEntries(resultBundle.entry)
-
     if (!nextPageUrl.isNullOrEmpty()) {
       fetchResources(
         gatewayModeHeaderValue = gatewayModeHeaderValue,
@@ -591,7 +591,7 @@ constructor(
     }
   }
 
-  private suspend fun processResultBundleEntries(
+  suspend fun processResultBundleEntries(
     resultBundleEntries: List<Bundle.BundleEntryComponent>,
   ) {
     resultBundleEntries.forEach { bundleEntryComponent ->
@@ -665,11 +665,27 @@ constructor(
    */
   suspend fun createOrUpdateRemote(vararg resources: Resource) {
     resources.onEach {
+      saveLastConfigUpdatedTimestamp(it)
       it.updateLastUpdated()
       it.generateMissingId()
     }
     fhirEngine.create(*resources, isLocalOnly = true)
   }
+
+  @VisibleForTesting
+  fun saveLastConfigUpdatedTimestamp(resource: Resource) {
+    sharedPreferencesHelper.write(
+      lastConfigUpdatedTimestampKey(
+        resource.resourceType.name.uppercase(),
+        resource.logicalId,
+      ),
+      resource.meta?.lastUpdated?.toTimeZoneString(),
+    )
+  }
+
+  @VisibleForTesting
+  fun lastConfigUpdatedTimestampKey(resourceType: String, resourceId: String) =
+    "${resourceType}_${resourceId}_${SharedPreferenceKey.LAST_CONFIG_SYNC_TIMESTAMP.name}"
 
   @VisibleForTesting fun isNonProxy(): Boolean = _isNonProxy
 
@@ -678,7 +694,8 @@ constructor(
     _isNonProxy = nonProxy
   }
 
-  private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
+  @VisibleForTesting
+  fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
     val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
 
     idList.forEach {
@@ -686,7 +703,7 @@ constructor(
         Bundle.BundleEntryComponent().apply {
           request =
             Bundle.BundleEntryRequestComponent().apply {
-              url = "$resourceType/$it"
+              url = "$resourceType?$ID=$it${getLastConfigUpdatedTimestampParam(resourceType, it)}"
               method = Bundle.HTTPVerb.GET
             }
         },
@@ -699,6 +716,15 @@ constructor(
     }
   }
 
+  @VisibleForTesting
+  fun getLastConfigUpdatedTimestampParam(resourceType: String, resourceId: String): String {
+    val timestamp =
+      sharedPreferencesHelper
+        .read(lastConfigUpdatedTimestampKey(resourceType.uppercase(), resourceId), "")
+        .orEmpty()
+    return if (timestamp.isNotEmpty()) "&$LAST_UPDATED_KEY=$GREATER_THAN_PREFIX$timestamp" else ""
+  }
+
   private suspend fun fhirResourceDataSourceGetBundle(
     resourceType: String,
     resourceIds: List<String>,
@@ -708,7 +734,11 @@ constructor(
       entry =
         resourceIds
           .map {
-            fhirResourceDataSource.getResource("$resourceType?${Composition.SP_RES_ID}=$it").entry
+            fhirResourceDataSource
+              .getResource(
+                "$resourceType?${Composition.SP_RES_ID}=$it${getLastConfigUpdatedTimestampParam(resourceType, it)}",
+              )
+              .entry
           }
           .flatten()
     }
@@ -751,10 +781,8 @@ constructor(
     }
   }
 
-  suspend fun loadResourceSearchParams():
-    Pair<Map<String, Map<String, String>>, ResourceSearchParams> {
+  suspend fun loadResourceSearchParams(): Pair<Map<String, ParamMap>, ResourceSearchParams> {
     val syncConfig = retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
-    val appConfig = retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
     val customResourceSearchParams = mutableMapOf<String, MutableMap<String, String>>()
     val fhirResourceSearchParams = mutableMapOf<ResourceType, MutableMap<String, String>>()
     val organizationResourceTag =
@@ -814,7 +842,30 @@ constructor(
             }
           }
       }
+
+    // If there are custom resources to be synced return 2 otherwise 1
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.TOTAL_SYNC_COUNT.name,
+      if (customResourceSearchParams.isEmpty()) "1" else "2",
+    )
     return Pair(customResourceSearchParams, fhirResourceSearchParams)
+  }
+
+  /**
+   * This function returns either '1' or '2' depending on whether there are custom resources (not
+   * included in ResourceType enum) in the sync configuration. The custom resources are configured
+   * in the sync configuration JSON file as valid FHIR SearchParameter of type 'special'. If there
+   * are custom resources to be synced with the data, the application will first download the custom
+   * resources then the rest of the app data.
+   */
+  fun retrieveTotalSyncCount(): Int {
+    val totalSyncCount = sharedPreferencesHelper.read(SharedPreferenceKey.TOTAL_SYNC_COUNT.name, "")
+    return if (totalSyncCount.isNullOrBlank()) {
+      retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
+        .parameter
+        .map { it.resource as SearchParameter }
+        .count { it.hasType() && it.type == Enumerations.SearchParamType.SPECIAL }
+    } else totalSyncCount.toInt()
   }
 
   companion object {
@@ -835,6 +886,7 @@ constructor(
     const val PAGINATION_NEXT = "next"
     const val RESOURCES_PATH = "resources/"
     const val SYNC_LOCATION_IDS = "_syncLocations"
+    const val GREATER_THAN_PREFIX = "gt"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.

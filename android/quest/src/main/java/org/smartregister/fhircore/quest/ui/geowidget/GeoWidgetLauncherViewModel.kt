@@ -26,7 +26,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -67,7 +66,6 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val rulesExecutor: RulesExecutor,
   val configurationRegistry: ConfigurationRegistry,
-  @ApplicationContext val context: Context,
 ) : ViewModel() {
   val clearMapLiveData: MutableLiveData<Boolean> = MutableLiveData()
   val geoJsonFeatures: MutableLiveData<List<GeoJsonFeature>> = MutableLiveData()
@@ -88,10 +86,14 @@ constructor(
 
   private val decodedImageMap = mutableStateMapOf<String, Bitmap>()
 
-  fun onEvent(geoWidgetEvent: GeoWidgetEvent) {
+  fun onEvent(geoWidgetEvent: GeoWidgetEvent, context: Context) {
     when (geoWidgetEvent) {
       is GeoWidgetEvent.RetrieveFeatures ->
-        retrieveLocations(geoWidgetEvent.geoWidgetConfig, geoWidgetEvent.searchQuery.query)
+        retrieveLocations(
+          geoWidgetEvent.geoWidgetConfig,
+          geoWidgetEvent.searchQuery.query,
+          context,
+        )
       GeoWidgetEvent.ClearMap -> clearMapLiveData.postValue(true)
     }
   }
@@ -99,6 +101,7 @@ constructor(
   private fun retrieveLocations(
     geoWidgetConfig: GeoWidgetConfiguration,
     searchText: String?,
+    context: Context,
   ) {
     viewModelScope.launch {
       _isSyncing.postValue(true)
@@ -111,10 +114,11 @@ constructor(
             activeResourceFilters = null,
             filterByRelatedEntityLocationMetaTag =
               geoWidgetConfig.filterDataByRelatedEntityLocation == true,
+            filterDataByLocationLineageMetaTag =
+              geoWidgetConfig.filterDataByLocationLineage == true,
             currentPage = null,
             pageSize = null,
           )
-          .values
           .asSequence()
           .filter { it.resource is Location }
           .partition {
@@ -236,7 +240,10 @@ constructor(
     }
   }
 
-  suspend fun showNoLocationDialog(geoWidgetConfiguration: GeoWidgetConfiguration) {
+  suspend fun showNoLocationDialog(
+    geoWidgetConfiguration: GeoWidgetConfiguration,
+    context: Context,
+  ) {
     geoWidgetConfiguration.noResults?.let {
       _noLocationFoundDialog.postValue(
         context.retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA).isEmpty(),

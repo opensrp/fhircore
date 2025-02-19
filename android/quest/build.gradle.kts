@@ -1,4 +1,3 @@
-import android.databinding.tool.ext.capitalizeUS
 import com.android.build.api.variant.FilterConfiguration.FilterType
 import io.sentry.android.gradle.extensions.InstrumentationFeature
 import io.sentry.android.gradle.instrumentation.logcat.LogcatLevel
@@ -374,11 +373,11 @@ android {
       manifestPlaceholders["appLabel"] = "Minsa EIR"
     }
 
-    create("kaderjobaids") {
+    create("kaderJobAids") {
       dimension = "apps"
       applicationIdSuffix = ".jobaids"
-      versionNameSuffix = "-kaderjobaids"
-      manifestPlaceholders["appLabel"] = "Kader Job Aids"
+      versionNameSuffix = "-kaderJobAids"
+      manifestPlaceholders["appLabel"] = "Kader Kesehatan"
     }
   }
 
@@ -394,7 +393,7 @@ android {
 
   applicationVariants.all {
     val variant = this
-    tasks.register("jacocoTestReport${variant.name.capitalizeUS()}")
+    tasks.register("jacocoTestReport${variant.name.replaceFirstChar { it.uppercase() }}")
   }
 
   splits {
@@ -511,6 +510,15 @@ dependencies {
   debugImplementation(libs.ui.test.manifest)
   debugImplementation(libs.fragment.testing)
   // debugImplementation(libs.leakcanary.android)
+
+  kapt(libs.androidx.room.compiler)
+  implementation(libs.androidx.room.ktx)
+  implementation(libs.androidx.room.runtime)
+  testImplementation(libs.androidx.room.testing)
+
+  implementation(libs.android.database.sqlcipher)
+
+  implementation(libs.zip4j)
 
   // Annotation processors for test
   kaptTest(libs.dagger.hilt.android.compiler)
