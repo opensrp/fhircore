@@ -47,6 +47,7 @@ import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.ceil
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -576,12 +577,12 @@ constructor(
           configComputedRuleValues = configComputedRuleValues,
           activeResourceFilters = null,
           filterByRelatedEntityLocationMetaTag = false,
+          filterDataByLocationLineageMetaTag = false,
           currentPage = null,
           pageSize = null,
         )
 
-      repositoryResourceDataList.forEach { entry ->
-        val repoResourceData = entry.value
+      repositoryResourceDataList.forEach { repoResourceData ->
         filterResourcesByFhirPathExpression(
             resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
             resources = listOf(repoResourceData.resource),
@@ -608,7 +609,6 @@ constructor(
           }
         }
       }
-      repositoryResourceDataList.clear()
     }
   }
 
@@ -744,38 +744,56 @@ constructor(
     configComputedRuleValues: Map<String, Any>,
     activeResourceFilters: List<ActiveResourceFilterConfig>?,
     filterByRelatedEntityLocationMetaTag: Boolean,
+    filterDataByLocationLineageMetaTag: Boolean = false,
     currentPage: Int?,
     pageSize: Int?,
-  ): MutableMap<String, RepositoryResourceData> {
-    val resultsDataMap = mutableMapOf<String, RepositoryResourceData>()
+  ): List<RepositoryResourceData> {
+    //  Important!! Used LinkedHashMap to maintain the order of insertion.
+    val resultsDataMap = LinkedHashMap<String, RepositoryResourceData>()
     if (filterByRelatedEntityLocationMetaTag) {
-      val locationIds = retrieveRelatedEntitySyncLocationIds()
+      val syncLocationIds = retrieveRelatedEntitySyncLocationIds(filterDataByLocationLineageMetaTag)
       if (currentPage != null && pageSize != null) {
-        for (ids in locationIds) {
-          if (resultsDataMap.size == pageSize) return resultsDataMap
+        val requiredSize = (currentPage + 1) * pageSize
+        var page = 0
+        val maxPages = ceil((syncLocationIds.size / pageSize).toDouble())
+        while ((resultsDataMap.size < requiredSize) && page <= maxPages) {
           val searchResults =
             searchResources(
-              baseResourceIds = ids,
-              baseResourceConfig = fhirResourceConfig.baseResource,
-              relatedResourcesConfigs = fhirResourceConfig.relatedResources,
-              activeResourceFilters = activeResourceFilters,
-              configComputedRuleValues = configComputedRuleValues,
-              currentPage = currentPage,
-              pageSize = pageSize,
-              relTagCodeSystem =
-                context.getString(R.string.sync_strategy_related_entity_location_system),
-            )
+                baseResourceIds = null,
+                baseResourceConfig = fhirResourceConfig.baseResource,
+                relatedResourcesConfigs = fhirResourceConfig.relatedResources,
+                activeResourceFilters = activeResourceFilters,
+                configComputedRuleValues = configComputedRuleValues,
+                currentPage = page,
+                pageSize = minOf(requiredSize, SQL_WHERE_CLAUSE_LIMIT),
+                relTagCodeSystem =
+                  context.getString(R.string.sync_strategy_related_entity_location_system),
+              )
+              .filter { resourceData ->
+                when (resourceData.resource.resourceType) {
+                  ResourceType.Location -> syncLocationIds.contains(resourceData.resource.logicalId)
+                  else ->
+                    resourceData.resource.meta.tag.any {
+                      it.system ==
+                        context.getString(R.string.sync_strategy_related_entity_location_system) &&
+                        syncLocationIds.contains(it.code)
+                    }
+                }
+              }
           processSearchResult(
             searchResults = searchResults,
             resultsDataMap = resultsDataMap,
             fhirResourceConfig = fhirResourceConfig,
             configComputedRuleValues = configComputedRuleValues,
             activeResourceFilters = activeResourceFilters,
-            pageSizeLimit = pageSize,
           )
+          page++
         }
+
+        // Extract list of paginated data filtered by REL tag
+        return retrievePageData(resultsDataMap.values.toList(), currentPage, pageSize)
       } else {
-        for (ids in locationIds) {
+        for (ids in syncLocationIds.chunked(SQL_WHERE_CLAUSE_LIMIT)) {
           val searchResults =
             searchResources(
               baseResourceIds = ids,
@@ -794,9 +812,9 @@ constructor(
             fhirResourceConfig = fhirResourceConfig,
             configComputedRuleValues = configComputedRuleValues,
             activeResourceFilters = activeResourceFilters,
-            pageSizeLimit = null,
           )
         }
+        return resultsDataMap.values.toList()
       }
     } else {
       val searchResults =
@@ -816,17 +834,16 @@ constructor(
         configComputedRuleValues = configComputedRuleValues,
         activeResourceFilters = activeResourceFilters,
       )
+      return resultsDataMap.values.toList()
     }
-    return resultsDataMap
   }
 
   private suspend fun processSearchResult(
     searchResults: List<SearchResult<Resource>>,
-    resultsDataMap: MutableMap<String, RepositoryResourceData>,
+    resultsDataMap: LinkedHashMap<String, RepositoryResourceData>,
     fhirResourceConfig: FhirResourceConfig,
     configComputedRuleValues: Map<String, Any>,
     activeResourceFilters: List<ActiveResourceFilterConfig>?,
-    pageSizeLimit: Int? = null,
   ) {
     val processedSearchResults =
       handleSearchResults(
@@ -836,7 +853,6 @@ constructor(
         relatedResourceConfigs = fhirResourceConfig.relatedResources,
         baseResourceConfigId = fhirResourceConfig.baseResource.id,
         configComputedRuleValues = configComputedRuleValues,
-        limit = pageSizeLimit,
       )
 
     while (processedSearchResults.isNotEmpty()) {
@@ -861,7 +877,6 @@ constructor(
           relatedResourceConfigs = newResourceConfig.relatedResources,
           baseResourceConfigId = fhirResourceConfig.baseResource.id,
           configComputedRuleValues = configComputedRuleValues,
-          limit = null,
         )
       processedSearchResults.addAll(newProcessedSearchResults)
     }
@@ -923,12 +938,11 @@ constructor(
 
   private suspend fun handleSearchResults(
     searchResults: List<SearchResult<Resource>>,
-    repositoryResourceDataResultMap: MutableMap<String, RepositoryResourceData>,
+    repositoryResourceDataResultMap: LinkedHashMap<String, RepositoryResourceData>,
     repositoryResourceDataMap: Map<String, String>?,
     relatedResourceConfigs: List<ResourceConfig>,
     baseResourceConfigId: String?,
     configComputedRuleValues: Map<String, Any>,
-    limit: Int?,
   ): SearchQueryResultQueue {
     val relatedResourcesQueue = RelatedResourcesQueue()
     val (forwardIncludes, reverseIncludes) =
@@ -993,10 +1007,7 @@ constructor(
           )
         }
       }
-      if (
-        repositoryResourceDataMap == null &&
-          (limit == null || repositoryResourceDataResultMap.size < limit)
-      ) {
+      if (repositoryResourceDataMap == null) {
         repositoryResourceDataResultMap[searchResult.resource.logicalId] = repositoryResourceData
       }
     }
@@ -1134,6 +1145,12 @@ constructor(
   ): Search {
     val search =
       Search(type = baseResourceConfig.resource).apply {
+        applyConfiguredSortAndFilters(
+          resourceConfig = baseResourceConfig,
+          filterActiveResources = filterActiveResources,
+          sortData = sortData,
+          configComputedRuleValues = configComputedRuleValues,
+        )
         if (!baseResourceIds.isNullOrEmpty()) {
           when (baseResourceConfig.resource) {
             ResourceType.Location ->
@@ -1149,16 +1166,9 @@ constructor(
               }
           }
         }
-        applyConfiguredSortAndFilters(
-          resourceConfig = baseResourceConfig,
-          filterActiveResources = filterActiveResources,
-          sortData = sortData,
-          configComputedRuleValues = configComputedRuleValues,
-        )
-        if (currentPage != null && count != null) {
-          this.count = count
-          from = currentPage * count
-        }
+
+        this.count = count
+        from = count?.let { currentPage?.times(it) }
       }
     return search
   }
@@ -1297,19 +1307,34 @@ constructor(
     return null
   }
 
-  protected suspend fun retrieveRelatedEntitySyncLocationIds(): List<List<String>> =
+  protected suspend fun retrieveRelatedEntitySyncLocationIds(
+    filterDataByLocationLineageMetaTag: Boolean = false,
+  ): HashSet<String> =
     withContext(dispatcherProvider.io()) {
       context
         .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.FILTER_DATA)
+        .asSequence()
         .chunked(SQL_WHERE_CLAUSE_LIMIT)
         .map { it.map { state -> state.locationId } }
-        .flatMap { retrieveFlattenedSubLocationIds(it) }
-        .chunked(SQL_WHERE_CLAUSE_LIMIT)
+        .flatMapTo(HashSet()) {
+          retrieveFlattenedSubLocationIds(it, filterDataByLocationLineageMetaTag)
+        }
     }
 
-  suspend fun retrieveFlattenedSubLocationIds(locationIds: List<String>): HashSet<String> {
+  suspend fun retrieveFlattenedSubLocationIds(
+    locationIds: List<String>,
+    filterDataByLocationLineageMetaTag: Boolean = false,
+  ): HashSet<String> {
     val locations = HashSet<String>(locationIds)
     val queue = ArrayDeque<List<String>>()
+    if (filterDataByLocationLineageMetaTag) {
+      locations.addAll(
+        retrieveSubLocationsByMetaTags(
+          locationIds,
+        ),
+      )
+      return locations
+    }
     val subLocations = retrieveSubLocations(locationIds)
     if (subLocations.isNotEmpty()) {
       locations.addAll(subLocations)
@@ -1336,6 +1361,19 @@ constructor(
       .search<Location>(search)
       .flatMap { it.revIncluded?.values?.flatten() ?: emptyList() }
       .map { it.logicalId }
+  }
+
+  private suspend fun retrieveSubLocationsByMetaTags(locationIds: List<String>): List<String> {
+    val search =
+      Search(type = ResourceType.Location).apply {
+        val filters =
+          locationIds.map {
+            val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it) }
+            apply
+          }
+        filter(TokenClientParam(TAG), *filters.toTypedArray())
+      }
+    return fhirEngine.search<Location>(search).map { it.resource.logicalId }
   }
 
   /**
@@ -1380,9 +1418,28 @@ constructor(
     return questionnaireResponses.maxByOrNull { it.meta.lastUpdated }
   }
 
+  /**
+   * Retrieves a sublist representing a specific page from the given list.
+   *
+   * @param data The complete list of data.
+   * @param page The page number to retrieve (1-based index).
+   * @param pageSize The number of items per page.
+   * @return A list containing the items on the specified page, or an empty list if the page is out
+   *   of range.
+   */
+  fun <T> retrievePageData(data: List<T>, page: Int, pageSize: Int): List<T> {
+    val fromIndex = page * pageSize
+    val toIndex = minOf(fromIndex + pageSize, data.size)
+    return if (fromIndex in data.indices) {
+      data.subList(fromIndex, toIndex)
+    } else {
+      emptyList()
+    }
+  }
+
   companion object {
     const val RESOURCE_BATCH_SIZE = 50
-    const val SQL_WHERE_CLAUSE_LIMIT = 200 // Hard limit for WHERE CLAUSE items is 1000
+    const val SQL_WHERE_CLAUSE_LIMIT = 400 // Hard limit for WHERE CLAUSE items is 1000
     const val SNOMED_SYSTEM = "http://hl7.org/fhir/R4B/valueset-condition-clinical.html"
     const val PATIENT_CONDITION_RESOLVED_CODE = "resolved"
     const val PATIENT_CONDITION_RESOLVED_DISPLAY = "Resolved"

@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.Period
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -43,6 +44,7 @@ const val SDF_E_MMM_DD_YYYY = "E, MMM dd yyyy"
 const val DEFAULT_FORMAT_SDF_DD_MM_YYYY = "EEE, MMM dd - hh:mm a"
 const val SDF_YYYY_MMM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss"
 const val MMM_D_HH_MM_AA = "MMM d, hh:mm aa"
+const val SDF_YYYYMMDD_HHMMSS = "yyyyMMdd-HHmmss"
 
 fun yesterday(): Date = DateTimeType.now().apply { add(Calendar.DATE, -1) }.value
 
@@ -209,4 +211,12 @@ fun reformatDate(
     Timber.e(e)
     inputDateString
   }
+}
+
+/** Utility function to format a [Date] object using the system's default locale. */
+internal fun Date.toTimeZoneString(): String {
+  val simpleDateFormat =
+    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
+      .withZone(ZoneId.systemDefault())
+  return simpleDateFormat.format(this.toInstant())
 }

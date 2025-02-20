@@ -43,6 +43,7 @@ data class GeoWidgetConfiguration(
   val actions: List<ActionConfig>? = emptyList(),
   val noResults: NoResultsConfig? = null,
   val filterDataByRelatedEntityLocation: Boolean? = null,
+  val filterDataByLocationLineage: Boolean? = null,
 ) : Configuration()
 
 @Serializable

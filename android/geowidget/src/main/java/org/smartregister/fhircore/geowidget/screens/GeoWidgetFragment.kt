@@ -145,9 +145,6 @@ class GeoWidgetFragment : Fragment() {
           }
         }
 
-        if (showAddLocationButton) {
-          setOnAddLocationListener(this)
-        }
         setOnClickLocationListener(this)
       }
     } catch (mapboxConfigurationException: MapboxConfigurationException) {
@@ -261,6 +258,9 @@ class GeoWidgetFragment : Fragment() {
     showCurrentLocationBtn(showCurrentLocationButton)
     if (showPlaneSwitcherButton) {
       baseLayerSwitcherPlugin.show()
+    }
+    if (showAddLocationButton) {
+      setOnAddLocationListener(this)
     }
   }
 
