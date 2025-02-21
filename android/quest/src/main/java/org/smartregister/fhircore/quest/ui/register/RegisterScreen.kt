@@ -65,6 +65,7 @@ import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
@@ -171,7 +172,7 @@ fun RegisterScreen(
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (registerUiState.isFirstTimeSync) {
+      if (!BuildConfig.SKIP_AUTHENTICATION && registerUiState.isFirstTimeSync) {
         LoaderDialog(
           modifier = modifier.testTag(FIRST_TIME_SYNC_DIALOG),
           percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress ?: 0),

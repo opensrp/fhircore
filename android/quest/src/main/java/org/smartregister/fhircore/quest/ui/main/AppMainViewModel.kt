@@ -81,6 +81,7 @@ import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyn
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.tryParse
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMonthPeriodWorker
@@ -112,8 +113,13 @@ constructor(
           ),
       ),
     )
+  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
+  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
+
   val appDrawerUiState = mutableStateOf(AppDrawerUIState())
+
   val resetRegisterFilters = MutableLiveData(false)
+
   val unSyncedResourcesCount = mutableIntStateOf(0)
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
@@ -127,9 +133,6 @@ constructor(
   private val measureReportConfigurations: List<MeasureReportConfiguration> by lazy {
     configurationRegistry.retrieveConfigurations(ConfigType.MeasureReport)
   }
-
-  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
-  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
 
   fun retrieveAppMainUiState(refreshAll: Boolean = true) {
     if (refreshAll) {
@@ -317,12 +320,6 @@ constructor(
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
-  private fun schedulePeriodicSync() {
-    viewModelScope.launch {
-      syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
-    }
-  }
-
   fun getStartDestinationArgs(): Bundle {
     val startDestinationConfig = applicationConfiguration.navigationStartDestination
 
@@ -423,26 +420,27 @@ constructor(
     completed * 100 / if (total > 0) total else 1
 
   suspend fun schedulePeriodicJobs(context: Context) {
-    if (context.isDeviceOnline()) {
-      // Do not schedule sync until location selected when strategy is RelatedEntityLocation
-      // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
-      // if we need to trigger sync based on assigned locations or not
-      if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
-        if (
-          applicationConfiguration.usePractitionerAssignedLocationOnSync ||
-            context
-              .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA)
-              .isNotEmpty()
-        ) {
-          schedulePeriodicSync()
+    if (!BuildConfig.SKIP_AUTHENTICATION) {
+      if (context.isDeviceOnline()) {
+        // Do not schedule sync until location selected when strategy is RelatedEntityLocation
+        // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
+        // if we need to trigger sync based on assigned locations or not
+        when {
+          applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation) -> {
+            if (
+              applicationConfiguration.usePractitionerAssignedLocationOnSync ||
+                context
+                  .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA)
+                  .isNotEmpty()
+            ) {
+              syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
+            }
+          }
+          else -> syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
         }
       } else {
-        schedulePeriodicSync()
-      }
-    } else {
-      with(context) {
         withContext(dispatcherProvider.main()) {
-          showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
+          context.showToast(context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
         }
       }
     }

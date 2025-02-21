@@ -106,7 +106,8 @@ class UserSettingFragment : Fragment(), OnSyncListener {
                 showProgressIndicatorFlow = userSettingViewModel.showProgressIndicatorFlow,
                 dataMigrationVersion = userSettingViewModel.retrieveDataMigrationVersion(),
                 enableManualSync =
-                  userSettingViewModel.enableMenuOption(SettingsOptions.MANUAL_SYNC),
+                  !org.smartregister.fhircore.quest.BuildConfig.SKIP_AUTHENTICATION &&
+                    userSettingViewModel.enableMenuOption(SettingsOptions.MANUAL_SYNC),
                 allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
                 showDatabaseResetConfirmation =
                   userSettingViewModel.enableMenuOption(SettingsOptions.RESET_DATA) &&
