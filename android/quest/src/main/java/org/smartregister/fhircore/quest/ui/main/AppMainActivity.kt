@@ -89,7 +89,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   private val locationPermissionLauncher: ActivityResultLauncher<Array<String>> =
     registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-      permissions: Map<String, Boolean> ->
+        permissions: Map<String, Boolean> ->
       PermissionUtils.getLocationPermissionLauncher(
         permissions = permissions,
         onFineLocationPermissionGranted = { fetchLocation() },
@@ -107,12 +107,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override val startForResult =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-      activityResult: ActivityResult ->
+        activityResult: ActivityResult ->
       val onResultType = activityResult.data?.extras?.getString(ON_RESULT_TYPE)
       if (
         activityResult.resultCode == Activity.RESULT_OK &&
-          !onResultType.isNullOrBlank() &&
-          ActivityOnResultType.valueOf(onResultType) == ActivityOnResultType.QUESTIONNAIRE
+        !onResultType.isNullOrBlank() &&
+        ActivityOnResultType.valueOf(onResultType) == ActivityOnResultType.QUESTIONNAIRE
       ) {
         lifecycleScope.launch { onSubmitQuestionnaire(activityResult) }
       }
@@ -183,14 +183,14 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
         activityResult.data?.serializable(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
-          as QuestionnaireResponse?
+                as QuestionnaireResponse?
       val extractedResourceIds =
         activityResult.data?.serializable(
           QuestionnaireActivity.QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS,
         ) as List<IdType>? ?: emptyList()
       val questionnaireConfig =
         activityResult.data?.parcelable(QuestionnaireActivity.QUESTIONNAIRE_CONFIG)
-          as QuestionnaireConfig?
+                as QuestionnaireConfig?
 
       if (questionnaireConfig != null && questionnaireResponse != null) {
         eventBus.triggerEvent(
@@ -253,24 +253,25 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     lifecycleScope.launch {
       val retrievedLocation =
         async(dispatcherProvider.io()) {
-            when {
-              PermissionUtils.hasFineLocationPermissions(context) ->
-                LocationUtils.getAccurateLocation(fusedLocationClient)
-              PermissionUtils.hasCoarseLocationPermissions(context) ->
-                LocationUtils.getApproximateLocation(fusedLocationClient)
-              else -> null
-            }
+          when {
+            PermissionUtils.hasFineLocationPermissions(context) ->
+              LocationUtils.getAccurateLocation(fusedLocationClient)
+            PermissionUtils.hasCoarseLocationPermissions(context) ->
+              LocationUtils.getApproximateLocation(fusedLocationClient)
+            else -> null
           }
+        }
           .await()
           ?.also {
-            protoDataStore.writeLocationCoordinates(
-              LocationCoordinate(
-                it.latitude,
-                it.longitude,
-                it.altitude,
-                Instant.now(),
-              ),
-            )
+              protoDataStore.writeLocationCoordinates(
+                  LocationCoordinate(
+                      latitude = it.latitude,
+                      longitude = it.longitude,
+                      altitude = it.altitude,
+                      Instant.now(),
+                  ),
+              )
+
           }
 
       if (retrievedLocation == null) {
