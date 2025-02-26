@@ -147,6 +147,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             setStartDestination(startDestination)
           }
         }
+      findViewById<View>(R.id.mainScreenProgressBar).apply { visibility = View.GONE }
+      findViewById<View>(R.id.mainScreenProgressBarText).apply { visibility = View.GONE }
 
       appMainViewModel.run {
         navController.setGraph(graph, getStartDestinationArgs())
@@ -156,9 +158,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
       setupLocationServices()
       overrideOnBackPressListener()
-
-      findViewById<View>(R.id.mainScreenProgressBar).apply { visibility = View.GONE }
-      findViewById<View>(R.id.mainScreenProgressBarText).apply { visibility = View.GONE }
     }
   }
 
@@ -265,7 +264,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           .await()
           ?.also {
             protoDataStore.writeLocationCoordinates(
-              LocationCoordinate(it.latitude, it.longitude, it.altitude, Instant.now()),
+              LocationCoordinate(
+                it.latitude,
+                it.longitude,
+                it.altitude,
+                Instant.now(),
+              ),
             )
           }
 
