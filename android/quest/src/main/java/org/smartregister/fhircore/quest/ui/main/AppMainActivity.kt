@@ -263,15 +263,14 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         }
           .await()
           ?.also {
-              protoDataStore.writeLocationCoordinates(
-                  LocationCoordinate(
-                      latitude = it.latitude,
-                      longitude = it.longitude,
-                      altitude = it.altitude,
-                      Instant.now(),
-                  ),
-              )
-
+            protoDataStore.writeLocationCoordinates(
+              LocationCoordinate(
+                  latitude = it.latitude,
+                  longitude = it.longitude,
+                  altitude = it.altitude,
+                  timeStamp = Instant.now(),
+              ),
+            )
           }
 
       if (retrievedLocation == null) {
