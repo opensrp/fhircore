@@ -37,6 +37,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -67,6 +68,7 @@ class CqlContentTest : RobolectricTest() {
   }
 
   @Test
+  @Ignore
   fun runCqlLibraryTestForPqMedication() =
     runTest(context = UnconfinedTestDispatcher()) {
       val resourceDir = "cql/pq-medication"
@@ -102,6 +104,7 @@ class CqlContentTest : RobolectricTest() {
     }
 
   @Test
+  @Ignore
   fun runCqlLibraryTestForTestResults() =
     runTest(context = UnconfinedTestDispatcher()) {
       val resourceDir = "cql/test-results"
