@@ -34,6 +34,8 @@ import io.sentry.android.fragment.FragmentLifecycleIntegration
 import java.net.URL
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
+import org.smartregister.fhircore.engine.ui.base.LanguageSelector
+import org.smartregister.fhircore.engine.util.DependenciesHolder
 import org.smartregister.fhircore.engine.util.extension.getSubDomain
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
@@ -52,6 +54,8 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
   @Inject lateinit var xFhirQueryResolver: QuestXFhirQueryResolver
 
   private var configuration: DataCaptureConfig? = null
+
+  @Inject lateinit var languageSelector: LanguageSelector
 
   override fun onCreate() {
     super.onCreate()
@@ -75,6 +79,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
     } catch (e: Exception) {
       Timber.e(e)
     }
+    DependenciesHolder.languageSelector = languageSelector
   }
 
   @VisibleForTesting
