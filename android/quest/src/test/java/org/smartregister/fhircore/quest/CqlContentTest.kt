@@ -47,13 +47,13 @@ class CqlContentTest : RobolectricTest() {
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var knowledgeManager: KnowledgeManager
-
   @Inject lateinit var fhirOperator: FhirOperator
 
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var knowledgeManager: KnowledgeManager
 
   @Before
   fun setUp() {

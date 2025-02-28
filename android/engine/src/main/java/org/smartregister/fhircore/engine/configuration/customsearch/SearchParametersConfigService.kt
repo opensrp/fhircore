@@ -1,0 +1,107 @@
+/*
+ * Copyright 2021-2024 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.smartregister.fhircore.engine.configuration.customsearch
+
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.SearchParameter
+
+class SearchParametersConfigService(
+  private val store: ISearchParametersConfigStore,
+) {
+
+  fun getCustomSearchParameters(): List<SearchParameter> {
+    return predefinedCustomSearchParameters + readSavedSearchParameters()
+  }
+
+  private fun readSavedSearchParameters(): List<SearchParameter> {
+    val searchParametersBundle = store.read() ?: return emptyList()
+
+    return searchParametersBundle.entry
+      .filter { it.resource.resourceType == ResourceType.SearchParameter }
+      .mapNotNull { it.resource as? SearchParameter }
+  }
+
+  suspend fun saveBundle(bundle: Bundle) {
+    store.write(bundle)
+  }
+
+  /** List of predefined custom search parameters. */
+  private val predefinedCustomSearchParameters: List<SearchParameter>
+    get() {
+      val activeGroupSearchParameter =
+        SearchParameter().apply {
+          url = "http://smartregister.org/SearchParameter/group-active"
+          addBase("Group")
+          name = ACTIVE_SEARCH_PARAM
+          code = ACTIVE_SEARCH_PARAM
+          type = Enumerations.SearchParamType.TOKEN
+          expression = "Group.active"
+          description = "Search the active field"
+        }
+
+      val flagStatusSearchParameter =
+        SearchParameter().apply {
+          url = "http://smartregister.org/SearchParameter/flag-status"
+          addBase("Flag")
+          name = STATUS_SEARCH_PARAM
+          code = STATUS_SEARCH_PARAM
+          type = Enumerations.SearchParamType.TOKEN
+          expression = "Flag.status"
+          description = "Search the status field"
+        }
+
+      val medicationSortSearchParameter =
+        SearchParameter().apply {
+          url = MEDICATION_SORT_URL
+          addBase("Medication")
+          name = SORT_SEARCH_PARAM
+          code = SORT_SEARCH_PARAM
+          type = Enumerations.SearchParamType.NUMBER
+          expression = "Medication.extension.where(url = '$MEDICATION_SORT_URL').value"
+          description = "Search the sort field"
+        }
+
+      val patientSearchParameter =
+        SearchParameter().apply {
+          url = "http://smartregister.org/SearchParameter/patient-search"
+          addBase("Patient")
+          name = SEARCH_PARAM
+          code = SEARCH_PARAM
+          type = Enumerations.SearchParamType.STRING
+          expression = "Patient.name.text | Patient.identifier.value"
+          description = "Search patients by name and identifier fields"
+        }
+
+      return listOf(
+        activeGroupSearchParameter,
+        flagStatusSearchParameter,
+        medicationSortSearchParameter,
+        patientSearchParameter,
+      )
+    }
+
+  companion object {
+    private const val ACTIVE_SEARCH_PARAM = "active"
+    private const val STATUS_SEARCH_PARAM = "status"
+    private const val SORT_SEARCH_PARAM = "sort"
+    private const val SEARCH_PARAM = "search"
+    private const val MEDICATION_SORT_URL =
+      "http://smartregister.org/SearchParameter/medication-sort"
+  }
+}
