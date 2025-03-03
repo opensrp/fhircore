@@ -469,7 +469,35 @@ tasks.withType<Test> {
   configure<JacocoTaskExtension> { isIncludeNoLocationClasses = true }
 }
 
-configurations { all { exclude(group = "xpp3") } }
+configurations {
+  all {
+    exclude(group = "xpp3")
+
+    resolutionStrategy {
+      force("ca.uhn.hapi.fhir:org.hl7.fhir.utilities:6.0.22")
+      force("ca.uhn.hapi.fhir:hapi-fhir-base:6.8.0")
+      force("ca.uhn.hapi.fhir:hapi-fhir-structures-r4:6.8.0")
+      force("ca.uhn.hapi.fhir:hapi-fhir-client:6.8.0")
+      force("ca.uhn.hapi.fhir:hapi-fhir-structures-r5:6.8.0")
+      force("ca.uhn.hapi.fhir:hapi-fhir-structures-dstu3:6.8.0")
+      force("ca.uhn.hapi.fhir:hapi-fhir-validation:6.8.0")
+      force("ca.uhn.hapi.fhir:hapi-fhir-validation-resources-dstu3:6.8.0")
+      force("ca.uhn.hapi.fhir:hapi-fhir-validation-resources-r4:6.8.0")
+      force("ca.uhn.hapi.fhir:hapi-fhir-validation-resources-r5:6.8.0")
+      force("com.fasterxml.jackson.core:jackson-databind:2.13.5")
+      force("com.fasterxml.jackson.core:jackson-annotations:2.13.5")
+      force("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.5")
+      force("com.fasterxml.jackson:jackson-bom:2.13.5")
+      force("ca.uhn.hapi.fhir:org.hl7.fhir.dstu2:6.0.22")
+      force("ca.uhn.hapi.fhir:org.hl7.fhir.dstu3:6.0.22")
+      force("ca.uhn.hapi.fhir:org.hl7.fhir.convertors:6.0.22")
+      force("ca.uhn.hapi.fhir:org.hl7.fhir.dstu2016may3:6.0.22")
+      force("com.fasterxml.jackson.core:jackson-core:2.15.2")
+      force("ca.uhn.hapi.fhir:org.hl7.fhir.r4b:6.0.22")
+      force("ca.uhn.hapi.fhir:hapi-fhir-structures-dstu2:6.8.0")
+    }
+  }
+}
 
 dependencies {
   implementation(libs.gms.play.services.location)
@@ -505,6 +533,7 @@ dependencies {
   testImplementation(libs.navigation.testing)
   testImplementation(libs.kotlin.test)
   testImplementation(libs.work.testing)
+  testImplementation(libs.cqf.fhir.cql)
 
   // To run only on debug builds
   debugImplementation(libs.ui.test.manifest)

@@ -123,8 +123,10 @@ abstract class RobolectricTest {
     // replace time part 11:11:11+05:00 with xx:xx:xx+xx:xx
     // replace time part 11:11:11.111+05:00 with xx:xx:xx+xx:xx
     // replace time part 18:33:04.520481+03:00
+    // replace time part 07:54:14.956793624Z
     this.replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d[0-9,+]+:\\d{2}"), "xx:xx:xx+xx:xx")
       .replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{3}.\\d[0-9,+]+:\\d{2}"), "xx:xx:xx+xx:xx")
+      .replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{9}Z"), "xx:xx:xx+xx:xx")
 
   fun buildStructureMapUtils(): StructureMapUtilities {
     val pcm = FilesystemPackageCacheManager(true)
