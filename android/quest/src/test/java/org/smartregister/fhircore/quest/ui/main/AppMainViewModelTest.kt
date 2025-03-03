@@ -139,7 +139,7 @@ class AppMainViewModelTest : RobolectricTest() {
   fun testOnEventSwitchLanguage() {
     val appMainEvent =
       AppMainEvent.SwitchLanguage(
-        Language("en", "English"),
+        Language("fr", "English"),
         mockkClass(Activity::class, relaxed = true),
       )
 
