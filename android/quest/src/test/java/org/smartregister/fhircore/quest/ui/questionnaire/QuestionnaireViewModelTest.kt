@@ -2236,7 +2236,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       coEvery {
         fhirEngine.get(
           questionnaireConfig1.resourceType!!,
-          questionnaireConfig1.resourceIdentifier!!
+          questionnaireConfig1.resourceIdentifier!!,
         )
       } returns patient
 
@@ -2322,7 +2322,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       coEvery {
         fhirEngine.get(
           questionnaireConfig1.resourceType!!,
-          questionnaireConfig1.resourceIdentifier!!
+          questionnaireConfig1.resourceIdentifier!!,
         )
       } returns patient
 
