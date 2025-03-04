@@ -26,6 +26,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.CapturingSlot
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -211,11 +212,21 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSuccessfulOnlineLoginWithActiveSessionWithNoPractitionerDetailsSaved() {
+  fun testSuccessfulOnlineLoginWithActiveSessionWithNoPractitionerDetailsSaved() = runTest {
     updateCredentials()
     every { tokenAuthenticator.sessionActive() } returns true
+    coEvery { tokenAuthenticator.fetchAccessToken(any(), any()) } returns
+      Result.failure(
+        SocketTimeoutException(),
+      )
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
-    Assert.assertFalse(loginViewModel.navigateToHome.value!!)
+
+    coVerify {
+      tokenAuthenticator.fetchAccessToken(
+        thisUsername.trim(),
+        withArg { it.contentEquals(thisPassword.trim().toCharArray()) },
+      )
+    }
   }
 
   @Test

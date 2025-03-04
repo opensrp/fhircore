@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.login
 import android.content.Context
 import android.content.Intent
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.BindValue
@@ -84,19 +83,13 @@ class LoginActivityTest : RobolectricTest() {
 
   @Test
   fun testForgotPasswordLoadsContact() {
-    val launchDialPadObserver =
-      Observer<String?> { dialPadUri ->
-        if (dialPadUri != null) {
-          Assert.assertEquals("1234567890", dialPadUri)
-        }
-      }
     val context = InstrumentationRegistry.getInstrumentation().targetContext
-    try {
-      loginActivity.loginViewModel.launchDialPad.observeForever(launchDialPadObserver)
-      loginActivity.loginViewModel.forgotPassword(context)
-    } finally {
-      loginActivity.loginViewModel.launchDialPad.removeObserver(launchDialPadObserver)
-    }
+    loginActivity.loginViewModel.forgotPassword(context)
+
+    val forgotPasswordContact = loginActivity.loginViewModel.launchDialPad.value
+    Assert.assertNotNull(forgotPasswordContact)
+    // Matches supervisor contact number as set in application's login config
+    Assert.assertEquals("1234567890", forgotPasswordContact)
   }
 
   @Test

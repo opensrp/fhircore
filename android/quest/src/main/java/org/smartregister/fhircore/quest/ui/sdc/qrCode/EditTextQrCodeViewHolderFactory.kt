@@ -65,7 +65,11 @@ object EditTextQrCodeViewHolderFactory :
               }
             }
             !prevAnswerEmpty && newAnswerEmpty -> {
-              questionnaireViewItem.removeAnswer(previousAnswer!!)
+              if (canHaveMultipleAnswers) {
+                questionnaireViewItem.removeAnswer(previousAnswer!!)
+              } else {
+                questionnaireViewItem.clearAnswer()
+              }
             }
             !prevAnswerEmpty && !newAnswerEmpty -> {
               previousAnswer!!.value = newAnswer!!.value

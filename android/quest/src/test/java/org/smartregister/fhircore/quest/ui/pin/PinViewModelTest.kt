@@ -23,12 +23,12 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.runs
 import io.mockk.slot
 import io.mockk.unmockkStatic
 import io.mockk.verify
@@ -128,8 +128,9 @@ class PinViewModelTest : RobolectricTest() {
     val newPinSlot = slot<CharArray>()
     val onSavedPinLambdaSlot = slot<() -> Unit>()
 
-    coEvery { secureSharedPreference.saveSessionPin(capture(newPinSlot), captureLambda()) } just
-      Runs
+    coEvery {
+      secureSharedPreference.saveSessionPin(capture(newPinSlot), capture(onSavedPinLambdaSlot))
+    } just runs
 
     pinViewModel.onSetPin("1990".toCharArray())
 

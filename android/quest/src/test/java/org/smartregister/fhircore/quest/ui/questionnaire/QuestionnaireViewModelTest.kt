@@ -51,11 +51,13 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Attachment
 import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -858,7 +860,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Re-check this test, it takes forever to run")
   fun testSaveDraftQuestionnaireCallsAddOrUpdateForPaginatedForms() = runTest {
     val pageItem =
       QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
@@ -1202,8 +1203,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       samplePatientRegisterQuestionnaire.copy().apply {
         addExtension(
           Extension().apply {
-            url = "https://sample.cqf-library.url"
-            setValue(StringType("http://smartreg.org/Library/123"))
+            url = "http://hl7.org/fhir/StructureDefinition/cqf-library"
+            setValue(CanonicalType("Library/123"))
           },
         )
       }
@@ -1225,13 +1226,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
-    knowledgeManager.index(
-      File.createTempFile(cqlLibrary.name, ".json").apply {
-        this.writeText(cqlLibrary.encodeResourceToString())
-      },
-    )
+    withContext(dispatcherProvider.io()) {
+      knowledgeManager.index(
+        File.createTempFile(cqlLibrary.name, ".json").apply {
+          this.writeText(cqlLibrary.encodeResourceToString())
+        },
+      )
+    }
 
-    fhirEngine.create(patient)
+    fhirEngine.create(patient, cqlLibrary)
 
     questionnaireViewModel.executeCql(patient, bundle, questionnaire)
 
@@ -1656,95 +1659,65 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSaveExtractedResourcesAddsRelatedEntityLocationMetaTagToExtractedResource() =
-    runBlocking {
-      val bundleSlot = slot<Bundle>()
-      val bundle = bundleSlot.captured
-      val linkId = "linkId"
-      val metaTagId = "UUId123"
-      val questionnaire = extractionQuestionnaire()
-      val questionnaireConfig =
-        questionnaireConfig.copy(
-          resourceIdentifier = "resourceId",
-          resourceType = ResourceType.Location,
-          saveQuestionnaireResponse = false,
-          type = "EDIT",
-          linkIds = listOf(LinkIdConfig(linkId = linkId, LinkIdType.LOCATION)),
-          extractedResourceUniquePropertyExpressions =
-            listOf(
-              ExtractedResourceUniquePropertyExpression(
-                ResourceType.Location,
-                "Observation.code.where(coding.code='obs1').coding.code",
-              ),
+  fun testSaveExtractedResourcesAddsRelatedEntityLocationMetaTagToExtractedResource() = runTest {
+    val bundle = Bundle()
+    val linkId = "linkId"
+    val metaTagId = "UUId123"
+    val questionnaire = extractionQuestionnaire()
+    val questionnaireConfig =
+      questionnaireConfig.copy(
+        resourceIdentifier = "resourceId",
+        resourceType = ResourceType.Location,
+        saveQuestionnaireResponse = false,
+        type = "EDIT",
+        linkIds = listOf(LinkIdConfig(linkId = linkId, LinkIdType.LOCATION)),
+        extractedResourceUniquePropertyExpressions =
+          listOf(
+            ExtractedResourceUniquePropertyExpression(
+              ResourceType.Location,
+              "Observation.code.where(coding.code='obs1').coding.code",
             ),
-        )
-      val previousObs =
-        Observation().apply {
-          id = "previousObs1"
-          code = (CodeableConcept(Coding("http://obsys", "obs1", "Obs 1")))
-        }
-
-      val questionnaireResponse =
-        extractionQuestionnaireResponse().apply {
-          val extractionDate = Date()
-          subject = patient.asReference()
-          val listResource =
-            ListResource().apply {
-              id = metaTagId
-              status = ListResource.ListStatus.CURRENT
-              mode = ListResource.ListMode.WORKING
-              title = CONTAINED_LIST_TITLE
-              date = extractionDate
-            }
-          val listEntryComponent =
-            ListResource.ListEntryComponent().apply {
-              deleted = false
-              date = extractionDate
-              item = previousObs.asReference()
-            }
-          listResource.addEntry(listEntryComponent)
-          addContained(listResource)
-        }
-
-      questionnaireViewModel.saveExtractedResources(
-        bundle = bundle,
-        questionnaire = questionnaire,
-        questionnaireConfig = questionnaireConfig,
-        questionnaireResponse = questionnaireResponse,
-        context = context,
+          ),
       )
-
-      // Extract tags manually
-      val listResource = questionnaireResponse.contained.firstOrNull() as ListResource
-      val resource = listResource.entry.firstOrNull()?.item?.resource
-
-      // Assert
-      Assert.assertNotNull(listResource)
-      Assert.assertNotNull(resource)
-
-      // Check if the meta tag id exists
-      var metaTagIdExists = false
-      resource?.meta?.tag?.forEach { tag ->
-        if (tag.code == metaTagId) {
-          metaTagIdExists = true
-          return@forEach
-        }
+    val previousObs =
+      Observation().apply {
+        id = "previousObs1"
+        code = (CodeableConcept(Coding("http://obsys", "obs1", "Obs 1")))
       }
-      Assert.assertTrue(metaTagIdExists)
 
-      // Check if the related entity location meta tag exists
-      var relatedEntityLocationMetaTagExists = false
-      resource?.meta?.tag?.forEach { tag ->
-        if (tag.system == "https://smartregister.org/related-entity-location-tag-id") {
-          relatedEntityLocationMetaTagExists = true
-          return@forEach
-        }
+    bundle.addEntry(
+      Bundle.BundleEntryComponent().apply { resource = previousObs },
+    )
+
+    val questionnaireResponse = extractionQuestionnaireResponse()
+
+    questionnaireViewModel.saveExtractedResources(
+      bundle = bundle,
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig,
+      questionnaireResponse = questionnaireResponse,
+      context = context,
+    )
+
+    // Extract tags manually
+    val listResource = questionnaireResponse.contained.firstOrNull() as ListResource
+    val resourceRef = listResource.entry.firstOrNull()?.item
+
+    // Assert
+    Assert.assertNotNull(listResource)
+    Assert.assertNotNull(resourceRef)
+    Assert.assertEquals("Observation/previousObs1", resourceRef?.reference)
+
+    // Check if the related entity location meta tag exists
+    var relatedEntityLocationMetaTagExists = false
+    previousObs.meta?.tag?.forEach { tag ->
+      if (tag.system == "https://smartregister.org/related-entity-location-tag-id") {
+        relatedEntityLocationMetaTagExists = true
+        return@forEach
       }
-      Assert.assertTrue(relatedEntityLocationMetaTagExists)
-
-      // Assert that the listResource id matches the linkId
-      assertEquals(linkId, listResource.id)
     }
+    Assert.assertTrue(relatedEntityLocationMetaTagExists)
+  }
 
   @Test
   fun testRetireUsedQuestionnaireUniqueIdShouldUpdateGroupResourceWhenIDIsUsed() = runTest {
@@ -2302,7 +2275,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       coEvery { defaultRepository.addOrUpdate(any(Boolean::class), any<Resource>()) } just runs
 
       val medRequestSlot = slot<MedicationRequest>()
-      val stringSlot = slot<String>()
       val linkIdConfig =
         LinkIdConfig(
           resourceType = ResourceType.MedicationRequest,
@@ -2322,7 +2294,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
 
       coVerify { defaultRepository.addOrUpdate(true, capture(medRequestSlot)) }
-      assertEquals("med-id-2", stringSlot.captured)
+      assertEquals("med-id-2", medRequestSlot.captured.logicalId)
       assertEquals("STOPPED", medRequestSlot.captured.status.name)
     }
   }

@@ -14,27 +14,23 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.app.di.module
+package org.smartregister.fhircore.engine.di
 
 import android.content.Context
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.FhirEngineProvider
+import com.google.android.fhir.knowledge.KnowledgeManager
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import dagger.hilt.testing.TestInstallIn
-import io.mockk.spyk
 import javax.inject.Singleton
-import org.smartregister.fhircore.engine.di.FhirEngineModule
 
+@InstallIn(SingletonComponent::class)
 @Module
-@TestInstallIn(components = [SingletonComponent::class], replaces = [FhirEngineModule::class])
-class FakeFhirEngineModule {
+class KnowledgeManagerModule {
 
-  @Provides
   @Singleton
-  fun provideFhirEngine(@ApplicationContext context: Context): FhirEngine {
-    return spyk(FhirEngineProvider.getInstance(context))
-  }
+  @Provides
+  fun provideKnowledgeManager(@ApplicationContext context: Context): KnowledgeManager =
+    KnowledgeManager.create(context)
 }

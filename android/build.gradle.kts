@@ -38,7 +38,6 @@ apply(from = "mapbox.gradle.kts")
 
 allprojects {
   repositories {
-    gradlePluginPortal()
     mavenLocal()
     google()
     mavenCentral()
