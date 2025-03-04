@@ -59,7 +59,6 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewAction
-import org.smartregister.fhircore.engine.sync.CustomSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
@@ -82,6 +81,7 @@ import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyn
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.tryParse
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMonthPeriodWorker
@@ -237,19 +237,20 @@ constructor(
         }
       }
       is AppMainEvent.CancelSyncData -> {
-        viewModelScope.launch {
-          workManager.cancelUniqueWork(
-            "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
-          )
-          updateAppDrawerUIState(currentSyncJobStatus = CurrentSyncJobStatus.Cancelled)
-        }
+        workManager.cancelUniqueWork(
+          "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
+        )
+        updateAppDrawerUIState(
+          syncCounter = null,
+          currentSyncJobStatus = CurrentSyncJobStatus.Cancelled,
+        )
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
-        if (event.state is CurrentSyncJobStatus.Succeeded) {
+        if (event.currentSyncJobStatus is CurrentSyncJobStatus.Succeeded) {
           sharedPreferencesHelper.write(
             SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-            event.state.timestamp.toInstant().toEpochMilli().toString(),
+            event.currentSyncJobStatus.timestamp.toInstant().toEpochMilli().toString(),
           )
           retrieveAppMainUiState()
           viewModelScope.launch { retrieveAppMainUiState() }
@@ -318,12 +319,6 @@ constructor(
 
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
-
-  fun schedulePeriodicSync() {
-    viewModelScope.launch {
-      syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
-    }
-  }
 
   fun getStartDestinationArgs(): Bundle {
     val startDestinationConfig = applicationConfiguration.navigationStartDestination
@@ -401,12 +396,15 @@ constructor(
 
   fun updateAppDrawerUIState(
     isSyncUpload: Boolean? = null,
+    syncCounter: Int?,
     currentSyncJobStatus: CurrentSyncJobStatus?,
     percentageProgress: Int? = null,
   ) {
     appDrawerUiState.value =
       AppDrawerUIState(
         isSyncUpload = isSyncUpload,
+        syncCounter = syncCounter,
+        totalSyncCount = configurationRegistry.retrieveTotalSyncCount(),
         currentSyncJobStatus = currentSyncJobStatus,
         percentageProgress = percentageProgress,
       )
@@ -422,26 +420,27 @@ constructor(
     completed * 100 / if (total > 0) total else 1
 
   suspend fun schedulePeriodicJobs(context: Context) {
-    if (context.isDeviceOnline()) {
-      // Do not schedule sync until location selected when strategy is RelatedEntityLocation
-      // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
-      // if we need to trigger sync based on assigned locations or not
-      if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
-        if (
-          applicationConfiguration.usePractitionerAssignedLocationOnSync ||
-            context
-              .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA)
-              .isNotEmpty()
-        ) {
-          schedulePeriodicSync()
+    if (!BuildConfig.SKIP_AUTHENTICATION) {
+      if (context.isDeviceOnline()) {
+        // Do not schedule sync until location selected when strategy is RelatedEntityLocation
+        // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
+        // if we need to trigger sync based on assigned locations or not
+        when {
+          applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation) -> {
+            if (
+              applicationConfiguration.usePractitionerAssignedLocationOnSync ||
+                context
+                  .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA)
+                  .isNotEmpty()
+            ) {
+              syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
+            }
+          }
+          else -> syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
         }
       } else {
-        schedulePeriodicSync()
-      }
-    } else {
-      with(context) {
         withContext(dispatcherProvider.main()) {
-          showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
+          context.showToast(context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
         }
       }
     }
@@ -466,12 +465,6 @@ constructor(
         duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
         requiresNetwork = false,
         initialDelay = INITIAL_DELAY,
-      )
-
-      schedulePeriodically<CustomSyncWorker>(
-        workId = CustomSyncWorker.WORK_ID,
-        repeatInterval = applicationConfiguration.syncInterval,
-        initialDelay = 0,
       )
 
       measureReportConfigurations.forEach { measureReportConfig ->

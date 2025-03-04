@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.appsetting
 
 import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -56,6 +57,7 @@ import org.smartregister.fhircore.engine.util.extension.retrieveCustomSearchPara
 import org.smartregister.fhircore.engine.util.extension.retrieveImplementationGuideDefinitionResources
 import org.smartregister.fhircore.engine.util.extension.sectionDataReference
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
+import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import retrofit2.HttpException
 import timber.log.Timber
 
@@ -202,7 +204,12 @@ constructor(
           showProgressBar.postValue(false)
           if (loadConfigSuccessful) {
             sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, thisAppId)
-            context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
+            val activity = context.getActivity()
+            when {
+              org.smartregister.fhircore.quest.BuildConfig.SKIP_AUTHENTICATION ->
+                activity?.startActivity(Intent(context, AppMainActivity::class.java))
+              else -> activity?.launchActivityWithNoBackStackHistory<LoginActivity>()
+            }
           } else {
             _error.postValue(context.getString(R.string.application_not_supported, thisAppId))
           }
@@ -335,9 +342,4 @@ constructor(
   }
 
   @VisibleForTesting fun isNonProxy(): Boolean = _isNonProxy
-
-  @VisibleForTesting
-  fun setNonProxy(nonProxy: Boolean) {
-    _isNonProxy = nonProxy
-  }
 }

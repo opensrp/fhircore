@@ -93,6 +93,7 @@ import org.smartregister.fhircore.engine.ui.theme.SyncBarBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
@@ -150,14 +151,16 @@ fun AppDrawer(
       }
     },
     bottomBar = { // Display bottom section of the nav (sync)
-      NavBottomSection(
-        appUiState = appUiState,
-        appDrawerUIState = appDrawerUIState,
-        unSyncedResourceCount = unSyncedResourceCount,
-        onSideMenuClick = onSideMenuClick,
-        openDrawer = openDrawer,
-        decodeImage = decodeImage,
-      )
+      if (!BuildConfig.SKIP_AUTHENTICATION) {
+        NavBottomSection(
+          appUiState = appUiState,
+          appDrawerUIState = appDrawerUIState,
+          unSyncedResourceCount = unSyncedResourceCount,
+          onSideMenuClick = onSideMenuClick,
+          openDrawer = openDrawer,
+          decodeImage = decodeImage,
+        )
+      }
     },
   ) { innerPadding ->
     Box(
@@ -266,6 +269,8 @@ private fun NavBottomSection(
       is CurrentSyncJobStatus.Running -> {
         SyncStatusView(
           isSyncUpload = appDrawerUIState.isSyncUpload,
+          syncCounter = appDrawerUIState.syncCounter,
+          totalSyncCount = appDrawerUIState.totalSyncCount,
           currentSyncJobStatus = currentSyncJobStatus,
           minimized = false,
           progressPercentage = appDrawerUIState.percentageProgress,
@@ -279,6 +284,8 @@ private fun NavBottomSection(
       is CurrentSyncJobStatus.Failed -> {
         SyncStatusView(
           isSyncUpload = appDrawerUIState.isSyncUpload,
+          syncCounter = appDrawerUIState.syncCounter,
+          totalSyncCount = appDrawerUIState.totalSyncCount,
           currentSyncJobStatus = currentSyncJobStatus,
           minimized = false,
         ) {
@@ -305,6 +312,8 @@ private fun NavBottomSection(
         } else {
           SyncStatusView(
             isSyncUpload = appDrawerUIState.isSyncUpload,
+            syncCounter = appDrawerUIState.syncCounter,
+            totalSyncCount = appDrawerUIState.totalSyncCount,
             currentSyncJobStatus = currentSyncJobStatus,
             minimized = false,
           )
@@ -700,6 +709,7 @@ fun AppDrawerOnSyncCompletePreview() {
         ),
       appDrawerUIState =
         AppDrawerUIState(
+          syncCounter = 1,
           currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
         ),
       navController = rememberNavController(),
@@ -743,6 +753,7 @@ fun AppDrawerOnSyncFailedPreview() {
         ),
       appDrawerUIState =
         AppDrawerUIState(
+          syncCounter = 1,
           currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
         ),
       navController = rememberNavController(),
@@ -786,6 +797,7 @@ fun AppDrawerOnSyncRunningPreview() {
         ),
       appDrawerUIState =
         AppDrawerUIState(
+          syncCounter = 1,
           currentSyncJobStatus =
             CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 200, 35)),
         ),
