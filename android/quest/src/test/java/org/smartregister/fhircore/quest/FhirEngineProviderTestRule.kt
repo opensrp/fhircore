@@ -33,7 +33,12 @@ class FhirEngineProviderTestRule : TestRule {
         } catch (exception: IllegalStateException) { // Necessary to avoid crashing tests
           println(exception)
         } finally {
-          FhirEngineProvider.cleanup()
+          try {
+            FhirEngineProvider.cleanup()
+          } catch (
+            e: IllegalStateException,) { // TODO investigate why testMode is false at this point
+            println(e)
+          }
         }
       }
     }
