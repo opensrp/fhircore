@@ -59,7 +59,7 @@ class FhirEngineWrapper(fhirEngineProducer: () -> FhirEngine) : FhirEngine {
     mFhirEngine.purge(type, id, forcePurge)
 
   override suspend fun purge(type: ResourceType, ids: Set<String>, forcePurge: Boolean) =
-    mFhirEngine.purge(type, ids)
+    mFhirEngine.purge(type, ids, forcePurge)
 
   override suspend fun <R : Resource> search(search: Search): List<SearchResult<R>> =
     mFhirEngine.search<R>(search)
