@@ -2419,9 +2419,9 @@
   },
   "overFlowMenuItems": [
     {
-      "title": "Registration info",
+      "title": "{{ member.details }}",
       "titleColor": "@{patientTextColor}",
-      "visible": "false",
+      "visible": "true",
       "enabled": "@{patientActive}",
       "actions": [
         {
@@ -2429,8 +2429,8 @@
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
             "id": "4",
-            "title": "Member registration info",
-            "saveButtonText": "Update registration",
+            "title": "{{ add.member }}",
+            "saveButtonText": "{{question.update.label}}",
             "setPractitionerDetails": true,
             "setOrganizationDetails": true,
             "type": "EDIT",

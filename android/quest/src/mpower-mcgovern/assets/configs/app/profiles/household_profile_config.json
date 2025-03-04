@@ -439,6 +439,60 @@
       ]
     },
     {
+      "name": "familyHeadIdOnly",
+      "condition": "true",
+      "actions": [
+        "data.put('familyHeadIdOnly', empty(data.get('familyHeadId'))? null : data.get('familyHeadId').replace(\"Patient/\",\"\").split(\"/\").get(0))"
+      ]
+    },
+    {
+      "name": "familyHeadPatient",
+      "condition": "true",
+      "actions": [
+        "data.put('familyHeadPatient', service.filterResources(Patient, 'Patient.id=\"' + data.get('familyHeadIdOnly') + '\"').get(0))"
+      ]
+    },
+    {
+      "name": "familyHeadName",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('familyHeadName', fhirPath.extractValue(data.get('familyHeadPatient'), \"Patient.name[0].select(text)\"))"
+      ]
+    },
+    {
+      "name": "familyHeadAge",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('familyHeadAge', service.extractAge(data.get('familyHeadPatient')).substring(0, 2))"
+      ]
+    },
+    {
+      "name": "familyHeadGender",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('familyHeadGender', fhirPath.extractValue(data.get('familyHeadPatient'), 'Patient.gender'))"
+      ]
+    },
+    {
+      "name": "familyHeadMobile",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('familyHeadMobile', fhirPath.extractValue(data.get('familyHeadPatient'), 'Patient.telecom.value'))"
+      ]
+    },
+    {
+      "name": "familyHeadMaritalStatus",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('familyHeadMaritalStatus', fhirPath.extractValue(data.get('familyHeadPatient'), 'Patient.maritalStatus.coding[0].code'))"
+      ]
+    },
+    {
       "name": "isFamilyHeadExists",
       "condition": "true",
       "actions": [
@@ -1955,27 +2009,125 @@
     {
       "title": "{{family.details}}",
       "titleColor": "#000000",
-      "visible": "false",
+      "visible": "true",
       "actions": [
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "3",
+            "id": "37540",
             "title": "{{add.family}}",
+            "saveButtonText": "{{question.update.label}}",
             "setPractitionerDetails": true,
             "setOrganizationDetails": true,
-            "type": "EDIT",
             "resourceIdentifier": "@{familyLogicalId}",
             "resourceType": "Group",
-            "params": [
-              {
-                "key": "familyLogicalId",
-                "value": "@{familyLogicalId}",
-                "paramType": "UPDATE_DATE_ON_EDIT"
-              }
-            ]
-          }
+            "snackBarMessage": {
+              "message": "Household details have been updated",
+              "actionLabel": "",
+              "duration": "Short"
+            }
+          },
+          "params": [
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "210afefc-3e4f-4489-86af-587ada65e06c",
+              "dataType": "STRING",
+              "key": "familyLogicalIdOnly",
+              "value": "@{familyLogicalIdOnly}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "ce49bde4-6ef9-423e-c747-efab250cd770",
+              "dataType": "STRING",
+              "key": "familyId",
+              "value": "@{familyId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "6598bf2d-bba4-4a8f-ced8-2579cb04aefb",
+              "dataType": "STRING",
+              "key": "familyType",
+              "value": "@{familyType}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "b0da990f-0711-4082-8068-d39c5c42a583",
+              "dataType": "STRING",
+              "key": "familyMember",
+              "value": "@{familyMember}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "7baca7ef-08ca-4a81-c4ed-2dda0c9eafe8",
+              "dataType": "STRING",
+              "key": "familyIncome",
+              "value": "@{familyIncome}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "30c16801-3742-4631-888e-0732bd748d77",
+              "dataType": "STRING",
+              "key": "familySerial",
+              "value": "@{familySerial}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "6f5d14d9-9e6e-47c9-9c62-00e76a3f767c",
+              "dataType": "STRING",
+              "key": "familyHeadIdOnly",
+              "value": "@{familyHeadIdOnly}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "aaafd263-5e5b-4b78-bbc6-e01be0eb72ec",
+              "dataType": "STRING",
+              "key": "familyHeadName",
+              "value": "@{familyHeadName}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "3193ad83-4864-419f-851f-4f5d82948bb8",
+              "dataType": "STRING",
+              "key": "familyHeadMobile",
+              "value": "@{familyHeadMobile}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "8460d986-ef71-4997-80ee-7887d8c345e7",
+              "dataType": "INTEGER",
+              "key": "familyHeadAge",
+              "value": "@{familyHeadAge}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "68d0a7b5-23bb-41cd-fce5-7ff26ef0a1c4",
+              "dataType": "STRING",
+              "key": "familyHeadOccupation",
+              "value": "@{familyHeadOccupation}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "9ea9fc08-0545-42e9-80e0-dab3da021c35",
+              "dataType": "STRING",
+              "key": "familyHeadOccupationOther",
+              "value": "@{familyHeadOccupationOther}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "64547240-d63a-4f41-98a3-5a79262379f1",
+              "dataType": "STRING",
+              "key": "familyHeadGender",
+              "value": "@{familyHeadGender}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "7b8aed4f-bec6-4040-8937-75a4cb0578d6",
+              "dataType": "STRING",
+              "key": "familyHeadMaritalStatus",
+              "value": "@{familyHeadMaritalStatus}"
+            }
+          ]
         }
       ]
     }
