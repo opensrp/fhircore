@@ -19,28 +19,21 @@ package org.smartregister.fhircore.quest
 import com.google.android.fhir.FhirEngineConfiguration
 import com.google.android.fhir.FhirEngineProvider
 import org.junit.rules.TestRule
+import org.junit.rules.TestWatcher
 import org.junit.runner.Description
-import org.junit.runners.model.Statement
 
 /** A [TestRule] that cleans up [FhirEngineProvider] instance after each test run. */
-class FhirEngineProviderTestRule : TestRule {
-  override fun apply(base: Statement, p1: Description): Statement {
-    return object : Statement() {
-      override fun evaluate() {
-        try {
-          FhirEngineProvider.init(FhirEngineConfiguration(testMode = true))
-          base.evaluate()
-        } catch (exception: IllegalStateException) { // Necessary to avoid crashing tests
-          println(exception)
-        } finally {
-          try {
-            FhirEngineProvider.cleanup()
-          } catch (
-            e: IllegalStateException,) { // TODO investigate why testMode is false at this point
-            println(e)
-          }
-        }
-      }
-    }
+class FhirEngineProviderTestRule : TestWatcher() {
+
+  override fun starting(description: Description?) {
+    try {
+      FhirEngineProvider.init(FhirEngineConfiguration(testMode = true))
+    } catch (_: IllegalStateException) {}
+  }
+
+  override fun finished(description: Description?) {
+    try {
+      FhirEngineProvider.cleanup()
+    } catch (_: IllegalStateException) {}
   }
 }

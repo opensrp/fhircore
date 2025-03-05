@@ -20,7 +20,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
-import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -51,11 +50,10 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.app.fakes.HiltTestActivity
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 
@@ -74,15 +72,11 @@ class ProfileFragmentTest : RobolectricTest() {
 
   @BindValue lateinit var profileViewModel: ProfileViewModel
 
-  private val activityController = Robolectric.buildActivity(AppMainActivity::class.java)
-
-  private lateinit var navController: TestNavHostController
+  private val activityController = Robolectric.buildActivity(HiltTestActivity::class.java)
 
   private val patient = Faker.buildPatient()
 
   private val resourceConfig = mockk<FhirResourceConfig>()
-
-  private lateinit var mainActivity: AppMainActivity
 
   lateinit var profileFragment: ProfileFragment
 
@@ -117,17 +111,16 @@ class ProfileFragmentTest : RobolectricTest() {
           )
       }
     activityController.create().resume()
-    mainActivity = activityController.get()
-    navController =
-      TestNavHostController(mainActivity).apply { setGraph(R.navigation.application_nav_graph) }
+    activityController.get().apply {
+      supportFragmentManager.commitNow {
+        add(profileFragment, ProfileFragment::class.java.simpleName)
+      }
+      supportFragmentManager.executePendingTransactions()
+    }
 
     // Simulate the returned value of loadProfile
     coEvery { registerRepository.loadProfileData(any(), any(), paramsMap = emptyMap()) } returns
       RepositoryResourceData(resource = Faker.buildPatient())
-    mainActivity.supportFragmentManager.run {
-      commitNow { add(profileFragment, ProfileFragment::class.java.simpleName) }
-      executePendingTransactions()
-    }
   }
 
   @Test
@@ -155,7 +148,7 @@ class ProfileFragmentTest : RobolectricTest() {
 
     coVerify {
       profileViewModel.retrieveProfileUiState(
-        context = ApplicationProvider.getApplicationContext(),
+        context = profileFragment.requireContext(),
         profileId = "defaultProfile",
         resourceId = "sampleId",
         fhirResourceConfig = any(),
@@ -191,7 +184,7 @@ class ProfileFragmentTest : RobolectricTest() {
 
     coVerify {
       profileViewModel.retrieveProfileUiState(
-        context = ApplicationProvider.getApplicationContext(),
+        context = profileFragment.requireContext(),
         profileId = "defaultProfile",
         resourceId = "sampleId",
         fhirResourceConfig = any(),
