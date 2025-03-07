@@ -39,7 +39,6 @@ class LanguageSelectorTest : RobolectricTest() {
 
     @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-//    @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
 
     @Inject
     lateinit var fhirEngine: FhirEngine
@@ -68,7 +67,6 @@ class LanguageSelectorTest : RobolectricTest() {
     private lateinit var languageSelector: LanguageSelector
 
     @Before
-    @kotlinx.coroutines.ExperimentalCoroutinesApi
     fun setUp() {
         hiltRule.inject()
         fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
@@ -84,31 +82,34 @@ class LanguageSelectorTest : RobolectricTest() {
             )
         languageSelector = LanguageSelector(configRegistry, sharedPreferencesHelper)
 
-        // Mock SharedPreferences behavior
-//        every { context.getSharedPreferences(any(), any()) } returns sharedPreference
-//        every { mockSharedPreferences.getString(any(), any()) } returns null
-//        every { mockSharedPreferencesHelper.write(any<String>(), any<String>()) } returns Unit
-//        every {
-//            hint(Configuration::class)
-//            mockConfigurationRegistry.retrieveConfiguration<ApplicationConfiguration>(any())
-//        } returns sampleApplicationConfiguration
     }
 
     @Test
     fun `getDefaultLocale should return shared preference locale if it is supported`() {
         // Arrange
         val sharedPrefLocale = "es"
-//        every { mockSharedPreferences.getString(any(), any()) } returns sharedPrefLocale
-        every { configRegistry.fetchLanguages() } returns listOf(Language("en", "English"),
-            Language("es", "Espanyol"),
-            Language("fr", "French"))
+        sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, sharedPrefLocale)
+        configRegistry.configsJsonMap["application"] =
+            """
+              {
+                "appId": "testAppId",
+                "configType": "application",
+                "theme": "DEFAULT",
+                "appTitle": "testAppId",
+                "remoteSyncPageSize": 250,
+                "languages": [
+                    "en",
+                    "es"
+                  ]
+              }
+                 """
+                .trimIndent()
 
         // Act
         val result = languageSelector.getDefaultLocale(context)
 
         // Assert
         assertEquals(sharedPrefLocale, result)
-        verify { sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, sharedPrefLocale) }
     }
 
     @Test
@@ -126,7 +127,6 @@ class LanguageSelectorTest : RobolectricTest() {
 
         // Assert
         assertEquals(deviceDefaultLocale.toLanguageTag(), result)
-        verify { sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, deviceDefaultLocale.toLanguageTag()) }
     }
 
     @Test

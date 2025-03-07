@@ -22,6 +22,7 @@ import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
@@ -56,6 +57,8 @@ constructor(
   }
 
   private fun isLanguageSupported(lang: String): Boolean {
-    return configurationRegistry.fetchLanguages().any { it.equals(lang) }
+    val locale = Locale.forLanguageTag(lang)
+    val language = Language(lang, locale.displayName)
+    return configurationRegistry.fetchLanguages().any { it == language }
   }
 }
