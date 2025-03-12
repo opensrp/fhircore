@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
@@ -59,7 +59,7 @@ jobs:
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
 
       - name: Gradle cache
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Spotless check engine module
         run: ./gradlew -PlocalPropertiesFile=local.properties :engine:spotlessCheck :engine:ktlintCheck --stacktrace
@@ -121,7 +121,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
@@ -148,7 +148,7 @@ jobs:
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
 
       - name: Gradle cache
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Spotless check geowidget module
         run: ./gradlew -PlocalPropertiesFile=local.properties :geowidget:spotlessCheck --stacktrace
@@ -181,7 +181,7 @@ jobs:
           working-directory: android
           api-level: ${{ matrix.api-level }}
           arch: x86_64
-          force-avd-creation: true
+          force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: ./gradlew -PlocalPropertiesFile=local.properties :geowidget:clean :geowidget:fhircoreJacocoReport --stacktrace
@@ -209,7 +209,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
@@ -236,7 +236,7 @@ jobs:
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
 
       - name: Gradle cache
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
  
       - name: Spotless check quest application
         run: ./gradlew -PlocalPropertiesFile=local.properties :quest:spotlessCheck --stacktrace :quest:ktlintCheck --stacktrace
@@ -258,7 +258,7 @@ jobs:
           working-directory: android
           api-level: ${{ matrix.api-level }}
           arch: x86_64
-          force-avd-creation: false
+          force-avd-creation: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."

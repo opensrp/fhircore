@@ -16,18 +16,22 @@
 
 package org.smartregister.fhircore.quest
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.io.File
+import java.io.InputStream
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Library
+import org.hl7.fhir.r4.model.MetadataResource
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -54,6 +58,8 @@ class CqlContentTest : RobolectricTest() {
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  private val context: Context = ApplicationProvider.getApplicationContext()
 
   @Before
   fun setUp() {
@@ -171,18 +177,20 @@ class CqlContentTest : RobolectricTest() {
       )
     }
 
-  private fun buildCqlLibrary(cql: String): Library {
-    val cqlCompiler = CqlBuilder.compile(cql)
-    val libraryIdentifier = cqlCompiler.translatedLibrary.library.identifier
-    return CqlBuilder.assembleFhirLib(
-        cqlStr = cql,
-        jsonElmStr = cqlCompiler.toJson(),
-        xmlElmStr = null,
-        libName = libraryIdentifier.id,
-        libVersion = libraryIdentifier.version,
+  private fun compileAndBuild(cqlInputStream: InputStream): Library {
+    val cqlText = CqlBuilder.load(cqlInputStream)
+    return CqlBuilder.compile(cqlText).let {
+      CqlBuilder.assembleFhirLib(
+        cqlText,
+        it.toJson(),
+        it.toXml(),
+        it.toELM().identifier.id,
+        it.toELM().identifier.version,
       )
-      .also { println(it.encodeResourceToString()) }
+    }
   }
+
+  private fun buildCqlLibrary(cql: String): Library = compileAndBuild(cql.byteInputStream())
 
   private fun loadTestResultsSampleData(): Bundle {
     return Bundle().apply {
@@ -196,12 +204,19 @@ class CqlContentTest : RobolectricTest() {
 
   private suspend fun createTestData(dataBundle: Bundle, cqlLibrary: Library) {
     dataBundle.entry.forEach { fhirEngine.create(it.resource) }
-
-    knowledgeManager.install(
-      File.createTempFile(cqlLibrary.name, ".json").apply {
-        this.writeText(cqlLibrary.encodeResourceToString())
-      },
+    knowledgeManager.index(
+      writeToFile(cqlLibrary.apply { url = url.substring(0, url.indexOf('|')) }),
     )
+  }
+
+  private fun writeToFile(resource: Resource): File {
+    val fileName =
+      if (resource is MetadataResource && resource.name != null) {
+        resource.name
+      } else {
+        resource.idElement.idPart
+      }
+    return File(context.filesDir, fileName).apply { writeText(resource.encodeResourceToString()) }
   }
 
   private fun printResult(result: Parameters) {
