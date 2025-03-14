@@ -18,17 +18,12 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.content.Context
 import android.widget.Toast
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
-import com.google.android.fhir.datacapture.validation.NotValidated
-import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
-import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
@@ -40,6 +35,9 @@ import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
@@ -94,7 +92,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isIn
-import org.smartregister.fhircore.engine.util.extension.packRepeatedGroups
 import org.smartregister.fhircore.engine.util.extension.prepopulateWithComputedConfigValues
 import org.smartregister.fhircore.engine.util.extension.questionnaireResponseStatus
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -104,6 +101,7 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequest
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequestHandler
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.util.QuestionnaireResponseUtils
 import timber.log.Timber
 
 @HiltViewModel
@@ -131,15 +129,26 @@ constructor(
       ?.extractLogicalIdUuid()
   }
 
-  private val _questionnaireProgressStateLiveData = MutableLiveData<QuestionnaireProgressState?>()
-  val questionnaireProgressStateLiveData: LiveData<QuestionnaireProgressState?>
-    get() = _questionnaireProgressStateLiveData
-
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
+  private val _questionnaireFormUpdateMutableStateflow =
+    MutableStateFlow<QuestionnaireFormUpdate>(
+      QuestionnaireFormUpdate.ShowQuestionnaireResponse(null),
+    )
+  val questionnaireFormUpdateStateflow: StateFlow<QuestionnaireFormUpdate>
+    get() = _questionnaireFormUpdateMutableStateflow
+
   var uniqueIdResource: Resource? = null
+
+  lateinit var currentQuestionnaire: Questionnaire
+    private set
+
+  fun setQuestionnaire(questionnaire: Questionnaire) {
+    currentQuestionnaire = questionnaire
+    currentQuestionnaire.url = "Questionnaire/${currentQuestionnaire.logicalId}"
+  }
 
   /**
    * This function retrieves the [Questionnaire] as configured via the [QuestionnaireConfig]. The
@@ -167,20 +176,19 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
     actionParameters: List<ActionParameter>,
     context: Context,
+    onQuestionnaireResponseInvalid: () -> Unit,
     onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit,
   ) {
     viewModelScope.launch(SupervisorJob()) {
       val questionnaireResponseValid =
         validateQuestionnaireResponse(
-          questionnaire = questionnaire,
-          questionnaireResponse = currentQuestionnaireResponse,
-          context = context,
+          questionnaire,
+          currentQuestionnaireResponse,
+          context,
         )
 
       if (questionnaireConfig.saveQuestionnaireResponse && !questionnaireResponseValid) {
-        Timber.e("Invalid questionnaire response")
-        context.showToast(context.getString(R.string.questionnaire_response_invalid))
-        setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
+        onQuestionnaireResponseInvalid.invoke()
         return@launch
       }
 
@@ -732,8 +740,7 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     context: Context,
   ): Bundle =
-    kotlin
-      .runCatching {
+    runCatching {
         if (extractByStructureMap) {
           ResourceMapper.extract(
             questionnaire = questionnaire,
@@ -833,8 +840,11 @@ constructor(
           }
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
-        Timber.e("Unable to update resource's _lastUpdated", resourceNotFoundException)
-      } catch (illegalArgumentException: IllegalArgumentException) {
+        Timber.e(
+          resourceNotFoundException,
+          "Unable to update ${param.value} resource's _lastUpdated",
+        )
+      } catch (_: IllegalArgumentException) {
         Timber.e(
           "No enum constant org.hl7.fhir.r4.model.ResourceType.${
                         param.value.substringBefore(
@@ -846,44 +856,18 @@ constructor(
     }
   }
 
-  /**
-   * This function validates all [QuestionnaireResponse] and returns true if all the validation
-   * result of [QuestionnaireResponseValidator] are [Valid] or [NotValidated] (validation is
-   * optional on [Questionnaire] fields)
-   */
   suspend fun validateQuestionnaireResponse(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     context: Context,
-  ): Boolean {
-    val validQuestionnaireResponseItems = mutableListOf<QuestionnaireResponseItemComponent>()
-    val validQuestionnaireItems = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
-    val questionnaireItemsMap = questionnaire.item.associateBy { it.linkId }
-
-    // Only validate items that are present on both Questionnaire and the QuestionnaireResponse
-    questionnaireResponse.copy().item.forEach {
-      if (questionnaireItemsMap.containsKey(it.linkId)) {
-        val questionnaireItem = questionnaireItemsMap.getValue(it.linkId)
-        validQuestionnaireResponseItems.add(it)
-        validQuestionnaireItems.add(questionnaireItem)
-      }
+  ) =
+    withContext(dispatcherProvider.default()) {
+      QuestionnaireResponseUtils.validateQuestionnaireResponse(
+        questionnaire = questionnaire,
+        questionnaireResponse = questionnaireResponse,
+        context = context,
+      )
     }
-
-    return withContext(dispatcherProvider.default()) {
-      QuestionnaireResponseValidator.validateQuestionnaireResponse(
-          questionnaire = Questionnaire().apply { item = validQuestionnaireItems },
-          questionnaireResponse =
-            QuestionnaireResponse().apply {
-              item = validQuestionnaireResponseItems
-              packRepeatedGroups()
-            },
-          context = context,
-        )
-        .values
-        .flatten()
-        .all { it is Valid || it is NotValidated }
-    }
-  }
 
   suspend fun executeCql(
     subject: Resource,
@@ -972,8 +956,7 @@ constructor(
   ) {
     questionnaireConfig.planDefinitions?.forEach { planId ->
       if (planId.isNotEmpty()) {
-        kotlin
-          .runCatching {
+        runCatching {
             val carePlan =
               fhirCarePlanGenerator.generateOrUpdateCarePlan(
                 planDefinitionId = planId,
@@ -1299,9 +1282,38 @@ constructor(
       null
     }
 
-  /** Update the current progress state of the questionnaire. */
-  fun setProgressState(questionnaireState: QuestionnaireProgressState) {
-    _questionnaireProgressStateLiveData.postValue(questionnaireState)
+  fun showSpeechToText() {
+    _questionnaireFormUpdateMutableStateflow.update {
+      val questionnaireResponse =
+        when (it) {
+          is QuestionnaireFormUpdate.ShowQuestionnaireResponse -> it.newQuestionnaireResponse
+          is QuestionnaireFormUpdate.ShowSpeechToTextSubView -> it.currentQuestionnaireResponse
+        }
+      QuestionnaireFormUpdate.ShowSpeechToTextSubView(questionnaireResponse)
+    }
+  }
+
+  fun hideSpeechToText() {
+    _questionnaireFormUpdateMutableStateflow.update {
+      val questionnaireResponse =
+        when (it) {
+          is QuestionnaireFormUpdate.ShowQuestionnaireResponse -> it.newQuestionnaireResponse
+          is QuestionnaireFormUpdate.ShowSpeechToTextSubView -> it.currentQuestionnaireResponse
+        }
+      QuestionnaireFormUpdate.ShowQuestionnaireResponse(questionnaireResponse)
+    }
+  }
+
+  fun showQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse?) =
+    _questionnaireFormUpdateMutableStateflow.update {
+      QuestionnaireFormUpdate.ShowQuestionnaireResponse(questionnaireResponse)
+    }
+
+  fun disableQuestionnaireItem(
+    questionnaireItemComponent: Questionnaire.QuestionnaireItemComponent,
+  ) {
+    questionnaireItemComponent.item.forEach { disableQuestionnaireItem(it) }
+    questionnaireItemComponent.readOnly = true
   }
 
   companion object {
@@ -1309,4 +1321,12 @@ constructor(
     const val OUTPUT_PARAMETER_KEY = "OUTPUT"
     const val DELIMITER = ","
   }
+}
+
+sealed class QuestionnaireFormUpdate {
+  data class ShowSpeechToTextSubView(val currentQuestionnaireResponse: QuestionnaireResponse?) :
+    QuestionnaireFormUpdate()
+
+  data class ShowQuestionnaireResponse(val newQuestionnaireResponse: QuestionnaireResponse?) :
+    QuestionnaireFormUpdate()
 }

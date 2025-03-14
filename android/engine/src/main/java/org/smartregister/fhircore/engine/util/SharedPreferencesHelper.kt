@@ -24,6 +24,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.serialization.SerializationException
+import org.jetbrains.annotations.VisibleForTesting
+import org.smartregister.fhircore.engine.BuildConfig
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import timber.log.Timber
@@ -107,6 +110,12 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   }
 
   fun retrieveApplicationId() = read(SharedPreferenceKey.APP_ID.name, null)
+
+  fun hasDebugSuffix(): Boolean =
+    retrieveApplicationId()?.trim()?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true && isDebugVariant()
+
+  @VisibleForTesting
+  fun isDebugVariant() = BuildConfig.DEBUG
 
   companion object {
     const val PREFS_NAME = "params"

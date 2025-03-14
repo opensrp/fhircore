@@ -76,6 +76,12 @@ android {
     buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
     buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
     buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
+    buildConfigField("String", "GEMINI_API_KEY", """"${project.extra["GEMINI_API_KEY"]}"""")
+    buildConfigField(
+      "String",
+      "SPEECH_TO_TEXT_API_KEY",
+      """"${project.extra["SPEECH_TO_TEXT_API_KEY"]}"""",
+    )
 
     testInstrumentationRunner = "org.smartregister.fhircore.quest.QuestTestRunner"
     testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"
@@ -379,6 +385,13 @@ android {
       versionNameSuffix = "-kaderJobAids"
       manifestPlaceholders["appLabel"] = "Kader Kesehatan"
     }
+
+    create("genAi") {
+      dimension = "apps"
+      applicationIdSuffix = ".genai"
+      versionNameSuffix = "-genAi"
+      manifestPlaceholders["appLabel"] = "Gen AI"
+    }
   }
 
   applicationVariants.all {
@@ -516,6 +529,19 @@ dependencies {
   implementation(libs.bundles.cameraX)
   implementation(libs.log4j)
 
+  // AI dependencies
+  implementation(libs.google.cloud.speech) {
+    exclude("com.google.guava", "guava")
+    exclude("org.threeten", "threetenbp")
+  }
+  implementation(libs.generativeai)
+  implementation(libs.grpc.okhttp) { exclude("com.google.guava", "guava") }
+  implementation(libs.tasks.genai) {
+    // exclude to use the full version required for com.google.cloud:google-cloud-speech
+    // https://github.com/protocolbuffers/protobuf/blob/main/java/lite.md
+    exclude("com.google.protobuf", "protobuf-javalite")
+  }
+
   // Annotation processors
   kapt(libs.hilt.compiler)
   kapt(libs.dagger.hilt.compiler)
@@ -527,6 +553,7 @@ dependencies {
   testImplementation(libs.robolectric)
   testImplementation(libs.bundles.junit.test)
   testImplementation(libs.core.testing)
+  testImplementation(libs.mockito.inline)
   testImplementation(libs.mockk)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.dagger.hilt.android.testing)
