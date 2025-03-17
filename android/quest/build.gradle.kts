@@ -379,6 +379,13 @@ android {
       versionNameSuffix = "-kaderJobAids"
       manifestPlaceholders["appLabel"] = "Kader Kesehatan"
     }
+
+    create("mcct") {
+      dimension = "apps"
+      applicationIdSuffix = ".mcct"
+      versionNameSuffix = "-mcct"
+      manifestPlaceholders["appLabel"] = "MCCT+"
+    }
   }
 
   applicationVariants.all {
