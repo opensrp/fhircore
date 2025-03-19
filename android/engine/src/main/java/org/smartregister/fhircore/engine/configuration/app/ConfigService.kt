@@ -17,9 +17,7 @@
 package org.smartregister.fhircore.engine.configuration.app
 
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.SearchParameter
 import org.smartregister.fhircore.engine.sync.ResourceTag
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -73,70 +71,7 @@ interface ConfigService {
     return tags
   }
 
-  /**
-   * Provide a list of custom search parameters.
-   *
-   * @return list of predefined custom search parameters.
-   */
-  fun provideCustomSearchParameters(): List<SearchParameter> {
-    val activeGroupSearchParameter =
-      SearchParameter().apply {
-        url = "http://smartregister.org/SearchParameter/group-active"
-        addBase("Group")
-        name = ACTIVE_SEARCH_PARAM
-        code = ACTIVE_SEARCH_PARAM
-        type = Enumerations.SearchParamType.TOKEN
-        expression = "Group.active"
-        description = "Search the active field"
-      }
-
-    val flagStatusSearchParameter =
-      SearchParameter().apply {
-        url = "http://smartregister.org/SearchParameter/flag-status"
-        addBase("Flag")
-        name = STATUS_SEARCH_PARAM
-        code = STATUS_SEARCH_PARAM
-        type = Enumerations.SearchParamType.TOKEN
-        expression = "Flag.status"
-        description = "Search the status field"
-      }
-
-    val medicationSortSearchParameter =
-      SearchParameter().apply {
-        url = MEDICATION_SORT_URL
-        addBase("Medication")
-        name = SORT_SEARCH_PARAM
-        code = SORT_SEARCH_PARAM
-        type = Enumerations.SearchParamType.NUMBER
-        expression = "Medication.extension.where(url = '$MEDICATION_SORT_URL').value"
-        description = "Search the sort field"
-      }
-
-    val patientSearchParameter =
-      SearchParameter().apply {
-        url = "http://smartregister.org/SearchParameter/patient-search"
-        addBase("Patient")
-        name = SEARCH_PARAM
-        code = SEARCH_PARAM
-        type = Enumerations.SearchParamType.STRING
-        expression = "Patient.name.text | Patient.identifier.value"
-        description = "Search patients by name and identifier fields"
-      }
-
-    return listOf(
-      activeGroupSearchParameter,
-      flagStatusSearchParameter,
-      medicationSortSearchParameter,
-      patientSearchParameter,
-    )
-  }
-
   companion object {
-    const val ACTIVE_SEARCH_PARAM = "active"
     const val APP_VERSION = "AppVersion"
-    const val STATUS_SEARCH_PARAM = "status"
-    const val SORT_SEARCH_PARAM = "sort"
-    const val SEARCH_PARAM = "search"
-    const val MEDICATION_SORT_URL = "http://smartregister.org/SearchParameter/medication-sort"
   }
 }

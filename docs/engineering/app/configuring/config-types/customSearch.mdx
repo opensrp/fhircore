@@ -1,0 +1,90 @@
+---
+title: Custom Searching
+---
+
+Additional custom [SearchParameter](https://www.hl7.org/fhir/searchparameter.html)s can be configured setting a
+[Binary](https://www.hl7.org/fhir/binary.html) that would be referenced though the app's Composition resource.
+
+The contents of the [Binary] configuration are a [Bundle](https://www.hl7.org/fhir/bundle.html) of type `collection`.
+The entries in the Bundle should be a valid SearchParameter resource
+An example
+
+``` json
+{
+    "resourceType": "Bundle",
+    "type": "collection",
+    "entry": [
+        {
+            "resource": {
+                "resourceType": "SearchParameter",
+                "url": "http://smartregister.org/SearchParameter/patient-yellow",
+                "name": "yellow",
+                "code": "yellow",
+                "base": ["Patient"],
+                "type": "string",
+                "expression": "Patient.name.text.select('YELLOW '  + toString())",
+                "description": "Search patients by yellow"
+            }
+        }
+    ]
+}
+```
+
+In the app, the new custom search parameter could then be used in the form
+
+```
+fhirEngine.search<Patient> {
+    filter(StringClientParam("yellow"), {
+          value = "yellow"
+          modifier = StringFilterModifier.STARTS_WITH
+        })
+}
+```
+
+## Composition Section
+
+To differentiate the search parameters config from the other configs, when linking in the app's Composition resource,
+it's Composition [section](https://www.hl7.org/fhir/composition-definitions.html#Composition.section) should have the
+[code](https://www.hl7.org/fhir/composition-definitions.html#Composition.section.code)
+
+```
+    "code": {
+        "coding": [
+            {
+                "system": "http://smartregister.org/CodeSystem/composition-section-codes",
+                "code": "custom-search-parameter-bundle"
+            }
+        ]
+    }
+```
+
+An example of a valid SearchParameter config in a Composition would therefore look like
+
+```
+{
+    "resourceType": "Composition",
+    "section": [
+        ...,
+        {
+            "title": "Custom Search Parameters",
+            "mode": "working",
+            "code": {
+                "coding": [
+                    {
+                        "system": "http://smartregister.org/CodeSystem/composition-section-codes",
+                        "code": "custom-search-parameter-bundle"
+                    }
+                ]
+            },
+            "entry": [
+                {
+                    "reference": "Binary/searchParamConfigTestBinary"
+                }
+            ]
+        }
+    ]
+}
+```
+
+### Issue
+https://github.com/opensrp/fhircore/issues/3532
