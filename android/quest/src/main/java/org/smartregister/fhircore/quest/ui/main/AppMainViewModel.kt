@@ -420,6 +420,37 @@ constructor(
     completed * 100 / if (total > 0) total else 1
 
   suspend fun schedulePeriodicJobs(context: Context) {
+    if (!BuildConfig.SKIP_AUTHENTICATION) {
+      if (context.isDeviceOnline()) {
+        // Do not schedule sync until location selected when strategy is RelatedEntityLocation
+        // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
+        // if we need to trigger sync based on assigned locations or not
+        when {
+          applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation) -> {
+            if (
+              applicationConfiguration.usePractitionerAssignedLocationOnSync ||
+                context
+                  .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA)
+                  .isNotEmpty()
+            ) {
+              viewModelScope.launch {
+                syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
+              }
+            }
+          }
+          else -> {
+            viewModelScope.launch {
+              syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
+            }
+          }
+        }
+      } else {
+        withContext(dispatcherProvider.main()) {
+          context.showToast(context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
+        }
+      }
+    }
+
     workManager.run {
       schedulePeriodically<FhirTaskStatusUpdateWorker>(
         workId = FhirTaskStatusUpdateWorker.WORK_ID,
@@ -454,31 +485,6 @@ constructor(
               ),
             initialDelay = INITIAL_DELAY,
           )
-        }
-      }
-    }
-
-    if (!BuildConfig.SKIP_AUTHENTICATION) {
-      if (context.isDeviceOnline()) {
-        // Do not schedule sync until location selected when strategy is RelatedEntityLocation
-        // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
-        // if we need to trigger sync based on assigned locations or not
-        when {
-          applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation) -> {
-            if (
-              applicationConfiguration.usePractitionerAssignedLocationOnSync ||
-                context
-                  .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA)
-                  .isNotEmpty()
-            ) {
-              syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
-            }
-          }
-          else -> syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
-        }
-      } else {
-        withContext(dispatcherProvider.main()) {
-          context.showToast(context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
         }
       }
     }
