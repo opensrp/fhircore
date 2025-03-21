@@ -433,10 +433,16 @@ constructor(
                   .retrieveRelatedEntitySyncLocationState(MultiSelectViewAction.SYNC_DATA)
                   .isNotEmpty()
             ) {
+              viewModelScope.launch {
+                syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
+              }
+            }
+          }
+          else -> {
+            viewModelScope.launch {
               syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
             }
           }
-          else -> syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
         }
       } else {
         withContext(dispatcherProvider.main()) {

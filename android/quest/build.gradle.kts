@@ -385,12 +385,17 @@ android {
       versionNameSuffix = "-kaderJobAids"
       manifestPlaceholders["appLabel"] = "Kader Kesehatan"
     }
-
     create("genAi") {
       dimension = "apps"
       applicationIdSuffix = ".genai"
       versionNameSuffix = "-genAi"
       manifestPlaceholders["appLabel"] = "Gen AI"
+    }
+    create("mcct") {
+      dimension = "apps"
+      applicationIdSuffix = ".mcct"
+      versionNameSuffix = "-mcct"
+      manifestPlaceholders["appLabel"] = "MCCT+"
     }
   }
 
