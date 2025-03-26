@@ -90,10 +90,10 @@ For more information read more [here](https://docs.opensrp.io/engineering/app/de
 To load into the OpenSRP FHIR Core app on demand, for debug and development, you can create a symbolic link using:
 
 ```sh
-git clone git@github.com:ona-health/giz-eir-fhir-resources.git
+git clone git@github.com:ona-health/reference-apps.git
 # assuming you have checked out fhircore in the same directory
-mkdir -p fhircore/android/quest/src/gizeir/assets/configs
-ln -s `pwd`/giz-eir-fhir-resources/app/* fhircore/android/quest/src/gizEir/assets/configs/gizeir
+mkdir -p fhircore/android/quest/src/reference-apps/assets/configs
+ln -s `pwd`/reference-apps/app/* fhircore/android/quest/src/reference-apps/assets/configs/eir
 ```
 
 The app is able to use content for configuration resources from the `configs/app/resources` directory in the assets directory. Ideally, any FHIR resource can be loaded into
@@ -1327,7 +1327,6 @@ More [here](http://localhost:3000/engineering/app/configuring/config-types/profi
 [TBC]
 
 #### Child Past Profile Config
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childpastencounters_profile_config.json
 
 [TBC]
 
@@ -1340,9 +1339,127 @@ https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/chil
 
 #### Caregiver Register Congig
 
-<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/caregiver_register_config.json-->
+[Caregiver Register ](https://github.com/ona-health/reference-apps/blob/main/eir-chw/app_configurations/registers/caregiver_register_config.json)
 
-![caregiver register config](/img/eir_configs/caregiver-register.png)
+````json
+{
+  "appId": "eir-chw",
+  "configType": "register",
+  "id": "caregiverRegister",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "RelatedPerson",
+      "sortConfigs": [
+        {
+          "paramName": "_lastUpdated",
+          "dataType": "DATE",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    "relatedResources": [
+      {
+        "id": "availablePatients",
+        "resource": "Patient",
+        "searchParameter": "link",
+        "isRevInclude": true,
+        "relatedResources": [
+          {
+            "id": "availableTasks",
+            "resource": "Task",
+            "searchParameter": "subject",
+            "isRevInclude": true
+          }
+        ]
+      }
+    ]
+  },
+  "registerCard": {
+    "rules": [],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "{{ 44cf790aae7e0faa1ec3c95c14031d80 }}",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "{{ 7a1d818c428fb7ea95e704cfc24dc845 }}",
+                "fontSize": 14.0,
+                "primaryTextColor": "#000000"
+              }
+            ],
+            "showVerticalDivider": false,
+            "serviceButton": {
+              "visible": true,
+              "text": "@{numberOfChildren}",
+              "status": "@{visitStatus}",
+              "buttonType": "BIG",
+              "actions": [
+                {
+                  "trigger": "ON_CLICK",
+                  "workflow": "LAUNCH_PROFILE",
+                  "id": "caregiverProfile"
+                }
+              ]
+            },
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "caregiverProfile"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "{{ search.name.or.id }}",
+    "computedRules": [
+      "relatedPersonIdentifier",
+      "relatedPersonFirstName",
+      "relatedPersonMiddleName",
+      "relatedPersonLastName"
+    ]
+  },
+  "topScreenSection": {
+    "title": "{{ 6a31766a4a17ff69f259bc76f812ecfa }}",
+    "searchBar": {
+      "visible": true,
+      "display": "{{ search.by.location.name }}",
+      "computedRules": [
+        "servicePointName"
+      ]
+    },
+    "menuIcons": [
+      {
+        "viewType": "IMAGE",
+        "size": 10,
+        "imageConfig": {
+          "type": "local",
+          "reference": "ic_toggle_map_view"
+        },
+        "actions": [
+          {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_MAP",
+            "id": "locationMap"
+          }
+        ]
+      }
+    ]
+  }
+}
+````
 
 Breakdown of the Configuration:
 
@@ -1404,9 +1521,47 @@ This section defines the UI at the top of the screen.
 
 #### Child Register Congig
 
-<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/child_register_config.json-->
+[Child Register](https://github.com/ona-health/reference-apps/blob/main/eir-chw/app_configurations/registers/child_register_config.json)
 
-![child register config](/img/eir_configs/child-register.png)
+````json
+{
+  "appId": "eir-chw",
+  "configType": "register",
+  "id": "childRegister",
+  "configRules": [
+    {
+      "name": "under18",
+      "condition": "true",
+      "actions": [
+        "data.put('under18', dateService.addOrSubtractTimeUnitFromCurrentDate(18,'-','YEAR'))"
+      ]
+    }
+  ],
+  "activeResourceFilters": [
+    {
+      "resourceType": "Patient",
+      "active": "false"
+    }
+  ],
+  "fhirResource": {},
+  "registerCard": {
+    "rules": [],
+    "views": []
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "{{ search.name.or.id }}",
+    "computedRules": [
+    ]
+  },
+  "registerFilter": {
+    "dataFilterActions": [
+    ],
+    "dataFilterFields": [
+    ]
+  }
+}
+````
 
 ## Scheduling & tasking
 
@@ -1502,7 +1657,7 @@ Example of scheduling with PlanDefinition:
 
 ![immunization config](/img/eir_configs/immunization-pd.png)
 
-Reference PlanDefinition can  be found [here](https://github.com/ona-health/giz-eir-fhir-resources/blob/main/plan_definition/child_immunizations.fhir.json)
+Reference PlanDefinition can  be found [here](https://github.com/ona-health/reference-apps/blob/main/eir-chw/fhir_content/plan_definition/child_immunizations.fhir.json)
 
 General Setup (First Activity) - "Child Register Handler Activity":
 
@@ -1579,9 +1734,11 @@ import immunization from '/img/eir_screenshoots/immunization-form.png';
 ![english trnslations config](/img/eir_configs/strings-en.png)
 ![spanish trnslations config](/img/eir_configs/strings-es.png)
 
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_config.properties
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_es_config.properties
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_fr_config.properties
+[Strings config](https://github.com/ona-health/reference-apps/blob/main/eir-chw/app_configurations/translations/strings_config.properties)
+
+[Strings ES config](https://github.com/ona-health/reference-apps/blob/main/eir-chw/app_configurations/translations/strings_es_config.properties)
+
+[String FR config](https://github.com/ona-health/reference-apps/blob/main/eir-chw/app_configurations/translations/strings_fr_config.properties)
 
 ## Configuration and adapting the content
 
