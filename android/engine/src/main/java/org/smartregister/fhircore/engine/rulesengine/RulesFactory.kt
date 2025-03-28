@@ -810,6 +810,8 @@ constructor(
         }
       }
     }
+
+    fun extractLogicalIdUuid(reference: String) = reference.extractLogicalIdUuid()
   }
 
   companion object {

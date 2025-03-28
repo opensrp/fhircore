@@ -1208,7 +1208,13 @@ constructor(
           )
           ?.let {
             QuestionnaireResponse().apply {
-              id = it.id
+              /**
+               * Only set the ID value when [saveDraft] is set to true] this ensues that a new
+               * [QuestionnaireResponse] is generated when the questionnaire is submitted
+               */
+              if (questionnaireConfig.saveDraft) {
+                id = it.id
+              }
               status = it.status
               item = it.item.removeUnAnsweredItems()
               // Clearing the text prompts the SDK to re-process the content, which includes HTML
