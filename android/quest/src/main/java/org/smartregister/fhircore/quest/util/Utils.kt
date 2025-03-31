@@ -21,15 +21,17 @@ object Utils {
   /**
    * Removes any '#' characters that appear before the first string or integer value.
    *
-   * @param resourceId The string or integer value that may have multiple '#' characters at the start
+   * @param resourceId The string or integer value that may have multiple '#' characters at the
+   *   start
    * @return The value without any '#' characters at the start
    */
   fun removeHashPrefix(resourceId: Any): String {
-    val stringValue = when (resourceId) {
-      is String -> resourceId
-      is Int -> resourceId.toString()
-      else -> resourceId.toString()
-    }
+    val stringValue =
+      when (resourceId) {
+        is String -> resourceId
+        is Int -> resourceId.toString()
+        else -> resourceId.toString()
+      }
     return stringValue.trimStart('#')
   }
 }
