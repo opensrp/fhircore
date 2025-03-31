@@ -23,50 +23,65 @@ import org.junit.Test
 class UtilsTest {
 
   @Test
-  fun `removeHashPrefix should remove hash prefix when present`() {
-    // Given
+  fun `removeHashPrefix should remove single hash prefix from string`() {
     val input = "#test123"
-
-    // When
     val result = Utils.removeHashPrefix(input)
-
-    // Then
     assertEquals("test123", result)
   }
 
   @Test
-  fun `removeHashPrefix should return same string when hash prefix is not present`() {
-    // Given
-    val input = "test123"
-
-    // When
+  fun `removeHashPrefix should remove multiple hash prefixes from string`() {
+    val input = "###test123"
     val result = Utils.removeHashPrefix(input)
+    assertEquals("test123", result)
+  }
 
-    // Then
+  @Test
+  fun `removeHashPrefix should return same string when no hash prefix is present`() {
+    val input = "test123"
+    val result = Utils.removeHashPrefix(input)
     assertEquals("test123", result)
   }
 
   @Test
   fun `removeHashPrefix should handle empty string`() {
-    // Given
     val input = ""
-
-    // When
     val result = Utils.removeHashPrefix(input)
-
-    // Then
     assertEquals("", result)
   }
 
   @Test
-  fun `removeHashPrefix should handle string with multiple hash symbols`() {
-    // Given
-    val input = "#test#123"
-
-    // When
+  fun `removeHashPrefix should handle string with hash symbols in middle`() {
+    val input = "test#123"
     val result = Utils.removeHashPrefix(input)
-
-    // Then
     assertEquals("test#123", result)
+  }
+
+  @Test
+  fun `removeHashPrefix should handle integer with multiple hash prefixes`() {
+    val input = "###123"
+    val result = Utils.removeHashPrefix(input)
+    assertEquals("123", result)
+  }
+
+  @Test
+  fun `removeHashPrefix should handle integer without hash prefix`() {
+    val input = 123
+    val result = Utils.removeHashPrefix(input)
+    assertEquals("123", result)
+  }
+
+  @Test
+  fun `removeHashPrefix should handle other types by converting to string`() {
+    val input = 123.45
+    val result = Utils.removeHashPrefix(input)
+    assertEquals("123.45", result)
+  }
+
+  @Test
+  fun `removeHashPrefix should handle uuid with multiple hash prefixes`() {
+    val input = "##8036ea0d-da4f-435c-bd4a-3e819a5a52dc"
+    val result = Utils.removeHashPrefix(input)
+    assertEquals("8036ea0d-da4f-435c-bd4a-3e819a5a52dc", result)
   }
 }

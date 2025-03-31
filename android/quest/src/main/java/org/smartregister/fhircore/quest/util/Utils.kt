@@ -19,12 +19,17 @@ package org.smartregister.fhircore.quest.util
 /** Utility object containing helper functions for common operations. */
 object Utils {
   /**
-   * Removes the '#' prefix from a resource ID string if present.
+   * Removes any '#' characters that appear before the first string or integer value.
    *
-   * @param resourceIds The resource ID string that may or may not have a '#' prefix
-   * @return The resource ID string without the '#' prefix
+   * @param resourceId The string or integer value that may have multiple '#' characters at the start
+   * @return The value without any '#' characters at the start
    */
-  fun removeHashPrefix(resourceIds: String): String {
-    return if (resourceIds.startsWith("#")) resourceIds.substring(1) else resourceIds
+  fun removeHashPrefix(resourceId: Any): String {
+    val stringValue = when (resourceId) {
+      is String -> resourceId
+      is Int -> resourceId.toString()
+      else -> resourceId.toString()
+    }
+    return stringValue.trimStart('#')
   }
 }
