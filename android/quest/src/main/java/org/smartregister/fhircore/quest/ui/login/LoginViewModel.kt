@@ -30,8 +30,13 @@ import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import io.sentry.protocol.User
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 import org.hl7.fhir.r4.model.CareTeam
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Location
@@ -69,11 +74,6 @@ import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
 import timber.log.Timber
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
-import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 
 @HiltViewModel
 class LoginViewModel
