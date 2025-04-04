@@ -44,6 +44,7 @@ import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.OrganizationAffiliation
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.PractitionerRole
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -68,6 +69,7 @@ import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.BuildConfig
+import org.smartregister.fhircore.quest.util.Utils
 import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
@@ -365,25 +367,25 @@ constructor(
           containedResources.forEach { resource ->
             when (resource.resourceType) {
               ResourceType.CareTeam -> {
-                careTeams.add(resource as CareTeam)
+                careTeams.add(updateResourceIds(resource) as CareTeam)
               }
               ResourceType.Organization -> {
-                organizations.add(resource as Organization)
+                organizations.add(updateResourceIds(resource) as Organization)
               }
               ResourceType.Location -> {
-                locations.add(resource as Location)
+                locations.add(updateResourceIds(resource) as Location)
               }
               ResourceType.Practitioner -> {
-                practitioners.add(resource as Practitioner)
+                practitioners.add(updateResourceIds(resource) as Practitioner)
               }
               ResourceType.Group -> {
-                groups.add(resource as Group)
+                groups.add(updateResourceIds(resource) as Group)
               }
               ResourceType.PractitionerRole -> {
-                practitionerRoles.add(resource as PractitionerRole)
+                practitionerRoles.add(updateResourceIds(resource) as PractitionerRole)
               }
               ResourceType.OrganizationAffiliation -> {
-                organizationAffiliations.add(resource as OrganizationAffiliation)
+                organizationAffiliations.add(updateResourceIds(resource) as OrganizationAffiliation)
               }
               else -> {}
             }
@@ -392,17 +394,17 @@ constructor(
 
         val careTeamIds =
           defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
-            careTeams.map { it.id.extractLogicalIdUuid() }
+            careTeams.map { Utils.removeHashPrefix(it.id.extractLogicalIdUuid()) }
           }
 
         val organizationIds =
           defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
-            organizations.map { it.id.extractLogicalIdUuid() }
+            organizations.map { Utils.removeHashPrefix(it.id.extractLogicalIdUuid()) }
           }
 
         val locationIds =
           defaultRepository.createRemote(false, *locations.toTypedArray()).run {
-            locations.map { it.id.extractLogicalIdUuid() }
+            locations.map { Utils.removeHashPrefix(it.id.extractLogicalIdUuid()) }
           }
 
         val location =
@@ -462,6 +464,11 @@ constructor(
       }
       postProcess()
     }
+  }
+
+  private fun updateResourceIds(resource: Resource): Resource {
+    resource.id = resource.id.extractLogicalIdUuid().let(Utils::removeHashPrefix)
+    return resource
   }
 
   private fun writeUserInfo(
