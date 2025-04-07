@@ -364,7 +364,7 @@ constructor(
             )
           }
         } else {
-          containedResources.forEach {resource ->
+          containedResources.forEach { resource ->
             updateResourceIds(resource)
             when (resource.resourceType) {
               ResourceType.CareTeam -> {
