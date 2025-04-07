@@ -364,28 +364,29 @@ constructor(
             )
           }
         } else {
-          containedResources.forEach { resource ->
+          containedResources.forEach {resource ->
+            updateResourceIds(resource)
             when (resource.resourceType) {
               ResourceType.CareTeam -> {
-                careTeams.add(updateResourceIds(resource) as CareTeam)
+                careTeams.add(resource as CareTeam)
               }
               ResourceType.Organization -> {
-                organizations.add(updateResourceIds(resource) as Organization)
+                organizations.add(resource as Organization)
               }
               ResourceType.Location -> {
-                locations.add(updateResourceIds(resource) as Location)
+                locations.add(resource as Location)
               }
               ResourceType.Practitioner -> {
-                practitioners.add(updateResourceIds(resource) as Practitioner)
+                practitioners.add(resource as Practitioner)
               }
               ResourceType.Group -> {
-                groups.add(updateResourceIds(resource) as Group)
+                groups.add(resource as Group)
               }
               ResourceType.PractitionerRole -> {
-                practitionerRoles.add(updateResourceIds(resource) as PractitionerRole)
+                practitionerRoles.add(resource as PractitionerRole)
               }
               ResourceType.OrganizationAffiliation -> {
-                organizationAffiliations.add(updateResourceIds(resource) as OrganizationAffiliation)
+                organizationAffiliations.add(resource as OrganizationAffiliation)
               }
               else -> {}
             }
@@ -394,17 +395,17 @@ constructor(
 
         val careTeamIds =
           defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
-            careTeams.map { Utils.removeHashPrefix(it.id.extractLogicalIdUuid()) }
+            careTeams.map { it.id.extractLogicalIdUuid() }
           }
 
         val organizationIds =
           defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
-            organizations.map { Utils.removeHashPrefix(it.id.extractLogicalIdUuid()) }
+            organizations.map { it.id.extractLogicalIdUuid() }
           }
 
         val locationIds =
           defaultRepository.createRemote(false, *locations.toTypedArray()).run {
-            locations.map { Utils.removeHashPrefix(it.id.extractLogicalIdUuid()) }
+            locations.map { it.id.extractLogicalIdUuid() }
           }
 
         val location =
