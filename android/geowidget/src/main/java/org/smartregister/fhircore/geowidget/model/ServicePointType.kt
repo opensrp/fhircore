@@ -28,7 +28,7 @@ enum class ServicePointType(
   CENTRE_DE_SANTE(R.drawable.ic_csb_service_point, "Centre de Santé"),
   CENTRE_DE_TRAITEMENT_DU_CHOLERA(
     R.drawable.ic_csb_service_point,
-    "Centre de Traitement du Choléra"
+    "Centre de Traitement du Choléra",
   ),
   HOPITAL_COMMUNAL(R.drawable.ic_csb_service_point, "Hôpital Communal"),
   HOPITAL(R.drawable.ic_csb_service_point, "Hôpital"),
@@ -56,7 +56,7 @@ enum class ServicePointType(
   BUREAU_DES_PARTENAIRES(R.drawable.ic_men_service_point, "Bureau des partenaires"),
   DIRECTION_COMMUNALE_DE_L_ENSEIGNEMENT(
     R.drawable.ic_men_service_point,
-    "Direction Communale de l'Enseignement"
+    "Direction Communale de l'Enseignement",
   ),
   DREN(R.drawable.ic_epp_service_point, "dren"),
   DISTRICT_PPSPF(R.drawable.ic_gov, "District PPSPF"),
