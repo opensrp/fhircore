@@ -34,8 +34,8 @@
     <string name="status_vaccinated">Vacunado</string>
     <string name="status_overdue">Atrasado</string>
     <string name="status_received_vaccine">Vacuna %1$d \n%2$s</string>
-    <string name="fully_vaccinated">"Completamente vacunado"</string>
-    <string name="already_fully_vaccinated">"No puedo recibir otra dosis. Ya estoy completamente vacunado"</string>
+    <string name="fully_vaccinated">Completamente vacunado</string>
+    <string name="already_fully_vaccinated">No puedo recibir otra dosis. Ya estoy completamente vacunado</string>
     <string name="record_vaccine_nl">Registro\nVacuna</string>
     <string name="date_last_seen">Visto por última vez %1$s</string>
     <string name="date_last_visited">Última visita %1$s</string>
@@ -155,8 +155,8 @@
     <string name="percentage_progress" translatable="false">%1$d%%</string>
     <string name="error_occurred">Algo salió mal…</string>
     <string name="insights">Perspectivas</string>
-    <string name="contact_help">"Contactar con ayuda"</string>
-    <string name="offline_map">"Mapas sin conexión"</string>
+    <string name="contact_help">Contactar con ayuda</string>
+    <string name="offline_map">Mapas sin conexión</string>
     <string name="dismiss">Descartar</string>
     <string name="user_info">Información del usuario</string>
     <string name="assignment_info">Información de la tarea</string>
