@@ -160,7 +160,7 @@
     <string name="locality" >Localité</string>
     <string name="team_organization">Équipe (Organisation)</string>
     <string name="care_team">Care Team</string>
-    <string name="location">Localisation</string>
+    <string name="location">Site</string>
     <string name="app_version_code">Code de version de l\'application</string>
     <string name="build_date">Date de création</string>
     <string name="manufacture">Fabricant</string>
