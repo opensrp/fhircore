@@ -168,7 +168,7 @@
     <string name="os_version">Version OS</string>
     <string name="device_date">Date</string>
     <string name="device">Appareil</string>
-    <string name="ok">D\'ACCORD</string>
+    <string name="ok">OK</string>
     <string name="add">AJOUTER</string>
     <string name="data_migration_started">Début de la migration des données à partir de la version %1$d</string>
     <string name="data_migration_completed">Migration des données de l\'application vers la version %1$d</string>
