@@ -140,7 +140,7 @@
     <string name="initializing">Initialisation des paramètres &#8230;</string>
     <string name="initializing_application">Initialisation de l\'application &#8230 ;</string>
     <string name="error_occurred">Quelque chose a mal tourné...</string>
-    <string name="insights">Insights</string>
+    <string name="insights">Aperçus</string>
     <string name="contact_help">Contacter l\'aide</string>
     <string name="offline_map">Cartes hors ligne</string>
     <string name="dismiss">Rejeter</string>
