@@ -8,8 +8,8 @@
     <string name="menu_settings">Settings</string>
     <string name="cannot_find_parent_questionnaire">Cannot find the parent Questionnaire!</string>
 
-    <string name="loading_forms">Loading forms ...</string>
-    <string name="loading_responses">Loading responses ...</string>
+    <string name="loading_forms">Loading forms…</string>
+    <string name="loading_responses">Loading responses…</string>
     <string name="no_test_results_found">No test results found</string>
     <string name="patient_test_results">TEST RESULTS</string>
     <string name="last_test"> Last Test - %1$s</string>
@@ -137,7 +137,7 @@
     <string name="exit_app">Exit App</string>
     <string name="exit_app_message">Are you sure you want to exit from the app?</string>
     <string name="missing_multi_select_view_configs">Missing required multi select view configs. Please provide the configurations for the view to render.</string>
-    <string name="locations_without_coordinates"><b>"%1$d</b> out of <b>%2$d </b>Location(s) have no coordinates"</string>
+    <string name="locations_without_coordinates"><b>%1$d</b> out of <b>%2$d </b>Location(s) have no coordinates</string>
     <string name="all_locations_rendered"><b>All</b> the locations rendered successfully"</string>
     <string name="all_matching_locations_rendered"><b>%1$d </b> matching location(s) rendered successfully"</string>
     <string name="on_cancel_adding_location">Cancel adding location</string>
