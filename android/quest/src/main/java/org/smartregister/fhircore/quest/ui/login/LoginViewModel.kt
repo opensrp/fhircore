@@ -44,7 +44,6 @@ import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.OrganizationAffiliation
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.PractitionerRole
-import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -66,10 +65,10 @@ import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
+import org.smartregister.fhircore.engine.util.extension.removeHashPrefix
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.BuildConfig
-import org.smartregister.fhircore.quest.util.Utils
 import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
@@ -365,7 +364,7 @@ constructor(
           }
         } else {
           containedResources.forEach { resource ->
-            updateResourceIds(resource)
+            resource.id = resource.id.extractLogicalIdUuid().removeHashPrefix()
             when (resource.resourceType) {
               ResourceType.CareTeam -> {
                 careTeams.add(resource as CareTeam)
@@ -465,11 +464,6 @@ constructor(
       }
       postProcess()
     }
-  }
-
-  private fun updateResourceIds(resource: Resource): Resource {
-    resource.id = resource.id.extractLogicalIdUuid().let(Utils::removeHashPrefix)
-    return resource
   }
 
   private fun writeUserInfo(
