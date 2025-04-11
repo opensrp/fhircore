@@ -34,6 +34,7 @@ class GeoWidgetViewModel : ViewModel() {
 
   fun clearMapFeatures() = mapFeatures.clear()
 
+  // Todo Refactor this to work different and better
   fun getServicePointKeyToType(): Map<String, ServicePointType> {
     val map: MutableMap<String, ServicePointType> = HashMap()
     map[ServicePointType.EPP.name.lowercase()] = ServicePointType.EPP
@@ -65,7 +66,18 @@ class GeoWidgetViewModel : ViewModel() {
     map[ServicePointType.ECOLE_COMMUNAUTAIRE.name.lowercase()] =
       ServicePointType.ECOLE_COMMUNAUTAIRE
     map[ServicePointType.ECOLE_PRIVÉ.name.lowercase()] = ServicePointType.ECOLE_PRIVÉ
+    map[ServicePointType.ECOLE_PUBLIQUE.name.lowercase()] = ServicePointType.ECOLE_PUBLIQUE
+    map[ServicePointType.CENTRE_DE_SANTE.name.lowercase()] = ServicePointType.CENTRE_DE_SANTE
+    map[ServicePointType.CENTRE_DE_TRAITEMENT_DU_CHOLERA.name.lowercase()] =
+      ServicePointType.CENTRE_DE_TRAITEMENT_DU_CHOLERA
+    map[ServicePointType.HOPITAL_COMMUNAL.name.lowercase()] = ServicePointType.HOPITAL_COMMUNAL
+    map[ServicePointType.HOPITAL.name.lowercase()] = ServicePointType.HOPITAL
+    map[ServicePointType.BUREAU_DES_PARTENAIRES.name.lowercase()] =
+      ServicePointType.BUREAU_DES_PARTENAIRES
     map[ServicePointType.LYCÉE.name.lowercase()] = ServicePointType.LYCÉE
+    map[ServicePointType.DIRECTION_COMMUNALE_DE_L_ENSEIGNEMENT.name.lowercase()] =
+      ServicePointType.DIRECTION_COMMUNALE_DE_L_ENSEIGNEMENT
+    map[ServicePointType.ECOLE_PRIVE.name.lowercase()] = ServicePointType.ECOLE_PRIVE
     return map
   }
 }
