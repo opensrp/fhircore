@@ -72,12 +72,13 @@ import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Location
+import org.hl7.fhir.r4.model.MedicationRequest
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.Questionnaire.QuestionnaireItemComponent
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseStatus
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -88,6 +89,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ExtractedResourceUniquePropertyExpression
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdConfig
@@ -281,12 +283,23 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       coEvery { defaultRepository.loadResource(any<String>(), ResourceType.Patient) } returns
         Patient()
 
+      val updatedQuestionnaireConfig =
+        questionnaireConfig.copy(
+          linkIds =
+            listOf(
+              LinkIdConfig(
+                resourceType = ResourceType.MedicationRequest,
+                linkId = "active-med-ids",
+                type = LinkIdType.REPEATED_GROUP_DELETION,
+              ),
+            ),
+        )
       questionnaireViewModel.handleQuestionnaireSubmission(
         questionnaire = questionnaire,
         currentQuestionnaireResponse = questionnaireResponse,
         actionParameters = actionParameters,
         context = context,
-        questionnaireConfig = questionnaireConfig,
+        questionnaireConfig = updatedQuestionnaireConfig,
         onSuccessfulSubmission = onSuccessfulSubmission,
       )
 
@@ -314,7 +327,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         questionnaireViewModel.saveExtractedResources(
           bundle = any<Bundle>(),
           questionnaire = questionnaire,
-          questionnaireConfig = questionnaireConfig,
+          questionnaireConfig = updatedQuestionnaireConfig,
           questionnaireResponse = questionnaireResponse,
           context = context,
         )
@@ -325,7 +338,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
+      coVerify {
+        questionnaireViewModel.processRepeatedGroupItems(
+          questionnaireResponse,
+          questionnaire,
+          updatedQuestionnaireConfig,
+        )
+      }
       coVerify { onSuccessfulSubmission(any(), questionnaireResponse) }
+
       unmockkObject(ResourceMapper)
     }
 
@@ -451,7 +472,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       // Assert every resource contains Related Entity Location meta tag as configured
       val relatedEntityLocationCodingSystem =
         context.getString(
-          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
+          R.string.sync_strategy_related_entity_location_system,
         )
 
       val relatedEntityLocationMetaTag =
@@ -621,19 +642,19 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       name = questionnaireConfig.title
       addSubjectType("Patient")
       addItem(
-        Questionnaire.QuestionnaireItemComponent().apply {
+        QuestionnaireItemComponent().apply {
           linkId = "patient-name"
           type = Questionnaire.QuestionnaireItemType.STRING
         },
       )
       addItem(
-        Questionnaire.QuestionnaireItemComponent().apply {
+        QuestionnaireItemComponent().apply {
           linkId = "patient-address"
           type = Questionnaire.QuestionnaireItemType.STRING
         },
       )
       addItem(
-        Questionnaire.QuestionnaireItemComponent().apply {
+        QuestionnaireItemComponent().apply {
           linkId = "country-of-residence"
           type = Questionnaire.QuestionnaireItemType.STRING
         },
@@ -738,7 +759,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       samplePatientRegisterQuestionnaire.apply {
         id = newQuestionnaireId
         addItem(
-          Questionnaire.QuestionnaireItemComponent().apply {
+          QuestionnaireItemComponent().apply {
             linkId = patientAgeLinkId
             type = Questionnaire.QuestionnaireItemType.INTEGER
             readOnly = true
@@ -906,7 +927,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaire =
       Questionnaire().apply {
         addItem(
-          Questionnaire.QuestionnaireItemComponent().apply {
+          QuestionnaireItemComponent().apply {
             linkId = "linkId"
             type = Questionnaire.QuestionnaireItemType.INTEGER
             required = true
@@ -1204,7 +1225,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
-    knowledgeManager.install(
+    knowledgeManager.index(
       File.createTempFile(cqlLibrary.name, ".json").apply {
         this.writeText(cqlLibrary.encodeResourceToString())
       },
@@ -1923,7 +1944,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         Questionnaire().apply {
           id = questionnaireConfig.id
           addItem(
-            Questionnaire.QuestionnaireItemComponent().apply {
+            QuestionnaireItemComponent().apply {
               linkId = "defaultedDate"
               type = Questionnaire.QuestionnaireItemType.DATE
               addExtension(
@@ -1985,7 +2006,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         Questionnaire().apply {
           id = thisQuestionnaireConfig.id
           addItem(
-            Questionnaire.QuestionnaireItemComponent().apply {
+            QuestionnaireItemComponent().apply {
               linkId = "dateToday"
               type = Questionnaire.QuestionnaireItemType.DATE
               addExtension(
@@ -2067,11 +2088,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       Questionnaire().apply {
         id = questionnaireConfig1.id
         addItem(
-          Questionnaire.QuestionnaireItemComponent().apply {
+          QuestionnaireItemComponent().apply {
             linkId = "group-1"
             type = Questionnaire.QuestionnaireItemType.GROUP
             addItem(
-              Questionnaire.QuestionnaireItemComponent().apply {
+              QuestionnaireItemComponent().apply {
                 linkId = "linkid-1"
                 type = Questionnaire.QuestionnaireItemType.STRING
                 addInitial(Questionnaire.QuestionnaireItemInitialComponent(StringType("---")))
@@ -2079,7 +2100,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
             )
 
             addItem(
-              Questionnaire.QuestionnaireItemComponent().apply {
+              QuestionnaireItemComponent().apply {
                 linkId = "linkid-1.1"
                 type = Questionnaire.QuestionnaireItemType.STRING
                 addInitial(Questionnaire.QuestionnaireItemInitialComponent(StringType("---")))
@@ -2089,7 +2110,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
 
         addItem(
-          Questionnaire.QuestionnaireItemComponent().apply {
+          QuestionnaireItemComponent().apply {
             linkId = "linkid-2"
             type = Questionnaire.QuestionnaireItemType.STRING
           },
@@ -2150,84 +2171,309 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testThatPopulateQuestionnaireReturnsQuestionnaireResponseWithIdValue() = runTest {
-    val questionnaireViewModelInstance =
-      QuestionnaireViewModel(
-        defaultRepository = defaultRepository,
-        dispatcherProvider = dispatcherProvider,
-        fhirCarePlanGenerator = fhirCarePlanGenerator,
-        rulesExecutor = rulesExecutor,
-        transformSupportServices = mockk(),
-        sharedPreferencesHelper = sharedPreferencesHelper,
-        fhirOperator = fhirOperator,
-        fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
-        fhirPathDataExtractor = fhirPathDataExtractor,
-        configurationRegistry = configurationRegistry,
-      )
-    val questionnaireConfig1 =
-      questionnaireConfig.copy(
-        resourceType = ResourceType.Patient,
-        resourceIdentifier = patient.logicalId,
-        type = QuestionnaireType.EDIT.name,
-      )
+  fun testThatPopulateQuestionnaireReturnsQuestionnaireResponseWithIdValueWhenSaveDraftIsTrue() =
+    runTest {
+      val questionnaireViewModelInstance =
+        QuestionnaireViewModel(
+          defaultRepository = defaultRepository,
+          dispatcherProvider = dispatcherProvider,
+          fhirCarePlanGenerator = fhirCarePlanGenerator,
+          rulesExecutor = rulesExecutor,
+          transformSupportServices = mockk(),
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          fhirOperator = fhirOperator,
+          fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          configurationRegistry = configurationRegistry,
+        )
+      val questionnaireConfig1 =
+        questionnaireConfig.copy(
+          resourceType = ResourceType.Patient,
+          resourceIdentifier = patient.logicalId,
+          type = QuestionnaireType.EDIT.name,
+          saveDraft = true,
+        )
 
-    val questionnaireWithInitialValue =
-      Questionnaire().apply {
-        id = questionnaireConfig1.id
-        addItem(
-          Questionnaire.QuestionnaireItemComponent().apply {
-            linkId = "group-1"
-            type = Questionnaire.QuestionnaireItemType.GROUP
-            addItem(
-              Questionnaire.QuestionnaireItemComponent().apply {
-                linkId = "linkid-1"
-                type = Questionnaire.QuestionnaireItemType.STRING
-                addInitial(Questionnaire.QuestionnaireItemInitialComponent(StringType("---")))
+      val questionnaireWithInitialValue =
+        Questionnaire().apply {
+          id = questionnaireConfig1.id
+          addItem(
+            QuestionnaireItemComponent().apply {
+              linkId = "group-1"
+              type = Questionnaire.QuestionnaireItemType.GROUP
+              addItem(
+                QuestionnaireItemComponent().apply {
+                  linkId = "linkid-1"
+                  type = Questionnaire.QuestionnaireItemType.STRING
+                  addInitial(Questionnaire.QuestionnaireItemInitialComponent(StringType("---")))
+                },
+              )
+            },
+          )
+
+          addItem(
+            QuestionnaireItemComponent().apply {
+              linkId = "linkid-2"
+              type = Questionnaire.QuestionnaireItemType.STRING
+            },
+          )
+        }
+      val qrId = "qr-id-1"
+      val questionnaireResponse =
+        QuestionnaireResponse().apply {
+          id = qrId
+          addItem(
+            QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+              linkId = "group-1"
+              addItem(
+                QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+                  linkId = "linkid-1"
+                },
+              )
+            },
+          )
+        }
+      coEvery {
+        fhirEngine.get(
+          questionnaireConfig1.resourceType!!,
+          questionnaireConfig1.resourceIdentifier!!,
+        )
+      } returns patient
+
+      coEvery { fhirEngine.search<QuestionnaireResponse>(any<Search>()) } returns
+        listOf(
+          SearchResult(questionnaireResponse, included = null, revIncluded = null),
+        )
+
+      Assert.assertNotNull(questionnaireResponse.find("linkid-1"))
+      val result =
+        questionnaireViewModelInstance.populateQuestionnaire(
+          questionnaireWithInitialValue,
+          questionnaireConfig1,
+          emptyList(),
+        )
+      Assert.assertNotNull(result.first)
+      Assert.assertEquals(qrId, result.first!!.id)
+    }
+
+  @Test
+  fun testThatPopulateQuestionnaireReturnsQuestionnaireResponseWithoutIdValueWhenSaveDraftIsFalse() =
+    runTest {
+      val questionnaireViewModelInstance =
+        QuestionnaireViewModel(
+          defaultRepository = defaultRepository,
+          dispatcherProvider = dispatcherProvider,
+          fhirCarePlanGenerator = fhirCarePlanGenerator,
+          rulesExecutor = rulesExecutor,
+          transformSupportServices = mockk(),
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          fhirOperator = fhirOperator,
+          fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          configurationRegistry = configurationRegistry,
+        )
+      val questionnaireConfig1 =
+        questionnaireConfig.copy(
+          resourceType = ResourceType.Patient,
+          resourceIdentifier = patient.logicalId,
+          type = QuestionnaireType.EDIT.name,
+          saveDraft = false,
+        )
+
+      val questionnaireWithInitialValue =
+        Questionnaire().apply {
+          id = questionnaireConfig1.id
+          addItem(
+            QuestionnaireItemComponent().apply {
+              linkId = "group-1"
+              type = Questionnaire.QuestionnaireItemType.GROUP
+              addItem(
+                QuestionnaireItemComponent().apply {
+                  linkId = "linkid-1"
+                  type = Questionnaire.QuestionnaireItemType.STRING
+                  addInitial(Questionnaire.QuestionnaireItemInitialComponent(StringType("---")))
+                },
+              )
+            },
+          )
+
+          addItem(
+            QuestionnaireItemComponent().apply {
+              linkId = "linkid-2"
+              type = Questionnaire.QuestionnaireItemType.STRING
+            },
+          )
+        }
+      val qrId = "qr-id-1"
+      val questionnaireResponse =
+        QuestionnaireResponse().apply {
+          id = qrId
+          addItem(
+            QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+              linkId = "group-1"
+              addItem(
+                QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+                  linkId = "linkid-1"
+                },
+              )
+            },
+          )
+        }
+      coEvery {
+        fhirEngine.get(
+          questionnaireConfig1.resourceType!!,
+          questionnaireConfig1.resourceIdentifier!!,
+        )
+      } returns patient
+
+      coEvery { fhirEngine.search<QuestionnaireResponse>(any<Search>()) } returns
+        listOf(
+          SearchResult(questionnaireResponse, included = null, revIncluded = null),
+        )
+
+      Assert.assertNotNull(questionnaireResponse.find("linkid-1"))
+      val result =
+        questionnaireViewModelInstance.populateQuestionnaire(
+          questionnaireWithInitialValue,
+          questionnaireConfig1,
+          emptyList(),
+        )
+      Assert.assertNotNull(result.first)
+      Assert.assertNull(result.first?.id)
+    }
+
+  @Test
+  fun testProcessRepeatGroupItems() {
+    runTest {
+      val questionnaireResponse =
+        QuestionnaireResponse().apply {
+          contained =
+            listOf(
+              ListResource().apply {
+                id = "list-id"
+                entry =
+                  listOf(
+                    ListResource.ListEntryComponent().apply {
+                      item = Reference("MedicationRequest/med-id-1")
+                    },
+                  )
               },
             )
-          },
-        )
-
-        addItem(
-          Questionnaire.QuestionnaireItemComponent().apply {
-            linkId = "linkid-2"
-            type = Questionnaire.QuestionnaireItemType.STRING
-          },
-        )
-      }
-    val qrId = "qr-id-1"
-    val questionnaireResponse =
-      QuestionnaireResponse().apply {
-        id = qrId
-        addItem(
-          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
-            linkId = "group-1"
-            addItem(
+          item =
+            listOf(
               QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
-                linkId = "linkid-1"
+                linkId = "active-medication-ids"
+                answer =
+                  listOf(
+                    QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                      value = StringType("med-id-1,med-id-2")
+                    },
+                  )
               },
             )
-          },
+        }
+
+      val questionnaire =
+        Questionnaire().apply {
+          id = "questionnaire-id-1"
+          item =
+            listOf(
+              QuestionnaireItemComponent().apply {
+                linkId = "active-medication-ids"
+                initial =
+                  listOf(
+                    Questionnaire.QuestionnaireItemInitialComponent(
+                      StringType("med-id-1,med-id-2"),
+                    ),
+                  )
+              },
+            )
+        }
+
+      coEvery { defaultRepository.addOrUpdate(any(Boolean::class), any<Resource>()) } just runs
+
+      val medRequestSlot = slot<MedicationRequest>()
+      val stringSlot = slot<String>()
+      val linkIdConfig =
+        LinkIdConfig(
+          resourceType = ResourceType.MedicationRequest,
+          linkId = "active-medication-ids",
+          type = LinkIdType.REPEATED_GROUP_DELETION,
         )
-      }
-    coEvery {
-      fhirEngine.get(questionnaireConfig1.resourceType!!, questionnaireConfig1.resourceIdentifier!!)
-    } returns patient
+      val questionnaireConfig =
+        QuestionnaireConfig(
+          id = "sample-config-id",
+          linkIds = listOf(linkIdConfig),
+        )
 
-    coEvery { fhirEngine.search<QuestionnaireResponse>(any<Search>()) } returns
-      listOf(
-        SearchResult(questionnaireResponse, included = null, revIncluded = null),
+      questionnaireViewModel.processRepeatedGroupItems(
+        questionnaireResponse = questionnaireResponse,
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
       )
 
-    Assert.assertNotNull(questionnaireResponse.find("linkid-1"))
-    val result =
-      questionnaireViewModelInstance.populateQuestionnaire(
-        questionnaireWithInitialValue,
-        questionnaireConfig1,
-        emptyList(),
+      coVerify { defaultRepository.addOrUpdate(true, capture(medRequestSlot)) }
+      assertEquals("med-id-2", stringSlot.captured)
+      assertEquals("STOPPED", medRequestSlot.captured.status.name)
+    }
+  }
+
+  @Test
+  fun testProcessRepeatGroupItemsWhenInitialResourceIdsStringIsBlank() {
+    runTest {
+      val questionnaireResponse =
+        QuestionnaireResponse().apply {
+          contained =
+            listOf(
+              ListResource().apply {
+                id = "list-id"
+                entry =
+                  listOf(
+                    ListResource.ListEntryComponent().apply {
+                      item = Reference("MedicationRequest/med-id-1")
+                    },
+                  )
+              },
+            )
+        }
+
+      val questionnaire =
+        Questionnaire().apply {
+          id = "questionnaire-id-1"
+          item =
+            listOf(
+              QuestionnaireItemComponent().apply {
+                linkId = "active-medication-ids"
+                initial =
+                  listOf(
+                    Questionnaire.QuestionnaireItemInitialComponent(
+                      StringType(""),
+                    ),
+                  )
+              },
+            )
+        }
+
+      val linkIdConfig =
+        LinkIdConfig(
+          resourceType = ResourceType.MedicationRequest,
+          linkId = "active-medication-ids",
+          type = LinkIdType.REPEATED_GROUP_DELETION,
+        )
+      val questionnaireConfig =
+        QuestionnaireConfig(
+          id = "sample-config-id",
+          linkIds = listOf(linkIdConfig),
+        )
+
+      questionnaireViewModel.processRepeatedGroupItems(
+        questionnaireResponse = questionnaireResponse,
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
       )
-    Assert.assertNotNull(result.first)
-    Assert.assertEquals(qrId, result.first!!.id)
+
+      coVerify(exactly = 0) { defaultRepository.addOrUpdate(any(), any()) }
+    }
   }
 
   @Test

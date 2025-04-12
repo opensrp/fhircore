@@ -106,8 +106,8 @@
     <string name="missing_subject_type">Type de sujet manquant dans le questionnaire. Fournir Questionnaire.subjectType pour résoudre le problème.</string>
     <string name="missing_questionnaire_config">QuestionnaireConfig est requis mais manquant</string>
     <string name="error_populating_questionnaire">Erreur dans le remplissage de certains champs du questionnaire. Réponse au questionnaire non valide.</string>
-    <string name="extraction_in_progress">Traitement des données du questionnaire...</string>
-    <string name="loading_questionnaire">Chargement du questionnaire...</string>
+    <string name="extraction_in_progress">Traitement des données du questionnaire…</string>
+    <string name="loading_questionnaire">Chargement du questionnaire…</string>
     <string name="clear_all">Tout effacer</string>
     <string name="yes">Oui</string>
     <string name="no">Non</string>

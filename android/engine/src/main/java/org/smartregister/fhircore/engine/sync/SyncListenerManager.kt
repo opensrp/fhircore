@@ -105,4 +105,8 @@ constructor(
     Timber.i("FHIR resource sync parameters $resourceSearchParams")
     return resourceSearchParams
   }
+
+  fun emitSyncStatus(syncState: SyncState) {
+    _onSyncListeners.forEach { it.get()?.onSync(syncState) }
+  }
 }

@@ -34,8 +34,8 @@
     <string name="status_vaccinated">Sudah divaksin</string>
     <string name="status_overdue">Terlambat</string>
     <string name="status_received_vaccine">Vaksin %1$d \n%2$s</string>
-    <string name="fully_vaccinated">"Sudah divaksin lengkap"</string>
-    <string name="already_fully_vaccinated">"Tidak dapat menerima dosis lain. Sudah divaksin lengkap"</string>
+    <string name="fully_vaccinated">Sudah divaksin lengkap</string>
+    <string name="already_fully_vaccinated">Tidak dapat menerima dosis lain. Sudah divaksin lengkap</string>
     <string name="record_vaccine_nl">Catat\nVaksin</string>
     <string name="date_last_seen">Terakhir dilihat %1$s</string>
     <string name="date_last_visited">Terakhir dikunjungi %1$s</string>
@@ -132,7 +132,7 @@
     <string name="select_location">Pilih lokasi</string>
     <string name="responses">RESPONS (%1$s)</string>
     <string name="multi_user_login_attempt">Mencoba masuk dengan pengguna lain</string>
-    <string name="please_wait">Mohon tunggu...</string>
+    <string name="please_wait">Mohon tunggu…</string>
     <string name="clear_database">Setel ulang data</string>
     <string name="transfer_data">Transfer Data</string>
     <string name="clear_database_title">Setel Ulang Database!</string>
@@ -154,10 +154,10 @@
     <string name="initializing_application">Initializing application &#8230;</string>
     <string name="username_sample" translatable="false">e.g JohnDoe</string>
     <string name="percentage_progress" translatable="false">%1$d%%</string>
-    <string name="error_occurred">Ada yang salah...</string>
+    <string name="error_occurred">Ada yang salah…</string>
     <string name="insights">Pengertian</string>
-    <string name="contact_help">"Kontak pertolongan"</string>
-    <string name="offline_map">"Peta Luring/Offline"</string>
+    <string name="contact_help">Kontak pertolongan</string>
+    <string name="offline_map">Peta Luring/Offline</string>
     <string name="dismiss">Abaikan</string>
     <string name="user_info">Info pengguna</string>
     <string name="assignment_info">Informasi tugas</string>

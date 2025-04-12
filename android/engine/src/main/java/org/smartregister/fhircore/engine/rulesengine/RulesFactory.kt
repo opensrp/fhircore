@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.rulesengine
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.extensions.logicalId
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Order
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
@@ -32,12 +33,13 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.system.measureTimeMillis
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.jexl3.JexlEngine
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
@@ -752,7 +754,8 @@ constructor(
         fhirContext
           .newJsonParser()
           .parseResource(resource::class.java, updatedResourceDocument.jsonString())
-      CoroutineScope(dispatcherProvider.io()).launch {
+
+      runBlocking {
         if (purgeAffectedResources) {
           defaultRepository.purge(updatedResource as Resource, forcePurge = true)
         }
@@ -774,6 +777,41 @@ constructor(
         }
       }
     }
+
+    fun getResourceByReference(
+      resourceReference: String?,
+    ): Resource? {
+      if (resourceReference.isNullOrEmpty()) {
+        return null
+      }
+
+      return runBlocking {
+        try {
+          defaultRepository.loadResource(Reference().apply { reference = resourceReference })
+        } catch (e: ResourceNotFoundException) {
+          null
+        }
+      }
+    }
+
+    fun getResourceByIdAndType(
+      resourceId: String?,
+      resourceType: String?,
+    ): Resource? {
+      if (resourceId.isNullOrEmpty() || resourceType.isNullOrEmpty()) {
+        return null
+      }
+
+      return runBlocking {
+        try {
+          defaultRepository.loadResource(resourceId, ResourceType.valueOf(resourceType))
+        } catch (e: ResourceNotFoundException) {
+          null
+        }
+      }
+    }
+
+    fun extractLogicalIdUuid(reference: String) = reference.extractLogicalIdUuid()
   }
 
   companion object {
