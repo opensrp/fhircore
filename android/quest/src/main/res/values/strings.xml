@@ -160,4 +160,5 @@
     </string-array>
     <string name="listening">Listening\u2026</string>
     <string name="sync_counter"><b>Sync %1$d</b> of <b>%2$d </b></string>
+    <string name="record_audio_error">Error initializing audio record</string>
 </resources>

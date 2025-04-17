@@ -35,7 +35,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
@@ -54,7 +53,7 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
   private lateinit var listeningProgressView: View
   private lateinit var progressTextView: TextView
   private lateinit var endButton: View
-  private lateinit var resumeButton: Button
+  private lateinit var resumeButtogenn: Button
   private lateinit var startButton: Button
   private lateinit var pauseButton: Button
 
@@ -177,24 +176,43 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
         SAMPLE_RATE,
         MIC_CHANNELS,
         MIC_CHANNEL_ENCODING,
-        CHUNK_SIZE_SAMPLES * BYTES_PER_SAMPLE,
+        BUFFER_SIZE,
       )
 
-    val recordingJob = viewModel.startRecording(audioRecord)
-    pauseButton.setOnClickListener {
-      viewModel.onRecordingPaused()
-      viewModel.setCurrentTranscript(speechToEditText.text.toString().trim())
-      recordingJob.cancel()
-    }
-    endButton.setOnClickListener {
-      viewModel.onRecordingStopped()
-      viewModel.setCurrentTranscript(speechToEditText.text.toString().trim())
-      if (recordingJob.isActive) recordingJob.cancel()
-      processTranscriptRecorded()
-    }
-    stopRecording = {
-      viewModel.onRecordingStopped()
-      if (recordingJob.isActive) recordingJob.cancel()
+    if (audioRecord.state == AudioRecord.STATE_INITIALIZED) {
+      val recordingJob = viewModel.startRecording(audioRecord)
+
+      pauseButton.setOnClickListener {
+        viewModel.onRecordingPaused()
+        viewModel.setCurrentTranscript(speechToEditText.text.toString().trim())
+        recordingJob.cancel()
+      }
+      endButton.setOnClickListener {
+        viewModel.onRecordingStopped()
+        viewModel.setCurrentTranscript(speechToEditText.text.toString().trim())
+        if (recordingJob.isActive) recordingJob.cancel()
+        processTranscriptRecorded()
+      }
+      stopRecording = {
+        viewModel.onRecordingStopped()
+        if (recordingJob.isActive) recordingJob.cancel()
+      }
+    } else {
+      if (
+        ContextCompat.checkSelfPermission(
+          requireContext(),
+          Manifest.permission.RECORD_AUDIO,
+        ) != PackageManager.PERMISSION_GRANTED
+      ) {
+        requireContext().showToast("Permission to record audio is not granted", Toast.LENGTH_SHORT)
+      } else {
+        requireContext()
+          .showToast(
+            getString(R.string.record_audio_error),
+            Toast.LENGTH_SHORT,
+          )
+      }
+      stopRecording?.invoke()
     }
   }
 
@@ -219,7 +237,7 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
         SAMPLE_RATE,
         MIC_CHANNELS,
         MIC_CHANNEL_ENCODING,
-        CHUNK_SIZE_SAMPLES * BYTES_PER_SAMPLE,
+        BUFFER_SIZE,
       )
 
     viewModel.setCurrentTranscript(speechToEditText.text.toString().trim())
@@ -260,9 +278,16 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
   companion object {
     private const val MIC_CHANNELS = AudioFormat.CHANNEL_IN_MONO
     private const val MIC_CHANNEL_ENCODING = AudioFormat.ENCODING_PCM_16BIT
-    private const val MIC_SOURCE = MediaRecorder.AudioSource.VOICE_RECOGNITION
+    private const val MIC_SOURCE = MediaRecorder.AudioSource.MIC
     private const val SAMPLE_RATE = 16000
     private const val CHUNK_SIZE_SAMPLES = 1280
     private const val BYTES_PER_SAMPLE = 2
+    private val BUFFER_SIZE =
+      AudioRecord.getMinBufferSize(
+          SAMPLE_RATE,
+          MIC_CHANNELS,
+          MIC_CHANNEL_ENCODING,
+        )
+        .coerceAtLeast(2 * CHUNK_SIZE_SAMPLES * BYTES_PER_SAMPLE)
   }
 }

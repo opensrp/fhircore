@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.ui.login
 
 import android.content.Context
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -156,12 +155,7 @@ constructor(
                   _showProgressBar.postValue(false)
                   updateNavigateHome(true)
                 }
-              } else if (sharedPreferences.hasDebugSuffix()) {
-                // Allow practitioner fetch failure in debug mode
-                _showProgressBar.postValue(false)
-                updateNavigateHome(true)
-              }
-                else {
+              } else {
                 _showProgressBar.postValue(false)
                 Timber.e(bundleResult.exceptionOrNull())
                 Timber.e(bundleResult.getOrNull().valueToString())
