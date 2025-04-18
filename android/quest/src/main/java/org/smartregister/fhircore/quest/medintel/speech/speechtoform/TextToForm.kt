@@ -21,6 +21,7 @@ import ca.uhn.fhir.context.FhirContext
 import java.io.File
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.DomainResource
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.json.JSONObject
@@ -123,7 +124,13 @@ class TextToForm @Inject constructor(val dispatcherProvider: DispatcherProvider)
       }
     } while (retryCount < DEFAULT_MAX_RETRIES)
 
-    Timber.d("QuestionnaireResponse:%s", questionnaireResponse.encodeResourceToString())
+    if (Timber.forest().any { it is Timber.DebugTree }) {
+      prompt.split("\n").forEach { Timber.d("{Prompt}: %s", it) }
+
+      formatFhirResource(questionnaireResponse).forEach {
+        Timber.d("QuestionnaireResponse: %s", it)
+      }
+    }
 
     return questionnaireResponse
   }
@@ -142,9 +149,10 @@ class TextToForm @Inject constructor(val dispatcherProvider: DispatcherProvider)
       <transcript> XML tags and an HL7 FHIR Questionnaire within <questionnaire> XML tags. Your job
       is to convert the text in Transcript into a new HL7 FHIR QuestionnaireResponse as if the
       information in Transcript had been entered directly into the FHIR Questionniare. Only output
-      the FHIR QuestionnaireResponse as JSON and nothing else.
+      the FHIR QuestionnaireResponse as JSON and nothing else. Add a 'display' key with the
+      appropriate value in all 'valueCoding's."
       <transcript>$transcript</transcript>
-      <questionnaire>$questionnaire</questionnaire>
+      <questionnaire>${questionnaire.encodeResourceToString()}</questionnaire>
       """
       .trimIndent()
   }
@@ -234,5 +242,9 @@ class TextToForm @Inject constructor(val dispatcherProvider: DispatcherProvider)
     <questionnaire>${jsonParser.encodeResourceToString(questionnaire)}</questionnaire>
             """
       .trimIndent()
+  }
+
+  private fun formatFhirResource(domainResource: DomainResource): List<String> {
+    return JSONObject(domainResource.encodeResourceToString()).toString(4).split("\n")
   }
 }

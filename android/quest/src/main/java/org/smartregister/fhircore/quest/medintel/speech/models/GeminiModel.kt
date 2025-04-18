@@ -28,7 +28,7 @@ class GeminiModel : LlmModel<GenerativeModel> {
   // https://developer.android.com/ai/google-ai-client-sdk
   override var model =
     GenerativeModel(
-      modelName = "gemini-1.5-flash-001",
+      modelName = "gemini-2.5-flash-preview-04-17",
       apiKey = BuildConfig.GEMINI_API_KEY,
       generationConfig =
         generationConfig {

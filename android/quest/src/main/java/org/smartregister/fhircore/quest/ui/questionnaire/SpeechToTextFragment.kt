@@ -53,7 +53,7 @@ class SpeechToTextFragment : Fragment(R.layout.fragment_speech_to_text) {
   private lateinit var listeningProgressView: View
   private lateinit var progressTextView: TextView
   private lateinit var endButton: View
-  private lateinit var resumeButtogenn: Button
+  private lateinit var resumeButton: Button
   private lateinit var startButton: Button
   private lateinit var pauseButton: Button
 
