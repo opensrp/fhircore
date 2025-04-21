@@ -65,6 +65,7 @@ import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
+import org.smartregister.fhircore.engine.util.extension.removeHashPrefix
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.BuildConfig
@@ -363,6 +364,7 @@ constructor(
           }
         } else {
           containedResources.forEach { resource ->
+            resource.id = resource.id.extractLogicalIdUuid().removeHashPrefix()
             when (resource.resourceType) {
               ResourceType.CareTeam -> {
                 careTeams.add(resource as CareTeam)
