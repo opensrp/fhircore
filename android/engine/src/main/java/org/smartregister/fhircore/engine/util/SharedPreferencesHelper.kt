@@ -112,10 +112,10 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   fun retrieveApplicationId() = read(SharedPreferenceKey.APP_ID.name, null)
 
   fun hasDebugSuffix(): Boolean =
-    retrieveApplicationId()?.trim()?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true && isDebugVariant()
+    retrieveApplicationId()?.trim()?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true &&
+      isDebugVariant()
 
-  @VisibleForTesting
-  fun isDebugVariant() = BuildConfig.DEBUG
+  @VisibleForTesting fun isDebugVariant() = BuildConfig.DEBUG
 
   companion object {
     const val PREFS_NAME = "params"
