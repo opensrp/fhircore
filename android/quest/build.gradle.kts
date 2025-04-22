@@ -104,6 +104,8 @@ android {
     getByName("debug") {
       enableUnitTestCoverage = BuildConfigs.enableUnitTestCoverage
       enableAndroidTestCoverage = BuildConfigs.enableAndroidTestCoverage
+
+      kotlinOptions.freeCompilerArgs += "-Xdebug"
     }
 
     create("debugNonProxy") { initWith(getByName("debug")) }

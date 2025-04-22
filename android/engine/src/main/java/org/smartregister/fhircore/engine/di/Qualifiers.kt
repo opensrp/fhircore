@@ -43,3 +43,8 @@ annotation class KeycloakRetrofit
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class RegularRetrofit
+
+@ExcludeFromJacocoGeneratedReport
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class SearchParametersFileStore
