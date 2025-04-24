@@ -264,11 +264,6 @@ jobs:
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
 
-      - name: Start Emulator
-        run: |
-          adb devices
-          adb shell getprop init.svc.bootanim | grep stopped || exit 1
-
       - name: Run Quest module unit and instrumentation tests and generate unit tests coverage report
         uses: reactivecircus/android-emulator-runner@v2
         with: 
@@ -278,6 +273,7 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
+          ram-size: 4096M
           script: ./gradlew clean  -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
 
       - name: Run Quest module unit and instrumentation tests and generate aggregated coverage report (Disabled)
