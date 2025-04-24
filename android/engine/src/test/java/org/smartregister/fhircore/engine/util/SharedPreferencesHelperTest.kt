@@ -146,10 +146,11 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
     Assert.assertFalse(sharedPreferencesHelper.hasDebugSuffix())
   }
 
-  fun setDebugInvariantTrue() {
-    sharedPreferencesHelper = spyk(
-      SharedPreferencesHelper(application, gson),
-    )
+  private fun setDebugInvariantTrue() {
+    sharedPreferencesHelper =
+      spyk(
+        SharedPreferencesHelper(application, gson),
+      )
     coEvery { sharedPreferencesHelper.isDebugVariant() } returns true
   }
 }
