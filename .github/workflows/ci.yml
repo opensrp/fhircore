@@ -199,6 +199,7 @@ jobs:
         run:  bash <(curl -s https://codecov.io/bash) -F geowidget -f "geowidget/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
   quest-tests:
+    timeout-minutes: 90  # Extend timeout to 90 minutes
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -262,6 +263,11 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
+
+      - name: Start Emulator
+        run: |
+          adb devices
+          adb shell getprop init.svc.bootanim | grep stopped || exit 1
 
       - name: Run Quest module unit and instrumentation tests and generate unit tests coverage report
         uses: reactivecircus/android-emulator-runner@v2
