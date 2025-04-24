@@ -294,29 +294,29 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     if (questionnaire == null) {
       showToast(getString(R.string.questionnaire_not_found))
       finish()
+    } else {
+      if (questionnaire.subjectType.isNullOrEmpty()) {
+        val subjectRequiredMessage = getString(R.string.missing_subject_type)
+        showToast(subjectRequiredMessage)
+        Timber.e(subjectRequiredMessage)
+        finish()
+        return
+      }
+      viewModel.setQuestionnaire(questionnaire)
+
+      val (questionnaireResponse, launchContextResources) =
+        viewModel.populateQuestionnaire(
+          viewModel.currentQuestionnaire,
+          questionnaireConfig,
+          actionParameters,
+        )
+
+      viewModel.showQuestionnaireResponse(questionnaireResponse)
+
+      showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
+
+      listenForQuestionnaireFormUpdates(viewModel.currentQuestionnaire, launchContextResources)
     }
-    questionnaire!!
-    if (questionnaire.subjectType.isNullOrEmpty()) {
-      val subjectRequiredMessage = getString(R.string.missing_subject_type)
-      showToast(subjectRequiredMessage)
-      Timber.e(subjectRequiredMessage)
-      finish()
-      return
-    }
-    viewModel.setQuestionnaire(questionnaire)
-
-    val (questionnaireResponse, launchContextResources) =
-      viewModel.populateQuestionnaire(
-        viewModel.currentQuestionnaire,
-        questionnaireConfig,
-        actionParameters,
-      )
-
-    viewModel.showQuestionnaireResponse(questionnaireResponse)
-
-    showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
-
-    listenForQuestionnaireFormUpdates(viewModel.currentQuestionnaire, launchContextResources)
   }
 
   private suspend fun listenForQuestionnaireFormUpdates(

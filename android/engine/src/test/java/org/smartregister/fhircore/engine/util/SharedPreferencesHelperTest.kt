@@ -22,6 +22,8 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
+import io.mockk.spyk
 import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
@@ -121,5 +123,33 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
     val retrievedAppId = sharedPreferencesHelper.retrieveApplicationId()
 
     Assert.assertEquals("test.demo", retrievedAppId)
+  }
+
+  @Test
+  fun testHasDebugSuffix_withSuffix_shouldReturn_true() {
+    setDebugInvariantTrue()
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "app/debug")
+    Assert.assertTrue(sharedPreferencesHelper.hasDebugSuffix())
+  }
+
+  @Test
+  fun testHasDebugSuffix_noSuffix_shouldReturn_false() {
+    setDebugInvariantTrue()
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "app")
+    Assert.assertFalse(sharedPreferencesHelper.hasDebugSuffix())
+  }
+
+  @Test
+  fun testHasDebugSuffix_emptyAppId_shouldReturn_null() {
+    setDebugInvariantTrue()
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, null)
+    Assert.assertFalse(sharedPreferencesHelper.hasDebugSuffix())
+  }
+
+  fun setDebugInvariantTrue() {
+    sharedPreferencesHelper = spyk(
+      SharedPreferencesHelper(application, gson),
+    )
+    coEvery { sharedPreferencesHelper.isDebugVariant() } returns true
   }
 }
