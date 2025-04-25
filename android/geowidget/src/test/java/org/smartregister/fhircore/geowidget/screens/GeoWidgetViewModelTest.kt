@@ -110,4 +110,15 @@ class GeoWidgetViewModelTest {
 
     Assert.assertEquals(geoWidgetViewModel.mapFeatures.size, geoJsonFeatures.size)
   }
+
+  @Test
+  fun testThatMapOfServicePointTypeReturnsEnumValuesBasedOnTheirLowercaseNames() {
+    val servicePointTypeMap = geoWidgetViewModel.getServicePointKeyToType()
+
+    ServicePointType.entries.forEach { servicePointType ->
+      val expectedValue = servicePointType.name.lowercase()
+      val actualValue = servicePointTypeMap[expectedValue]
+      Assert.assertEquals(servicePointType, actualValue)
+    }
+  }
 }
