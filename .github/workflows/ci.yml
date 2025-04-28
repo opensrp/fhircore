@@ -259,7 +259,7 @@ jobs:
           working-directory: android
           api-level: ${{ matrix.api-level }}
           arch: x86_64
-          force-avd-creation: true
+          force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
@@ -270,10 +270,9 @@ jobs:
           working-directory: android
           api-level: ${{ matrix.api-level }}
           arch: x86_64
-          force-avd-creation: true
+          force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          shutdown-emulator: true  # Ensures emulator shuts down after tests
           ram-size: 4096M
           heap-size: 1024M
           script: ./gradlew clean  -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
