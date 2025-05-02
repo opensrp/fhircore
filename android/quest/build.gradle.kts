@@ -585,8 +585,6 @@ dependencies {
   kaptTest(libs.dagger.hilt.android.compiler)
   kaptAndroidTest(libs.dagger.hilt.android.compiler)
 
-  androidTestUtil(libs.orchestrator)
-
   // Android test dependencies
   androidTestImplementation(libs.bundles.junit.test)
   androidTestImplementation(libs.runner)
@@ -596,11 +594,13 @@ dependencies {
   androidTestImplementation(libs.benchmark.junit)
   androidTestImplementation(libs.work.testing)
   androidTestImplementation(libs.navigation.testing)
-  // Android Test dependencies
   androidTestImplementation(libs.junit)
   androidTestImplementation(libs.espresso.core)
   androidTestImplementation(libs.rules)
   androidTestImplementation(libs.uiautomator)
+  // Android test orchestrator dependencies
+  androidTestImplementation(libs.orchestrator)
+  androidTestUtil(libs.orchestrator)
 
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
