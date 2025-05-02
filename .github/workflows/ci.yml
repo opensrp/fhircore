@@ -276,7 +276,7 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: >-
-            ./gradlew clean -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace
+            ./gradlew -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace
             -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
             -Pandroid.testInstrumentationRunnerArguments.numShards=${{ matrix.num-shards }}
             -Pandroid.testInstrumentationRunnerArguments.shardIndex=${{ matrix.shard }}
