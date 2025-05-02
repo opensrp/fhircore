@@ -236,6 +236,8 @@ class CqlContentTest : RobolectricTest() {
     cqlResult: Parameters,
     type: ResourceType,
   ) {
+    // With the current approach, the test will fail if run near midnight.
+    // TODO: replace time stripping with time freezing or other non-flakey approach.
     val outputs =
       cqlResult.parameter.map {
         it.name to
