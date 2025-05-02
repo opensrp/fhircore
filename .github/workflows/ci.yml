@@ -280,6 +280,7 @@ jobs:
             -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
             -Pandroid.testInstrumentationRunnerArguments.numShards=${{ matrix.num-shards }}
             -Pandroid.testInstrumentationRunnerArguments.shardIndex=${{ matrix.shard }}
+            --info
 
       - name: Run Quest module unit and instrumentation tests and generate aggregated coverage report (Disabled)
         if: false
