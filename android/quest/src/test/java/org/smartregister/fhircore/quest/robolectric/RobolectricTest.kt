@@ -16,11 +16,15 @@
 
 package org.smartregister.fhircore.quest.robolectric
 
+import android.content.Context
 import android.os.Build
 import android.os.Looper
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.test.core.app.ApplicationProvider
+import androidx.work.WorkManager
+import androidx.work.testing.WorkManagerTestInitHelper
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
@@ -179,6 +183,7 @@ abstract class RobolectricTest {
   @After
   open fun tearDown() {
     Shadows.shadowOf(Looper.getMainLooper()).idle()
+    cleanupWorkManager()
   }
 
   companion object {
@@ -207,5 +212,13 @@ abstract class RobolectricTest {
     fun resetMocks() {
       clearAllMocks()
     }
+  }
+
+  private fun cleanupWorkManager() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val workManager = WorkManager.getInstance(context)
+    workManager.cancelAllWork()
+    workManager.pruneWork()
+    WorkManagerTestInitHelper.initializeTestWorkManager(context)
   }
 }

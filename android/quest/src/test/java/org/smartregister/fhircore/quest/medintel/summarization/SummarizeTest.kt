@@ -59,6 +59,8 @@ class SummarizeTest : RobolectricTest() {
 
   @After
   override fun tearDown() {
+    super.tearDown()
+
     unmockkAll()
   }
 
