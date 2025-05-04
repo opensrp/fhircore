@@ -20,7 +20,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.SnackbarDuration
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
-import androidx.navigation.testing.TestNavHostController
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -54,10 +53,11 @@ import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.sync.SyncState
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.app.fakes.HiltTestActivity
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.main.AppMainActivity
+import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.interpolateActionParamsValue
 
@@ -75,11 +75,10 @@ class RegisterFragmentTest : RobolectricTest() {
 
   @BindValue lateinit var registerViewModel: RegisterViewModel
 
-  private lateinit var navController: TestNavHostController
+  @BindValue lateinit var appMainViewModel: AppMainViewModel
+
   private lateinit var registerFragment: RegisterFragment
-  private lateinit var mainActivity: AppMainActivity
-  private lateinit var registerFragmentMock: RegisterFragment
-  private val activityController = Robolectric.buildActivity(AppMainActivity::class.java)
+  private val activityController = Robolectric.buildActivity(HiltTestActivity::class.java)
 
   @Before
   fun setUp() {
@@ -90,11 +89,11 @@ class RegisterFragmentTest : RobolectricTest() {
           registerRepository = mockk(relaxed = true),
           configurationRegistry = configurationRegistry,
           sharedPreferencesHelper = Faker.buildSharedPreferencesHelper(),
-          rulesExecutor = mockk(),
+          rulesExecutor = mockk(relaxed = true),
           dispatcherProvider = dispatcherProvider,
         ),
       )
-    registerFragmentMock = mockk()
+    appMainViewModel = mockk(relaxed = true)
     registerFragment =
       RegisterFragment().apply {
         arguments =
@@ -117,12 +116,7 @@ class RegisterFragmentTest : RobolectricTest() {
       }
 
     activityController.create().resume()
-    mainActivity = activityController.get()
-    navController =
-      TestNavHostController(mainActivity).apply {
-        setGraph(org.smartregister.fhircore.quest.R.navigation.application_nav_graph)
-      }
-    mainActivity.supportFragmentManager.run {
+    activityController.get().supportFragmentManager.run {
       commitNow { add(registerFragment, RegisterFragment::class.java.simpleName) }
       executePendingTransactions()
     }
@@ -131,6 +125,7 @@ class RegisterFragmentTest : RobolectricTest() {
   @Test
   fun testOnSyncState() {
     val syncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())
+    val registerFragmentMock = mockk<RegisterFragment>()
     coEvery {
       registerFragmentMock.onSync(SyncState(currentSyncJobStatus = syncJobStatus, counter = 1))
     } just runs
@@ -197,7 +192,7 @@ class RegisterFragmentTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnSyncWithFailedJobStatusNonAuthErrorRendersSyncFailedMessage() {
+  fun testOnSyncWithFailedJobStatusNonAuthErrorUpdatesAppDrawerUIState() {
     val syncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now())
     val registerFragmentSpy = spyk(registerFragment)
     registerFragmentSpy.onSync(SyncState(currentSyncJobStatus = syncJobStatus, counter = 1))
@@ -205,14 +200,12 @@ class RegisterFragmentTest : RobolectricTest() {
       registerFragmentSpy.onSync(SyncState(currentSyncJobStatus = syncJobStatus, counter = 1))
     }
     verify {
-      registerFragmentSpy.getString(
-        org.smartregister.fhircore.engine.R.string.sync_completed_with_errors,
-      )
+      appMainViewModel.updateAppDrawerUIState(syncCounter = 1, currentSyncJobStatus = syncJobStatus)
     }
   }
 
   @Test
-  fun testOnSyncWithFailedJobStatusNonAuthErrorNullExceptionsRendersSyncFailedMessage() {
+  fun testOnSyncWithFailedJobStatusNonAuthErrorNullExceptionsUpdatesAppDrawerUIState() {
     val syncJobStatus: CurrentSyncJobStatus.Failed = mockk()
 
     val registerFragmentSpy = spyk(registerFragment)
@@ -221,9 +214,7 @@ class RegisterFragmentTest : RobolectricTest() {
       registerFragmentSpy.onSync(SyncState(currentSyncJobStatus = syncJobStatus, counter = 1))
     }
     verify {
-      registerFragmentSpy.getString(
-        org.smartregister.fhircore.engine.R.string.sync_completed_with_errors,
-      )
+      appMainViewModel.updateAppDrawerUIState(syncCounter = 1, currentSyncJobStatus = syncJobStatus)
     }
   }
 }

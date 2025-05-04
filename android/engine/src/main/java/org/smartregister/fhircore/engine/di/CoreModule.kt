@@ -109,11 +109,6 @@ class CoreModule {
   fun provideApplicationManager(@ApplicationContext context: Context): AccountManager =
     AccountManager.get(context)
 
-  @Singleton
-  @Provides
-  fun provideKnowledgeManager(@ApplicationContext context: Context): KnowledgeManager =
-    KnowledgeManager.create(context)
-
   @Singleton @Provides fun provideFhirContext(): FhirContext = FhirContext.forR4Cached()!!
 
   @Singleton

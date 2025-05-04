@@ -632,7 +632,45 @@ class EditTextQrCodeViewHolderFactoryTest : RobolectricTest() {
   }
 
   @Test
-  fun `onQrCodeChanged removes answer when new answer is empty`() = runTest {
+  fun `onQrCodeChanged clears answer when new answer is empty and item does not repeat`() =
+    runTest {
+      val viewHolder = EditTextQrCodeViewHolderFactory.create(parentView)
+      val previousQrAnswer =
+        QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+          value = StringType(sampleQrCode1)
+        }
+      val questionnaireViewItem =
+        spyk(
+          QuestionnaireViewItem(
+            questionnaireItem =
+              Questionnaire.QuestionnaireItemComponent().apply {
+                linkId = "linkId-a"
+                repeats = false
+                addExtension(
+                  Extension(
+                    "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",
+                  ),
+                )
+              },
+            questionnaireResponseItem =
+              QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+                linkId = "linkId-a"
+                addAnswer(previousQrAnswer)
+              },
+            validationResult = NotValidated,
+            answersChangedCallback = { _, _, _, _ -> },
+          ),
+        )
+      viewHolder.bind(questionnaireViewItem)
+      val qrCodeAdapter =
+        viewHolder.itemView.findViewById<RecyclerView>(R.id.recycler_view_qr_codes).adapter
+          as QrCodeViewItemAdapter
+      qrCodeAdapter.qrCodeAnswerChangeListener.onQrCodeChanged(previousQrAnswer, null)
+      coVerify { questionnaireViewItem.clearAnswer() }
+    }
+
+  @Test
+  fun `onQrCodeChanged removes answer when new answer is empty and item repeats`() = runTest {
     val viewHolder = EditTextQrCodeViewHolderFactory.create(parentView)
     val previousQrAnswer =
       QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
@@ -644,7 +682,7 @@ class EditTextQrCodeViewHolderFactoryTest : RobolectricTest() {
           questionnaireItem =
             Questionnaire.QuestionnaireItemComponent().apply {
               linkId = "linkId-a"
-              repeats = false
+              repeats = true
               addExtension(
                 Extension(
                   "https://github.com/opensrp/android-fhir/StructureDefinition/qr-code-widget",

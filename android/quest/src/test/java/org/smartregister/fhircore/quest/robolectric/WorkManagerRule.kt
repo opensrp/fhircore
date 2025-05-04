@@ -17,34 +17,34 @@
 package org.smartregister.fhircore.quest.robolectric
 
 import android.util.Log
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.work.Configuration
 import androidx.work.WorkManager
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
-import org.junit.rules.TestRule
+import org.junit.rules.TestWatcher
 import org.junit.runner.Description
-import org.junit.runners.model.Statement
 
-class WorkManagerRule : TestRule {
+class WorkManagerRule : TestWatcher() {
 
-  override fun apply(base: Statement, description: Description): Statement {
-    return object : Statement() {
-      override fun evaluate() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val config =
-          Configuration.Builder()
-            .setMinimumLoggingLevel(Log.DEBUG)
-            .setExecutor(SynchronousExecutor())
-            .build()
-        WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
-        try {
-          base.evaluate()
-        } finally {
-          WorkManager.getInstance(ApplicationProvider.getApplicationContext()).cancelAllWork()
-        }
-      }
-    }
+  override fun starting(description: Description?) {
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+    val config =
+      Configuration.Builder()
+        .setMinimumLoggingLevel(Log.DEBUG)
+        .setExecutor(SynchronousExecutor())
+        .build()
+    WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
+  }
+
+  override fun finished(description: Description?) {
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
+    try {
+      WorkManager.getInstance(context).cancelAllWork()
+    } catch (_: Exception) {}
+
+    try {
+      WorkManagerTestInitHelper.closeWorkDatabase()
+    } catch (_: Exception) {}
   }
 }

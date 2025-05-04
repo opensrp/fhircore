@@ -162,8 +162,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Inject lateinit var contentCache: ContentCache
 
+  @Inject lateinit var knowledgeManager: KnowledgeManager
+
   private val context: Context = ApplicationProvider.getApplicationContext()
-  private val knowledgeManager = KnowledgeManager.create(context)
   private val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
 
   private lateinit var defaultRepository: DefaultRepository
