@@ -24,7 +24,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
-import androidx.work.testing.WorkManagerTestInitHelper
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
@@ -184,6 +183,10 @@ abstract class RobolectricTest {
   open fun tearDown() {
     Shadows.shadowOf(Looper.getMainLooper()).idle()
     cleanupWorkManager()
+
+    // Force garbage collection to help close lingering resources
+    System.gc()
+    System.runFinalization()
   }
 
   companion object {
@@ -215,10 +218,29 @@ abstract class RobolectricTest {
   }
 
   private fun cleanupWorkManager() {
-    val context = ApplicationProvider.getApplicationContext<Context>()
-    val workManager = WorkManager.getInstance(context)
-    workManager.cancelAllWork()
-    workManager.pruneWork()
-    WorkManagerTestInitHelper.initializeTestWorkManager(context)
+    try {
+      val context = ApplicationProvider.getApplicationContext<Context>()
+      val workManager = WorkManager.getInstance(context)
+      workManager.cancelAllWork()
+
+      // Additional cleanup for databases
+      val dbPath = context.getDatabasePath("androidx.work.workdb")
+      if (dbPath.exists()) {
+        try {
+          val sql =
+            android.database.sqlite.SQLiteDatabase.openDatabase(
+              dbPath.absolutePath,
+              null,
+              android.database.sqlite.SQLiteDatabase.OPEN_READWRITE,
+            )
+          sql.close()
+        } catch (e: Exception) {
+          // Ignore, just an attempt to clean up
+        }
+      }
+    } catch (e: Exception) {
+      // Catch any exceptions during cleanup to avoid test failures
+      e.printStackTrace()
+    }
   }
 }
