@@ -203,8 +203,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        shard: [0, 1, 2, 3]  # Split into 4 shards
-        num-shards: [4]      # Total number of shards
+        shard: [0, 1, 2, 3, 4, 5]  # Split into 6 shards
+        num-shards: [6]      # Total number of shards
         api-level: [34]
     steps: 
       - name: Checkout 🛎️
@@ -272,7 +272,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           arch: x86_64
           force-avd-creation: false
-          heap-size: 512M
+          heap-size: 256M
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: >-
