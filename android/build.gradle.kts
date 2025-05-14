@@ -26,6 +26,9 @@ plugins {
 }
 
 tasks.dokkaHtmlMultiModule {
+  dependsOn(":engine:kaptDebugKotlin")
+  dependsOn(":engine:kaptDebugNonProxyKotlin")
+  dependsOn(":engine:kaptReleaseKotlin")
   moduleName.set("OpenSRP")
   moduleVersion.set(project.version.toString())
   outputDirectory.set(file(buildDir.resolve("dokka")))
