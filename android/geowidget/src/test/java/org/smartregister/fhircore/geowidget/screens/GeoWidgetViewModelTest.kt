@@ -113,39 +113,12 @@ class GeoWidgetViewModelTest {
 
   @Test
   fun testThatMapOfServicePointTypeReturnsEnumValuesBasedOnTheirLowercaseNames() {
-    val result = geoWidgetViewModel.getServicePointKeyToType()
-    val expectedMap =
-      mapOf(
-        "epp" to ServicePointType.EPP,
-        "ceg" to ServicePointType.CEG,
-        "chrd1" to ServicePointType.CHRD1,
-        "chrd2" to ServicePointType.CHRD2,
-        "drsp" to ServicePointType.DRSP,
-        "msp" to ServicePointType.MSP,
-        "sdsp" to ServicePointType.SDSP,
-        "csb1" to ServicePointType.CSB1,
-        "csb2" to ServicePointType.CSB2,
-        "chrr" to ServicePointType.CHRR,
-        "warehouse" to ServicePointType.WAREHOUSE,
-        "water_point" to ServicePointType.WATER_POINT,
-        "presco" to ServicePointType.PRESCO,
-        "meah" to ServicePointType.MEAH,
-        "dreah" to ServicePointType.DREAH,
-        "mppspf" to ServicePointType.MPPSPF,
-        "drppspf" to ServicePointType.DRPPSPF,
-        "ngo_partner" to ServicePointType.NGO_PARTNER,
-        "site_communautaire" to ServicePointType.SITE_COMMUNAUTAIRE,
-        "drjs" to ServicePointType.DRJS,
-        "instat" to ServicePointType.INSTAT,
-        "bsd" to ServicePointType.BSD,
-        "men" to ServicePointType.MEN,
-        "dren" to ServicePointType.DREN,
-        "district_ppspf" to ServicePointType.DISTRICT_PPSPF,
-        "mairie" to ServicePointType.MAIRIE,
-        "ecole_communautaire" to ServicePointType.ECOLE_COMMUNAUTAIRE,
-        "ecole_privé" to ServicePointType.ECOLE_PRIVÉ,
-        "lycée" to ServicePointType.LYCÉE,
-      )
-    Assert.assertEquals(expectedMap, result)
+    val servicePointTypeMap = geoWidgetViewModel.getServicePointKeyToType()
+
+    ServicePointType.entries.forEach { servicePointType ->
+      val expectedValue = servicePointType.name.lowercase()
+      val actualValue = servicePointTypeMap[expectedValue]
+      Assert.assertEquals(servicePointType, actualValue)
+    }
   }
 }

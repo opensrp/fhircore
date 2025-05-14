@@ -37,7 +37,6 @@ import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -84,6 +83,7 @@ constructor(
     get() = _error
 
   fun onApplicationIdChanged(appId: String) {
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     _appId.value = appId
     _error.value = ""
   }
@@ -98,7 +98,7 @@ constructor(
     val appId = appId.value?.trim()
     if (!appId.isNullOrEmpty()) {
       when {
-        hasDebugSuffix() -> loadConfigurations(context)
+        sharedPreferencesHelper.hasDebugSuffix() -> loadConfigurations(context)
         else -> fetchRemoteConfigurations(appId, context)
       }
     }
@@ -244,11 +244,6 @@ constructor(
       }
     }
   }
-
-  fun hasDebugSuffix(): Boolean =
-    appId.value?.trim()?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true && isDebugVariant()
-
-  @VisibleForTesting fun isDebugVariant() = BuildConfig.DEBUG
 
   private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
     val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
