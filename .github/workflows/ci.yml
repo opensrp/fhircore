@@ -25,8 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        api-level: [34]
-        
+        api-level: [34]   
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
@@ -116,8 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        api-level: [34]
-        
+        api-level: [34]    
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
@@ -208,7 +206,6 @@ jobs:
         shard: [0, 1, 2, 3]  # Split into 4 shards
         num-shards: [4]      # Total number of shards
         api-level: [34]
-        
     steps: 
       - name: Checkout 🛎️
         uses: actions/checkout@v4
@@ -294,3 +291,12 @@ jobs:
         if: matrix.api-level == 34 # Only upload coverage on API level 34
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
+  
+  quest-success:
+      name: Quest Tests Success
+      needs: quest-tests
+      runs-on: ubuntu-latest
+      if: ${{ !cancelled() }}
+      steps:
+        - name: Quest Tests Passed
+          run: echo "All Quest tests passed!"
