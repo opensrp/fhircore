@@ -14,6 +14,12 @@ plugins {
   id("androidx.navigation.safeargs")
 }
 
+tasks.named("dokkaHtmlPartial") {
+  dependsOn("kaptDebugKotlin")
+  dependsOn("kaptDebugNonProxyKotlin")
+  dependsOn("kaptReleaseKotlin")
+}
+
 android {
   compileSdk = BuildConfigs.compileSdk
 
