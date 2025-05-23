@@ -116,6 +116,19 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     every { workManager.enqueue(any<WorkRequest>()) } returns mockk()
 
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns
+      Result.success(
+        OAuthResponse(
+          accessToken = "mock_access_token",
+          tokenType = "Bearer",
+          refreshToken = "mock_refresh_token",
+          refreshExpiresIn = 3600,
+          scope = "openid",
+        ),
+      )
+
     loginViewModel =
       spyk(
         LoginViewModel(
@@ -732,6 +745,7 @@ internal class LoginViewModelTest : RobolectricTest() {
                     PractitionerRole().apply { id = "my-practitioner-role-id" },
                     OrganizationAffiliation().apply { id = "my-organization-affiliation-id" },
                     Practitioner().apply {
+                      id = "practitioner-id"
                       identifier.add(
                         Identifier().apply {
                           use = Identifier.IdentifierUse.SECONDARY
@@ -744,7 +758,10 @@ internal class LoginViewModelTest : RobolectricTest() {
                   FhirPractitionerDetails().apply {
                     practitioners = listOf()
                     careTeams = listOf()
-                    organizations = listOf()
+                    organizations =
+                      listOf(
+                        Organization().apply { id = "organization-id" },
+                      )
                     locations = listOf()
                     locationHierarchyList = listOf()
                     groups = listOf()

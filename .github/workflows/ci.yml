@@ -25,11 +25,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        api-level: [34]
-        
+        api-level: [34]   
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -114,8 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        api-level: [34]
-        
+        api-level: [34]    
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
@@ -199,11 +199,13 @@ jobs:
         run:  bash <(curl -s https://codecov.io/bash) -F geowidget -f "geowidget/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
   quest-tests:
+    timeout-minutes: 90  # Extend timeout to 90 minutes
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        shard: [0, 1, 2, 3, 4, 5]  # Split into 6 shards
+        num-shards: [6]      # Total number of shards
         api-level: [34]
-        
     steps: 
       - name: Checkout 🛎️
         uses: actions/checkout@v4
@@ -258,7 +260,7 @@ jobs:
           working-directory: android
           api-level: ${{ matrix.api-level }}
           arch: x86_64
-          force-avd-creation: true
+          force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
@@ -269,45 +271,33 @@ jobs:
           working-directory: android
           api-level: ${{ matrix.api-level }}
           arch: x86_64
-          force-avd-creation: true
+          force-avd-creation: false
+          heap-size: 4608M
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew clean  -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
-
-      - name: Run Quest module unit and instrumentation tests and generate aggregated coverage report (Disabled)
-        if: false
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          working-directory: android
-          api-level: ${{ matrix.api-level }}
-          arch: x86_64
-          force-avd-creation: true
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          run: |
-            set -e
-            ./gradlew -PlocalPropertiesFile=local.properties :quest:clean
-            ./gradlew -PlocalPropertiesFile=local.properties :quest:assembleOpensrpDebugAndroidTest --stacktrace 
-            /Users/martin/Library/Android/sdk/platform-tools/adb install quest/build/outputs/apk/androidTest/opensrp/debug/quest-opensrp-debug-androidTest.apk
-            ./gradlew -PlocalPropertiesFile=local.properties :quest:assembleOpensrpDebug --stacktrace
-            /Users/martin/Library/Android/sdk/platform-tools/adb install quest/build/outputs/apk/opensrp/debug/quest-opensrp-debug.apk 
-            /Users/martin/Library/Android/sdk/platform-tools/adb shell am instrument -w \
-              --no-window-animation \
-              -e coverage "true" \
-              -e debug false \
-              org.smartregister.opensrp.test/org.smartregister.fhircore.quest.QuestTestRunner
-            /Users/martin/Library/Android/sdk/platform-tools/adb shell run-as org.smartregister.opensrp \
-              cat "/data/user/0/org.smartregister.opensrp/files/coverage.ec" > quest/coverage.ec 
-            ./gradlew -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace
+          script: >-
+            ./gradlew -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport
+            -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
+            -Pandroid.testInstrumentationRunnerArguments.numShards=${{ matrix.num-shards }}
+            -Pandroid.testInstrumentationRunnerArguments.shardIndex=${{ matrix.shard }}
 
       - name: Upload Test reports
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: quest-test-reports
+          name: quest-test-report-${{ matrix.shard }}
           path: android/quest/build/reports
 
       - name: Upload Quest module test coverage report to Codecov
         if: matrix.api-level == 34 # Only upload coverage on API level 34
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
+  
+  quest-success:
+      name: Quest Tests Success
+      needs: quest-tests
+      runs-on: ubuntu-latest
+      if: ${{ !cancelled() }}
+      steps:
+        - name: Quest Tests Passed
+          run: echo "All Quest tests passed!"

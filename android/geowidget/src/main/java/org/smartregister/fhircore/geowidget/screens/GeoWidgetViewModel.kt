@@ -26,6 +26,47 @@ class GeoWidgetViewModel : ViewModel() {
 
   val mapFeatures = ArrayDeque<Feature>()
 
+  private val servicePointTypes =
+    listOf(
+      ServicePointType.EPP,
+      ServicePointType.CEG,
+      ServicePointType.CHRD1,
+      ServicePointType.CHRD2,
+      ServicePointType.DRSP,
+      ServicePointType.MSP,
+      ServicePointType.SDSP,
+      ServicePointType.CSB1,
+      ServicePointType.CSB2,
+      ServicePointType.CHRR,
+      ServicePointType.WAREHOUSE,
+      ServicePointType.WATER_POINT,
+      ServicePointType.PRESCO,
+      ServicePointType.MEAH,
+      ServicePointType.DREAH,
+      ServicePointType.MPPSPF,
+      ServicePointType.DRPPSPF,
+      ServicePointType.NGO_PARTNER,
+      ServicePointType.SITE_COMMUNAUTAIRE,
+      ServicePointType.DRJS,
+      ServicePointType.INSTAT,
+      ServicePointType.BSD,
+      ServicePointType.MEN,
+      ServicePointType.DREN,
+      ServicePointType.DISTRICT_PPSPF,
+      ServicePointType.MAIRIE,
+      ServicePointType.ECOLE_COMMUNAUTAIRE,
+      ServicePointType.ECOLE_PRIVÉ,
+      ServicePointType.ECOLE_PUBLIQUE,
+      ServicePointType.CENTRE_DE_SANTE,
+      ServicePointType.CENTRE_DE_TRAITEMENT_DU_CHOLERA,
+      ServicePointType.HOPITAL_COMMUNAL,
+      ServicePointType.HOPITAL,
+      ServicePointType.BUREAU_DES_PARTENAIRES,
+      ServicePointType.LYCÉE,
+      ServicePointType.DIRECTION_COMMUNALE_DE_L_ENSEIGNEMENT,
+      ServicePointType.ECOLE_PRIVE,
+    )
+
   fun updateMapFeatures(geoJsonFeatures: List<GeoJsonFeature>) {
     if (mapFeatures.size <= MAP_FEATURES_LIMIT) {
       mapFeatures.addAll(geoJsonFeatures.map { it.toFeature() })
@@ -34,50 +75,8 @@ class GeoWidgetViewModel : ViewModel() {
 
   fun clearMapFeatures() = mapFeatures.clear()
 
-  // Todo Refactor this to work different and better
   fun getServicePointKeyToType(): Map<String, ServicePointType> {
-    val map: MutableMap<String, ServicePointType> = HashMap()
-    map[ServicePointType.EPP.name.lowercase()] = ServicePointType.EPP
-    map[ServicePointType.CEG.name.lowercase()] = ServicePointType.CEG
-    map[ServicePointType.CHRD1.name.lowercase()] = ServicePointType.CHRD1
-    map[ServicePointType.CHRD2.name.lowercase()] = ServicePointType.CHRD2
-    map[ServicePointType.DRSP.name.lowercase()] = ServicePointType.DRSP
-    map[ServicePointType.MSP.name.lowercase()] = ServicePointType.MSP
-    map[ServicePointType.SDSP.name.lowercase()] = ServicePointType.SDSP
-    map[ServicePointType.CSB1.name.lowercase()] = ServicePointType.CSB1
-    map[ServicePointType.CSB2.name.lowercase()] = ServicePointType.CSB2
-    map[ServicePointType.CHRR.name.lowercase()] = ServicePointType.CHRR
-    map[ServicePointType.WAREHOUSE.name.lowercase()] = ServicePointType.WAREHOUSE
-    map[ServicePointType.WATER_POINT.name.lowercase()] = ServicePointType.WATER_POINT
-    map[ServicePointType.PRESCO.name.lowercase()] = ServicePointType.PRESCO
-    map[ServicePointType.MEAH.name.lowercase()] = ServicePointType.MEAH
-    map[ServicePointType.DREAH.name.lowercase()] = ServicePointType.DREAH
-    map[ServicePointType.MPPSPF.name.lowercase()] = ServicePointType.MPPSPF
-    map[ServicePointType.DRPPSPF.name.lowercase()] = ServicePointType.DRPPSPF
-    map[ServicePointType.NGO_PARTNER.name.lowercase()] = ServicePointType.NGO_PARTNER
-    map[ServicePointType.SITE_COMMUNAUTAIRE.name.lowercase()] = ServicePointType.SITE_COMMUNAUTAIRE
-    map[ServicePointType.DRJS.name.lowercase()] = ServicePointType.DRJS
-    map[ServicePointType.INSTAT.name.lowercase()] = ServicePointType.INSTAT
-    map[ServicePointType.BSD.name.lowercase()] = ServicePointType.BSD
-    map[ServicePointType.MEN.name.lowercase()] = ServicePointType.MEN
-    map[ServicePointType.DREN.name.lowercase()] = ServicePointType.DREN
-    map[ServicePointType.DISTRICT_PPSPF.name.lowercase()] = ServicePointType.DISTRICT_PPSPF
-    map[ServicePointType.MAIRIE.name.lowercase()] = ServicePointType.MAIRIE
-    map[ServicePointType.ECOLE_COMMUNAUTAIRE.name.lowercase()] =
-      ServicePointType.ECOLE_COMMUNAUTAIRE
-    map[ServicePointType.ECOLE_PRIVÉ.name.lowercase()] = ServicePointType.ECOLE_PRIVÉ
-    map[ServicePointType.ECOLE_PUBLIQUE.name.lowercase()] = ServicePointType.ECOLE_PUBLIQUE
-    map[ServicePointType.CENTRE_DE_SANTE.name.lowercase()] = ServicePointType.CENTRE_DE_SANTE
-    map[ServicePointType.CENTRE_DE_TRAITEMENT_DU_CHOLERA.name.lowercase()] =
-      ServicePointType.CENTRE_DE_TRAITEMENT_DU_CHOLERA
-    map[ServicePointType.HOPITAL_COMMUNAL.name.lowercase()] = ServicePointType.HOPITAL_COMMUNAL
-    map[ServicePointType.HOPITAL.name.lowercase()] = ServicePointType.HOPITAL
-    map[ServicePointType.BUREAU_DES_PARTENAIRES.name.lowercase()] =
-      ServicePointType.BUREAU_DES_PARTENAIRES
-    map[ServicePointType.LYCÉE.name.lowercase()] = ServicePointType.LYCÉE
-    map[ServicePointType.DIRECTION_COMMUNALE_DE_L_ENSEIGNEMENT.name.lowercase()] =
-      ServicePointType.DIRECTION_COMMUNALE_DE_L_ENSEIGNEMENT
-    map[ServicePointType.ECOLE_PRIVE.name.lowercase()] = ServicePointType.ECOLE_PRIVE
-    return map
+    // Use the class-level list to create the map
+    return servicePointTypes.associateBy { it.name.lowercase() }
   }
 }

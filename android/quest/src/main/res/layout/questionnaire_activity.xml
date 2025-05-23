@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/questionnaireToolbar"
@@ -13,48 +13,115 @@
             android:layout_height="wrap_content"
             android:background="@color/colorPrimary"
             android:minHeight="?android:attr/actionBarSize"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:titleTextColor="@color/white">
 
-            <RelativeLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
                 <TextView
                     android:id="@+id/questionnaireTitle"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                   android:layout_toStartOf="@+id/clearAll"
+                    android:ellipsize="middle"
+                    android:maxLines="1"
                     android:paddingStart="@dimen/item_margin_horizontal"
                     android:paddingEnd="@dimen/item_margin_horizontal"
                     android:text="Register so many many patients until elpsis is displayed"
-                    android:maxLines="1"
-                    android:ellipsize="middle"
                     android:textColor="@color/white"
-                    android:textSize="18sp" />
+                    android:textSize="18sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/clearAll"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/clearAll"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
                     android:paddingStart="@dimen/item_margin_horizontal"
                     android:paddingEnd="@dimen/item_margin_horizontal"
                     android:text="@string/clear_all"
+                    android:textColor="@color/white"
                     android:visibility="visible"
-                    android:textColor="@color/white" />
-            </RelativeLayout>
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.appcompat.widget.Toolbar>
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/container"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:paddingTop="24dp"
-            android:paddingBottom="24dp"
-            android:paddingRight="16dp"
             android:paddingLeft="16dp"
-            app:layout_constraintStart_toStartOf="parent" />
-    </LinearLayout>
+            android:paddingTop="16dp"
+            android:paddingRight="16dp"
+            app:layout_constraintBottom_toTopOf="@+id/speechToTextContainer"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/questionnaireToolbar"
+            app:layout_constraintVertical_weight="3.5"
+            tools:layout="@layout/questionnaire_fragment" />
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/record_speech_action_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/holo_red_dark"
+            android:visibility="gone"
+            app:icon="@drawable/ic_speech_to_text_24dp"
+            app:iconGravity="start"
+            app:iconTint="@color/white"
+            android:text="@string/record_action_text"
+            android:textColor="@color/white"
+            app:layout_constraintVertical_bias="0.86"
+            app:layout_constraintHorizontal_bias="0.95"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/container"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="visible" />
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/edit_form_action_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="?android:attr/colorPrimary"
+            android:visibility="gone"
+            app:icon="@drawable/ic_edit_note_24dp"
+            app:iconGravity="start"
+            app:iconTint="@color/white"
+            android:text="@string/edit_action_text"
+            android:textColor="@color/white"
+            app:layout_constraintVertical_bias="0.87"
+            app:layout_constraintHorizontal_bias="0.94"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/container"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="visible" />
+
+        <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/container_divider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:dividerColor="@color/item_border_color"
+            app:layout_constraintBottom_toTopOf="@+id/speechToTextContainer" />
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/speechToTextContainer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@color/backgroundGray"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/container"
+            app:layout_constraintVertical_weight="1.5"
+            tools:layout="@layout/fragment_speech_to_text" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

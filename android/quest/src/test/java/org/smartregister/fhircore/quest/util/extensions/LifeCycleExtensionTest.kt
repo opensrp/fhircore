@@ -26,6 +26,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.unmockkAll
 import kotlin.test.assertNotNull
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.runBlocking
@@ -46,6 +47,11 @@ class LifeCycleExtensionTest : RobolectricTest() {
     every { navController.context } returns context
   }
 
+  override fun tearDown() {
+    super.tearDown()
+    unmockkAll()
+  }
+
   @Test
   fun testHookSnackBarShowsSnackBar() = runTest {
     val messageConfig = mockk<SnackBarMessageConfig>()
@@ -58,10 +64,10 @@ class LifeCycleExtensionTest : RobolectricTest() {
     val listActionConfig = mockk<List<ActionConfig>>()
     every { scaffoldState.snackbarHostState } returns mockk()
     coEvery {
-      scaffoldState.snackbarHostState.showSnackbar("message", "action", SnackbarDuration.Long)
+      scaffoldState.snackbarHostState.showSnackbar("message", "action", SnackbarDuration.Short)
     } returns mockk()
     val snackBarResult = runBlocking {
-      scaffoldState.snackbarHostState.showSnackbar("message", "action", SnackbarDuration.Long)
+      scaffoldState.snackbarHostState.showSnackbar("message", "action", SnackbarDuration.Short)
     }
 
     assertNotNull(snackBarResult)
