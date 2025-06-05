@@ -152,7 +152,7 @@ fun PinLoginPage(
             PinLogoSection(
               showLogo = pinUiState.showLogo,
               title = pinUiState.appName,
-              applicationConfiguration = applicationConfiguration
+              applicationConfiguration = applicationConfiguration,
             )
           }
           Text(
@@ -240,7 +240,7 @@ private fun PinLogoSection(
   modifier: Modifier = Modifier,
   showLogo: Boolean,
   title: String,
-  applicationConfiguration: ApplicationConfiguration
+  applicationConfiguration: ApplicationConfiguration,
 ) {
   Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.fillMaxWidth()) {
     if (showLogo) {
