@@ -146,10 +146,14 @@ fun PinLoginPage(
             PinLogoSection(
               showLogo = pinUiState.showLogo,
               title = stringResource(id = R.string.set_pin),
-              applicationConfiguration = applicationConfiguration
+              applicationConfiguration = applicationConfiguration,
             )
           } else {
-            PinLogoSection(showLogo = pinUiState.showLogo, title = pinUiState.appName, applicationConfiguration = applicationConfiguration)
+            PinLogoSection(
+              showLogo = pinUiState.showLogo,
+              title = pinUiState.appName,
+              applicationConfiguration = applicationConfiguration
+            )
           }
           Text(
             text = pinUiState.message,
@@ -232,7 +236,12 @@ fun PinLoginPage(
 }
 
 @Composable
-private fun PinLogoSection(modifier: Modifier = Modifier, showLogo: Boolean, title: String, applicationConfiguration: ApplicationConfiguration) {
+private fun PinLogoSection(
+  modifier: Modifier = Modifier,
+  showLogo: Boolean,
+  title: String,
+  applicationConfiguration: ApplicationConfiguration
+) {
   Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.fillMaxWidth()) {
     if (showLogo) {
       Image(
