@@ -395,7 +395,7 @@
     <string name="regex_validation_error_msg">La respuesta no coincide con la expresión regular: <xliff:g id="answer_value">%1$s</xliff:g> </string>
     <string name="number_format_validation_error_msg">Utilice únicamente (.) entre dos números. No se admiten otros caracteres especiales.</string>
     <string name="date_format_validation_error_msg">El formato de fecha debe ser <xliff:g id="locale_format">%1$s</xliff:g> (por ejemplo, %2$s )</string>
-    <string name="integer_format_validation_error_msg">El número debe estar entre <xliff:g id="min_value">%1$s</xliff:g> y <xliff:g id="max_value">%2 $s</xliff:g></string>
+    <string name="integer_format_validation_error_msg">El número debe estar entre <xliff:g id="min_value">%1$s</xliff:g> y <xliff:g id="max_value">%2$s</xliff:g></string>
     <string name="decimal_format_validation_error_msg">Número no válido</string>
     <string name="optional_helper_text">Opcional</string>
     <string name="required">Obligatorio</string>
