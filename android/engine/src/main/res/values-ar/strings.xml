@@ -1,2 +1,212 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="manual_sync">المزامنة اليدوية</string>
+    <string name="sync">مزامنة</string>
+    <string name="language">لغة</string>
+    <string name="logout_as_user">تسجيل الخروج باسم </string>
+    <string name="show_overdue">Show overdue</string>
+    <string name="search_hint">Search name or ID</string>
+    <string name="search">Search for name</string>
+    <string name="sync_data">مزامنة البيانات</string>
+    <string name="scan_bar_code">SCAN BARCODE</string>
+    <string name="empty_client_list_message_title">No Results</string>
+    <string name="empty_client_list_message_details">Sorry, we could not find client with given name or ID</string>
+    <string name="register_new_client">Register new client</string>
+    <string name="default_app_title" translatable="false">Fhir App</string>
+    <string name="app_logo">شعار التطبيق</string>
+    <string name="powered_by">مدعوم من</string>
+    <string name="app_version">نسخة التطبيق %1$d(%2$s)</string>
+    <string name="data_migration_version">Data migration version %1$s</string>
+    <string name="last_sync">آخر مزامنة %1$s</string>
+    <string name="login_text">تسجيل الدخول</string>
+    <string name="login_call_fail_error_message">فشل التحقق من بيانات اعتماد الخادم. تحقق من اتصالك بالإنترنت.</string>
+    <string name="userinfo_call_fail_error_message">تعذّر الحصول على معلومات المستخدم من الخادم. تحقق من اتصالك بالإنترنت.</string>
+    <string name="select_language">اختر اللغة</string>
+    <string name="logout_user">تسجيل الخروج باسم %1$s</string>
+    <string name="sync_completed">اكتملت المزامنة</string>
+    <string name="syncing">المزامنة</string>
+    <string name="syncing_up" >المزامنة&#8230;</string>
+    <string name="syncing_down" >المزامنة لأسفل&#8230;</string>
+    <string name="syncing_initiated">بدأت المزامنة&#8230;</string>
+    <string name="sync_failed">فشلت المزامنة. تحقق من اتصال الإنترنت أو حاول مرة أخرى لاحقًا.</string>
+    <string name="sync_completed_with_errors">اكتملت المزامنة مع وجود أخطاء. إعادة المحاولة…</string>
+    <string name="sync_unauthorised">فشلت عملية المزامنة لأن بيانات اعتماد المصادقة غير صالحة.</string>
+    <string name="refresh_token_fail_error_message">تعذّر استرداد بيانات الاعتماد من الخادم. يُرجى التحقق من اتصالك بالإنترنت.</string>
+    <string name="try_again">حاول ثانية</string>
+    <string name="status_vaccinated">Vaccinated</string>
+    <string name="status_overdue">Overdue</string>
+    <string name="status_received_vaccine">Vaccine %1$d \n%2$s</string>
+    <string name="fully_vaccinated">Fully vaccinated</string>
+    <string name="already_fully_vaccinated">Can not receive another dose. Already fully vaccinated</string>
+    <string name="record_vaccine_nl">Record\nVaccine</string>
+    <string name="date_last_seen">شوهد آخر مرة %1$s</string>
+    <string name="date_last_visited">Last visited %1$s</string>
+    <string name="str_save">يحفظ</string>
+    <string name="login_error">خطأ في تسجيل الدخول: %1$s</string>
+    <string name="str_next">التالي</string>
+    <string name="str_previous">سابق</string>
+    <string name="str_page_info">Page %1$d of %2$d</string>
+    <string name="search_result">%1$d RESULT(S)</string>
+    <string name="no_results">لا توجد نتائج</string>
+    <string name="no_results_message">نأسف، لا يمكننا العثور على شخص بالاسم أو المعرف المقدم</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="other">Other</string>
+    <string name="unknown">Unknown</string>
+    <string name="syncing_failed">فشلت المزامنة</string>
+    <string name="syncing_retry">أعد محاولة المزامنة</string>
+    <string name="syncing_in_progress">المزامنة قيد التقدم</string>
+    <string name="loading">تحميل</string>
+    <string name="loading_ellipsis">تحميل…</string>
+    <string name="error_logging_out">رسالة خطأ تسجيل الخروج: %1$s</string>
+    <string name="cannot_logout_user">غير قادر على تسجيل الخروج: تم تسجيل الخروج بالفعل أو الجهاز غير متصل بالإنترنت.</string>
+    <string name="error_loading_config_http_error">تعذر تحميل الإعدادات. يُرجى المحاولة لاحقًا.</string>
+    <string name="error_loading_config_no_internet">تعذر تحميل الإعدادات. يُرجى التحقق من اتصالك بالإنترنت.</string>
+    <string name="error_loading_config_general">حدث خطأ أثناء الاتصال بالخادم. يُرجى التواصل مع مسؤول النظام.</string>
+    <string name="error_loading_form">خطأ في تحميل النموذج</string>
+    <string name="error_saving_form">تم العثور على خطأ لا يمكن حفظ النموذج</string>
+    <string name="form_progress_message">جاري معالجة البيانات. يرجى الانتظار</string>
+    <string name="questionnaire_alert_back_pressed_message">هل أنت متأكد أنك تريد العودة؟</string>
+    <string name="questionnaire_in_progress_alert_back_pressed_message">إذا غادرت دون حفظ، فلن يتم حفظ جميع التغييرات التي أجريتها</string>
+    <string name="questionnaire_alert_back_pressed_title">لديك تغييرات غير محفوظة</string>
+    <string name="questionnaire_alert_back_pressed_button_title">تجاهل التغييرات</string>
+    <string name="questionnaire_alert_back_pressed_save_draft_button_title">حفظ كمسودة</string>
+    <string name="questionnaire_alert_neutral_button_title">يلغي</string>
+    <string name="questionnaire_alert_negative_button_title">تجاهل التغييرات</string>
+    <string name="questionnaire_alert_confirm_button_title">نعم</string>
+    <string name="questionnaire_alert_invalid_message">تحتوي التفاصيل المُعطاة على أخطاء في التحقق. يُرجى إصلاح الأخطاء وإعادة الإرسال.</string>
+    <string name="questionnaire_alert_invalid_title">فشل التحقق</string>
+    <string name="questionnaire_alert_ack_button_title">نعم</string>
+    <string name="questionnaire_alert_open_draft_button_title">فتح المسودة</string>
+    <string name="questionnaire_alert_delete_draft_button_title">حذف المسودة</string>
+    <string name="username">اسم المستخدم</string>
+    <string name="password">كلمة المرور</string>
+    <string name="forgot_password">هل نسيت كلمة السر</string>
+    <string name="forgot_password_title">هل نسيت كلمة السر!</string>
+    <string name="more">أكثر</string>
+    <string name="call_supervisor">يرجى الاتصال بالمشرف الخاص بك.</string>
+    <string name="cancel" tools:ignore="ButtonCase">يلغي</string>
+    <string name="dial_number">رقم الاتصال</string>
+    <string name="register">يسجل</string>
+    <string name="visits">الزيارات</string>
+    <string name="reports">التقارير</string>
+    <string name="profile">حساب تعريفي</string>
+    <string name="settings">إعدادات</string>
+    <string name="select_register">اختر التسجيل</string>
+    <string name="tick">ضع علامة</string>
+    <string name="clients">العملاء</string>
+    <string name="logout">تسجيل الخروج</string>
+    <string name="application_id">معرف التطبيق</string>
+    <string name="app_id_sample" translatable="false">e.g. ecbis, quest, cha</string>
+    <string name="load_configurations">تكوينات التحميل</string>
+    <string name="fhir_core_app" translatable="false">FHIRCORE APP</string>
+    <string name="remember_app">تذكر التطبيق</string>
+    <string name="done">منتهي</string>
+    <string name="replace_photo">استبدال الصورة</string>
+    <string name="take_photo">التقط صورة</string>
+    <string name="edit">يحرر</string>
+    <string name="application_not_supported">خطأ في تحميل تكوينات التطبيق %1$s</string>
+    <string name="eCBIS_app_name" translatable="false">eCBIS</string>
+    <string name="invalid_login_credentials">اسم المستخدم أو كلمة المرور غير صالحة</string>
+    <string name="invalid_form_id">تم إرفاق معرف نموذج غير صالح</string>
+    <string name="no">لا</string>
+    <string name="yes">نعم</string>
+    <string name="required_constraint_validation_error_msg">لا يوجد رد على الحقل المطلوب.</string>
+    <string name="set_pin">تعيين رقم التعريف الشخصي</string>
+    <string name="set_pin_message">سوف يستخدم CHA هذا الرقم السري لتسجيل الدخول</string>
+    <string name="enter_pin_for_user">أدخل رقم التعريف الشخصي لـ %1$s</string>
+    <string name="incorrect_pin_please_retry">رقم التعريف الشخصي غير صحيح، يرجى المحاولة مرة أخرى</string>
+    <string name="pin_menu_login">تسجيل الدخول</string>
+    <string name="forgot_pin">هل نسيت الرقم السري؟</string>
+    <string name="percentage" translatable="false">%</string>
+    <string name="logging_out">جاري تسجيل الخروج. الرجاء الانتظار…</string>
+    <string name="session_expired">لقد انتهت الجلسة ويجب تسجيل الدخول مرة أخرى</string>
+    <string name="sex">جنس</string>
+    <string name="age">عمر</string>
+    <string name="dob">تاريخ الميلاد</string>
+    <string name="id" translatable="false">ID: %1$s</string>
+    <string name="see_all">رؤية الكل</string>
+    <string name="forms">النماذج</string>
+    <string name="medical_history">MEDICAL HISTORY</string>
+    <string name="upcoming_services">UPCOMING SERVICES</string>
+    <string name="service_card">SERVICE CARD</string>
+    <string name="other_patients">Other patients</string>
+    <string name="select_location">Select location</string>
+    <string name="responses">RESPONSES (%1$s)</string>
+    <string name="multi_user_login_attempt">حاولت تسجيل الدخول باستخدام مزود مختلف</string>
+    <string name="please_wait">انتظر من فضلك…</string>
+    <string name="clear_database">إعادة ضبط البيانات</string>
+    <string name="transfer_data">Transfer Data</string>
+    <string name="clear_database_title">إعادة تعيين قاعدة البيانات!</string>
+    <string name="clear_database_message">ستؤدي إعادة ضبط قاعدة البيانات إلى مسح جميع السجلات من جهازك. لا يمكن التراجع عن هذا الإجراء.</string>
+    <string name="resetting_app">إعادة تعيين التطبيق…</string>
+    <string name="sync_strategy_careteam_system" translatable="false">https://smartregister.org/care-team-tag-id</string>
+    <string name="sync_strategy_location_system" translatable="false">https://smartregister.org/location-tag-id</string>
+    <string name="sync_strategy_organization_system" translatable="false">https://smartregister.org/organisation-tag-id</string>
+    <string name="sync_strategy_practitioner_system" translatable="false">https://smartregister.org/practitioner-tag-id</string>
+    <string name="sync_strategy_related_entity_location_system" translatable="false">https://smartregister.org/related-entity-location-tag-id</string>
+    <string name="sync_strategy_related_entity_location_display" translatable="false">Related Entity Location</string>
+    <string name="sync_strategy_careteam_display" translatable="false">Practitioner CareTeam</string>
+    <string name="sync_strategy_location_display" translatable="false">Practitioner Location</string>
+    <string name="sync_strategy_organization_display" translatable="false">Practitioner Organization</string>
+    <string name="sync_strategy_practitioner_display" translatable="false">Practitioner</string>
+    <string name="year">سنة</string>
+    <string name="month">شهر</string>
+    <string name="weeks">الأسبوع (الأسابيع)</string>
+    <string name="days">الأيام</string>
+    <string name="initializing">تهيئة الإعدادات &#8230;</string>
+    <string name="initializing_application">تهيئة التطبيق &#8230;</string>
+    <string name="username_sample" translatable="false">e.g JohnDoe</string>
+    <string name="percentage_progress" translatable="false">%1$d%%</string>
+    <string name="error_occurred">حدث خطأ ما…</string>
+    <string name="insights">رؤى</string>
+    <string name="export_db" translatable="false">Export DB</string>
+    <string name="exporting_db" translatable="false">Exporting DB...</string>
+    <string name="share_file" translatable="false">Share File</string>
+    <string name="contact_help">اتصل بالمساعدة</string>
+    <string name="offline_map">Offline Maps</string>
+    <string name="dismiss">رفض</string>
+    <string name="user_info">معلومات المستخدم</string>
+    <string name="assignment_info">معلومات المهمة</string>
+    <string name="app_info">معلومات التطبيق</string>
+    <string name="device_info">معلومات الجهاز</string>
+    <string name="refresh">ينعش</string>
+    <string name="unsynced_resources">الموارد غير المتزامنة</string>
+    <string name="all_resources_synced">تمت مزامنة كافة الموارد</string>
+    <string name="synced_statistics">الإحصائيات المتزامنة</string>
+    <string name="all_data_synced">تمت مزامنة كافة البيانات</string>
+    <string name="invalid_offline_login_state">يلزم إعداد المستخدم. فعّل اتصالك بالإنترنت. </string>
+    <string name="select_month">اختر الشهر</string>
+    <string name="user">مستخدم</string>
+    <string name="team">فريق</string>
+    <string name="locality" >محلية</string>
+    <string name="team_organization">الفريق (المنظمة)</string>
+    <string name="care_team">فريق الرعاية</string>
+    <string name="location">موقع</string>
+    <string name="app_version_code">رمز إصدار التطبيق</string>
+    <string name="build_date">تاريخ البناء</string>
+    <string name="manufacture">الشركة المصنعة</string>
+    <string name="app_versions">نسخة التطبيق</string>
+    <string name="os_version">إصدار نظام التشغيل</string>
+    <string name="device_date">تاريخ</string>
+    <string name="device">جهاز</string>
+    <string name="ok">نعم</string>
+    <string name="add">يضيف</string>
+    <string name="data_migration_started">Started data migration from version %1$d</string>
+    <string name="data_migration_completed">Application data migrated to version %1$d</string>
+    <string name="help">يساعد</string>
+    <string name="no_data">لا توجد مجموعة بيانات</string>
+    <string name="sync_complete">اكتملت المزامنة</string>
+    <string name="sync_error">خطأ في المزامنة</string>
+    <string name="minutes_remaining">حساب الدقائق المتبقية…</string>
+    <string name="sync_up_inprogress"> %1$d%% مزامنة…</string>
+    <string name="sync_down_inprogress"> %1$d%% مزامنة لأسفل…</string>
+    <string name="default_html_title">file</string>
+    <string name="retry">إعادة المحاولة</string>
+    <string name="unsynced_data_present">هناك بعض البيانات غير المتزامنة</string>
+    <string name="missing_supervisor_contact">Supervisor contact missing or the provided phone number is invalid</string>
+    <string name="apply_filter">APPLY FILTER</string>
+    <string name="questionnaire_save_draft_title">Save draft changes</string>
+    <string name="questionnaire_save_draft_message">Do you want to save draft changes?</string>
+    <string name="open_draft_changes_title">Open draft changes</string>
+    <string name="open_draft_changes_message">You can reopen a saved draft form to continue or delete it</string>
+</resources>
