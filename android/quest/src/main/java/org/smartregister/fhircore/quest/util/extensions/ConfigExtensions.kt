@@ -158,16 +158,24 @@ fun ActionConfig.handleClickEvent(
 
       if (!currentRegisterId.isNullOrEmpty() && sameRegisterNavigation) {
         return
-      } else {
-        navController.navigate(
-          resId = MainNavigationScreen.Home.route,
-          args = args,
-          navOptions =
-            navController.currentDestination?.id?.let {
-              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack != false)
-            },
-        )
       }
+
+      val navOptionsBuilder = NavOptions.Builder().setLaunchSingleTop(true)
+
+      if (
+        actionConfig.popNavigationBackStack == true &&
+          navController.currentBackStackEntry?.destination?.id != MainNavigationScreen.Home.route
+      ) {
+        navController.currentBackStackEntry?.destination?.id?.let {
+          navOptionsBuilder.setPopUpTo(it, inclusive = true)
+        }
+      }
+
+      navController.navigate(
+        resId = MainNavigationScreen.Home.route,
+        args = args,
+        navOptions = navOptionsBuilder.build(),
+      )
     }
     ApplicationWorkflow.LAUNCH_REPORT -> {
       val args =
