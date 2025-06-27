@@ -328,16 +328,15 @@ class ConfigExtensionsKtTest : RobolectricTest() {
         workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
         display = "menu",
         toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
-        popNavigationBackStack = false
+        popNavigationBackStack = false,
       )
     every { navController.currentDestination } returns NavDestination(navigatorName = "navigating")
     every { navController.previousBackStackEntry } returns null
-    every { navController.currentBackStackEntry } returns mockk {
-      every { destination } returns mockk {
-        every { id } returns 999
+    every { navController.currentBackStackEntry } returns
+      mockk {
+        every { destination } returns mockk { every { id } returns 999 }
+        every { arguments } returns null
       }
-      every { arguments } returns null
-    }
     every { navController.graph.id } returns 1
     listOf(clickAction)
       .handleClickEvent(
