@@ -328,10 +328,16 @@ class ConfigExtensionsKtTest : RobolectricTest() {
         workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
         display = "menu",
         toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+        popNavigationBackStack = false
       )
     every { navController.currentDestination } returns NavDestination(navigatorName = "navigating")
     every { navController.previousBackStackEntry } returns null
-    every { navController.currentBackStackEntry } returns null
+    every { navController.currentBackStackEntry } returns mockk {
+      every { destination } returns mockk {
+        every { id } returns 999
+      }
+      every { arguments } returns null
+    }
     every { navController.graph.id } returns 1
     listOf(clickAction)
       .handleClickEvent(
@@ -351,7 +357,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       ToolBarHomeNavigation.NAVIGATE_BACK,
       slotBundle.captured.getSerializable(NavigationArg.TOOL_BAR_HOME_NAVIGATION),
     )
-    Assert.assertTrue(navOptions.captured.isPopUpToInclusive())
+    Assert.assertFalse(navOptions.captured.isPopUpToInclusive())
     Assert.assertTrue(navOptions.captured.shouldLaunchSingleTop())
   }
 
@@ -496,9 +502,11 @@ class ConfigExtensionsKtTest : RobolectricTest() {
         resourceData = resourceData,
         navMenu = navigationMenuConfig,
       )
-    verify(exactly = 0) {
+    verify(exactly = 1) {
       navController.navigate(capture(slotInt), capture(slotBundle), capture(navOptions))
     }
+    Assert.assertTrue(navOptions.captured.shouldLaunchSingleTop())
+    Assert.assertFalse(navOptions.captured.isPopUpToInclusive())
   }
 
   @Test
