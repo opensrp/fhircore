@@ -582,6 +582,35 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   }
 
   @Test
+  fun testLaunchRegisterActionWithPopNavigationBackStackWhenCurrentDestinationIsNotHome() {
+    val clickAction =
+      ActionConfig(
+        id = "registerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        popNavigationBackStack = true,
+      )
+    every { navController.currentDestination } returns
+      NavDestination(navigatorName = "navigating").apply { id = 1234 }
+    every { navController.currentBackStackEntry } returns
+      mockk {
+        every { destination } returns mockk { every { id } returns 1234 }
+        every { arguments } returns null
+      }
+    every { navController.previousBackStackEntry } returns null
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
+    Assert.assertTrue(slotNavOptions.captured.isPopUpToInclusive())
+    Assert.assertTrue(slotNavOptions.captured.shouldLaunchSingleTop())
+  }
+
+  @Test
   fun testDeviceToDeviceSyncActionOnClick() {
     val clickAction =
       ActionConfig(
