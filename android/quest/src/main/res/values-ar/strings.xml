@@ -1,0 +1,165 @@
+<resources>
+    <string name="back_to_clients">العودة إلى قائمة العملاء</string>
+    <string name="test_results">نتائج الاختبار</string>
+
+    <string name="edit_patient_info">تحرير المعلومات</string>
+
+    <string name="menu_clients">العملاء</string>
+    <string name="menu_settings">إعدادات</string>
+    <string name="cannot_find_parent_questionnaire">لا يمكن العثور على الاستبيان الرئيسي!</string>
+
+    <string name="loading_forms">جارٍ تحميل النماذج…</string>
+    <string name="loading_responses">جاري تحميل الردود…</string>
+    <string name="no_test_results_found">لم يتم العثور على نتائج الاختبار</string>
+    <string name="patient_test_results">نتائج الاختبار</string>
+    <string name="last_test"> %1$s الاختبار الأخير -</string>
+    <string name="sample_distance" translatable="false">2.4 km</string>
+    <string name="hash_sign" translatable="false">#</string>
+    <string name="menu_tasks">المهام</string>
+    <string name="household">أُسرَة</string>
+    <string name="routine_visit">زيارة روتينية</string>
+    <string name="anc_visit">زيارة المؤتمر الوطني الأفريقي</string>
+    <string name="at_risk">في خطر</string>
+    <string name="no_tasks">لا توجد مهام</string>
+    <string name="add_member">إضافة عضو</string>
+    <string name="what_to_do">What do you want to do?</string>
+
+    <!--Overflow menu strings -->
+    <string name="view_profile">عرض الملف الشخصي</string>
+    <string name="family_details">تفاصيل العائلة</string>
+    <string name="change_family_head">تغيير رب الأسرة</string>
+    <string name="change_primary_caregiver">تغيير مقدم الرعاية الأساسي</string>
+    <string name="family_activity">نشاط عائلي</string>
+    <string name="view_past_encounters">عرض اللقاءات الماضية</string>
+    <string name="remove_family">إزالة العائلة</string>
+    <string name="family_suffix">%1$s Family</string>
+    <string name="remove_this_person">إزالة هذا الشخص</string>
+    <string name="individual_details">التفاصيل الفردية</string>
+    <string name="view_family">عرض العائلة</string>
+    <string name="record_sick_child">سجل طفل مريض</string>
+
+    <!-- SideMenu option strings-->
+    <string name="device_to_device_sync">مزامنة الجهاز مع الجهاز</string>
+    <string name="anc_clients">عملاء ANC</string>
+    <string name="all_clients">جميع العملاء</string>
+    <string name="pnc_clients">عملاء PNC</string>
+    <string name="hiv_clients">قائمة العملاء</string>
+    <string name="phone_tracing_clients">تتبع الهاتف</string>
+    <string name="home_tracing_clients">تتبع المنزل</string>
+    <string name="appointment_clients">المواعيد</string>
+    <string name="family_planning_clients">عملاء تنظيم الأسرة</string>
+    <string name="households">الأسر</string>
+    <string name="children">أطفال</string>
+
+    <!--remove family questionnaire strings-->
+    <string name="remove_family_warning">ستؤدي إزالة %1$s إلى حذف سجله الصحي بالكامل من جهازك. لا يمكن التراجع عن هذا الإجراء.</string>
+
+    <!--remove family member questionnaire strings-->
+    <string name="remove_family_member_warning">سيتم إزالة %1$s نهائيًا من هذه العائلة. لا يمكن التراجع عن هذا الإجراء.</string>
+    <string name="remove_member">إزالة العضو</string>
+
+    <!--Reporting strings -->
+    <string name="date_range">النطاق الزمني</string>
+    <string name="change">يتغير</string>
+    <string name="all">الجميع</string>
+    <string name="individual">فردي</string>
+    <string name="please_wait">انتظر من فضلك…</string>
+    <string name="patient">مريض</string>
+    <string name="subject">موضوع</string>
+    <string name="generate_report">إنشاء تقرير</string>
+    <string name="select_patient">اختر المريض</string>
+    <string name="select_subject">اختر الموضوع</string>
+    <string name="start_date">تاريخ البدء</string>
+    <string name="end_date">تاريخ الانتهاء</string>
+    <string name="select_date">حدد التواريخ</string>
+
+    <!--Change family head strings -->
+    <string name="no_eligible_family_members">لم يتم العثور على أفراد الأسرة المؤهلين لرئاسة الأسرة.</string>
+    <string name="label_select_new_head">اختيار رئيس جديد للعائلة</string>
+    <string name="label_assign_new_family_head">تعيين رئيس جديد للعائلة</string>
+    <string name="alert_message_abort_operation">هل أنت متأكد أنك تريد إلغاء هذه العملية؟</string>
+
+    <!-- Dialog alert messages-->
+    <string name="unsaved_changes_message_alert">إذا غادرت قبل الحفظ، سيتم فقدان تعديلاتك أو تغييراتك</string>
+    <string name="visit_due_on">%1$s due on %2$s</string>
+    <string name="visit_due_today">%1$s due today</string>
+    <string name="visit_overdue">%1$s overdue %2$s ago</string>
+    <string name="record_as_anc">سجل كـ ANC</string>
+    <string name="pregnancy_outcome">نتائج الحمل</string>
+    <string name="registers">السجلات</string>
+    <string name="title_no_location_set">لم يتم تحديد الموقع</string>
+    <string name="no_locations_to_render">لا توجد مواقع لعرضها على الخريطة</string>
+    <string name="message_location_set">تعيين الموقع لمزامنة البيانات وتحميل نقاط الخدمة</string>
+    <string name="positive_button_location_set">تحديد الموقع</string>
+
+    <string name="questionnaire_response_name" translatable="false">%1$s (%2$s)</string>
+    <string name="due_on">Due on %1$s</string>
+
+    <string name="geo_widget_fragment_destination" translatable="false">GeoWidget Fragment Destination</string>
+
+    <string name="structuremap_failed">%1$s فشل استخراج الموارد لـ</string>
+    <string name="structure_map_missing_message">خريطة هيكلية مفقودة للاستبيان، تم حفظ استجابة الاستبيان</string>
+    <string name="structure_success">%1$s تم استخراج الموارد بنجاح</string>
+    <string name="reassigned_managing_entity">تمت إعادة تعيين الكيان الإداري بنجاح</string>
+    <string name="error_fetching_user_details">فشل في جلب تفاصيل المستخدم</string>
+    <string name="questionnaire_not_found">لم يتم العثور على الاستبيان. قم بمزامنة جميع الاستبيانات لإصلاح المشكلة.</string>
+    <string name="no_visits">لا زيارات</string>
+    <string name="questionnaire_response_invalid">استجابة الاستبيان غير صالحة</string>
+    <string name="extracted_resources_validation_fail">فشل التحقق من الموارد المستخرجة. يُرجى مراجعة السجلات.</string>
+    <string name="error_occurred_generating_careplan">حدث خطأ أثناء إنشاء CarePlan. يُرجى مراجعة السجلات.</string>
+    <string name="app_version_tag_url" translatable="false">https://smartregister.org/app-version</string>
+    <string name="application_version">إصدار التطبيق</string>
+    <string name="missing_subject_type">نوع الموضوع مفقود في الاستبيان. أدخل Questionnaire.subjectType للحل.</string>
+    <string name="missing_questionnaire_config">يعد QuestionnaireConfig مطلوبًا ولكنه مفقود.</string>
+    <string name="error_populating_questionnaire">خطأ في ملء بعض حقول الاستبيان. استجابة الاستبيان غير صالحة.</string>
+    <string name="extraction_in_progress">معالجة بيانات الاستبيان…</string>
+    <string name="loading_questionnaire">جارٍ تحميل الاستبيان…</string>
+    <string name="clear_all">مسح الكل</string>
+    <string name="yes">نعم</string>
+    <string name="no">لا</string>
+
+    <string name="location_permissions_denied">تم رفض الوصول إلى الموقع: لالتقاط إحداثيات نظام تحديد المواقع العالمي (GPS)، يرجى تمكين أذونات الموقع في إعدادات جهازك.</string>
+    <string name="location_services_disabled">خدمات الموقع مُعطّلة. هل ترغب بتفعيلها؟</string>
+    <string name="copy_text_success_message">Link %1$s copied successfully</string>
+    <string name="submit_questionnaire">يُقدِّم</string>
+    <string name="cancel_questionnaire">يلغي</string>
+    <string name="invalid_base_resource">The base resource for GeoWidgetConfiguration MUST be Location</string>
+    <string name="no_search_coonfigs_provided">لم يتم توفير أي تكوينات لشريط البحث</string>
+    <string name="no_found_locations_matching_text"> \"%1$s\" لم يتم العثور على موقع يطابق النص</string>
+    <string name="open_choice_other_hint">آخر</string>
+    <string name="qr_code">qr_code</string>
+    <string name="barcode_camera_permission_denied">تم رفض طلب إذن الكاميرا. قد لا يعمل الباركود كما هو متوقع.</string>
+    <string name="prompt_point_at_a_barcode">ضع الكاميرا فوق رمز الاستجابة السريعة لبدء المسح</string>
+    <string name="add_qr_code">Add QR code</string>
+    <string name="scan_qr_code">Scan QR Code</string>
+    <string name="scan_qr_camera_instruction">ضع الكاميرا فوق رمز الاستجابة السريعة بالكامل لبدء المسح الضوئي</string>
+    <string name="failed_to_get_gps_location">فشل في الحصول على موقع GPS</string>
+    <string name="space_asterisk" translatable="false">\u0020\u002a</string>
+    <string name="exit_app">الخروج من التطبيق</string>
+    <string name="exit_app_message">هل أنت متأكد أنك تريد الخروج من التطبيق؟</string>
+    <string name="missing_multi_select_view_configs">Missing required multi select view configs. Please provide the configurations for the view to render.</string>
+    <string name="locations_without_coordinates"><b>%1$d</b> out of <b>%2$d </b>Location(s) have no coordinates</string>
+    <string name="all_locations_rendered"><b>All</b> the locations rendered successfully"</string>
+    <string name="all_matching_locations_rendered"><b>%1$d </b> matching location(s) rendered successfully"</string>
+    <string name="on_cancel_adding_location">إلغاء إضافة الموقع</string>
+    <string name="error_rendering_profile">خطأ في عرض الملف الشخصي</string>
+    <string name="questionnaire_submission_confirmation_message">هل أنت متأكد أنك تريد الإرسال؟</string>
+    <string name="questionnaire_submission_confirmation_title">أنت على وشك الإرسال</string>
+    <string name="pause_action_text">يوقف</string>
+    <string name="stop_action_text">قف</string>
+    <string name="resume_action_text">سيرة ذاتية</string>
+    <string name="start_action_text">يبدأ</string>
+    <string name="record_action_text">سِجِلّ</string>
+    <string name="edit_action_text">يحرر</string>
+    <string name="record_audio_denied">Record audio permission is required for speech to text. You enable it through your device settings.</string>
+    <string name="processing">Processing</string>
+    <string-array name="processing_progress">
+        <item> </item>
+        <item>.</item>
+        <item>..</item>
+        <item>\u2026</item>
+    </string-array>
+    <string name="listening">Listening\u2026</string>
+    <string name="sync_counter"><b>Sync %1$d</b> of <b>%2$d </b></string>
+    <string name="record_audio_error">Error initializing audio record</string>
+</resources>
