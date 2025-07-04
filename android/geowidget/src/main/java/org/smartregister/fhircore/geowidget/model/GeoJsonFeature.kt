@@ -29,7 +29,7 @@ const val FEATURE = "Feature"
 data class GeoJsonFeature(
   val geometry: Geometry? = null,
   val id: String = "",
-  val properties: Map<String, JsonPrimitive> = emptyMap(),
+  val properties: Map<String, JsonPrimitive>? = emptyMap(),
   val type: String = FEATURE,
   val serverVersion: Int = 0,
 ) : java.io.Serializable {

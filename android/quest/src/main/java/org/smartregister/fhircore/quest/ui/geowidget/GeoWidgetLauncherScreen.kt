@@ -158,7 +158,7 @@ fun GeoWidgetLauncherScreen(
                 ResourceData(
                   baseResourceId = feature.id,
                   baseResourceType = ResourceType.Location,
-                  computedValuesMap = feature.properties.mapValues { it.value.content },
+                  computedValuesMap = feature.properties?.mapValues { it.value.content } ?: emptyMap(),
                 ),
               )
               .run { show(parentFragmentManager, SummaryBottomSheetFragment.TAG) }
