@@ -24,6 +24,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
@@ -328,10 +329,15 @@ class ConfigExtensionsKtTest : RobolectricTest() {
         workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
         display = "menu",
         toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+        popNavigationBackStack = false,
       )
     every { navController.currentDestination } returns NavDestination(navigatorName = "navigating")
     every { navController.previousBackStackEntry } returns null
-    every { navController.currentBackStackEntry } returns null
+    every { navController.currentBackStackEntry } returns
+      mockk {
+        every { destination } returns mockk { every { id } returns 999 }
+        every { arguments } returns null
+      }
     every { navController.graph.id } returns 1
     listOf(clickAction)
       .handleClickEvent(
@@ -351,7 +357,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       ToolBarHomeNavigation.NAVIGATE_BACK,
       slotBundle.captured.getSerializable(NavigationArg.TOOL_BAR_HOME_NAVIGATION),
     )
-    Assert.assertTrue(navOptions.captured.isPopUpToInclusive())
+    Assert.assertFalse(navOptions.captured.isPopUpToInclusive())
     Assert.assertTrue(navOptions.captured.shouldLaunchSingleTop())
   }
 
@@ -496,9 +502,112 @@ class ConfigExtensionsKtTest : RobolectricTest() {
         resourceData = resourceData,
         navMenu = navigationMenuConfig,
       )
-    verify(exactly = 0) {
+    verify(exactly = 1) {
       navController.navigate(capture(slotInt), capture(slotBundle), capture(navOptions))
     }
+    Assert.assertTrue(navOptions.captured.shouldLaunchSingleTop())
+    Assert.assertFalse(navOptions.captured.isPopUpToInclusive())
+  }
+
+  @Test
+  fun testLaunchRegisterActionPreventsSameRegisterNavigation() {
+    val clickAction =
+      ActionConfig(
+        id = "registerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+      )
+    every { navController.currentBackStackEntry } returns
+      mockk { every { arguments } returns bundleOf(NavigationArg.REGISTER_ID to "currentRegister") }
+    every { navController.previousBackStackEntry } returns
+      mockk { every { arguments } returns bundleOf(NavigationArg.REGISTER_ID to "registerId") }
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    verify(exactly = 0) { navController.navigate(any<Int>(), any<Bundle>(), any<NavOptions>()) }
+  }
+
+  @Test
+  fun testLaunchRegisterActionWithPopNavigationBackStack() {
+    val clickAction =
+      ActionConfig(
+        id = "registerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        popNavigationBackStack = true,
+      )
+    every { navController.currentDestination } returns
+      NavDestination(navigatorName = "navigating").apply { id = 9999 }
+    every { navController.currentBackStackEntry } returns
+      mockk {
+        every { destination } returns mockk { every { id } returns 9999 }
+        every { arguments } returns null
+      }
+    every { navController.previousBackStackEntry } returns null
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
+    Assert.assertTrue(slotNavOptions.captured.isPopUpToInclusive())
+  }
+
+  @Test
+  fun testLaunchRegisterWithCurrentBackStackOnHomeDestination() {
+    val clickAction =
+      ActionConfig(
+        id = "registerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        popNavigationBackStack = true,
+      )
+    every { navController.currentDestination } returns
+      NavDestination(navigatorName = "navigating").apply { id = MainNavigationScreen.Home.route }
+    every { navController.currentBackStackEntry } returns
+      mockk {
+        every { destination } returns mockk { every { id } returns MainNavigationScreen.Home.route }
+        every { arguments } returns null
+      }
+    every { navController.previousBackStackEntry } returns null
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
+    Assert.assertFalse(slotNavOptions.captured.isPopUpToInclusive())
+  }
+
+  @Test
+  fun testLaunchRegisterActionWithPopNavigationBackStackWhenCurrentDestinationIsNotHome() {
+    val clickAction =
+      ActionConfig(
+        id = "registerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        popNavigationBackStack = true,
+      )
+    every { navController.currentDestination } returns
+      NavDestination(navigatorName = "navigating").apply { id = 1234 }
+    every { navController.currentBackStackEntry } returns
+      mockk {
+        every { destination } returns mockk { every { id } returns 1234 }
+        every { arguments } returns null
+      }
+    every { navController.previousBackStackEntry } returns null
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
+    Assert.assertTrue(slotNavOptions.captured.isPopUpToInclusive())
+    Assert.assertTrue(slotNavOptions.captured.shouldLaunchSingleTop())
   }
 
   @Test
@@ -627,13 +736,13 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   }
 
   @Test
-  fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapIfArrayIsEmpty() {
+  fun testConvertActionParameterArrayToMapShouldReturnEmptyMapIfArrayIsEmpty() {
     val array = emptyArray<ActionParameter>()
     Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap())
   }
 
   @Test
-  fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapValue() {
+  fun testConvertActionParameterArrayToMapShouldReturnEmptyMapValue() {
     val array =
       arrayOf(ActionParameter(key = "k", value = "", paramType = ActionParameterType.PARAMDATA))
     Assert.assertEquals("", array.toParamDataMap()["k"])
