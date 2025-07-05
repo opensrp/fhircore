@@ -238,6 +238,7 @@ kt3k-coveralls = { id = "com.github.kt3k.coveralls", version.ref = "kt3k-coveral
 org-jetbrains-dokka = { id = "org.jetbrains.dokka", version.ref = "jetbrains" }
 org-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 org-owasp-dependencycheck = { id = "org.owasp.dependencycheck", version.ref = "owasp" }
+org-jetbrains-kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 [bundles]
 accompanist = ["accompanist-placeholder", "accompanist-flowlayout"]

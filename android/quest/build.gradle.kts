@@ -613,7 +613,7 @@ dependencies {
  * an error if the result is past the expected result and margin. A message will also be printed if
  * the performance significantly improves.
  */
-task("evaluatePerformanceBenchmarkResults") {
+tasks.register("evaluatePerformanceBenchmarkResults") {
   val expectedPerformanceLimitsFile = project.file("expected-results.json")
   val resultsFile = project.file("org.smartregister.opensrp.ecbis-benchmarkData.json")
 
@@ -653,8 +653,8 @@ task("evaluatePerformanceBenchmarkResults") {
               "Metrics for $fullName could not be found in expected-results.json. Kindly add this to the file",
             )
           } else {
-            val expectedMaxTiming = (expectedTimings.get("max") ?: 0e1)
-            val timingMargin = (expectedTimings.get("margin") ?: 0e1)
+            val expectedMaxTiming = (expectedTimings["max"] ?: 0e1)
+            val timingMargin = (expectedTimings["margin"] ?: 0e1)
 
             if (median > (expectedMaxTiming + timingMargin)) {
               throw Exception(
