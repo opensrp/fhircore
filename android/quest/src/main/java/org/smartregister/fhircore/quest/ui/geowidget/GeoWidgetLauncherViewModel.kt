@@ -169,7 +169,7 @@ constructor(
             geoWidgetConfig.topScreenSection?.searchBar?.computedRules?.any { ruleName ->
               // if ruleName not found in map return {-1}; check always return false hence no
               // data
-              val value = geoJsonFeature.properties[ruleName]?.toString() ?: "{-1}"
+              val value = geoJsonFeature.properties?.get(ruleName)?.toString() ?: "{-1}"
               value.contains(other = searchText, ignoreCase = true)
             } == true
           }
