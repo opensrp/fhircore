@@ -31,3 +31,4 @@ captures/
 android/quest/src/main/assets/configs/*
 !android/quest/src/main/assets/configs/app
 
+android/quest/src/main/assets/resources/echis/
