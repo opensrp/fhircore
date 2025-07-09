@@ -267,6 +267,13 @@ android {
       manifestPlaceholders["appLabel"] = "MOH eCHIS"
     }
 
+    create("echisSupervisor") {
+      dimension = "apps"
+      applicationIdSuffix = ".echisSupervisor"
+      versionNameSuffix = "-echis-supervisor"
+      manifestPlaceholders["appLabel"] = "MOH eCHIS Supervisor"
+    }
+
     create("sidBunda") {
       dimension = "apps"
       applicationIdSuffix = ".sidBunda"
