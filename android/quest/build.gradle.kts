@@ -330,6 +330,13 @@ android {
       manifestPlaceholders["appLabel"] = "Engage"
     }
 
+    create("fpdEngage") {
+      dimension = "apps"
+      applicationIdSuffix = ".fpdEngage"
+      versionNameSuffix = "-fpdEngage"
+      manifestPlaceholders["appLabel"] = "Engage IPC"
+    }
+
     create("eir") {
       dimension = "apps"
       applicationIdSuffix = ".who_eir"
