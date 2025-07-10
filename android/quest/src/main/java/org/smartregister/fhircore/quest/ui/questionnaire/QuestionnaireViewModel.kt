@@ -158,7 +158,7 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
-    return defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)
+    return defaultRepository.loadResourceFromCache<Questionnaire>(questionnaireConfig.id)
   }
 
   /**
