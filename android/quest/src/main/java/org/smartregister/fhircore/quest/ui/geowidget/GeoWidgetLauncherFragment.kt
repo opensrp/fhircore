@@ -198,6 +198,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
                 decodeImage = geoWidgetLauncherViewModel::getImageBitmap,
                 onAppMainEvent = appMainViewModel::onEvent,
                 isSyncing = geoWidgetLauncherViewModel.isSyncing,
+                fragmentActivityContext = this@GeoWidgetLauncherFragment.requireActivity(),
               )
             }
           }

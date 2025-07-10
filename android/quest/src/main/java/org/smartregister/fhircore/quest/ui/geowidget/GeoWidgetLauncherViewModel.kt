@@ -256,17 +256,17 @@ constructor(
     feature: GeoJsonFeature,
     context: Context,
   ) {
-    val params =
+    val updatedQuestionnaireConfig =
       addMatchingCoordinatesToActionParameters(
         feature.geometry?.coordinates?.get(0),
         feature.geometry?.coordinates?.get(1),
-        questionnaireConfig.extraParams,
+        questionnaireConfig,
       )
     if (context is QuestionnaireHandler) {
       context.launchQuestionnaire(
         context = context,
-        questionnaireConfig = questionnaireConfig,
-        actionParams = params,
+        questionnaireConfig = updatedQuestionnaireConfig,
+        actionParams = emptyList(),
       )
     }
   }
@@ -278,24 +278,26 @@ constructor(
   private fun addMatchingCoordinatesToActionParameters(
     latitude: Double?,
     longitude: Double?,
-    params: List<ActionParameter>?,
-  ): List<ActionParameter> {
+    questionnaireConfig: QuestionnaireConfig,
+  ): QuestionnaireConfig {
     if (latitude == null || longitude == null) {
       throw IllegalArgumentException("Latitude or Longitude must not be null")
     }
-    params ?: return emptyList()
-    return params
-      .filter {
-        it.paramType == ActionParameterType.PREPOPULATE &&
-          it.dataType == Enumerations.DataType.STRING
-      }
-      .map {
-        return@map when (it.key) {
-          KEY_LATITUDE -> it.copy(value = latitude.toString())
-          KEY_LONGITUDE -> it.copy(value = longitude.toString())
-          else -> it
-        }
-      }
+    return questionnaireConfig.copy(
+      extraParams =
+        questionnaireConfig.extraParams
+          ?.filter {
+            it.paramType == ActionParameterType.PREPOPULATE &&
+              it.dataType == Enumerations.DataType.STRING
+          }
+          ?.map {
+            when (it.key) {
+              KEY_LATITUDE -> it.copy(value = latitude.toString())
+              KEY_LONGITUDE -> it.copy(value = longitude.toString())
+              else -> it
+            }
+          },
+    )
   }
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
