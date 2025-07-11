@@ -404,6 +404,12 @@ android {
       versionNameSuffix = "-mcct"
       manifestPlaceholders["appLabel"] = "MCCT+"
     }
+    create("trueCover") {
+      dimension = "apps"
+      applicationIdSuffix = ".trueCover"
+      versionNameSuffix = "-trueCover"
+      manifestPlaceholders["appLabel"] = "True Cover"
+    }
   }
 
   applicationVariants.all {
