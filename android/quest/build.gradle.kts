@@ -132,10 +132,8 @@ android {
   }
 
   packaging {
-    jniLibs {
-      useLegacyPackaging = true
-    }
-    
+    jniLibs { useLegacyPackaging = true }
+
     resources.excludes.addAll(
       listOf(
         "META-INF/ASL-2.0.txt",
