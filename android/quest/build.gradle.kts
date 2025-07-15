@@ -132,6 +132,10 @@ android {
   }
 
   packaging {
+    jniLibs {
+      useLegacyPackaging = true
+    }
+    
     resources.excludes.addAll(
       listOf(
         "META-INF/ASL-2.0.txt",
@@ -526,6 +530,7 @@ configurations {
       force("com.fasterxml.jackson.core:jackson-core:2.15.2")
       force("ca.uhn.hapi.fhir:org.hl7.fhir.r4b:6.0.22")
       force("ca.uhn.hapi.fhir:hapi-fhir-structures-dstu2:6.8.0")
+      force("com.facebook.soloader:soloader:0.10.4")
     }
   }
 }
