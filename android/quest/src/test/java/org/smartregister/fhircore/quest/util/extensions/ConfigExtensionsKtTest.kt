@@ -611,6 +611,151 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   }
 
   @Test
+  fun testCreateRegisterNavigationOptionsWithPopBackStackFalse() {
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        id = "registerId",
+        popNavigationBackStack = false,
+      )
+    every { navController.currentBackStackEntry } returns
+      mockk { every { destination } returns mockk { every { id } returns 1234 } }
+
+    val navOptions = createRegisterNavigationOptions(actionConfig, navController)
+
+    Assert.assertTrue(navOptions.shouldLaunchSingleTop())
+    Assert.assertFalse(navOptions.isPopUpToInclusive())
+  }
+
+  @Test
+  fun testCreateRegisterNavigationOptionsWithPopBackStackTrue() {
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        id = "registerId",
+        popNavigationBackStack = true,
+      )
+    every { navController.currentBackStackEntry } returns
+      mockk { every { destination } returns mockk { every { id } returns 1234 } }
+
+    val navOptions = createRegisterNavigationOptions(actionConfig, navController)
+
+    Assert.assertTrue(navOptions.shouldLaunchSingleTop())
+    Assert.assertTrue(navOptions.isPopUpToInclusive())
+    Assert.assertEquals(1234, navOptions.popUpToId)
+  }
+
+  @Test
+  fun testCreateRegisterNavigationOptionsWithPopBackStackNull() {
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        id = "registerId",
+        popNavigationBackStack = null,
+      )
+    every { navController.currentBackStackEntry } returns
+      mockk { every { destination } returns mockk { every { id } returns 1234 } }
+
+    val navOptions = createRegisterNavigationOptions(actionConfig, navController)
+
+    Assert.assertTrue(navOptions.shouldLaunchSingleTop())
+    Assert.assertFalse(navOptions.isPopUpToInclusive())
+  }
+
+  @Test
+  fun testCreateRegisterNavigationOptionsWithNullCurrentBackStackEntry() {
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        id = "registerId",
+        popNavigationBackStack = true,
+      )
+    every { navController.currentBackStackEntry } returns null
+
+    val navOptions = createRegisterNavigationOptions(actionConfig, navController)
+
+    Assert.assertTrue(navOptions.shouldLaunchSingleTop())
+    Assert.assertFalse(navOptions.isPopUpToInclusive())
+  }
+
+  @Test
+  fun testCreateRegisterNavigationOptionsWithNullDestinationId() {
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        id = "registerId",
+        popNavigationBackStack = true,
+      )
+    every { navController.currentBackStackEntry } returns
+      mockk { every { destination } returns mockk { every { id } returns 0 } }
+
+    val navOptions = createRegisterNavigationOptions(actionConfig, navController)
+
+    Assert.assertTrue(navOptions.shouldLaunchSingleTop())
+    Assert.assertTrue(navOptions.isPopUpToInclusive())
+    Assert.assertEquals(0, navOptions.popUpToId)
+  }
+
+  @Test
+  fun testLaunchRegisterAllowsNavigationWhenCurrentRegisterIdIsNull() {
+    val clickAction =
+      ActionConfig(
+        id = "registerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        popNavigationBackStack = false,
+      )
+    every { navController.currentBackStackEntry } returns mockk { every { arguments } returns null }
+    every { navController.previousBackStackEntry } returns
+      mockk { every { arguments } returns bundleOf(NavigationArg.REGISTER_ID to "registerId") }
+    every { navController.currentDestination } returns null
+
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
+    Assert.assertTrue(slotNavOptions.captured.shouldLaunchSingleTop())
+  }
+
+  @Test
+  fun testLaunchRegisterAllowsNavigationWhenPreviousRegisterIdIsNull() {
+    val clickAction =
+      ActionConfig(
+        id = "registerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        popNavigationBackStack = false,
+      )
+    every { navController.currentBackStackEntry } returns
+      mockk {
+        every { arguments } returns bundleOf(NavigationArg.REGISTER_ID to "currentRegisterId")
+      }
+    every { navController.previousBackStackEntry } returns null
+    every { navController.currentDestination } returns null
+
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
+    Assert.assertTrue(slotNavOptions.captured.shouldLaunchSingleTop())
+  }
+
+  @Test
   fun testDeviceToDeviceSyncActionOnClick() {
     val clickAction =
       ActionConfig(

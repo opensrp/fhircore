@@ -160,21 +160,10 @@ fun ActionConfig.handleClickEvent(
         return
       }
 
-      val navOptionsBuilder = NavOptions.Builder().setLaunchSingleTop(true)
-
-      if (
-        actionConfig.popNavigationBackStack == true &&
-          navController.currentBackStackEntry?.destination?.id != MainNavigationScreen.Home.route
-      ) {
-        navController.currentBackStackEntry?.destination?.id?.let {
-          navOptionsBuilder.setPopUpTo(it, inclusive = true)
-        }
-      }
-
       navController.navigate(
         resId = MainNavigationScreen.Home.route,
         args = args,
-        navOptions = navOptionsBuilder.build(),
+        navOptions = createRegisterNavigationOptions(actionConfig, navController),
       )
     }
     ApplicationWorkflow.LAUNCH_REPORT -> {
@@ -327,4 +316,22 @@ suspend fun List<ViewProperties>.decodeImageResourcesToBitmap(
       }
     }
   }
+}
+
+internal fun createRegisterNavigationOptions(
+  actionConfig: ActionConfig,
+  navController: NavController,
+): NavOptions {
+  val navOptionsBuilder = NavOptions.Builder().setLaunchSingleTop(true)
+
+  if (
+    actionConfig.popNavigationBackStack == true &&
+      navController.currentBackStackEntry?.destination?.id != MainNavigationScreen.Home.route
+  ) {
+    navController.currentBackStackEntry?.destination?.id?.let {
+      navOptionsBuilder.setPopUpTo(it, inclusive = true)
+    }
+  }
+
+  return navOptionsBuilder.build()
 }
