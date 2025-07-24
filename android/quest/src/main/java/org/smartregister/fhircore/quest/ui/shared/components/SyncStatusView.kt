@@ -72,6 +72,7 @@ import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.ui.theme.SyncBarBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.shared.models.AppDrawerUIState
 import org.smartregister.fhircore.quest.util.extensions.conditional
@@ -81,6 +82,7 @@ const val SYNC_PROGRESS_INDICATOR_TEST_TAG = "syncProgressIndicatorTestTag"
 
 @Composable
 fun SyncBottomBar(
+  totalSyncCount: Int,
   isFirstTimeSync: Boolean,
   appDrawerUIState: AppDrawerUIState,
   onAppMainEvent: (AppMainEvent) -> Unit,
@@ -175,6 +177,8 @@ fun SyncBottomBar(
             val maxPercentage = appDrawerUIState.percentageProgress?.coerceAtMost(100) ?: 0
             SyncStatusView(
               isSyncUpload = appDrawerUIState.isSyncUpload,
+              syncCounter = appDrawerUIState.syncCounter,
+              totalSyncCount = totalSyncCount,
               currentSyncJobStatus = currentSyncJobStatus,
               minimized = !syncNotificationBarExpanded,
               progressPercentage = maxPercentage,
@@ -185,6 +189,8 @@ fun SyncBottomBar(
           is CurrentSyncJobStatus.Failed -> {
             SyncStatusView(
               isSyncUpload = appDrawerUIState.isSyncUpload,
+              syncCounter = appDrawerUIState.syncCounter,
+              totalSyncCount = totalSyncCount,
               currentSyncJobStatus = currentSyncJobStatus,
               minimized = !syncNotificationBarExpanded,
               onRetry = {
@@ -197,6 +203,8 @@ fun SyncBottomBar(
             if (!hideSyncCompleteStatus.value) {
               SyncStatusView(
                 isSyncUpload = appDrawerUIState.isSyncUpload,
+                syncCounter = appDrawerUIState.syncCounter,
+                totalSyncCount = totalSyncCount,
                 currentSyncJobStatus = currentSyncJobStatus,
                 minimized = !syncNotificationBarExpanded,
               )
@@ -214,6 +222,8 @@ fun SyncBottomBar(
 @Composable
 fun SyncStatusView(
   isSyncUpload: Boolean?,
+  syncCounter: Int?,
+  totalSyncCount: Int,
   currentSyncJobStatus: CurrentSyncJobStatus?,
   progressPercentage: Int? = null,
   minimized: Boolean = false,
@@ -263,6 +273,8 @@ fun SyncStatusView(
             } else {
               stringResource(org.smartregister.fhircore.engine.R.string.sync_error)
             },
+          syncCounter = syncCounter,
+          totalSyncCount = totalSyncCount,
           minimized = minimized,
           startPadding = if (minimized) 0 else 16,
         )
@@ -287,6 +299,8 @@ fun SyncStatusView(
                   },
                   progressPercentage ?: 0,
                 ),
+              syncCounter = syncCounter,
+              totalSyncCount = totalSyncCount,
               minimized = false,
               color = Color.White,
               startPadding = 0,
@@ -357,17 +371,29 @@ fun SyncStatusView(
 @Composable
 private fun SyncStatusTitle(
   text: String,
+  syncCounter: Int?,
+  totalSyncCount: Int,
   color: Color = Color.Unspecified,
   minimized: Boolean,
   startPadding: Int,
 ) {
-  Text(
-    text = text,
-    modifier = Modifier.padding(start = startPadding.dp),
-    fontWeight = FontWeight.SemiBold,
-    fontSize = if (minimized) 14.sp else 16.sp,
-    color = color,
-  )
+  Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+    Text(
+      text = text,
+      modifier = Modifier.padding(start = startPadding.dp),
+      fontWeight = FontWeight.SemiBold,
+      fontSize = if (minimized) 14.sp else 16.sp,
+      color = color,
+    )
+    Text(
+      textAlign = TextAlign.Right,
+      text = stringResource(R.string.sync_counter, syncCounter ?: 1, totalSyncCount),
+      modifier = Modifier.padding(horizontal = 16.dp),
+      fontSize = 12.4.sp,
+      fontWeight = FontWeight.Bold,
+      color = color,
+    )
+  }
 }
 
 @Composable
@@ -377,6 +403,8 @@ fun SyncStatusSucceededPreview() {
     Column(modifier = Modifier.background(SuccessColor.copy(alpha = TRANSPARENCY))) {
       SyncStatusView(
         isSyncUpload = false,
+        syncCounter = 1,
+        totalSyncCount = 2,
         currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
       )
     }
@@ -390,6 +418,8 @@ fun SyncStatusFailedPreview() {
     Column(modifier = Modifier.background(DangerColor.copy(alpha = TRANSPARENCY))) {
       SyncStatusView(
         isSyncUpload = false,
+        syncCounter = 1,
+        totalSyncCount = 2,
         currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
       )
     }
@@ -403,6 +433,8 @@ fun SyncStatusInProgressUploadPreview() {
     Column(modifier = Modifier.background(SyncBarBackgroundColor)) {
       SyncStatusView(
         isSyncUpload = true,
+        syncCounter = 1,
+        totalSyncCount = 2,
         currentSyncJobStatus =
           CurrentSyncJobStatus.Running(
             inProgressSyncJob =
@@ -424,6 +456,8 @@ fun SyncStatusInProgressDownloadPreview() {
     Column(modifier = Modifier.background(SyncBarBackgroundColor)) {
       SyncStatusView(
         isSyncUpload = false,
+        syncCounter = 1,
+        totalSyncCount = 2,
         currentSyncJobStatus =
           CurrentSyncJobStatus.Running(
             inProgressSyncJob =
@@ -445,6 +479,8 @@ fun SyncStatusSucceededMinimizedPreview() {
     Column(modifier = Modifier.background(SuccessColor.copy(alpha = TRANSPARENCY))) {
       SyncStatusView(
         isSyncUpload = false,
+        syncCounter = 1,
+        totalSyncCount = 2,
         currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now()),
         minimized = true,
       )
@@ -459,6 +495,8 @@ fun SyncStatusFailedMinimizedPreview() {
     Column(modifier = Modifier.background(DangerColor.copy(alpha = TRANSPARENCY))) {
       SyncStatusView(
         isSyncUpload = false,
+        syncCounter = 1,
+        totalSyncCount = 2,
         currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
         minimized = true,
       )
@@ -473,6 +511,8 @@ fun SyncStatusRunningMinimizedPreview() {
     Column(modifier = Modifier.background(SyncBarBackgroundColor)) {
       SyncStatusView(
         isSyncUpload = false,
+        syncCounter = 1,
+        totalSyncCount = 2,
         currentSyncJobStatus =
           CurrentSyncJobStatus.Running(
             inProgressSyncJob =

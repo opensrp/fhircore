@@ -1,5 +1,4 @@
-import org.gradle.kotlin.dsl.extra
-import java.io.File
+
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
@@ -20,6 +19,7 @@ fun readProperties(file: String): Properties {
 // Set required FHIR core properties
 val requiredFhirProperties =
   listOf(
+    "SKIP_AUTHENTICATION",
     "URL",
     "FHIR_BASE_URL",
     "OAUTH_BASE_URL",
@@ -27,7 +27,9 @@ val requiredFhirProperties =
     "OAUTH_SCOPE",
     "MAPBOX_SDK_TOKEN",
     "SENTRY_DSN",
-    "OPENSRP_APP_ID"
+    "OPENSRP_APP_ID",
+    "GEMINI_API_KEY",
+    "SPEECH_TO_TEXT_API_KEY",
   )
 
 val localProperties = readProperties((project.properties["localPropertiesFile"] ?: "${rootProject.projectDir}/local.properties").toString())
@@ -36,6 +38,7 @@ requiredFhirProperties.forEach { property ->
   project.extra.set(property, localProperties.getProperty(property, when {
     property.contains("URL") -> "https://sample.url/fhir/"
     property == "OPENSRP_APP_ID" -> """"""""
+    property == "SKIP_AUTHENTICATION" -> "false"
     else -> "sample_$property"
   }
   ))

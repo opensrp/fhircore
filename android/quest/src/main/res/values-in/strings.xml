@@ -8,8 +8,8 @@
     <string name="menu_settings">Pengaturan</string>
     <string name="cannot_find_parent_questionnaire">Tidak bisa menemukan Kuesioner induk!</string>
 
-    <string name="loading_forms">Memuat formulir ...</string>
-    <string name="loading_responses">Memuat respons ...</string>
+    <string name="loading_forms">Memuat formulir…</string>
+    <string name="loading_responses">Memuat respons…</string>
     <string name="no_test_results_found">Tidak ada hasil tes ditemukan</string>
     <string name="patient_test_results">HASIL TES</string>
     <string name="last_test"> Tes terakhir - %1$s</string>

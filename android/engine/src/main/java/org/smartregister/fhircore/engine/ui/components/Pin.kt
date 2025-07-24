@@ -92,7 +92,8 @@ fun PinInput(
     onValueChange = {
       when {
         it.length == pinLength -> {
-          enteredPin = enteredPin.safePlus(it.last())
+          enteredPin =
+            if (enteredPin.size < pinLength) enteredPin.safePlus(it.last()) else enteredPin
           nextCellIndex = enteredPin.size
           keyboard?.hide()
 

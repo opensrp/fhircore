@@ -43,6 +43,7 @@ class AppSyncWorkerTest : RobolectricTest() {
     val fhirEngine = mockk<FhirEngine>()
     val taskExecutor = mockk<TaskExecutor>()
     val timeContext = mockk<AppTimeStampContext>()
+    val customResourceSyncService = mockk<CustomResourceSyncService>()
     val configService = mockk<ConfigService>()
 
     every { taskExecutor.serialTaskExecutor } returns mockk()
@@ -58,6 +59,7 @@ class AppSyncWorkerTest : RobolectricTest() {
         fhirEngine,
         timeContext,
         configService,
+        customResourceSyncService,
       )
 
     appSyncWorker.getDownloadWorkManager()

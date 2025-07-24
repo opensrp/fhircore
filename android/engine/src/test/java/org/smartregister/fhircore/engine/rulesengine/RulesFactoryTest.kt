@@ -75,6 +75,7 @@ import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
@@ -1364,6 +1365,20 @@ class RulesFactoryTest : RobolectricTest() {
 
     val names = rulesEngineService.mapResourcesToExtractedValues(patientsList, "", " | ")
     Assert.assertEquals("", names)
+  }
+
+  @Test
+  fun testExtractLogicalIdUuidFromReferenceStringReturnsCorrectValue() {
+    val logicalId = "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/2"
+    Assert.assertEquals(
+      "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4",
+      rulesEngineService.extractLogicalIdUuid(logicalId),
+    )
+    val otherLogicalId = "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4"
+    Assert.assertEquals(
+      "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4",
+      rulesEngineService.extractLogicalIdUuid(otherLogicalId),
+    )
   }
 
   private fun getListOfResource(): List<Resource> {

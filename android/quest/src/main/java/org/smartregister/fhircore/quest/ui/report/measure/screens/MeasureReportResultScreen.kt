@@ -32,6 +32,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -92,7 +93,7 @@ fun MeasureReportResultPage(
         title = { Text(text = screenTitle, overflow = TextOverflow.Ellipsis, maxLines = 1) },
         navigationIcon = {
           IconButton(onClick = { navController.popBackStack() }) {
-            Icon(Icons.Filled.ArrowBack, null)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
           }
         },
         contentColor = Color.White,

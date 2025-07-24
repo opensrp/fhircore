@@ -18,10 +18,10 @@ package org.smartregister.fhircore.engine.util.test
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncState
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @ExcludeFromJacocoGeneratedReport
@@ -35,7 +35,7 @@ class HiltActivityForTest : AppCompatActivity(), OnSyncListener {
     super.onCreate(savedInstanceState)
   }
 
-  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
+  override fun onSync(syncState: SyncState) {
     // DO nothing. This activity implements OnSyncListener for testing purposes
   }
 

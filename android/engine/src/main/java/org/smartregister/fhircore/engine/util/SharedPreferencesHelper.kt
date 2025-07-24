@@ -18,13 +18,15 @@ package org.smartregister.fhircore.engine.util
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import com.google.gson.Gson
 import com.google.gson.JsonIOException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.serialization.SerializationException
+import org.jetbrains.annotations.VisibleForTesting
+import org.smartregister.fhircore.engine.BuildConfig
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import timber.log.Timber
@@ -107,19 +109,13 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
     prefs.edit()?.clear()?.apply()
   }
 
-  fun registerSharedPreferencesListener(
-    onSharedPreferenceChangeListener: OnSharedPreferenceChangeListener,
-  ) {
-    prefs.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
-  }
-
-  fun unregisterSharedPreferencesListener(
-    onSharedPreferenceChangeListener: OnSharedPreferenceChangeListener,
-  ) {
-    prefs.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
-  }
-
   fun retrieveApplicationId() = read(SharedPreferenceKey.APP_ID.name, null)
+
+  fun hasDebugSuffix(): Boolean =
+    retrieveApplicationId()?.trim()?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true &&
+      isDebugVariant()
+
+  @VisibleForTesting fun isDebugVariant() = BuildConfig.DEBUG
 
   companion object {
     const val PREFS_NAME = "params"

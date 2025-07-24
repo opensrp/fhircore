@@ -13,6 +13,12 @@ plugins {
   id("org.jetbrains.kotlin.plugin.serialization")
 }
 
+tasks.named("dokkaHtmlPartial") {
+  dependsOn("kaptDebugKotlin")
+  dependsOn("kaptDebugNonProxyKotlin")
+  dependsOn("kaptReleaseKotlin")
+}
+
 android {
   compileSdk = BuildConfigs.compileSdk
 

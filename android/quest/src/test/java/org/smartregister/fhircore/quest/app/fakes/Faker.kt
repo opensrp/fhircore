@@ -90,7 +90,8 @@ object Faker {
         ConfigurationRegistry(
           fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
-          sharedPreferencesHelper = mockk(),
+          sharedPreferencesHelper =
+            spyk(SharedPreferencesHelper(ApplicationProvider.getApplicationContext(), Gson())),
           dispatcherProvider = testDispatcherProvider,
           configService = configService,
           json = json,

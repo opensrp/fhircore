@@ -27,10 +27,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.exceptions.FHIRException
+import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.MeasureReport
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
@@ -103,7 +103,6 @@ constructor(
               startDateFormatted = startDateFormatted,
               endDateFormatted = endDateFormatted,
               subject = it,
-              practitionerId = practitionerId,
             )
           }
           .forEach { subject -> measureReport.add(subject) }
@@ -114,7 +113,6 @@ constructor(
             startDateFormatted = startDateFormatted,
             endDateFormatted = endDateFormatted,
             subject = null,
-            practitionerId = practitionerId,
           )
           .also { measureReport.add(it) }
       }
@@ -153,20 +151,20 @@ constructor(
     startDateFormatted: String,
     endDateFormatted: String,
     subject: String?,
-    practitionerId: String?,
   ): MeasureReport {
     return withContext(dispatcherProvider.io()) {
       try {
+        val measureUrlResources: Iterable<IBaseResource> =
+          knowledgeManager.loadResources(url = measureUrl)
+
         fhirOperator.evaluateMeasure(
-          measure =
-            knowledgeManager
-              .loadResources(ResourceType.Measure.name, measureUrl, null, null, null)
-              .firstOrNull() as Measure,
+          measure = measureUrlResources.first() as Measure,
           start = startDateFormatted,
           end = endDateFormatted,
           reportType = reportType,
           subjectId = subject,
-          practitioner = practitionerId.takeIf { it?.isNotBlank() == true },
+          additionalData = null,
+          parameters = null,
         )
       } catch (exception: IllegalArgumentException) {
         Timber.e(exception)

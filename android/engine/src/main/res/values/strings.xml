@@ -28,15 +28,15 @@
     <string name="syncing_down" >Syncing down&#8230;</string>
     <string name="syncing_initiated">Sync initiated&#8230;</string>
     <string name="sync_failed">Sync failed. Check internet connection or try again later</string>
-    <string name="sync_completed_with_errors"> Sync completed with errors. Retrying…</string>
+    <string name="sync_completed_with_errors">Sync completed with errors. Retrying…</string>
     <string name="sync_unauthorised">Sync failed because the authentication credentials are invalid.</string>
     <string name="refresh_token_fail_error_message">Failed to retrieve credentials from the server. Please check your internet connection.</string>
     <string name="try_again">Try again</string>
     <string name="status_vaccinated">Vaccinated</string>
     <string name="status_overdue">Overdue</string>
     <string name="status_received_vaccine">Vaccine %1$d \n%2$s</string>
-    <string name="fully_vaccinated">"Fully vaccinated"</string>
-    <string name="already_fully_vaccinated">"Can not receive another dose. Already fully vaccinated"</string>
+    <string name="fully_vaccinated">Fully vaccinated</string>
+    <string name="already_fully_vaccinated">Can not receive another dose. Already fully vaccinated</string>
     <string name="record_vaccine_nl">Record\nVaccine</string>
     <string name="date_last_seen">Last seen %1$s</string>
     <string name="date_last_visited">Last visited %1$s</string>
@@ -162,8 +162,8 @@
     <string name="export_db" translatable="false">Export DB</string>
     <string name="exporting_db" translatable="false">Exporting DB...</string>
     <string name="share_file" translatable="false">Share File</string>
-    <string name="contact_help">"Contact help"</string>
-    <string name="offline_map">"Offline Maps"</string>
+    <string name="contact_help">Contact help</string>
+    <string name="offline_map">Offline Maps</string>
     <string name="dismiss">Dismiss</string>
     <string name="user_info">User info</string>
     <string name="assignment_info">Assignment info</string>

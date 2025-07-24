@@ -1,0 +1,158 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "f8a7d652-a69b-416f-9a6c-7128a2e76667",
+  "meta": {
+    "profile": [
+      "http://ehelse.no/fhir/StructureDefinition/sdf-QuestionnaireResponse"
+    ]
+  },
+  "questionnaire": "5cb30374-6b3d-46a7-858b-803cb0dcecc5",
+  "status": "completed",
+  "subject": {
+    "reference": "RelatedPerson/example"
+  },
+  "authored": "2024-09-20T10:00:00Z",
+  "item": [
+    {
+      "linkId": "0d77d40f-098b-4329-9199-33b6e77aa864",
+      "answer": [
+        {
+          "valueInteger": 12345
+        }
+      ]
+    },
+    {
+      "linkId": "9d017fa4-56d3-4d9b-b5f6-f9b3ba7d17a3",
+      "answer": [
+        {
+          "valueString": "John"
+        }
+      ]
+    },
+    {
+      "linkId": "7b41d922-376c-49bf-f6a8-faaa681e9ef6",
+      "answer": [
+        {
+          "valueString": "Doe"
+        }
+      ]
+    },
+    {
+      "linkId": "76bad83a-f061-4b22-8b4f-a95cbd5be4da",
+      "answer": [
+        {
+          "valueString": "Smith"
+        }
+      ]
+    },
+    {
+      "linkId": "aa1ddb98-87a4-48a6-9d8c-4c80de1ec277",
+      "answer": [
+        {
+          "valueDate": "1985-03-15"
+        }
+      ]
+    },
+    {
+      "linkId": "8ebf5364-6bdc-4e45-89a7-28c65ce019b7",
+      "answer":[
+        {
+          "valueInteger": 39
+        }
+      ]
+    },
+    {
+      "linkId": "50330b11-c520-4f45-a8f4-44771097788d",
+      "answer": [
+        {
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/administrative-gender",
+            "code": "male"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "59d21749-f4d7-4725-bec5-e924d3ce1eeb",
+      "answer": [
+        {
+          "valueCoding": {
+            "system": "https://fhir.demo.smartregister.org/fhir/national-id-number",
+            "code": "national-id-number"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "8d420cab-a72b-4190-ff05-306135edb39e",
+      "answer": [
+        {
+          "valueString": "1234567890123456"
+        }
+      ]
+    },
+    {
+      "linkId": "06cbf2e9-3643-4c7b-80f6-f145126034da",
+      "answer": [
+        {
+          "valueString": "+4712345678"
+        }
+      ]
+    },
+    {
+      "linkId": "location-widget",
+      "answer": [
+        {
+          "item": [
+            {
+              "linkId": "latitude",
+              "answer": [
+                {
+                  "valueDecimal": 59.9139
+                }
+              ]
+            },
+            {
+              "linkId": "longitude",
+              "answer": [
+                {
+                  "valueDecimal": 10.7387
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "3f3ab03a-7a4a-11ee-b962-0242ac120002",
+      "answer": [
+        {
+          "valueReference": {
+            "reference": "Location/1"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "ab2161d1-b4c3-47a1-a4b9-0c0b916842f4",
+      "answer": [
+        {
+          "valueReference": {
+            "reference": "Location/2"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "b00bda77-6df2-4660-8134-c424fb1dbf4f",
+      "answer": [
+        {
+          "valueReference": {
+            "reference": "Location/3"
+          }
+        }
+      ]
+    }
+  ]
+}

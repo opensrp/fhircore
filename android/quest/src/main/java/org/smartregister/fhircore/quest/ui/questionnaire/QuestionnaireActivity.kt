@@ -22,6 +22,8 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.location.Location
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.Parcelable
 import android.provider.Settings
 import android.view.View
@@ -31,6 +33,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
@@ -76,7 +79,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var actionParameters: ArrayList<ActionParameter>
   private lateinit var viewBinding: QuestionnaireActivityBinding
-  private var questionnaire: Questionnaire? = null
   private var alertDialog: AlertDialog? = null
   private lateinit var fusedLocationClient: FusedLocationProviderClient
   private var currentLocation: Location? = null
@@ -104,6 +106,21 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       }
     }
 
+  private val recordAudioRequestPermissionLauncher =
+    registerForActivityResult(
+      ActivityResultContracts.RequestPermission(),
+    ) {
+      if (it) {
+        viewModel.showSpeechToText()
+      } else {
+        viewModel.hideSpeechToText()
+        showToast(
+          getString(R.string.record_audio_denied),
+          Toast.LENGTH_SHORT,
+        )
+      }
+    }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -121,23 +138,22 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       return
     }
 
-    viewModel.questionnaireProgressStateLiveData.observe(this) { progressState ->
-      alertDialog =
-        if (progressState?.active == false) {
-          alertDialog?.dismiss()
-          null
-        } else {
-          when (progressState) {
-            is QuestionnaireProgressState.ExtractionInProgress ->
-              AlertDialogue.showProgressAlert(this, R.string.extraction_in_progress)
-            is QuestionnaireProgressState.QuestionnaireLaunch ->
-              AlertDialogue.showProgressAlert(this, R.string.loading_questionnaire)
-            else -> null
-          }
-        }
+    viewBinding.questionnaireToolbar.setNavigationIcon(R.drawable.ic_cancel)
+    viewBinding.questionnaireToolbar.setNavigationOnClickListener { handleBackPress() }
+    viewBinding.questionnaireTitle.text = questionnaireConfig.title
+    viewBinding.clearAll.visibility =
+      if (questionnaireConfig.showClearAll) View.VISIBLE else View.GONE
+
+    if (questionnaireConfig.enableSpeechToText) {
+      viewBinding.recordSpeechActionButton.setOnClickListener {
+        reviewRecordAudioPermissionToLaunchSpeechToText()
+      }
+      viewBinding.editFormActionButton.setOnClickListener { viewModel.hideSpeechToText() }
     }
 
-    if (savedInstanceState == null) renderQuestionnaire()
+    if (savedInstanceState == null) {
+      lifecycleScope.launch { launchQuestionnaire() }
+    }
 
     setupLocationServices()
 
@@ -149,6 +165,45 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         }
       },
     )
+  }
+
+  private fun reviewRecordAudioPermissionToLaunchSpeechToText() {
+    when {
+      PermissionUtils.checkPermissions(
+        this@QuestionnaireActivity,
+        listOf(Manifest.permission.RECORD_AUDIO),
+      ) -> {
+        viewModel.showSpeechToText()
+      }
+      ActivityCompat.shouldShowRequestPermissionRationale(
+        this,
+        Manifest.permission.RECORD_AUDIO,
+      ) -> {
+        showToast(
+          getString(R.string.record_audio_denied),
+          Toast.LENGTH_SHORT,
+        )
+      }
+      else -> {
+        recordAudioRequestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+      }
+    }
+  }
+
+  private fun showProgressDialog(progressState: QuestionnaireProgressState?) {
+    alertDialog =
+      if (progressState?.active == false) {
+        alertDialog?.dismiss()
+        null
+      } else {
+        when (progressState) {
+          is QuestionnaireProgressState.ExtractionInProgress ->
+            AlertDialogue.showProgressAlert(this, R.string.extraction_in_progress)
+          is QuestionnaireProgressState.QuestionnaireLaunch ->
+            AlertDialogue.showProgressAlert(this, R.string.loading_questionnaire)
+          else -> null
+        }
+      }
   }
 
   private fun setupLocationServices() {
@@ -185,7 +240,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   }
 
   private fun showLocationSettingsDialog(intent: Intent) {
-    viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
+    showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
     AlertDialog.Builder(this)
       .setMessage(getString(R.string.location_services_disabled))
       .setCancelable(true)
@@ -218,57 +273,154 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     outState.clear()
   }
 
-  private fun renderQuestionnaire() {
-    if (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) != null) return
+  private fun renderSpeechToTextFragment() {
+    supportFragmentManager.commit {
+      setReorderingAllowed(true)
+      replace(R.id.speechToTextContainer, SpeechToTextFragment(), SPEECH_TO_TEXT_FRAGMENT_TAG)
+    }
+  }
 
-    lifecycleScope.launch {
-      viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(true))
+  private fun removeSpeechToTextFragment() {
+    supportFragmentManager.commit {
+      setReorderingAllowed(true)
+      supportFragmentManager.findFragmentByTag(SPEECH_TO_TEXT_FRAGMENT_TAG)?.let { remove(it) }
+    }
+  }
 
-      viewBinding.questionnaireToolbar.setNavigationIcon(R.drawable.ic_cancel)
-      viewBinding.questionnaireToolbar.setNavigationOnClickListener { handleBackPress() }
-      viewBinding.questionnaireTitle.text = questionnaireConfig.title
-      viewBinding.clearAll.visibility =
-        if (questionnaireConfig.showClearAll) View.VISIBLE else View.GONE
+  private suspend fun launchQuestionnaire() {
+    showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(true))
 
-      questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig)
-
-      if (questionnaire == null) {
-        showToast(getString(R.string.questionnaire_not_found))
-        finish()
-        return@launch
-      }
-      if (questionnaire!!.subjectType.isNullOrEmpty()) {
+    val questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig)
+    if (questionnaire == null) {
+      showToast(getString(R.string.questionnaire_not_found))
+      finish()
+    } else {
+      if (questionnaire.subjectType.isNullOrEmpty()) {
         val subjectRequiredMessage = getString(R.string.missing_subject_type)
         showToast(subjectRequiredMessage)
         Timber.e(subjectRequiredMessage)
         finish()
-        return@launch
+        return
       }
+      viewModel.setQuestionnaire(questionnaire)
 
-      val questionnaireFragment =
-        getQuestionnaireFragmentBuilder(
-            questionnaire = questionnaire!!,
-            questionnaireConfig = questionnaireConfig,
-          )
-          .build()
-      viewBinding.clearAll.setOnClickListener { questionnaireFragment.clearAllAnswers() }
-      supportFragmentManager.commit {
-        setReorderingAllowed(true)
-        add(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
-      }
-      registerFragmentResultListener()
+      val (questionnaireResponse, launchContextResources) =
+        viewModel.populateQuestionnaire(
+          viewModel.currentQuestionnaire,
+          questionnaireConfig,
+          actionParameters,
+        )
 
-      viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
+      viewModel.showQuestionnaireResponse(questionnaireResponse)
+
+      showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
+
+      listenForQuestionnaireFormUpdates(viewModel.currentQuestionnaire, launchContextResources)
     }
+  }
+
+  private suspend fun listenForQuestionnaireFormUpdates(
+    questionnaire: Questionnaire,
+    launchContextResources: List<Resource>,
+  ) {
+    val handler = Handler(Looper.getMainLooper())
+    viewModel.questionnaireFormUpdateStateflow.collect {
+      when (it) {
+        is QuestionnaireFormUpdate.ShowSpeechToTextSubView -> {
+          viewBinding.recordSpeechActionButton.visibility = View.GONE
+          viewBinding.editFormActionButton.visibility = View.VISIBLE
+          viewBinding.speechToTextContainer.visibility = View.VISIBLE
+          renderSpeechToTextFragment()
+          val disabledQuestionnaire =
+            questionnaire.copy().apply { item.forEach(viewModel::disableQuestionnaireItem) }
+
+          renderQuestionnaire(
+            disabledQuestionnaire,
+            it.currentQuestionnaireResponse,
+            launchContextResources,
+          )
+
+          // Disable form buttons - very hacky
+          handler.postDelayed(
+            {
+              supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG)?.view?.let {
+                fragmentView ->
+                fragmentView
+                  .findViewById<View>(com.google.android.fhir.datacapture.R.id.submit_questionnaire)
+                  ?.isEnabled = false
+                fragmentView
+                  .findViewById<View>(com.google.android.fhir.datacapture.R.id.cancel_questionnaire)
+                  ?.isEnabled = false
+                fragmentView
+                  .findViewById<View>(
+                    com.google.android.fhir.datacapture.R.id.pagination_previous_button,
+                  )
+                  ?.isEnabled = false
+                fragmentView
+                  .findViewById<View>(
+                    com.google.android.fhir.datacapture.R.id.pagination_next_button,
+                  )
+                  ?.isEnabled = false
+              }
+            },
+            200,
+          )
+        }
+        is QuestionnaireFormUpdate.ShowQuestionnaireResponse -> {
+          viewBinding.speechToTextContainer.visibility = View.GONE
+          viewBinding.editFormActionButton.visibility = View.GONE
+          try {
+            renderQuestionnaire(
+              questionnaire,
+              it.newQuestionnaireResponse,
+              launchContextResources,
+            )
+
+            if (questionnaireConfig.enableSpeechToText) {
+              handler.postDelayed(
+                { viewBinding.recordSpeechActionButton.visibility = View.VISIBLE },
+                200,
+              )
+            }
+          } catch (e: IllegalArgumentException) {
+            Timber.e(e)
+            showToast(e.message.toString())
+          } finally {
+            removeSpeechToTextFragment()
+          }
+        }
+      }
+    }
+  }
+
+  private suspend fun renderQuestionnaire(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse?,
+    launchContextResources: List<Resource>,
+  ) {
+    val questionnaireFragment =
+      getQuestionnaireFragmentBuilder(
+          questionnaire,
+          questionnaireConfig,
+          questionnaireResponse,
+          launchContextResources,
+        )
+        .build()
+    viewBinding.clearAll.setOnClickListener { questionnaireFragment.clearAllAnswers() }
+    supportFragmentManager.commit {
+      setReorderingAllowed(true)
+      replace(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
+    }
+
+    registerFragmentResultListener(questionnaire)
   }
 
   private suspend fun getQuestionnaireFragmentBuilder(
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig,
+    questionnaireResponse: QuestionnaireResponse?,
+    launchContextResources: List<Resource>,
   ): QuestionnaireFragment.Builder {
-    val (questionnaireResponse, launchContextResources) =
-      viewModel.populateQuestionnaire(questionnaire, this.questionnaireConfig, actionParameters)
-
     return QuestionnaireFragment.builder()
       .setQuestionnaire(questionnaire.json())
       .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(
@@ -277,17 +429,21 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       .setSubmitButtonText(
         questionnaireConfig.saveButtonText ?: getString(R.string.submit_questionnaire),
       )
-      .showAsterisk(this.questionnaireConfig.showRequiredTextAsterisk)
-      .showRequiredText(this.questionnaireConfig.showRequiredText)
+      .showAsterisk(questionnaireConfig.showRequiredTextAsterisk)
+      .showRequiredText(questionnaireConfig.showRequiredText)
       .setIsReadOnly(questionnaireConfig.isSummary())
       .setShowSubmitAnywayButton(questionnaireConfig.showSubmitAnywayButton.toBooleanStrict())
       .apply {
         if (questionnaireResponse != null) {
           questionnaireResponse
             .takeIf {
-              viewModel.validateQuestionnaireResponse(questionnaire, it, this@QuestionnaireActivity)
+              viewModel.validateQuestionnaireResponse(
+                questionnaire,
+                it,
+                this@QuestionnaireActivity,
+              )
             }
-            ?.let { setQuestionnaireResponse(it.json()) }
+            ?.let { setQuestionnaireResponse(questionnaireResponse.json()) }
             ?: showToast(getString(R.string.error_populating_questionnaire))
         }
 
@@ -300,7 +456,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
   private fun Resource.json(): String = this.encodeResourceToString()
 
-  private fun registerFragmentResultListener() {
+  private fun registerFragmentResultListener(questionnaire: Questionnaire) {
     supportFragmentManager.setFragmentResultListener(
       QuestionnaireFragment.SUBMIT_REQUEST_KEY,
       this,
@@ -313,7 +469,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           title = getString(R.string.questionnaire_submission_confirmation_title),
           confirmButton =
             AlertDialogButton(
-              listener = { processSubmission() },
+              listener = { processSubmission(questionnaire) },
             ),
           neutralButton =
             AlertDialogButton(
@@ -322,22 +478,23 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             ),
         )
       } else {
-        processSubmission()
+        processSubmission(questionnaire)
       }
     }
   }
 
-  private fun processSubmission() {
+  private fun processSubmission(questionnaire: Questionnaire) {
     lifecycleScope.launch {
       val questionnaireResponse = retrieveQuestionnaireResponse()
 
       // Close questionnaire if opened in read only mode or if experimental
-      if (questionnaireConfig.isReadOnly() || questionnaire?.experimental == true) {
+      if (questionnaireConfig.isReadOnly() || questionnaire.experimental) {
         finish()
+        return@launch
       }
-      if (questionnaireResponse != null && questionnaire != null) {
+      if (questionnaireResponse != null) {
         viewModel.run {
-          setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
+          showProgressDialog(QuestionnaireProgressState.ExtractionInProgress(true))
 
           if (currentLocation != null) {
             questionnaireResponse.contained.add(
@@ -345,16 +502,23 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             )
           }
 
+          val questionnaireResponseInvalid = {
+            Timber.e("Invalid questionnaire response")
+            showToast(getString(R.string.questionnaire_response_invalid))
+            showProgressDialog(QuestionnaireProgressState.ExtractionInProgress(false))
+          }
+
           handleQuestionnaireSubmission(
-            questionnaire = questionnaire!!,
+            questionnaire = questionnaire,
             currentQuestionnaireResponse = questionnaireResponse,
             questionnaireConfig = questionnaireConfig,
             actionParameters = actionParameters,
             context = this@QuestionnaireActivity,
+            onQuestionnaireResponseInvalid = questionnaireResponseInvalid,
           ) { idTypes, questionnaireResponse ->
             // Dismiss progress indicator dialog, submit result then finish activity
             // TODO Ensure this dialog is dismissed even when an exception is encountered
-            setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
+            showProgressDialog(QuestionnaireProgressState.ExtractionInProgress(false))
             setResult(
               Activity.RESULT_OK,
               Intent().apply {
@@ -438,6 +602,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   companion object {
 
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaireFragment"
+    const val SPEECH_TO_TEXT_FRAGMENT_TAG = "speechToTextFragment"
     const val QUESTIONNAIRE_CONFIG = "questionnaireConfig"
     const val QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS = "questionnaireExtractedResourceIds"
     const val QUESTIONNAIRE_RESPONSE = "questionnaireResponse"

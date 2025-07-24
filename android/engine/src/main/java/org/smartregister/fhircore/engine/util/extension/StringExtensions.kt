@@ -136,3 +136,12 @@ fun String?.formatPhoneNumber(context: Context): String? {
     this
   }
 }
+
+/**
+ * Removes any '#' characters from the beginning of this string.
+ *
+ * @return The string without any leading '#' characters.
+ */
+fun String.removeHashPrefix(): String {
+  return this.trimStart('#')
+}

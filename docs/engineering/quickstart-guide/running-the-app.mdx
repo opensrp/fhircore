@@ -90,10 +90,10 @@ For more information read more [here](https://docs.opensrp.io/engineering/app/de
 To load into the OpenSRP FHIR Core app on demand, for debug and development, you can create a symbolic link using:
 
 ```sh
-git clone git@github.com:ona-health/giz-eir-fhir-resources.git
+git clone git@github.com:ona-health/reference-apps.git
 # assuming you have checked out fhircore in the same directory
-mkdir -p fhircore/android/quest/src/gizeir/assets/configs
-ln -s `pwd`/giz-eir-fhir-resources/app/* fhircore/android/quest/src/gizEir/assets/configs/gizeir
+mkdir -p fhircore/android/quest/src/reference-apps/assets/configs
+ln -s `pwd`/reference-apps/app/* fhircore/android/quest/src/reference-apps/assets/configs/reference-apps
 ```
 
 The app is able to use content for configuration resources from the `configs/app/resources` directory in the assets directory. Ideally, any FHIR resource can be loaded into
@@ -110,9 +110,42 @@ from the server, which requires the device to be online. This enhancement should
 
 ### Implementation Guide Config
 
-<!--[Example implementation guide config](https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/implementation_guide_config.json)-->
-
-![ig config](/img/eir_configs/ig-config.png)
+````json
+{
+  "resourceType": "ImplementationGuide",
+  "id": "4abdea5e-31d8-408c-b739-449fcc527bcb",
+  "meta": {
+      "versionId": "1",
+      "lastUpdated": "2024-05-27T14:42:53.345+00:00"
+  }
+  "url": "https://fhir.labs.smartregister.org/fhir/ImplementationGuide/eir-chw",
+  "version": "1.0.0",
+  "name": "eir-chw",
+  "title": "EIR CHW Implementation Guide",
+  "status": "draft",
+  "date": "2024-09-30",
+  "publisher": "Ona Systems, Inc.",
+  "useContext": [
+    {
+      "valueRange": {
+        "high": {
+          "value": 11
+        }
+      }
+    }
+  ],
+  "packageId": "org.smartregister.fhircore",
+  "definition": {
+    "resource": [
+      {
+        "reference": {
+          "reference": "Composition/d49e56e8-26cf-4aa3-9675-234eb99fda91"
+        }
+      }
+    ]
+  }
+}
+````
 
 An Implementation Guide (IG) is a document that defines how a specific organization or system uses FHIR resources to solve a particular use case.
 
@@ -122,7 +155,7 @@ Main Structure:
 
 		- This indicates that the resource type is an Implementation Guide (IG), which provides detailed guidance for how FHIR resources are used in a specific context or implementation.
 
-- id: "13057302"
+- id: "4abdea5e-31d8-408c-b739-449fcc527bcb"
 
 		- A unique identifier for this specific Implementation Guide.
 
@@ -134,19 +167,19 @@ Main Structure:
 
 		- lastUpdated: "2024-05-27T14:42:53.345+00:00" – The date and time when this Implementation Guide was last updated (in ISO 8601 format).
 
-- url: "https://fhir.eir.smartregister.org/fhir/ImplementationGuide/giz-eir"
+- url: "https://fhir.labs.smartregister.org/fhir/ImplementationGuide/eir-chw"
 
-		- The URL where this Implementation Guide can be accessed. It seems to be hosted at fhir.eir.smartregister.org under the path /fhir/ImplementationGuide/giz-eir.
+		- The URL where this Implementation Guide can be accessed. It seems to be hosted at fhir.labs.smartregister.org under the path /fhir/ImplementationGuide/eir-chw.
 
 - version: "1.0.0"
 
 		- The version of the Implementation Guide, indicating it’s the first official release (1.0.0).
 
-- name: "giz-eir"
+- name: "eir-chw"
 
 		- The name of the IG
 
-- title: "GIZ/PATH EIR Implementation Guide"
+- title: "EIR CHW Implementation Guide"
 
 		- A more descriptive title for the Implementation Guide
 
@@ -154,7 +187,7 @@ Main Structure:
 
 		- The status of the IG, which is still in a draft state (not finalized or published as an official version).
 
-- date: "2024-05-27"
+- date: "2024-09-30"
 
 	-	The date when the guide was created or last updated.
 
@@ -188,13 +221,39 @@ Package and Resource Definitions:
 
 - reference:
 
-		- This points to a Composition resource (Composition/12965652), which likely contains additional narrative content, instructions, or descriptions related to the IG. The Composition resource is commonly used for documents or structured narratives.
+		- This points to a Composition resource (Composition/d49e56e8-26cf-4aa3-9675-234eb99fda91), which likely contains additional narrative content, instructions, or descriptions related to the IG. The Composition resource is commonly used for documents or structured narratives.
 
 ### Composition Config
 
-<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/composition_config.json-->
-
-![composition config](/img/eir_configs/composition-config.png)
+````json
+{
+  "resourceType": "Composition",
+  "id": "d49e56e8-26cf-4aa3-9675-234eb99fda91",
+  "meta": {
+    "versionId": "22",
+    "lastUpdated": "2024-09-10T12:33:34.976+00:00"
+  },
+  "identifier": {
+    "use": "official",
+    "value": "eir-chw"
+  },
+  "status": "final",
+  "type": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "1156600005",
+        "display": "Device setting parameter"
+      }
+    ]
+  },
+  "date": "2024-09-30",
+  "title": "Device configurations",
+  "confidentiality": "L",
+  "section": [
+  ]
+}
+````
 
 Core Composition Information
 
@@ -202,7 +261,7 @@ Core Composition Information
 
 		- This indicates that the resource is a FHIR Composition resource, which typically represents a collection of content or sections.
 
-- id: "12965652"
+- id: "d49e56e8-26cf-4aa3-9675-234eb99fda91"
 
 		- A unique identifier for this Composition resource.
 
@@ -221,7 +280,7 @@ Core Composition Information
 	-	use: "official"
 		- Indicates that this identifier is an official one.
 
-	-	value: "giz-eir"
+	-	value: "eir-chw"
 		- The identifier for the GIZ EIR configuration.
 
 - status: "final"
@@ -241,7 +300,7 @@ Core Composition Information
 
 		- Describes the document as relating to device configuration settings.
 
-- date: "2022-09-16"
+- date: "2024-09-30"
 
 		- The date when this Composition was created or finalized.
 
@@ -308,14 +367,41 @@ Each section contains a specific configuration for different parts of the applic
 
 ### Application Config
 
-<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/application_config.json-->
-
-![application config](/img/eir_configs/application-config.png)
+````json
+{
+  "appId": "eir-chw",
+  "configType": "application",
+  "theme": "DEFAULT",
+  "appTitle": "EIR CHW",
+  "remoteSyncPageSize": 250,
+  "languages": [
+    "en",
+    "es",
+    "fr"
+  ],
+  "useDarkTheme": false,
+  "syncInterval": 30,
+  "syncStrategy": [
+    "Location"
+  ],
+  "loginConfig": {
+    "showLogo": true,
+    "enablePin": true,
+    "pinLength": 4
+  },
+  "settingsScreenMenuOptions": [
+    "MANUAL_SYNC",
+    "SWITCH_LANGUAGES",
+    "RESET_DATA",
+    "INSIGHTS"
+  ]
+}
+````
 
 
  Here’s a detailed breakdown of the various fields in the config:
 
-	1.	appId: "giz-eir"
+	1.	appId: "eir-chw"
 
 		- This is the unique identifier for the application.
 
@@ -327,7 +413,7 @@ Each section contains a specific configuration for different parts of the applic
 
 		- Defines the UI theme to be used in the application. Here, it’s set to DEFAULT, which probably corresponds to the app’s standard design.
 
-	4.	appTitle: "EIR"
+	4.	appTitle: "EIR CHW"
 
 		- The title of the application, which in this case is “EIR” (Electronic Immunization Registry).
 
@@ -347,9 +433,9 @@ Each section contains a specific configuration for different parts of the applic
 
 		- This specifies how frequently (in minutes) the app will automatically synchronize with the server. In this case, it syncs every 30 minutes.
 
-	9.	syncStrategy: ["CareTeam"]
+	9.	syncStrategy: ["Location"]
 
-		- This suggests that the synchronization strategy involves syncing data related to care teams. It might mean that data for care teams, such as patient rosters, are synchronized.
+		- This suggests that the synchronization strategy involves syncing data related to locations. It might mean that data for locations, such as patient rosters, are synchronized.
 
 	10.	loginConfig:
 
@@ -382,9 +468,68 @@ Each section contains a specific configuration for different parts of the applic
 
 ### Sync Config
 
-<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/sync_config.json-->
-
-![sync config](/img/eir_configs/sync-config.png)
+````json
+{
+  "resourceType": "Parameters",
+  "configType": "sync",
+  "parameter": [
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
+          "CarePlan",
+          "Condition",
+          "Consent",
+          "Encounter",
+          "Group",
+          "Immunization",
+          "List",
+          "Location",
+          "Observation",
+          "Patient",
+          "PlanDefinition",
+          "Questionnaire",
+          "QuestionnaireResponse",
+          "RelatedPerson",
+          "ServiceRequest",
+          "StructureMap",
+          "Task"
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "count",
+        "code": "_count",
+        "base": [
+          "CarePlan",
+          "Condition",
+          "Consent",
+          "Encounter",
+          "Group",
+          "Immunization",
+          "List",
+          "Location",
+          "Observation",
+          "Patient",
+          "PlanDefinition",
+          "Questionnaire",
+          "QuestionnaireResponse",
+          "RelatedPerson",
+          "ServiceRequest",
+          "StructureMap",
+          "Task"
+        ],
+        "type": "token",
+        "expression": "#count"
+      }
+    }
+  ]
+}
+````
 
 This configuration is related to synchronization settings, specifically defining search parameters for resource filtering during FHIR-based data sync operations. Here’s a breakdown of the fields and what they represent:
 
@@ -467,15 +612,123 @@ Search Parameters:
 
 ### Navigation Config
 
-<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/navigation_config.json-->
-
-![navigation config](/img/eir_configs/navigation-config.png)
+````json
+{
+  "appId": "eir-chw",
+  "configType": "navigation",
+  "menuActionButton": {
+    "id": "mainActionButton",
+    "visible": true,
+    "display": "{{ dece90802392bb0289660c633eddd5e4 }}",
+    "actions": [
+      {
+        "trigger": "ON_CLICK",
+        "workflow": "LAUNCH_QUESTIONNAIRE",
+        "questionnaire": {
+          "id": "5cb30374-6b3d-46a7-858b-803cb0dcecc5",
+          "title": "{{ dece90802392bb0289660c633eddd5e4 }}",
+          "saveButtonText": "{{ c9cc8cce247e49bae79f15173ce97354 }}",
+          "groupResource": {
+            "groupIdentifier": "@{familyLogicalId}",
+            "memberResourceType": "Patient"
+          },
+          "snackBarMessage": {
+            "message": "{{ 8b41faf441db854f6c4066bbbb6837f2 }}",
+            "actionLabel": "UNDO",
+            "duration": "Short"
+          },
+          "configRules": [
+            {
+              "name": "humanReadableId",
+              "condition": "true",
+              "actions": [
+                "data.put('humanReadableId', service.generateRandomSixDigitInt())"
+              ]
+            }
+          ],
+          "extraParams": [
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "0d77d40f-098b-4329-9199-33b6e77aa864",
+              "dataType": "INTEGER",
+              "key": "opensrpId",
+              "value": "@{humanReadableId}"
+            }
+          ],
+          "setPractitionerDetails": true,
+          "setOrganizationDetails": true
+        }
+      }
+    ]
+  },
+  "clientRegisters": [
+    {
+      "id": "caregiverRegister",
+      "display": "{{ 34fc9c26c4ad487a175c2e7b85eb9b6d }}",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_baby_mother"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "caregiverRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "caregiverRegister"
+        }
+      ]
+    },
+    {
+      "id": "childRegister",
+      "display": "{{ 64e4aca4297806247f62a7b5f8cbd3df }}",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_children"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "childRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "childRegister"
+        }
+      ]
+    }
+  ],
+  "staticMenu": [
+    {
+      "id": "settings",
+      "visible": true,
+      "display": "{{ f4f70727dc34561dfde1a3c529b6205c }}",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_settings"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_SETTINGS",
+          "id": "navigateToSettingsScreen"
+        }
+      ]
+    }
+  ]
+}
+````
 
 Core Information
 
-	-	appId: "giz-eir"
+	-	appId: "eir-chw"
 
-	-	Identifies the application as the GIZ EIR.
+	-	Identifies the application as the CHW EIR.
 
 	-	configType: "navigation"
 
@@ -509,7 +762,7 @@ Main Action Button Configuration
 
 	-	questionnaire: Describes the specific questionnaire that will be launched:
 
-	-	id: "13030180"
+	-	id: "5cb30374-6b3d-46a7-858b-803cb0dcecc5"
 
 		-	The questionnaire ID.
 
@@ -675,9 +928,42 @@ This section defines static menu items that are always visible in the app.
 
 ### List Config
 
-<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/list/locations.json-->
-
-![location list config](/img/eir_configs/list.png)
+````json
+{
+  "resourceType": "List",
+  "id": "0571e685-362e-4d8b-b227-a3678ad5420c-420",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2024-07-07T19:28:30.567+00:00"
+  },
+  "identifier": [
+    {
+      "use": "official",
+      "value": "0571e685-362e-4d8b-b227-a3678ad5420c-420"
+    }
+  ],
+  "status": "current",
+  "mode": "working",
+  "title": "Health Facility Locations",
+  "code": {
+    "coding": [
+      {
+        "system": "http://ona.io",
+        "code": "health-facility-locations",
+        "display": "Health Facility Locations"
+      }
+    ],
+    "text": "Health Facility Locations"
+  },
+  "entry": [
+    {
+      "item": {
+        "reference": "Location/RegionB"
+      }
+    }
+  ]
+}
+````
 
 Core Information
 
@@ -747,17 +1033,157 @@ Entries
 This section contains the individual entries or items in the list, each referencing a health facility location. Each entry is represented by an item with a reference to a location resource.
 
 	-	item: Each item contains a reference to a specific health facility location in the FHIR Location resource.
-	-	Example: "reference": `"Location/1f4c76e1-9734-42d9-b5b8-4b213ee48d45"` refers to a health facility with a specific Location resource ID.
+	-	Example: "reference": `"Location/RegionB"` refers to a health facility with a specific Location resource ID.
 
 ### Geowidget Config
 
-<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/maps/location_map_config.json-->
-
-![location config](/img/eir_configs/location-config.png)
+````json
+{
+  "appId": "eir-chw",
+  "id": "locationMap",
+  "configType": "geoWidget",
+  "profileId": "caregiverProfile",
+  "mapLayers": [
+    {
+      "layer": "STREET",
+      "active": true
+    },
+    {
+      "layer": "SATELLITE",
+      "active": false
+    },
+    {
+      "layer": "STREET_SATELLITE",
+      "active": false
+    }
+  ],
+  "registrationQuestionnaire": {
+    "id": "5cb30374-6b3d-46a7-858b-803cb0dcecc5",
+    "title": "{{ a3401a36929da1f4e0ee28f9d5d52ba7 }}",
+    "saveButtonText": "{{ a3401a36929da1f4e0ee28f9d5d52ba7 }}",
+    "setPractitionerDetails": true,
+    "setOrganizationDetails": true
+  },
+  "resourceConfig": {
+    "baseResource": {
+      "resource": "Location",
+      "dataQueries": [
+        {
+          "paramName": "type",
+          "filterCriteria": [
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "238497"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "relatedResources": [
+      {
+        "id": "servicePointInventoryItems",
+        "resource": "List",
+        "searchParameter": "subject",
+        "relatedResources": [
+          {
+            "id": "availableRelatedPersons",
+            "resource": "RelatedPerson",
+            "searchParameter": "item",
+            "isRevInclude": false,
+            "relatedResources": [
+              {
+                "id": "availablePatients",
+                "resource": "Patient",
+                "searchParameter": "link",
+                "isRevInclude": true,
+                "relatedResources": [
+                  {
+                    "id": "availableTasks",
+                    "resource": "Task",
+                    "searchParameter": "subject",
+                    "isRevInclude": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "servicePointConfig": {
+    "rules": [],
+    "servicePointProperties": {
+      "taskStatus": "@{taskStatus}",
+      "name": "@{name}",
+      "status": "@{status}",
+      "servicePointType": "@{servicePointType}",
+      "type": "@{type}",
+      "typeImage": "@{typeImage}",
+      "servicePointId": "@{servicePointId}",
+      "number": "@{childCount}",
+      "dueTaskCount": "@{dueTaskCount}",
+      "overdueTaskCount": "@{overdueTaskCount}"
+    }
+  },
+  "summaryBottomSheetConfig": {
+    "views": [
+    ]
+  },
+  "showAddLocation": false,
+  "showPlaneSwitcher": true,
+  "showLocation": true,
+  "actions": [
+    {
+      "trigger": "ON_CLICK",
+      "workflow": "SUMMARY_BOTTOM_SHEET",
+      "id": "summaryBottomSheet",
+      "display": "{{ b67beb4a12a4e4b665cf240088feb5c1 }}",
+      "params": [
+        {
+          "paramType": "PARAMDATA",
+          "key": "servicePointId",
+          "value": "@{servicePointId}"
+        }
+      ]
+    }
+  ],
+  "topScreenSection": {
+    "title": "{{ 6a31766a4a17ff69f259bc76f812ecfa }}",
+    "searchBar": {
+      "visible": true,
+      "display": "{{ 707c2f2e55f8d787c671ada6cb252795 }}",
+      "computedRules": [
+        "name"
+      ]
+    },
+    "menuIcons": [
+      {
+        "viewType": "IMAGE",
+        "size": 10,
+        "imageConfig": {
+          "type": "local",
+          "reference": "ic_service_points"
+        },
+        "actions": [
+          {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_REGISTER",
+            "id": "caregiverRegister"
+          }
+        ]
+      }
+    ]
+  }
+}
+````
 
 Core Information
 
-	-	appId: "giz-eir"
+	-	appId: "eir-chw"
 
 		-	The application ID, likely for a specific healthcare or resource tracking system.
 
@@ -787,7 +1213,7 @@ Registration Questionnaire
 
 	-	registrationQuestionnaire: Defines a questionnaire associated with location registration.
 
-	-	id: "13030180"
+	-	id: "5cb30374-6b3d-46a7-858b-803cb0dcecc5"
 
 		-	title and saveButtonText: Referencing strings using placeholders (e.g., `{{ a3401a36929da1f4e0ee28f9d5d52ba7 }}`), likely translated or dynamically inserted text.
 
@@ -865,33 +1291,47 @@ More [here](http://localhost:3000/engineering/app/configuring/config-types/profi
 
 #### Caregiver Profile Config
 
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/caregiver_profile_config.json
-![caregiver profile](/img/eir_configs/caregiver-profile.png)
+[Caregiver Profile](https://github.com/ona-health/reference-apps/blob/main/eir-chw/app_configurations/profiles/caregiver_profile_config.json)
+
+````json
+{
+  "appId": "eir-chw",
+  "configType": "profile",
+  "id": "caregiverProfile",
+  "contentBackgroundColor": "#F2F4F7",
+  "fhirResource": {},
+  "secondaryResources": [],
+  "topAppBar": {},
+  "rules": [],
+  "views": [],
+  "fabActions": [],
+  "overFlowMenuItems": []
+}
+````
 
 [TBC]
 
 #### Child Profile Config
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/child_profile_config.json
-![child profile](/img/eir_configs/child-profile.png)
+[child profile](https://github.com/ona-health/reference-apps/blob/main/eir-chw/app_configurations/profiles/child_profile_config.json)
 
 [TBC]
 
-#### Child Upcoming Immunizatiion Profile Config
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childupcomingencounters_profile_config.json
+#### Child Upcoming Immunization Profile Config
+[Child Upcoming Immunization Profile](https://github.com/ona-health/reference-apps/blob/main/eir-chw/app_configurations/profiles/childupcomingencounters_profile_config.json)
 
 [TBC]
 
 #### Child Past Immunizatiion Profile Config
+[Child Past Immunizatiion Profile](https://github.com/ona-health/reference-apps/blob/main/eir-chw/app_configurations/profiles/childpastencounters_profile_config.json)
 
 [TBC]
 
 #### Child Past Profile Config
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childpastencounters_profile_config.json
 
 [TBC]
 
 #### Child Adverse Reaction Profile Config
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/childadversereactions_profile_config.json
+[Child Adverse Reaction Profile](https://github.com/ona-health/reference-apps/blob/main/eir-chw/app_configurations/profiles/childadversereactions_profile_config.json)
 
 [TBC]
 
@@ -899,9 +1339,127 @@ https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/profiles/chil
 
 #### Caregiver Register Congig
 
-<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/caregiver_register_config.json-->
+[Caregiver Register ](https://github.com/ona-health/reference-apps/blob/main/eir-chw/app_configurations/registers/caregiver_register_config.json)
 
-![caregiver register config](/img/eir_configs/caregiver-register.png)
+````json
+{
+  "appId": "eir-chw",
+  "configType": "register",
+  "id": "caregiverRegister",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "RelatedPerson",
+      "sortConfigs": [
+        {
+          "paramName": "_lastUpdated",
+          "dataType": "DATE",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    "relatedResources": [
+      {
+        "id": "availablePatients",
+        "resource": "Patient",
+        "searchParameter": "link",
+        "isRevInclude": true,
+        "relatedResources": [
+          {
+            "id": "availableTasks",
+            "resource": "Task",
+            "searchParameter": "subject",
+            "isRevInclude": true
+          }
+        ]
+      }
+    ]
+  },
+  "registerCard": {
+    "rules": [],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "{{ 44cf790aae7e0faa1ec3c95c14031d80 }}",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "{{ 7a1d818c428fb7ea95e704cfc24dc845 }}",
+                "fontSize": 14.0,
+                "primaryTextColor": "#000000"
+              }
+            ],
+            "showVerticalDivider": false,
+            "serviceButton": {
+              "visible": true,
+              "text": "@{numberOfChildren}",
+              "status": "@{visitStatus}",
+              "buttonType": "BIG",
+              "actions": [
+                {
+                  "trigger": "ON_CLICK",
+                  "workflow": "LAUNCH_PROFILE",
+                  "id": "caregiverProfile"
+                }
+              ]
+            },
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "caregiverProfile"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "{{ search.name.or.id }}",
+    "computedRules": [
+      "relatedPersonIdentifier",
+      "relatedPersonFirstName",
+      "relatedPersonMiddleName",
+      "relatedPersonLastName"
+    ]
+  },
+  "topScreenSection": {
+    "title": "{{ 6a31766a4a17ff69f259bc76f812ecfa }}",
+    "searchBar": {
+      "visible": true,
+      "display": "{{ search.by.location.name }}",
+      "computedRules": [
+        "servicePointName"
+      ]
+    },
+    "menuIcons": [
+      {
+        "viewType": "IMAGE",
+        "size": 10,
+        "imageConfig": {
+          "type": "local",
+          "reference": "ic_toggle_map_view"
+        },
+        "actions": [
+          {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_MAP",
+            "id": "locationMap"
+          }
+        ]
+      }
+    ]
+  }
+}
+````
 
 Breakdown of the Configuration:
 
@@ -963,9 +1521,47 @@ This section defines the UI at the top of the screen.
 
 #### Child Register Congig
 
-<!--https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/registers/child_register_config.json-->
+[Child Register](https://github.com/ona-health/reference-apps/blob/main/eir-chw/app_configurations/registers/child_register_config.json)
 
-![child register config](/img/eir_configs/child-register.png)
+````json
+{
+  "appId": "eir-chw",
+  "configType": "register",
+  "id": "childRegister",
+  "configRules": [
+    {
+      "name": "under18",
+      "condition": "true",
+      "actions": [
+        "data.put('under18', dateService.addOrSubtractTimeUnitFromCurrentDate(18,'-','YEAR'))"
+      ]
+    }
+  ],
+  "activeResourceFilters": [
+    {
+      "resourceType": "Patient",
+      "active": "false"
+    }
+  ],
+  "fhirResource": {},
+  "registerCard": {
+    "rules": [],
+    "views": []
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "{{ search.name.or.id }}",
+    "computedRules": [
+    ]
+  },
+  "registerFilter": {
+    "dataFilterActions": [
+    ],
+    "dataFilterFields": [
+    ]
+  }
+}
+````
 
 ## Scheduling & tasking
 
@@ -1061,7 +1657,7 @@ Example of scheduling with PlanDefinition:
 
 ![immunization config](/img/eir_configs/immunization-pd.png)
 
-Reference PlanDefinition can  be found [here](https://github.com/ona-health/giz-eir-fhir-resources/blob/main/plan_definition/child_immunizations.fhir.json)
+Reference PlanDefinition can  be found [here](https://github.com/ona-health/reference-apps/blob/main/eir-chw/fhir_content/plan_definition/child_immunizations.fhir.json)
 
 General Setup (First Activity) - "Child Register Handler Activity":
 
@@ -1138,9 +1734,11 @@ import immunization from '/img/eir_screenshoots/immunization-form.png';
 ![english trnslations config](/img/eir_configs/strings-en.png)
 ![spanish trnslations config](/img/eir_configs/strings-es.png)
 
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_config.properties
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_es_config.properties
-https://github.com/ona-health/giz-eir-fhir-resources/blob/main/app/translations/strings_fr_config.properties
+[Strings config](https://github.com/ona-health/reference-apps/blob/main/eir-chw/app_configurations/translations/strings_config.properties)
+
+[Strings ES config](https://github.com/ona-health/reference-apps/blob/main/eir-chw/app_configurations/translations/strings_es_config.properties)
+
+[String FR config](https://github.com/ona-health/reference-apps/blob/main/eir-chw/app_configurations/translations/strings_fr_config.properties)
 
 ## Configuration and adapting the content
 

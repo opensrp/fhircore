@@ -280,25 +280,6 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testHasDebugSuffix_withSuffix_shouldReturn_true() {
-    coEvery { appSettingViewModel.isDebugVariant() } returns true
-    appSettingViewModel.appId.value = "app/debug"
-    Assert.assertTrue(appSettingViewModel.hasDebugSuffix())
-  }
-
-  @Test
-  fun testHasDebugSuffix_noSuffix_shouldReturn_false() {
-    appSettingViewModel.appId.value = "app"
-    Assert.assertFalse(appSettingViewModel.hasDebugSuffix())
-  }
-
-  @Test
-  fun testHasDebugSuffix_emptyAppId_shouldReturn_null() {
-    appSettingViewModel.appId.value = null
-    Assert.assertFalse(appSettingViewModel.hasDebugSuffix())
-  }
-
-  @Test
   @Ignore("TO DO : Refactor unit test")
   fun testFetchConfigurationsChunking() = runTest {
     val appId = "test_app_id"

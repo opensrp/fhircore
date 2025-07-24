@@ -21,12 +21,8 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
@@ -81,26 +77,20 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
     setContent { AppTheme { PinLoginScreen(pinViewModel) } }
   }
 
-  @OptIn(ExperimentalMaterialApi::class)
   private fun navigateToHome() {
     startActivity(Intent(this, AppMainActivity::class.java))
-
-    lifecycleScope.launch {
-      // Initialize P2P only when username is provided then launch main activity
-      val username = secureSharedPreference.retrieveSessionUsername()
-      if (!username.isNullOrEmpty()) {
-        withContext(dispatcherProvider.main()) {
-          P2PLibrary.init(
-            P2PLibrary.Options(
-              context = applicationContext,
-              dbPassphrase = username,
-              username = username,
-              senderTransferDao = p2pSenderTransferDao,
-              receiverTransferDao = p2pReceiverTransferDao,
-            ),
-          )
-        }
-      }
+    // Initialize P2P only when username is provided then launch main activity
+    val username = secureSharedPreference.retrieveSessionUsername()
+    if (!username.isNullOrEmpty()) {
+      P2PLibrary.init(
+        P2PLibrary.Options(
+          context = applicationContext,
+          dbPassphrase = username,
+          username = username,
+          senderTransferDao = p2pSenderTransferDao,
+          receiverTransferDao = p2pReceiverTransferDao,
+        ),
+      )
     }
   }
 

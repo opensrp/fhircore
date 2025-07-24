@@ -37,6 +37,13 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
+import org.hl7.fhir.r4.model.CareTeam
+import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Location
+import org.hl7.fhir.r4.model.Organization
+import org.hl7.fhir.r4.model.OrganizationAffiliation
+import org.hl7.fhir.r4.model.Practitioner
+import org.hl7.fhir.r4.model.PractitionerRole
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -58,6 +65,7 @@ import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
+import org.smartregister.fhircore.engine.util.extension.removeHashPrefix
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.BuildConfig
@@ -316,14 +324,73 @@ constructor(
     viewModelScope.launch {
       bundle.entry.forEach { entry ->
         val practitionerDetails = entry.resource as PractitionerDetails
-        val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
-        val organizations = practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()
-        val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
-        val practitioners = practitionerDetails.fhirPractitionerDetails?.practitioners ?: listOf()
+        val containedResources = practitionerDetails.contained
+        val careTeams = mutableListOf<CareTeam>()
+        val organizations = mutableListOf<Organization>()
+        val locations = mutableListOf<Location>()
+        val practitioners = mutableListOf<Practitioner>()
+        val groups = mutableListOf<Group>()
+        val practitionerRoles = mutableListOf<PractitionerRole>()
+        val organizationAffiliations = mutableListOf<OrganizationAffiliation>()
         val practitionerId =
           practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString()
         val locationHierarchies =
           practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
+
+        if (containedResources.isNullOrEmpty()) {
+          /**
+           * This block is retained for backward compatibility with FHIR Gateway lower than v2.2.6
+           * The user assignments in those versions are not stored in the
+           * [PractitionerDetails.contained] field
+           */
+          practitionerDetails.fhirPractitionerDetails?.careTeams?.let { careTeams.addAll(it) }
+          practitionerDetails.fhirPractitionerDetails?.organizations?.let {
+            organizations.addAll(it)
+          }
+          practitionerDetails.fhirPractitionerDetails?.locations?.let { locations.addAll(it) }
+          practitionerDetails.fhirPractitionerDetails?.practitioners?.let {
+            practitioners.addAll(it)
+          }
+          practitionerDetails.fhirPractitionerDetails?.groups?.let { groups.addAll(it) }
+          practitionerDetails.fhirPractitionerDetails?.practitionerRoles?.let {
+            practitionerRoles.addAll(
+              it,
+            )
+          }
+          practitionerDetails.fhirPractitionerDetails?.organizationAffiliations?.let {
+            organizationAffiliations.addAll(
+              it,
+            )
+          }
+        } else {
+          containedResources.forEach { resource ->
+            resource.id = resource.id.extractLogicalIdUuid().removeHashPrefix()
+            when (resource.resourceType) {
+              ResourceType.CareTeam -> {
+                careTeams.add(resource as CareTeam)
+              }
+              ResourceType.Organization -> {
+                organizations.add(resource as Organization)
+              }
+              ResourceType.Location -> {
+                locations.add(resource as Location)
+              }
+              ResourceType.Practitioner -> {
+                practitioners.add(resource as Practitioner)
+              }
+              ResourceType.Group -> {
+                groups.add(resource as Group)
+              }
+              ResourceType.PractitionerRole -> {
+                practitionerRoles.add(resource as PractitionerRole)
+              }
+              ResourceType.OrganizationAffiliation -> {
+                organizationAffiliations.add(resource as OrganizationAffiliation)
+              }
+              else -> {}
+            }
+          }
+        }
 
         val careTeamIds =
           defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
@@ -356,15 +423,9 @@ constructor(
           }
 
         defaultRepository.createRemote(false, *practitioners.toTypedArray())
-        practitionerDetails.fhirPractitionerDetails?.groups?.toTypedArray()?.let {
-          defaultRepository.createRemote(false, *it)
-        }
-        practitionerDetails.fhirPractitionerDetails?.practitionerRoles?.toTypedArray()?.let {
-          defaultRepository.createRemote(false, *it)
-        }
-        practitionerDetails.fhirPractitionerDetails?.organizationAffiliations?.toTypedArray()?.let {
-          defaultRepository.createRemote(false, *it)
-        }
+        defaultRepository.createRemote(false, *groups.toTypedArray())
+        defaultRepository.createRemote(false, *practitionerRoles.toTypedArray())
+        defaultRepository.createRemote(false, *organizationAffiliations.toTypedArray())
 
         if (practitionerId.isNotEmpty()) {
           writePractitionerDetailsToShredPref(
