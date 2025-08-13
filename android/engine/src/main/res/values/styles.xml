@@ -117,4 +117,20 @@
         <item name="android:height">0dp</item>
     </style>
 
+    <style name="Body_Plus_2">
+        <item
+            name="questionnaire_textAppearance"
+            >@style/CustomTextAppearance_BodyLarge_Plus_2</item>
+        <item
+            name="questionnaire_background"
+            >?attr/colorSurface</item>
+    </style>
+
+    <style
+        name="CustomTextAppearance_BodyLarge_Plus_2"
+        parent="TextAppearance.Material3.BodyLarge"
+        >
+        <item name="android:textSize">18sp</item>
+    </style>
+
 </resources>
