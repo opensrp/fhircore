@@ -76,6 +76,12 @@ android {
     buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
     buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
     buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
+    buildConfigField("String", "GEMINI_API_KEY", """"${project.extra["GEMINI_API_KEY"]}"""")
+    buildConfigField(
+      "String",
+      "SPEECH_TO_TEXT_API_KEY",
+      """"${project.extra["SPEECH_TO_TEXT_API_KEY"]}"""",
+    )
 
     testInstrumentationRunner = "org.smartregister.fhircore.quest.QuestTestRunner"
     testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"
@@ -126,6 +132,8 @@ android {
   }
 
   packaging {
+    jniLibs { useLegacyPackaging = true }
+
     resources.excludes.addAll(
       listOf(
         "META-INF/ASL-2.0.txt",
@@ -324,6 +332,13 @@ android {
       manifestPlaceholders["appLabel"] = "Engage"
     }
 
+    create("fpdEngage") {
+      dimension = "apps"
+      applicationIdSuffix = ".fpdEngage"
+      versionNameSuffix = "-fpdEngage"
+      manifestPlaceholders["appLabel"] = "Engage IPC"
+    }
+
     create("eir") {
       dimension = "apps"
       applicationIdSuffix = ".who_eir"
@@ -379,12 +394,23 @@ android {
       versionNameSuffix = "-kaderJobAids"
       manifestPlaceholders["appLabel"] = "Kader Kesehatan"
     }
-
+    create("genAi") {
+      dimension = "apps"
+      applicationIdSuffix = ".genai"
+      versionNameSuffix = "-genAi"
+      manifestPlaceholders["appLabel"] = "Gen AI"
+    }
     create("mcct") {
       dimension = "apps"
       applicationIdSuffix = ".mcct"
       versionNameSuffix = "-mcct"
       manifestPlaceholders["appLabel"] = "MCCT+"
+    }
+    create("trueCover") {
+      dimension = "apps"
+      applicationIdSuffix = ".trueCover"
+      versionNameSuffix = "-trueCover"
+      manifestPlaceholders["appLabel"] = "True Cover"
     }
   }
 
@@ -502,6 +528,7 @@ configurations {
       force("com.fasterxml.jackson.core:jackson-core:2.15.2")
       force("ca.uhn.hapi.fhir:org.hl7.fhir.r4b:6.0.22")
       force("ca.uhn.hapi.fhir:hapi-fhir-structures-dstu2:6.8.0")
+      force("com.facebook.soloader:soloader:0.10.4")
     }
   }
 }
@@ -523,6 +550,19 @@ dependencies {
   implementation(libs.bundles.cameraX)
   implementation(libs.log4j)
 
+  // AI dependencies
+  implementation(libs.google.cloud.speech) {
+    exclude("com.google.guava", "guava")
+    exclude("org.threeten", "threetenbp")
+  }
+  implementation(libs.generativeai)
+  implementation(libs.grpc.okhttp) { exclude("com.google.guava", "guava") }
+  implementation(libs.tasks.genai) {
+    // exclude to use the full version required for com.google.cloud:google-cloud-speech
+    // https://github.com/protocolbuffers/protobuf/blob/main/java/lite.md
+    exclude("com.google.protobuf", "protobuf-javalite")
+  }
+
   // Annotation processors
   kapt(libs.hilt.compiler)
   kapt(libs.dagger.hilt.compiler)
@@ -534,6 +574,7 @@ dependencies {
   testImplementation(libs.robolectric)
   testImplementation(libs.bundles.junit.test)
   testImplementation(libs.core.testing)
+  testImplementation(libs.mockito.inline)
   testImplementation(libs.mockk)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.dagger.hilt.android.testing)
@@ -560,8 +601,6 @@ dependencies {
   kaptTest(libs.dagger.hilt.android.compiler)
   kaptAndroidTest(libs.dagger.hilt.android.compiler)
 
-  androidTestUtil(libs.orchestrator)
-
   // Android test dependencies
   androidTestImplementation(libs.bundles.junit.test)
   androidTestImplementation(libs.runner)
@@ -571,11 +610,13 @@ dependencies {
   androidTestImplementation(libs.benchmark.junit)
   androidTestImplementation(libs.work.testing)
   androidTestImplementation(libs.navigation.testing)
-  // Android Test dependencies
   androidTestImplementation(libs.junit)
   androidTestImplementation(libs.espresso.core)
   androidTestImplementation(libs.rules)
   androidTestImplementation(libs.uiautomator)
+  // Android test orchestrator dependencies
+  androidTestImplementation(libs.orchestrator)
+  androidTestUtil(libs.orchestrator)
 
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
@@ -588,7 +629,7 @@ dependencies {
  * an error if the result is past the expected result and margin. A message will also be printed if
  * the performance significantly improves.
  */
-task("evaluatePerformanceBenchmarkResults") {
+tasks.register("evaluatePerformanceBenchmarkResults") {
   val expectedPerformanceLimitsFile = project.file("expected-results.json")
   val resultsFile = project.file("org.smartregister.opensrp.ecbis-benchmarkData.json")
 
@@ -628,8 +669,8 @@ task("evaluatePerformanceBenchmarkResults") {
               "Metrics for $fullName could not be found in expected-results.json. Kindly add this to the file",
             )
           } else {
-            val expectedMaxTiming = (expectedTimings.get("max") ?: 0e1)
-            val timingMargin = (expectedTimings.get("margin") ?: 0e1)
+            val expectedMaxTiming = (expectedTimings["max"] ?: 0e1)
+            val timingMargin = (expectedTimings["margin"] ?: 0e1)
 
             if (median > (expectedMaxTiming + timingMargin)) {
               throw Exception(

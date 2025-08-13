@@ -65,7 +65,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
 
   @Inject lateinit var rulesExecutor: RulesExecutor
 
-  private lateinit var applicationContext: Context
+  private lateinit var context: Context
 
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var viewModel: GeoWidgetLauncherViewModel
@@ -97,7 +97,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-    applicationContext = ApplicationProvider.getApplicationContext<HiltTestApplication>()
+    context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
     viewModel =
       GeoWidgetLauncherViewModel(
         defaultRepository = defaultRepository,
@@ -124,7 +124,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
         servicePointConfig = null,
       )
 
-    viewModel.showNoLocationDialog(geoWidgetConfiguration, context = applicationContext)
+    viewModel.showNoLocationDialog(geoWidgetConfiguration, context = context)
 
     val value = viewModel.noLocationFoundDialog.value
     assertNull(value)
@@ -132,7 +132,7 @@ class GeoWidgetLauncherViewModelTest : RobolectricTest() {
 
   @Test
   fun testShowNoLocationDialogShouldSetLiveDataValueWhenConfigIsPresent() = runTest {
-    viewModel.showNoLocationDialog(geoWidgetConfiguration, applicationContext)
+    viewModel.showNoLocationDialog(geoWidgetConfiguration, context)
     val value = viewModel.noLocationFoundDialog.value
     assertNotNull(value)
     assertTrue(value!!)

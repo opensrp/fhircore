@@ -70,4 +70,67 @@ class StringExtensionTest {
 
     Assert.assertEquals(expected, beforeFormatExampleOne.spaceByUppercase())
   }
+
+  @Test
+  fun testRemoveHashPrefixShouldRemoveSingleHashPrefixFromString() {
+    val input = "#test123"
+    val result = input.removeHashPrefix()
+    Assert.assertEquals("test123", result)
+  }
+
+  @Test
+  fun testRemoveHashPrefixShouldRemoveMultipleHashPrefixesFromString() {
+    val input = "###test123"
+    val result = input.removeHashPrefix()
+    Assert.assertEquals("test123", result)
+  }
+
+  @Test
+  fun testRemoveHashPrefixShouldReturnSameStringWhenNoHashPrefixIsPresent() {
+    val input = "test123"
+    val result = input.removeHashPrefix()
+    Assert.assertEquals("test123", result)
+  }
+
+  @Test
+  fun testRemoveHashPrefixShouldHandleEmptyString() {
+    val input = ""
+    val result = input.removeHashPrefix()
+    Assert.assertEquals("", result)
+  }
+
+  @Test
+  fun testRemoveHashPrefixShouldHandleStringWithHashSymbolsInMiddle() {
+    val input = "test#123"
+    val result = input.removeHashPrefix()
+    Assert.assertEquals("test#123", result)
+  }
+
+  @Test
+  fun testRemoveHashPrefixShouldHandleIntegerWithMultipleHashPrefixes() {
+    val input = "###123"
+    val result = input.removeHashPrefix()
+    Assert.assertEquals("123", result)
+  }
+
+  @Test
+  fun testRemoveHashPrefixShouldHandleIntegerWithoutHashPrefix() {
+    val input = 123
+    val result = input.toString().removeHashPrefix()
+    Assert.assertEquals("123", result)
+  }
+
+  @Test
+  fun testRemoveHashPrefixShouldHandleOtherTypesByConvertingToString() {
+    val input = 123.45
+    val result = input.toString().removeHashPrefix()
+    Assert.assertEquals("123.45", result)
+  }
+
+  @Test
+  fun testRemoveHashPrefixShouldHandleUuidWithMultipleHashPrefixes() {
+    val input = "##8036ea0d-da4f-435c-bd4a-3e819a5a52dc"
+    val result = input.removeHashPrefix()
+    Assert.assertEquals("8036ea0d-da4f-435c-bd4a-3e819a5a52dc", result)
+  }
 }

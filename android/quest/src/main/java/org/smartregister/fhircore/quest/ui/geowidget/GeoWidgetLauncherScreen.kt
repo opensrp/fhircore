@@ -75,6 +75,7 @@ fun GeoWidgetLauncherScreen(
   decodeImage: ((String) -> Bitmap?)?,
   onAppMainEvent: (AppMainEvent) -> Unit,
   isSyncing: LiveData<Boolean>,
+  fragmentActivityContext: Context,
 ) {
   val context = LocalContext.current
   val syncing by isSyncing.observeAsState()
@@ -143,7 +144,7 @@ fun GeoWidgetLauncherScreen(
             launchQuestionnaire(
               geoWidgetConfiguration.registrationQuestionnaire,
               feature,
-              context,
+              fragmentActivityContext,
             )
           }
           .setOnCancelAddingLocationListener {
@@ -158,7 +159,8 @@ fun GeoWidgetLauncherScreen(
                 ResourceData(
                   baseResourceId = feature.id,
                   baseResourceType = ResourceType.Location,
-                  computedValuesMap = feature.properties.mapValues { it.value.content },
+                  computedValuesMap =
+                    feature.properties?.mapValues { it.value.content } ?: emptyMap(),
                 ),
               )
               .run { show(parentFragmentManager, SummaryBottomSheetFragment.TAG) }

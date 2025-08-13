@@ -16,11 +16,14 @@
 
 package org.smartregister.fhircore.quest.robolectric
 
+import android.content.Context
 import android.os.Build
 import android.os.Looper
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.test.core.app.ApplicationProvider
+import androidx.work.WorkManager
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
@@ -120,13 +123,19 @@ abstract class RobolectricTest {
     }
 
   fun String.replaceTimePart() =
-    // replace time part 11:11:11+05:00 with xx:xx:xx+xx:xx
-    // replace time part 11:11:11.111+05:00 with xx:xx:xx+xx:xx
-    // replace time part 18:33:04.520481+03:00
-    // replace time part 07:54:14.956793624Z
-    this.replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d[0-9,+]+:\\d{2}"), "xx:xx:xx+xx:xx")
-      .replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{3}.\\d[0-9,+]+:\\d{2}"), "xx:xx:xx+xx:xx")
-      .replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{9}Z"), "xx:xx:xx+xx:xx")
+    // Example timestamps to replace:
+    // 11:11:11+05:00
+    // 11:11:11.111+05:00
+    // 18:33:04.520481+03:00
+    // 07:54:14.95679362Z
+    // 07:54:14.956793624Z
+    // with xx:xx:xx+xx:xx
+    this.replace(
+      Regex(
+        "\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9}(Z|[+-]\\d{2}:\\d{2})|\\.\\d{3}\\.\\d[0-9,+]+:\\d{2})",
+      ),
+      "xx:xx:xx+xx:xx",
+    )
 
   fun buildStructureMapUtils(): StructureMapUtilities {
     val pcm = FilesystemPackageCacheManager(true)
@@ -173,6 +182,11 @@ abstract class RobolectricTest {
   @After
   open fun tearDown() {
     Shadows.shadowOf(Looper.getMainLooper()).idle()
+    cleanupWorkManager()
+
+    // Force garbage collection to help close lingering resources
+    System.gc()
+    System.runFinalization()
   }
 
   companion object {
@@ -200,6 +214,33 @@ abstract class RobolectricTest {
     @AfterClass
     fun resetMocks() {
       clearAllMocks()
+    }
+  }
+
+  private fun cleanupWorkManager() {
+    try {
+      val context = ApplicationProvider.getApplicationContext<Context>()
+      val workManager = WorkManager.getInstance(context)
+      workManager.cancelAllWork()
+
+      // Additional cleanup for databases
+      val dbPath = context.getDatabasePath("androidx.work.workdb")
+      if (dbPath.exists()) {
+        try {
+          val sql =
+            android.database.sqlite.SQLiteDatabase.openDatabase(
+              dbPath.absolutePath,
+              null,
+              android.database.sqlite.SQLiteDatabase.OPEN_READWRITE,
+            )
+          sql.close()
+        } catch (e: Exception) {
+          // Ignore, just an attempt to clean up
+        }
+      }
+    } catch (e: Exception) {
+      // Catch any exceptions during cleanup to avoid test failures
+      e.printStackTrace()
     }
   }
 }

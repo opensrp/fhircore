@@ -2,7 +2,6 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
 
-
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
   dependencies {
@@ -26,9 +25,12 @@ plugins {
 }
 
 tasks.dokkaHtmlMultiModule {
+  dependsOn(":engine:kaptDebugKotlin")
+  dependsOn(":engine:kaptDebugNonProxyKotlin")
+  dependsOn(":engine:kaptReleaseKotlin")
   moduleName.set("OpenSRP")
   moduleVersion.set(project.version.toString())
-  outputDirectory.set(file(buildDir.resolve("dokka")))
+  outputDirectory.set(file(layout.buildDirectory.dir("dokka")))
   pluginConfiguration<DokkaBase, DokkaBaseConfiguration> {
     footerMessage = "(c) Ona Systems Inc"
   }

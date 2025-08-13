@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.robolectric
 
+import android.os.Looper
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
@@ -26,6 +27,7 @@ import androidx.work.testing.WorkManagerTestInitHelper
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import org.robolectric.Shadows
 
 class WorkManagerRule : TestRule {
 
@@ -42,7 +44,19 @@ class WorkManagerRule : TestRule {
         try {
           base.evaluate()
         } finally {
-          WorkManager.getInstance(ApplicationProvider.getApplicationContext()).cancelAllWork()
+          // Ensure main looper is idle before cleanup
+          Shadows.shadowOf(Looper.getMainLooper()).idle()
+          val workManager = WorkManager.getInstance(ApplicationProvider.getApplicationContext())
+          // Cancel all work
+          workManager.cancelAllWork()
+          // Prune work to clean up database entries
+          workManager.pruneWork()
+
+          // Re-initialize to ensure clean state
+          WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
+
+          // Give time for cleanup
+          Thread.sleep(100)
         }
       }
     }

@@ -34,9 +34,12 @@ fhir-sdk-data-capture = "1.3.0-preview-SNAPSHOT"
 fhir-sdk-engine = "1.2.0-preview-SNAPSHOT"
 fhir-sdk-knowledge = "0.1.0-beta01-preview1-SNAPSHOT"
 fhir-sdk-workflow = "0.1.0-beta01-preview4.1-SNAPSHOT"
+generativeai = "0.9.0"
 fragment-ktx = "1.8.5"
 glide = "4.16.0"
+googleCloudSpeech = "4.50.0"
 gradle = "8.6.1"
+grpcOkHttp = "1.69.0"
 gson = "2.10.1"
 hilt = "1.2.0"
 java-jwt = "4.4.0"
@@ -61,6 +64,7 @@ log4j = "1.2.17"
 logback-android = "3.0.0"
 material = "1.12.0"
 mlkit-barcode-scanning = "17.3.0"
+mockito-inline = "4.0.0"
 mockk = "1.13.8"
 mockk-android = "1.13.8"
 msg-simple = "1.2"
@@ -85,6 +89,7 @@ slf4j-nop = "2.0.7"
 spotlessPluginGradle = "6.25.0"
 sqlcipher = "4.5.4"
 stax-api = "1.0-2"
+tasks-genai = "0.10.14"
 timber = "5.0.1"
 uiautomator = "2.3.0"
 work = "2.9.1"
@@ -140,9 +145,13 @@ fhir-sdk-common = { group = "org.smartregister", name = "common", version.ref = 
 foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "compose-ui" }
 fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragment-ktx" }
 fragment-testing = { group = "androidx.fragment", name = "fragment-testing", version.ref = "fragment-ktx" }
+generativeai = { module = "com.google.ai.client.generativeai:generativeai", version.ref = "generativeai" }
+tasks-genai = { module = "com.google.mediapipe:tasks-genai", version.ref = "tasks-genai" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 gms-play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+google-cloud-speech = { module = "com.google.cloud:google-cloud-speech", version.ref = "googleCloudSpeech" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
+grpc-okhttp = { module = "io.grpc:grpc-okhttp", version.ref = "grpcOkHttp" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hilt" }
 hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hilt" }
@@ -177,6 +186,7 @@ logback-android = { module = "com.github.tony19:logback-android", version.ref = 
 mapbox-sdk-turf = { group = "com.mapbox.mapboxsdk", name = "mapbox-sdk-turf", version.ref = "kujaku-mapbox-sdk-turf" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 mlkit-barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "mlkit-barcode-scanning"}
+mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockito-inline" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk-android" }
 msg-simple = { group = "com.github.java-json-tools", name = "msg-simple", version.ref = "msg-simple" }
@@ -228,6 +238,7 @@ kt3k-coveralls = { id = "com.github.kt3k.coveralls", version.ref = "kt3k-coveral
 org-jetbrains-dokka = { id = "org.jetbrains.dokka", version.ref = "jetbrains" }
 org-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 org-owasp-dependencycheck = { id = "org.owasp.dependencycheck", version.ref = "owasp" }
+org-jetbrains-kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 [bundles]
 accompanist = ["accompanist-placeholder", "accompanist-flowlayout"]

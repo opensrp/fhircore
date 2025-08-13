@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.login
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.quest.BaseUnitTest
@@ -33,5 +34,7 @@ class AuthAndroidServiceTest : BaseUnitTest() {
   fun testOnBindFunctionShouldCallAuthenticatorBinder() {
     every { authAndroidService.accountAuthenticator } returns accountAuthenticator
     Assert.assertEquals(authAndroidService.onBind(null), accountAuthenticator.iBinder)
+
+    unmockkObject(authAndroidService)
   }
 }
