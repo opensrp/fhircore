@@ -65,6 +65,9 @@ class GeoWidgetViewModel : ViewModel() {
       ServicePointType.LYCÉE,
       ServicePointType.DIRECTION_COMMUNALE_DE_L_ENSEIGNEMENT,
       ServicePointType.ECOLE_PRIVE,
+      ServicePointType.HOME,
+      ServicePointType.VISITED,
+      ServicePointType.REJECTED,
     )
 
   fun updateMapFeatures(geoJsonFeatures: List<GeoJsonFeature>) {
