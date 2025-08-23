@@ -31,6 +31,7 @@ data class ApplicationConfiguration(
   val appTitle: String = "",
   val remoteSyncPageSize: Int = ConfigurationRegistry.DEFAULT_COUNT,
   val languages: List<String> = listOf("en"),
+  val defaultLocale: String = "",
   val useDarkTheme: Boolean = false,
   val syncInterval: Long = 15,
   val syncStrategy: List<SyncStrategy> = listOf(),

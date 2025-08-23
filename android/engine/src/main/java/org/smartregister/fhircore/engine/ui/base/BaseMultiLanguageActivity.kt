@@ -21,10 +21,9 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import java.lang.UnsupportedOperationException
-import java.util.Locale
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.util.DependenciesHolder
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
 /**
@@ -33,7 +32,9 @@ import org.smartregister.fhircore.engine.util.extension.setAppLocale
  */
 abstract class BaseMultiLanguageActivity : AppCompatActivity() {
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var languageSelector: LanguageSelector
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   override fun onCreate(savedInstanceState: Bundle?) {
     inject()
@@ -43,14 +44,12 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
   }
 
   override fun attachBaseContext(baseContext: Context) {
-    val lang =
-      baseContext
-        .getSharedPreferences(SharedPreferencesHelper.PREFS_NAME, Context.MODE_PRIVATE)
-        .getString(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
-        ?: Locale.ENGLISH.toLanguageTag()
-    baseContext.setAppLocale(lang).run {
-      super.attachBaseContext(baseContext)
-      applyOverrideConfiguration(this)
+    val lang = DependenciesHolder.languageSelector?.getDefaultLocale(baseContext)
+    if (lang != null) {
+      baseContext.setAppLocale(lang).run {
+        super.attachBaseContext(baseContext)
+        applyOverrideConfiguration(this)
+      }
     }
   }
 
