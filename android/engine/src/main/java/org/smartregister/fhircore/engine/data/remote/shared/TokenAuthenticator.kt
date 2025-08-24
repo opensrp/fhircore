@@ -191,6 +191,7 @@ constructor(
             account.type,
             accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE),
           )
+          secureSharedPreference.deleteCredentials()
           Result.success(true)
         } else {
           Result.success(false)
