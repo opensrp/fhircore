@@ -140,7 +140,10 @@ constructor(
     }
   }
 
-  fun isCurrentRefreshTokenActive() = isTokenActive(accountManager.getPassword(findAccount()))
+  fun isCurrentRefreshTokenActive(): Boolean {
+    val account = findAccount() ?: return false
+    return isTokenActive(accountManager.getPassword(account))
+  }
 
   private fun buildOAuthPayload(grantType: String) =
     mutableMapOf(
