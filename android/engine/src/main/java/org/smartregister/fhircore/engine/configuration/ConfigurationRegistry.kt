@@ -292,9 +292,19 @@ constructor(
         withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
       }
     } else {
-      fhirEngine.searchCompositionByIdentifier(parsedAppId)?.run {
-        populateConfigurationsMap(context, this, false, parsedAppId, configsLoadedCallback)
+      fhirEngine.searchCompositionByIdentifier(parsedAppId)?.let { foundComposition ->
+        populateConfigurationsMap(
+          context,
+          foundComposition,
+          false,
+          parsedAppId,
+          configsLoadedCallback,
+        )
       }
+        ?: run {
+          Timber.w("Composition not found for appId: $appId", parsedAppId)
+          configsLoadedCallback(false)
+        }
     }
   }
 
