@@ -242,6 +242,7 @@ constructor(
    *
    * [configsLoadedCallback] is a callback function called once configs have been loaded.
    */
+  
   suspend fun loadConfigurations(
     appId: String,
     context: Context,
@@ -250,10 +251,9 @@ constructor(
     // Reset configurations before loading new ones
     configCacheMap.clear()
 
-    // For appId that ends with suffix /debug e.g. app/debug, we load configurations from assets
-    // extract appId by removing the suffix e.g. app from above example
     val loadFromAssets = appId.endsWith(DEBUG_SUFFIX, ignoreCase = true)
     val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
+
     if (loadFromAssets) {
       try {
         val localCompositionResource =
@@ -287,13 +287,29 @@ constructor(
             context = context,
           )
         }
+
+        // Additional check: if configs are still empty, treat as missing
+        if (configCacheMap.isEmpty() && configsJsonMap.isEmpty()) {
+          Timber.e("No configurations loaded for app ID: $parsedAppId")
+          withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
+          return
+        }
+
       } catch (fileNotFoundException: FileNotFoundException) {
         Timber.e("Missing app configs for app ID: $parsedAppId", fileNotFoundException)
         withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
+        return // Stop further execution
       }
+
     } else {
-      fhirEngine.searchCompositionByIdentifier(parsedAppId)?.run {
-        populateConfigurationsMap(context, this, false, parsedAppId, configsLoadedCallback)
+      val composition = fhirEngine.searchCompositionByIdentifier(parsedAppId)
+      if (composition != null) {
+        populateConfigurationsMap(context, composition, false, parsedAppId, configsLoadedCallback)
+      } else {
+        // Handle missing remote configuration
+        Timber.e("No configuration Composition found for app ID: $parsedAppId")
+        withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
+        return
       }
     }
   }
