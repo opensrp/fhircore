@@ -132,6 +132,8 @@ android {
   }
 
   packaging {
+    jniLibs { useLegacyPackaging = true }
+
     resources.excludes.addAll(
       listOf(
         "META-INF/ASL-2.0.txt",
@@ -330,6 +332,13 @@ android {
       manifestPlaceholders["appLabel"] = "Engage"
     }
 
+    create("fpdEngage") {
+      dimension = "apps"
+      applicationIdSuffix = ".fpdEngage"
+      versionNameSuffix = "-fpdEngage"
+      manifestPlaceholders["appLabel"] = "Engage IPC"
+    }
+
     create("eir") {
       dimension = "apps"
       applicationIdSuffix = ".who_eir"
@@ -396,6 +405,12 @@ android {
       applicationIdSuffix = ".mcct"
       versionNameSuffix = "-mcct"
       manifestPlaceholders["appLabel"] = "MCCT+"
+    }
+    create("trueCover") {
+      dimension = "apps"
+      applicationIdSuffix = ".trueCover"
+      versionNameSuffix = "-trueCover"
+      manifestPlaceholders["appLabel"] = "True Cover"
     }
   }
 
@@ -513,6 +528,7 @@ configurations {
       force("com.fasterxml.jackson.core:jackson-core:2.15.2")
       force("ca.uhn.hapi.fhir:org.hl7.fhir.r4b:6.0.22")
       force("ca.uhn.hapi.fhir:hapi-fhir-structures-dstu2:6.8.0")
+      force("com.facebook.soloader:soloader:0.10.4")
     }
   }
 }
@@ -613,7 +629,7 @@ dependencies {
  * an error if the result is past the expected result and margin. A message will also be printed if
  * the performance significantly improves.
  */
-task("evaluatePerformanceBenchmarkResults") {
+tasks.register("evaluatePerformanceBenchmarkResults") {
   val expectedPerformanceLimitsFile = project.file("expected-results.json")
   val resultsFile = project.file("org.smartregister.opensrp.ecbis-benchmarkData.json")
 
@@ -653,8 +669,8 @@ task("evaluatePerformanceBenchmarkResults") {
               "Metrics for $fullName could not be found in expected-results.json. Kindly add this to the file",
             )
           } else {
-            val expectedMaxTiming = (expectedTimings.get("max") ?: 0e1)
-            val timingMargin = (expectedTimings.get("margin") ?: 0e1)
+            val expectedMaxTiming = (expectedTimings["max"] ?: 0e1)
+            val timingMargin = (expectedTimings["margin"] ?: 0e1)
 
             if (median > (expectedMaxTiming + timingMargin)) {
               throw Exception(
