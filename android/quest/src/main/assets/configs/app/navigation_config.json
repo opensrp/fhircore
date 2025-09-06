@@ -298,6 +298,28 @@
       ]
     },
     {
+      "id": "feedback",
+      "visible": true,
+      "display": "Feedback",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_feedback"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "OPEN_URL",
+          "id": "openFeedback",
+          "params": [
+            {
+              "key": "url",
+              "value": "https://ona.io/home/"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "settings",
       "visible": true,
       "display": "Settings",
