@@ -104,6 +104,8 @@ import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
+import kotlin.time.measureTime
+import kotlin.time.measureTimedValue
 
 typealias SearchQueryResultQueue =
   ArrayDeque<Triple<List<String>, ResourceConfig, Map<String, String>>>
@@ -252,14 +254,19 @@ constructor(
    * param [addMandatoryTags]
    */
   suspend fun <R : Resource> addOrUpdate(addMandatoryTags: Boolean = true, resource: R) {
+    println("addOrUpdate: => ${resource.resourceType}")
     resource.updateLastUpdated()
     try {
-      fhirEngine.get(resource.resourceType, resource.logicalId).run {
-        val updateFrom = updateFrom(resource)
-        fhirEngine.update(updateFrom)
-      }
+      val (res, timetaken) = measureTimedValue { fhirEngine.get(resource.resourceType, resource.logicalId) }
+      println("Gets =>  $timetaken")
+        val (updateFrom, updateFromCalcTime) = measureTimedValue {  res.updateFrom(resource) }
+      println("updateFromCalcTime: => $updateFromCalcTime")
+        val updateTimeTaken = measureTime { fhirEngine.update(updateFrom) }
+      println("Updates: => $updateTimeTaken")
+      println("Gets => ${timetaken}, updates => $updateTimeTaken")
     } catch (resourceNotFoundException: ResourceNotFoundException) {
-      create(addMandatoryTags, resource)
+      val createTime = measureTime {  create(addMandatoryTags, resource) }
+      println("CreateTime: => $createTime")
     }
   }
 

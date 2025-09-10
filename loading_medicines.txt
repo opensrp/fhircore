@@ -1,0 +1,40 @@
+---------------------------- PROCESS STARTED (8588) for package org.smartregister.opensrp.diabetesCompassClinic ----------------------------
+Medicines
+2025-09-11 00:10:37.487  9632-9632  System.out              org...opensrp.diabetesCompassClinic  I  retrieveQuestionnaire: => 238.738417ms
+2025-09-11 00:10:37.487  9632-9632  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/ad6af356-468d-4f59-93b7-a8f2b48a40c4
+2025-09-11 00:10:37.506  9632-9632  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 18.421875ms
+2025-09-11 00:10:37.507  9632-9632  System.out              org...opensrp.diabetesCompassClinic  I  launchContextResources: => 19.125083ms
+2025-09-11 00:10:42.493  9632-9632  System.out              org...opensrp.diabetesCompassClinic  I  resourceMapperPopulate: => 4.986106919s
+2025-09-11 00:10:42.553  9632-9632  System.out              org...opensrp.diabetesCompassClinic  I  prepopulateConfig: => 59.687666ms
+2025-09-11 00:10:42.578  9632-9632  System.out              org...opensrp.diabetesCompassClinic  I  searchQuestionnaireResponse: => 23.949125ms
+2025-09-11 00:10:42.578  9632-9632  System.out              org...opensrp.diabetesCompassClinic  I  populationTime: => 5.090810794s
+2025-09-11 00:10:43.883  9632-9632  System.out              org...opensrp.diabetesCompassClinic  I  getQuestionnaireFragmentBuilder: => 1.297556959s
+2025-09-11 00:10:43.884  9632-9632  System.out              org...opensrp.diabetesCompassClinic  I  renderQuestionnaireTime: => 1.298483709s
+
+2025-09-11 00:20:06.590  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  retrieveQuestionnaire: => 215.810334ms
+2025-09-11 00:20:06.591  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-11 00:20:06.607  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 15.570208ms
+2025-09-11 00:20:06.607  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  launchContextResources: => 16.453333ms
+2025-09-11 00:20:11.657  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  resourceMapperPopulate: => 5.049630086s
+2025-09-11 00:20:11.705  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  prepopulateConfig: => 47.683167ms
+2025-09-11 00:20:11.826  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  searchQuestionnaireResponse: => 120.720458ms
+2025-09-11 00:20:11.827  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  excludeLinkIdPrepopulation: => 112.167us
+2025-09-11 00:20:11.827  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  populationTime: => 5.235959252s
+2025-09-11 00:20:12.664  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  Resource.json: => 828.200834ms
+2025-09-11 00:20:13.357  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  Resource.json: => 669.201208ms
+2025-09-11 00:20:13.937  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  setLaunchContextMap: => 579.950166ms
+2025-09-11 00:20:13.938  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  getQuestionnaireFragmentBuilder: => 2.103767543s
+2025-09-11 00:20:13.939  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  renderQuestionnaireTime: => 2.104284918s
+
+2025-09-11 00:22:28.855  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  retrieveQuestionnaire: => 2.563958ms
+2025-09-11 00:22:28.856  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/7b4dbfca-84da-4b09-9b04-d31723642c75
+2025-09-11 00:22:28.951  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 95.313084ms
+2025-09-11 00:22:28.952  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  launchContextResources: => 96.020584ms
+2025-09-11 00:22:28.954  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  resourceMapperPopulate: => 1.210542ms
+2025-09-11 00:22:28.956  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  prepopulateConfig: => 1.708250ms
+2025-09-11 00:22:28.988  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  searchQuestionnaireResponse: => 32.216375ms
+2025-09-11 00:22:28.989  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  populationTime: => 133.093834ms
+2025-09-11 00:22:29.822  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  Resource.json: => 822.644292ms
+2025-09-11 00:22:30.486  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  setLaunchContextMap: => 663.320167ms
+2025-09-11 00:22:30.487  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  getQuestionnaireFragmentBuilder: => 1.487529917s
+2025-09-11 00:22:30.487  9887-9887  System.out              org...opensrp.diabetesCompassClinic  I  renderQuestionnaireTime: => 1.488007875s

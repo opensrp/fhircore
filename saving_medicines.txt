@@ -1,0 +1,125 @@
+2025-09-10 23:17:22.063  7702-7702  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:17:22.094  7702-7702  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 31.160750ms
+2025-09-10 23:17:57.184  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Encounter/patient-visit-2025-09-10-2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:17:57.197  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 12.250083ms
+2025-09-10 23:17:57.197  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Encounter/adc61d41-6bcf-409f-b97f-88cfd2c4487f
+2025-09-10 23:17:57.200  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 1.986833ms
+2025-09-10 23:17:57.200  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => MedicationRequest/dc-med-318956006-2025-09-10-2a6eb94529a346218e45f4e6f3397dda
+2025-09-10 23:17:57.202  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 1.821916ms
+2025-09-10 23:17:57.202  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => MedicationRequest/dc-med-376209006-2025-09-10-2a6eb94529a346218e45f4e6f3397dda
+2025-09-10 23:17:57.212  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 9.722458ms
+2025-09-10 23:17:57.213  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:17:57.218  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 4.043166ms
+2025-09-10 23:17:57.218  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  saveExtractedResources: => Encounter
+2025-09-10 23:17:57.218  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => Encounter
+2025-09-10 23:17:59.663  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  Gets => 1.467875ms, updates => 36.337125ms
+2025-09-10 23:17:59.664  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:17:59.667  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 3.284125ms
+2025-09-10 23:17:59.668  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  saveExtractedResources: => Encounter
+2025-09-10 23:17:59.668  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => Encounter
+2025-09-10 23:17:59.686  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:17:59.695  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 9.051625ms
+2025-09-10 23:17:59.696  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  saveExtractedResources: => MedicationRequest
+2025-09-10 23:17:59.696  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => MedicationRequest
+2025-09-10 23:18:01.818  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  Gets => 1.454ms, updates => 21.232417ms
+2025-09-10 23:18:01.818  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:18:01.827  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 8.053959ms
+2025-09-10 23:18:01.827  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  saveExtractedResources: => MedicationRequest
+2025-09-10 23:18:01.828  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => MedicationRequest
+2025-09-10 23:18:03.862  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  Gets => 1.284125ms, updates => 16.874958ms
+2025-09-10 23:18:03.863  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:18:03.869  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 5.582584ms
+2025-09-10 23:18:03.869  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  saveExtractedResources: => MedicationRequest
+2025-09-10 23:18:03.869  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => MedicationRequest
+2025-09-10 23:18:03.883  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:18:03.893  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 9.422667ms
+2025-09-10 23:18:03.894  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => QuestionnaireResponse
+2025-09-10 23:18:03.914  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  updateResourcesLastUpdatedProperty: =>
+2025-09-10 23:18:03.915  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  updateResourcesLastUpdatedProperty: => Patient
+2025-09-10 23:18:03.915  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:18:03.919  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 3.300083ms
+2025-09-10 23:18:03.919  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => Patient
+2025-09-10 23:18:05.966  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  Gets => 9.975750ms, updates => 33.406083ms
+2025-09-10 23:18:05.967  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:18:05.977  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 9.809208ms
+2025-09-10 23:18:06.020  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => MedicationRequest
+2025-09-10 23:18:10.003  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  Gets => 6.305166ms, updates => 25.049667ms
+2025-09-10 23:18:10.003  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => MedicationRequest
+2025-09-10 23:18:13.879  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  Gets => 4.703583ms, updates => 26.688959ms
+2025-09-10 23:18:13.879  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => MedicationRequest
+2025-09-10 23:18:17.796  7702-7782  System.out              org...opensrp.diabetesCompassClinic  I  Gets => 4.927208ms, updates => 35.868ms
+
+
+---------------------------- PROCESS STARTED (8285) for package org.smartregister.opensrp.diabetesCompassClinic ----------------------------
+2025-09-10 23:32:51.070  8285-8285  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:32:51.083  8285-8285  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 12.724084ms
+2025-09-10 23:33:25.609  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Encounter/patient-visit-2025-09-10-2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:33:25.634  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 24.104875ms
+2025-09-10 23:33:25.635  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Encounter/eee7b508-676e-4da5-a833-7d8ff560cf78
+2025-09-10 23:33:25.645  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 10.057125ms
+2025-09-10 23:33:25.646  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => MedicationRequest/dc-med-318956006-2025-09-10-2a6eb94529a346218e45f4e6f3397dda
+2025-09-10 23:33:25.649  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 2.461875ms
+2025-09-10 23:33:25.649  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => MedicationRequest/dc-med-376209006-2025-09-10-2a6eb94529a346218e45f4e6f3397dda
+2025-09-10 23:33:25.651  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 1.870084ms
+2025-09-10 23:33:25.651  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => MedicationRequest/dc-med-325278007-2025-09-10-2a6eb94529a346218e45f4e6f3397dda
+2025-09-10 23:33:25.653  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 1.596250ms
+2025-09-10 23:33:25.654  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:33:25.666  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 3.559375ms
+2025-09-10 23:33:25.667  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  saveExtractedResources: => Encounter
+2025-09-10 23:33:25.667  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => Encounter
+2025-09-10 23:33:25.669  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Gets =>  1.407166ms
+2025-09-10 23:33:28.202  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  updateFromCalcTime: => 2.532677460s
+2025-09-10 23:33:28.250  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Updates: => 47.910167ms
+2025-09-10 23:33:28.250  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Gets => 1.407166ms, updates => 47.910167ms
+2025-09-10 23:33:28.251  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:33:28.260  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 9.077708ms
+2025-09-10 23:33:28.261  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  saveExtractedResources: => Encounter
+2025-09-10 23:33:28.261  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => Encounter
+2025-09-10 23:33:28.283  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  CreateTime: => 19.457584ms
+2025-09-10 23:33:28.284  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:33:28.294  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 9.823125ms
+2025-09-10 23:33:28.295  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  saveExtractedResources: => MedicationRequest
+2025-09-10 23:33:28.295  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => MedicationRequest
+2025-09-10 23:33:28.297  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Gets =>  1.708875ms
+2025-09-10 23:33:30.670  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  updateFromCalcTime: => 2.372386043s
+2025-09-10 23:33:30.697  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Updates: => 26.591417ms
+2025-09-10 23:33:30.697  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Gets => 1.708875ms, updates => 26.591417ms
+2025-09-10 23:33:30.698  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:33:30.702  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 3.509833ms
+2025-09-10 23:33:30.702  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  saveExtractedResources: => MedicationRequest
+2025-09-10 23:33:30.702  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => MedicationRequest
+2025-09-10 23:33:30.710  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Gets =>  7.425ms
+2025-09-10 23:33:32.966  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  updateFromCalcTime: => 2.255935501s
+2025-09-10 23:33:32.987  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Updates: => 20.280416ms
+2025-09-10 23:33:32.993  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Gets => 7.425ms, updates => 20.280416ms
+2025-09-10 23:33:32.994  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:33:32.999  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 4.671708ms
+2025-09-10 23:33:32.999  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  saveExtractedResources: => MedicationRequest
+2025-09-10 23:33:32.999  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => MedicationRequest
+2025-09-10 23:33:33.001  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Gets =>  1.568250ms
+2025-09-10 23:33:35.253  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  updateFromCalcTime: => 2.252223418s
+2025-09-10 23:33:35.277  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Updates: => 18.797500ms
+2025-09-10 23:33:35.278  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Gets => 1.568250ms, updates => 18.797500ms
+2025-09-10 23:33:35.278  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:33:35.282  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 3.183458ms
+2025-09-10 23:33:35.282  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  saveExtractedResources: => MedicationRequest
+2025-09-10 23:33:35.282  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => MedicationRequest
+2025-09-10 23:33:35.283  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Gets =>  878.792us
+2025-09-10 23:33:37.437  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  updateFromCalcTime: => 2.153086585s
+2025-09-10 23:33:37.460  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Updates: => 17.12ms
+2025-09-10 23:33:37.460  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Gets => 878.792us, updates => 17.12ms
+2025-09-10 23:33:37.461  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:33:37.464  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 3.324500ms
+2025-09-10 23:33:37.465  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => QuestionnaireResponse
+2025-09-10 23:33:37.497  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  CreateTime: => 31.109792ms
+2025-09-10 23:33:37.498  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  updateResourcesLastUpdatedProperty: =>
+2025-09-10 23:33:37.498  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  updateResourcesLastUpdatedProperty: => Patient
+2025-09-10 23:33:37.498  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:33:37.501  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 3.339750ms
+2025-09-10 23:33:37.501  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  addOrUpdate: => Patient
+2025-09-10 23:33:37.513  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Gets =>  11.198916ms
+2025-09-10 23:33:39.581  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  updateFromCalcTime: => 2.067735918s
+2025-09-10 23:33:39.614  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Updates: => 32.688750ms
+2025-09-10 23:33:39.614  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  Gets => 11.198916ms, updates => 32.688750ms
+2025-09-10 23:33:39.615  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => Patient/2a6eb945-29a3-4621-8e45-f4e6f3397dda
+2025-09-10 23:33:39.618  8285-8355  System.out              org...opensrp.diabetesCompassClinic  I  loadResource: => 3.070791ms
