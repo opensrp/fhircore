@@ -91,6 +91,7 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.hasQuestionnaireLaunchContexts
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepopulateWithComputedConfigValues
 import org.smartregister.fhircore.engine.util.extension.questionnaireResponseStatus
@@ -1149,14 +1150,20 @@ constructor(
     }
     println("launchContextResources: => $timeTakenLaunchContext")
 
-    // Populate questionnaire with initial default values
-    val resourceMapperPopulateTime = measureTime {
-      ResourceMapper.populate(
-        questionnaire,
-        launchContexts = launchContextResources.associateBy { it.resourceType.name.lowercase() },
-      )
+    if (questionnaire.hasQuestionnaireLaunchContexts) {
+      val (launchContexts, timed) = measureTimedValue {
+        launchContextResources.associateBy { it.resourceType.name.lowercase() }
+      }
+      println("launchContextResources.associateBy: => $timed")
+      // Populate questionnaire with initial default values
+      val resourceMapperPopulateTime = measureTime {
+        ResourceMapper.populate(
+          questionnaire,
+          launchContexts = launchContexts,
+        )
+      }
+      println("resourceMapperPopulate: => $resourceMapperPopulateTime")
     }
-    println("resourceMapperPopulate: => $resourceMapperPopulateTime")
 
     val prepopulateTime = measureTime {
       questionnaire.prepopulateWithComputedConfigValues(

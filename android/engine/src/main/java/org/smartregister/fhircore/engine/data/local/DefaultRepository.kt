@@ -261,7 +261,7 @@ constructor(
       println("Gets =>  $timetaken")
         val (updateFrom, updateFromCalcTime) = measureTimedValue {  res.updateFrom(resource) }
       println("updateFromCalcTime: => $updateFromCalcTime")
-        val updateTimeTaken = measureTime { fhirEngine.update(updateFrom) }
+        val updateTimeTaken = measureTime { fhirEngine.update(resource) }
       println("Updates: => $updateTimeTaken")
       println("Gets => ${timetaken}, updates => $updateTimeTaken")
     } catch (resourceNotFoundException: ResourceNotFoundException) {

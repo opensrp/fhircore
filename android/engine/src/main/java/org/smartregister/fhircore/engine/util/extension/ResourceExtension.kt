@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
@@ -116,6 +117,9 @@ fun CodeableConcept.stringValue(): String =
 fun Resource.encodeResourceToString(): String =
   FhirContext.forR4().getCustomJsonParser().encodeResourceToString(this.copy())
 
+fun Resource.encodeResourceToString(parser: IParser = FhirContext.forR4().getCustomJsonParser()): String =
+  parser.encodeResourceToString(this.copy())
+
 fun StructureMap.encodeResourceToString(): String =
   FhirContext.forR4()
     .getCustomJsonParser()
@@ -128,7 +132,7 @@ fun StructureMap.encodeResourceToString(): String =
 fun <T> String.decodeResourceFromString(): T =
   FhirContext.forR4().getCustomJsonParser().parseResource(this) as T
 
-fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
+fun <T : Resource> T.updateFrom(updatedResource: Resource, parser: IParser = FhirContext.forR4().getCustomJsonParser()): T {
   var extensionUpdateFrom = listOf<Extension>()
   if (updatedResource is Patient) {
     extensionUpdateFrom = updatedResource.extension
@@ -137,12 +141,11 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   if (this is Patient) {
     extension = this.extension
   }
-  val stringJson = encodeResourceToString()
+  val stringJson = encodeResourceToString(parser)
   val originalResourceJson = JSONObject(stringJson)
 
-  originalResourceJson.updateFrom(JSONObject(updatedResource.encodeResourceToString()))
-  return FhirContext.forR4()
-    .getCustomJsonParser()
+  originalResourceJson.updateFrom(JSONObject(updatedResource.encodeResourceToString(parser)))
+  return parser
     .parseResource(this::class.java, originalResourceJson.toString())
     .apply {
       val meta = this.meta

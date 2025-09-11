@@ -49,6 +49,10 @@ fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
     ""
   }
 
+val Questionnaire.hasQuestionnaireLaunchContexts: Boolean
+  get() =
+      this.extension.any { it.url == "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-launchContext" }
+
 fun Questionnaire.extractByStructureMap() =
   this.targetStructureMap != null ||
     this.extension.any { it.url.contains("sdc-questionnaire-itemExtractionContext") }

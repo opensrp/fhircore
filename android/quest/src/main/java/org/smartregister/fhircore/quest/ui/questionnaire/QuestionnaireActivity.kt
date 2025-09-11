@@ -37,6 +37,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -77,6 +78,7 @@ import kotlin.time.measureTimedValue
 class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+  @Inject lateinit var fhirParser: IParser
   val viewModel by viewModels<QuestionnaireViewModel>()
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var actionParameters: ArrayList<ActionParameter>
@@ -460,7 +462,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
         val setLaunchContextMapTime = measureTime {
           launchContextResources
-            .associate { Pair(it.resourceType.name.lowercase(), it.encodeResourceToString()) }
+            .associate { Pair(it.resourceType.name.lowercase(), it.encodeResourceToString(fhirParser)) }
             .takeIf { it.isNotEmpty() }
             ?.let { setQuestionnaireLaunchContextMap(it) }
         }
@@ -469,7 +471,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   }
 
   private fun Resource.json(): String {
-    val (str, time) = measureTimedValue {  this.encodeResourceToString() }
+    val (str, time) = measureTimedValue {  this.encodeResourceToString(fhirParser) }
     println("Resource.json: => $time")
     return str
   }
