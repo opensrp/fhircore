@@ -325,10 +325,17 @@ android {
       manifestPlaceholders["appLabel"] = "EIR"
     }
 
-    create("engage") {
+    create("columbiaEngagePreview") {
       dimension = "apps"
-      applicationIdSuffix = ".engage"
-      versionNameSuffix = "-engage"
+      applicationIdSuffix = ".columbiaEngagePreview"
+      versionNameSuffix = "-columbiaEngagePreview"
+      manifestPlaceholders["appLabel"] = "Engage Training App"
+    }
+
+    create("columbiaEngage") {
+      dimension = "apps"
+      applicationIdSuffix = ".columbiaEngage"
+      versionNameSuffix = "-columbiaEngage"
       manifestPlaceholders["appLabel"] = "Engage"
     }
 
