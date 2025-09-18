@@ -32,20 +32,20 @@ import dagger.hilt.components.SingletonComponent
 import io.sentry.android.core.SentryAndroid
 import io.sentry.android.core.SentryAndroidOptions
 import io.sentry.android.fragment.FragmentLifecycleIntegration
+import java.net.URL
+import javax.inject.Inject
+import kotlin.time.measureTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Questionnaire
-import java.net.URL
-import javax.inject.Inject
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.util.extension.getSubDomain
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
 import timber.log.Timber
-import kotlin.time.measureTime
 
 @HiltAndroidApp
 class QuestApplication : Application(), DataCaptureConfig.Provider, Configuration.Provider {
@@ -117,21 +117,23 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
   fun triggerInitSDCFhirPathEngine() {
     CoroutineScope(Dispatchers.Default).launch {
       // Sample questionnaire to initialize fhirPathEngine in the background
-      val initFhirPathEngineQuestionnaire = Questionnaire().addItem(
-        Questionnaire.QuestionnaireItemComponent().apply {
-          type = Questionnaire.QuestionnaireItemType.TEXT
-          extension =
-            listOf(
-              Extension(
-                "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-                Expression().apply {
-                  language = "text/fhirpath"
-                  expression = "1"
-                },
-              ),
-            )
-        },
-      )
+      val initFhirPathEngineQuestionnaire =
+        Questionnaire()
+          .addItem(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              type = Questionnaire.QuestionnaireItemType.TEXT
+              extension =
+                listOf(
+                  Extension(
+                    "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    Expression().apply {
+                      language = "text/fhirpath"
+                      expression = "1"
+                    },
+                  ),
+                )
+            },
+          )
       val initQuestionnaireTime = measureTime {
         ResourceMapper.populate(initFhirPathEngineQuestionnaire, emptyMap())
       }

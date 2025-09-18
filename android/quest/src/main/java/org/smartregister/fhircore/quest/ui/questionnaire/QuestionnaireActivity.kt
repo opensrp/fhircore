@@ -44,8 +44,9 @@ import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.Serializable
 import javax.inject.Inject
+import kotlin.time.measureTime
+import kotlin.time.measureTimedValue
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Questionnaire
@@ -73,13 +74,12 @@ import org.smartregister.fhircore.quest.ui.shared.ActivityOnResultType
 import org.smartregister.fhircore.quest.ui.shared.ON_RESULT_TYPE
 import org.smartregister.fhircore.quest.util.ResourceUtils
 import timber.log.Timber
-import kotlin.time.measureTime
-import kotlin.time.measureTimedValue
 
 @AndroidEntryPoint
 class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @Inject lateinit var fhirParser: IParser
   val viewModel by viewModels<QuestionnaireViewModel>()
   private lateinit var questionnaireConfig: QuestionnaireConfig
@@ -296,39 +296,41 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private suspend fun launchQuestionnaire() {
     showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(true))
 
-    val (questionnaire, timeTaken) = measureTimedValue {  viewModel.retrieveQuestionnaire(questionnaireConfig) }
+    val (questionnaire, timeTaken) =
+      measureTimedValue { viewModel.retrieveQuestionnaire(questionnaireConfig) }
     println("retrieveQuestionnaire: => $timeTaken")
-      when {
-          questionnaire == null -> {
-              showToast(getString(R.string.questionnaire_not_found))
-              finish()
-          }
-          questionnaire.subjectType.isNullOrEmpty() -> {
-              val subjectRequiredMessage = getString(R.string.missing_subject_type)
-              showToast(subjectRequiredMessage)
-              Timber.e(subjectRequiredMessage)
-              finish()
-          }
-          else -> {
-              viewModel.setQuestionnaire(questionnaire)
-
-              val (resPair, populationTime)  = measureTimedValue {
-                  viewModel.populateQuestionnaire(
-                    viewModel.currentQuestionnaire,
-                    questionnaireConfig,
-                    actionParameters,
-                  )
-              }
-              println("populationTime: => $populationTime")
-              val (questionnaireResponse, launchContextResources) = resPair
-
-              viewModel.showQuestionnaireResponse(questionnaireResponse)
-
-              showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
-
-              listenForQuestionnaireFormUpdates(viewModel.currentQuestionnaire, launchContextResources)
-          }
+    when {
+      questionnaire == null -> {
+        showToast(getString(R.string.questionnaire_not_found))
+        finish()
       }
+      questionnaire.subjectType.isNullOrEmpty() -> {
+        val subjectRequiredMessage = getString(R.string.missing_subject_type)
+        showToast(subjectRequiredMessage)
+        Timber.e(subjectRequiredMessage)
+        finish()
+      }
+      else -> {
+        viewModel.setQuestionnaire(questionnaire)
+
+        val (resPair, populationTime) =
+          measureTimedValue {
+            viewModel.populateQuestionnaire(
+              viewModel.currentQuestionnaire,
+              questionnaireConfig,
+              actionParameters,
+            )
+          }
+        println("populationTime: => $populationTime")
+        val (questionnaireResponse, launchContextResources) = resPair
+
+        viewModel.showQuestionnaireResponse(questionnaireResponse)
+
+        showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
+
+        listenForQuestionnaireFormUpdates(viewModel.currentQuestionnaire, launchContextResources)
+      }
+    }
   }
 
   private suspend fun listenForQuestionnaireFormUpdates(
@@ -413,15 +415,16 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     questionnaireResponse: QuestionnaireResponse?,
     launchContextResources: List<Resource>,
   ) {
-    val (questionnaireFragment, timeTaken) = measureTimedValue {
-      getQuestionnaireFragmentBuilder(
-        questionnaire,
-        questionnaireConfig,
-        questionnaireResponse,
-        launchContextResources,
-      )
-        .build()
-    }
+    val (questionnaireFragment, timeTaken) =
+      measureTimedValue {
+        getQuestionnaireFragmentBuilder(
+            questionnaire,
+            questionnaireConfig,
+            questionnaireResponse,
+            launchContextResources,
+          )
+          .build()
+      }
     println("getQuestionnaireFragmentBuilder: => $timeTaken")
     viewBinding.clearAll.setOnClickListener { questionnaireFragment.clearAllAnswers() }
     supportFragmentManager.commit {
@@ -437,45 +440,46 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     questionnaireConfig: QuestionnaireConfig,
     questionnaireResponse: QuestionnaireResponse?,
     launchContextResources: List<Resource>,
-  ): QuestionnaireFragment.Builder =  withContext(dispatcherProvider.default()) {
-    QuestionnaireFragment.builder()
-      .setQuestionnaire(questionnaire.json())
-      .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(
-        OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER,
-      )
-      .setSubmitButtonText(
-        questionnaireConfig.saveButtonText ?: getString(R.string.submit_questionnaire),
-      )
-      .showAsterisk(questionnaireConfig.showRequiredTextAsterisk)
-      .showRequiredText(questionnaireConfig.showRequiredText)
-      .setIsReadOnly(questionnaireConfig.isSummary())
-      .setShowSubmitAnywayButton(questionnaireConfig.showSubmitAnywayButton.toBooleanStrict())
-      .apply {
-        if (questionnaireResponse != null) {
-          questionnaireResponse
-            .takeIf {
-              viewModel.validateQuestionnaireResponse(
-                questionnaire,
-                it,
-                this@QuestionnaireActivity,
-              )
-            }
-            ?.let { setQuestionnaireResponse(questionnaireResponse.json()) }
-            ?: showToast(getString(R.string.error_populating_questionnaire))
-        }
+  ): QuestionnaireFragment.Builder =
+    withContext(dispatcherProvider.default()) {
+      QuestionnaireFragment.builder()
+        .setQuestionnaire(questionnaire.json())
+        .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(
+          OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER,
+        )
+        .setSubmitButtonText(
+          questionnaireConfig.saveButtonText ?: getString(R.string.submit_questionnaire),
+        )
+        .showAsterisk(questionnaireConfig.showRequiredTextAsterisk)
+        .showRequiredText(questionnaireConfig.showRequiredText)
+        .setIsReadOnly(questionnaireConfig.isSummary())
+        .setShowSubmitAnywayButton(questionnaireConfig.showSubmitAnywayButton.toBooleanStrict())
+        .apply {
+          if (questionnaireResponse != null) {
+            questionnaireResponse
+              .takeIf {
+                viewModel.validateQuestionnaireResponse(
+                  questionnaire,
+                  it,
+                  this@QuestionnaireActivity,
+                )
+              }
+              ?.let { setQuestionnaireResponse(questionnaireResponse.json()) }
+              ?: showToast(getString(R.string.error_populating_questionnaire))
+          }
 
-        val setLaunchContextMapTime = measureTime {
-          launchContextResources
-            .associate { Pair(it.resourceType.name.lowercase(), it.json()) }
-            .takeIf { it.isNotEmpty() }
-            ?.let { setQuestionnaireLaunchContextMap(it) }
+          val setLaunchContextMapTime = measureTime {
+            launchContextResources
+              .associate { Pair(it.resourceType.name.lowercase(), it.json()) }
+              .takeIf { it.isNotEmpty() }
+              ?.let { setQuestionnaireLaunchContextMap(it) }
+          }
+          println("setLaunchContextMap: => $setLaunchContextMapTime")
         }
-        println("setLaunchContextMap: => $setLaunchContextMapTime")
-      }
-  }
+    }
 
   private fun Resource.json(): String {
-    val (str, time) = measureTimedValue {  this.encodeResourceToString(fhirParser) }
+    val (str, time) = measureTimedValue { this.encodeResourceToString(fhirParser) }
     println("Resource.json: => $time")
     return str
   }

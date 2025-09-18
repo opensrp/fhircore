@@ -43,14 +43,15 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
 import com.jayway.jsonpath.PathNotFoundException
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.ceil
+import kotlin.time.measureTime
+import kotlin.time.measureTimedValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -107,8 +108,6 @@ import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
-import kotlin.time.measureTime
-import kotlin.time.measureTimedValue
 
 typealias SearchQueryResultQueue =
   ArrayDeque<Triple<List<String>, ResourceConfig, Map<String, String>>>
@@ -260,7 +259,8 @@ constructor(
     println("addOrUpdate: => ${resource.resourceType}")
     resource.updateLastUpdated()
     try {
-      val (res, timetaken) = measureTimedValue { fhirEngine.get(resource.resourceType, resource.logicalId) }
+      val (res, timetaken) =
+        measureTimedValue { fhirEngine.get(resource.resourceType, resource.logicalId) }
       println("Gets =>  $timetaken")
       val updateTimeTaken = measureTime { fhirEngine.update(resource) }
       println("Updates: => $updateTimeTaken")
@@ -274,9 +274,9 @@ constructor(
         }
       }
 
-      println("Gets => ${timetaken}, updates => ${updateTimeTaken + mergeTime}")
+      println("Gets => $timetaken, updates => ${updateTimeTaken + mergeTime}")
     } catch (resourceNotFoundException: ResourceNotFoundException) {
-      val createTime = measureTime {  create(addMandatoryTags, resource) }
+      val createTime = measureTime { create(addMandatoryTags, resource) }
       println("CreateTime: => $createTime")
     }
   }
