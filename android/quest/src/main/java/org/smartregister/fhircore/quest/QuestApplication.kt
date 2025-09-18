@@ -23,6 +23,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
 import dagger.hilt.InstallIn
@@ -31,6 +32,12 @@ import dagger.hilt.components.SingletonComponent
 import io.sentry.android.core.SentryAndroid
 import io.sentry.android.core.SentryAndroidOptions
 import io.sentry.android.fragment.FragmentLifecycleIntegration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Expression
+import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Questionnaire
 import java.net.URL
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
@@ -38,6 +45,7 @@ import org.smartregister.fhircore.engine.util.extension.getSubDomain
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
 import timber.log.Timber
+import kotlin.time.measureTime
 
 @HiltAndroidApp
 class QuestApplication : Application(), DataCaptureConfig.Provider, Configuration.Provider {
@@ -75,6 +83,8 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
     } catch (e: Exception) {
       Timber.e(e)
     }
+
+    triggerInitSDCFhirPathEngine()
   }
 
   @VisibleForTesting
@@ -101,6 +111,31 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
       }
 
       SentryAndroid.init(this, sentryConfiguration)
+    }
+  }
+
+  fun triggerInitSDCFhirPathEngine() {
+    CoroutineScope(Dispatchers.Default).launch {
+      // Sample questionnaire to initialize fhirPathEngine in the background
+      val initFhirPathEngineQuestionnaire = Questionnaire().addItem(
+        Questionnaire.QuestionnaireItemComponent().apply {
+          type = Questionnaire.QuestionnaireItemType.TEXT
+          extension =
+            listOf(
+              Extension(
+                "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                Expression().apply {
+                  language = "text/fhirpath"
+                  expression = "1"
+                },
+              ),
+            )
+        },
+      )
+      val initQuestionnaireTime = measureTime {
+        ResourceMapper.populate(initFhirPathEngineQuestionnaire, emptyMap())
+      }
+      println("initQuestionnaireTime: => $initQuestionnaireTime")
     }
   }
 

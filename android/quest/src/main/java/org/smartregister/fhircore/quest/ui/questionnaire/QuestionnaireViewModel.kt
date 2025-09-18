@@ -45,6 +45,8 @@ import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Expression
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Library
@@ -91,7 +93,6 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
-import org.smartregister.fhircore.engine.util.extension.hasQuestionnaireLaunchContexts
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepopulateWithComputedConfigValues
 import org.smartregister.fhircore.engine.util.extension.questionnaireResponseStatus
@@ -1139,7 +1140,7 @@ constructor(
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig,
     actionParameters: List<ActionParameter>,
-  ): Pair<QuestionnaireResponse?, List<Resource>> {
+  ): Pair<QuestionnaireResponse?, List<Resource>> = withContext(dispatcherProvider.default()) {
     val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
     val resourceType =
       questionnaireConfig.resourceType ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
@@ -1150,11 +1151,11 @@ constructor(
     }
     println("launchContextResources: => $timeTakenLaunchContext")
 
-    if (questionnaire.hasQuestionnaireLaunchContexts) {
       val (launchContexts, timed) = measureTimedValue {
         launchContextResources.associateBy { it.resourceType.name.lowercase() }
       }
       println("launchContextResources.associateBy: => $timed")
+
       // Populate questionnaire with initial default values
       val resourceMapperPopulateTime = measureTime {
         ResourceMapper.populate(
@@ -1163,7 +1164,6 @@ constructor(
         )
       }
       println("resourceMapperPopulate: => $resourceMapperPopulateTime")
-    }
 
     val prepopulateTime = measureTime {
       questionnaire.prepopulateWithComputedConfigValues(
@@ -1249,7 +1249,8 @@ constructor(
       }
       println("excludeLinkIdPrepopulation: => $excludeLinkIdsTime")
     }
-    return Pair(questionnaireResponse, launchContextResources)
+
+    Pair(questionnaireResponse, launchContextResources)
   }
 
   fun excludePrepopulationFields(
