@@ -133,15 +133,10 @@ fun <T> String.decodeResourceFromString(): T =
   FhirContext.forR4().getCustomJsonParser().parseResource(this) as T
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource, parser: IParser = FhirContext.forR4().getCustomJsonParser()): T {
-  var extensionUpdateFrom = listOf<Extension>()
-  if (updatedResource is Patient) {
-    extensionUpdateFrom = updatedResource.extension
-  }
-  var extension = listOf<Extension>()
-  if (this is Patient) {
-    extension = this.extension
-  }
-  val stringJson = encodeResourceToString(parser)
+  val extensionUpdateFrom: List<Extension> = if (updatedResource is Patient) updatedResource.extension else emptyList()
+  val extension: List<Extension> = if (this is Patient) this.extension else emptyList()
+
+  val stringJson = this.encodeResourceToString(parser)
   val originalResourceJson = JSONObject(stringJson)
 
   originalResourceJson.updateFrom(JSONObject(updatedResource.encodeResourceToString(parser)))

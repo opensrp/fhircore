@@ -445,95 +445,96 @@ constructor(
         it.resourceType
       } ?: emptyMap()
 
-    bundle.entry?.forEach { bundleEntryComponent ->
-      bundleEntryComponent.resource?.run {
-        applyResourceMetadata(questionnaireConfig, questionnaireResponse, context)
-        if (
-          questionnaireResponse.subject.reference.isNullOrEmpty() &&
-            subjectType != null &&
-            resourceType == subjectType &&
-            logicalId.isNotEmpty()
-        ) {
-          questionnaireResponse.subject = this.logicalId.asReference(subjectType)
-        }
-
-        if (questionnaireConfig.isEditable()) {
-          if (resourceType == subjectType) {
-            this.id = questionnaireResponse.subject.extractId()
-          } else if (
-            extractedResourceUniquePropertyExpressionsMap.containsKey(resourceType) &&
-              previouslyExtractedResources.containsKey(
-                resourceType,
-              )
-          ) {
-            val fhirPathExpression =
-              extractedResourceUniquePropertyExpressionsMap
-                .getValue(resourceType)
-                .fhirPathExpression
-
-            val currentResourceIdentifier =
-              withContext(dispatcherProvider.default()) {
-                fhirPathDataExtractor.extractValue(
-                  base = this@run,
-                  expression = fhirPathExpression,
-                )
-              }
-
-            // Search for resource with property value matching extracted value
-            val resource =
-              previouslyExtractedResources.getValue(resourceType).find {
-                val extractedValue =
-                  withContext(dispatcherProvider.default()) {
-                    fhirPathDataExtractor.extractValue(
-                      base = it,
-                      expression = fhirPathExpression,
-                    )
-                  }
-                extractedValue.isNotEmpty() &&
-                  extractedValue.equals(currentResourceIdentifier, true)
-              }
-
-            // Found match use the id on current resource; override identifiers for RelatedPerson
-            if (resource != null) {
-              this.id = resource.logicalId
-              if (this is RelatedPerson && resource is RelatedPerson) {
-                this.identifier = resource.identifier
-              }
+    bundle.entry?.mapNotNull { it.resource }?.forEach { entryResource ->
+            entryResource.applyResourceMetadata(questionnaireConfig, questionnaireResponse, context)
+            if (
+                questionnaireResponse.subject.reference.isNullOrEmpty() &&
+                subjectType != null &&
+                entryResource.resourceType == subjectType &&
+                entryResource.logicalId.isNotEmpty()
+            ) {
+                questionnaireResponse.subject = entryResource.logicalId.asReference(subjectType)
             }
-          }
-        }
 
-        // Set Encounter on QR if the ResourceType is Encounter
-        if (this.resourceType == ResourceType.Encounter) {
-          questionnaireResponse.setEncounter(this.asReference())
-        }
+            if (questionnaireConfig.isEditable()) {
+                if (entryResource.resourceType == subjectType) {
+                    entryResource.id = questionnaireResponse.subject.extractId()
+                } else if (
+                    extractedResourceUniquePropertyExpressionsMap.containsKey(entryResource.resourceType) &&
+                    previouslyExtractedResources.containsKey(
+                        entryResource.resourceType,
+                    )
+                ) {
+                    val fhirPathExpression =
+                        extractedResourceUniquePropertyExpressionsMap
+                            .getValue(entryResource.resourceType)
+                            .fhirPathExpression
 
-        // Set the Group's Related Entity Location metadata tag on Resource before saving.
-        this.applyRelatedEntityLocationMetaTag(questionnaireConfig, context, subjectType)
+                    val currentResourceIdentifier =
+                        withContext(dispatcherProvider.default()) {
+                            fhirPathDataExtractor.extractValue(
+                                base = entryResource,
+                                expression = fhirPathExpression,
+                            )
+                        }
 
-        println("saveExtractedResources: => ${this.resourceType}")
-        defaultRepository.addOrUpdate(true, resource = this)
+                    // Search for resource with property value matching extracted value
+                    val resource =
+                        previouslyExtractedResources.getValue(entryResource.resourceType).find {
+                            val extractedValue =
+                                withContext(dispatcherProvider.default()) {
+                                    fhirPathDataExtractor.extractValue(
+                                        base = it,
+                                        expression = fhirPathExpression,
+                                    )
+                                }
+                            extractedValue.isNotEmpty() &&
+                                    extractedValue.equals(currentResourceIdentifier, true)
+                        }
 
-        updateGroupManagingEntity(
-          resource = this,
-          groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
-          managingEntityRelationshipCode = questionnaireConfig.managingEntityRelationshipCode,
-        )
-        addMemberToGroup(
-          resource = this,
-          memberResourceType = questionnaireConfig.groupResource?.memberResourceType,
-          groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
-        )
+                    // Found match use the id on current resource; override identifiers for RelatedPerson
+                    if (resource != null) {
+                        entryResource.id = resource.logicalId
+                        if (entryResource is RelatedPerson && resource is RelatedPerson) {
+                            entryResource.identifier = resource.identifier
+                        }
+                    }
+                }
+            }
 
-        // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
-        val listEntryComponent =
-          ListEntryComponent().apply {
-            deleted = false
-            date = extractionDate
-            item = asReference()
-          }
-        listResource.addEntry(listEntryComponent)
-      }
+            // Set Encounter on QR if the ResourceType is Encounter
+            if (entryResource.resourceType == ResourceType.Encounter) {
+                questionnaireResponse.setEncounter(entryResource.asReference())
+            }
+
+            // Set the Group's Related Entity Location metadata tag on Resource before saving.
+            entryResource.applyRelatedEntityLocationMetaTag(questionnaireConfig, context, subjectType)
+
+            println("saveExtractedResources: => ${entryResource.resourceType}")
+            val calculatedTime = measureTime {
+                defaultRepository.addOrUpdate(true, resource = entryResource)
+            }
+            println("savedExtractedResources: => ${entryResource.resourceType} took $calculatedTime")
+
+            updateGroupManagingEntity(
+                resource = entryResource,
+                groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
+                managingEntityRelationshipCode = questionnaireConfig.managingEntityRelationshipCode,
+            )
+            addMemberToGroup(
+                resource = entryResource,
+                memberResourceType = questionnaireConfig.groupResource?.memberResourceType,
+                groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
+            )
+
+            // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
+            val listEntryComponent =
+                ListEntryComponent().apply {
+                    deleted = false
+                    date = extractionDate
+                    item = entryResource.asReference()
+                }
+            listResource.addEntry(listEntryComponent)
     }
 
     // Reference extracted resources in QR then save it if subject exists

@@ -43,6 +43,9 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
 import com.jayway.jsonpath.PathNotFoundException
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
@@ -259,11 +262,19 @@ constructor(
     try {
       val (res, timetaken) = measureTimedValue { fhirEngine.get(resource.resourceType, resource.logicalId) }
       println("Gets =>  $timetaken")
-        val (updateFrom, updateFromCalcTime) = measureTimedValue {  res.updateFrom(resource) }
-      println("updateFromCalcTime: => $updateFromCalcTime")
-        val updateTimeTaken = measureTime { fhirEngine.update(resource) }
+      val updateTimeTaken = measureTime { fhirEngine.update(resource) }
       println("Updates: => $updateTimeTaken")
-      println("Gets => ${timetaken}, updates => $updateTimeTaken")
+
+      val mergeTime = measureTime {
+        CoroutineScope(dispatcherProvider.default()).launch {
+          val (updateFrom, updateFromCalcTime) = measureTimedValue { res.updateFrom(resource) }
+          println("updateFromCalcTime: => $updateFromCalcTime")
+          val updateMerged = measureTime { fhirEngine.update(updateFrom) }
+          println("Merged updates: => $updateMerged")
+        }
+      }
+
+      println("Gets => ${timetaken}, updates => ${updateTimeTaken + mergeTime}")
     } catch (resourceNotFoundException: ResourceNotFoundException) {
       val createTime = measureTime {  create(addMandatoryTags, resource) }
       println("CreateTime: => $createTime")
