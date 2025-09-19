@@ -46,7 +46,7 @@ allprojects {
     mavenCentral()
     maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
     maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots")
-    maven(url = "https://repo.spring.io/plugins-release")
+    //maven(url = "https://repo.spring.io/plugins-release")
     maven(url = "https://repository.liferay.com/nexus/content/repositories/public")
     maven(url = "https://central.sonatype.com/repository/maven-snapshots")
     apply(plugin = "org.owasp.dependencycheck")
