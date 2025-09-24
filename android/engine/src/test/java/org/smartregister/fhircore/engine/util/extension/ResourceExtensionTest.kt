@@ -694,7 +694,7 @@ class ResourceExtensionTest : RobolectricTest() {
     val libraryUri = "http://smartreg.org/Library/3e2bb367-b9bb-4c30-9033-8f42657c5df7/history/3"
     Assert.assertEquals(
       "3e2bb367-b9bb-4c30-9033-8f42657c5df7",
-      libraryUri.extractLogicalIdUuidFromURI(ResourceType.Library)
+      libraryUri.extractLogicalIdUuidFromURI(ResourceType.Library),
     )
   }
 
