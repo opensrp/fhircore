@@ -1252,7 +1252,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       patient,
       bundle,
       questionnaire,
-      questionnaireConfigCqlInputResources
+      questionnaireConfigCqlInputResources,
     )
 
     coVerify {
