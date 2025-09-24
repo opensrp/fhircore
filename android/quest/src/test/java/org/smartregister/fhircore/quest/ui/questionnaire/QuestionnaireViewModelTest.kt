@@ -128,7 +128,6 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.
 import org.smartregister.fhircore.quest.util.QuestionnaireResponseUtils
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
-import timber.log.Timber
 
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
@@ -259,8 +258,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         {
           runBlocking { (firstArg() as suspend () -> Unit).invoke() }
         }
-      val onSuccessfulSubmission =
-        spyk({ idsTypes: List<IdType>, _: QuestionnaireResponse -> Timber.i(idsTypes.toString()) })
+      val onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit = spyk()
       coEvery {
         ResourceMapper.extract(
           questionnaire = questionnaire,
