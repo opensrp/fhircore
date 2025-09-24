@@ -448,6 +448,7 @@ fun String.resourceClassType(): Class<out Resource> =
  * ```
  *    "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
  * ```
+ * 2. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4" returns "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
  */
 fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")
 
