@@ -1223,7 +1223,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     val cqlLibrary =
       Library().apply {
-        id = "Library/123"
+        id = "123"
         url = "http://smartreg.org/Library/123"
         name = "123"
         version = "1.0.0"
@@ -1242,9 +1242,18 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       },
     )
 
-    fhirEngine.create(patient)
+    defaultRepository.fhirEngine.create(cqlLibrary)
 
-    questionnaireViewModel.executeCql(patient, bundle, questionnaire)
+    // Load the CQL input resources from the questionnaireConfig
+    val questionnaireConfigCqlInputResources =
+      questionnaireConfig.copy(cqlInputResources = listOf("basic-resource-id"))
+
+    questionnaireViewModel.executeCql(
+      patient,
+      bundle,
+      questionnaire,
+      questionnaireConfigCqlInputResources
+    )
 
     coVerify {
       fhirOperator.evaluateLibrary(
