@@ -26,7 +26,6 @@ val requiredFhirProperties =
     "OAUTH_CLIENT_ID",
     "OAUTH_SCOPE",
     "MAPBOX_SDK_TOKEN",
-    "SENTRY_DSN",
     "OPENSRP_APP_ID",
     "GEMINI_API_KEY",
     "SPEECH_TO_TEXT_API_KEY",
@@ -58,23 +57,3 @@ requiredKeystoreProperties.forEach { property ->
   project.extra.set(property, keystoreProperties.getProperty(property, "sample_$property"))
 }
 
-// Set Sentry properties
-val requiredSentryProperties =
-  listOf(
-    "org",
-    "project",
-    "auth.token",
-    "url"
-  )
-
-val sentryProperties = try {
-  readProperties((project.properties["sentryPropertiesFile"] ?: "${rootProject.projectDir}/sentry.properties").toString())
-} catch (e: FileNotFoundException) {
-  if (project.properties["sentryPropertiesFile"] != null) {
-    throw e
-  } else Properties()
-}
-
-requiredSentryProperties.forEach { property ->
-  project.extra.set(property, sentryProperties.getProperty(property, "sentry_$property"))
-}

@@ -95,6 +95,9 @@ uiautomator = "2.3.0"
 work = "2.9.1"
 xercesImpl = "2.12.2"
 zip4j = "2.11.5"
+firebase-bom = "34.2.0"
+firebase-crashlytics-gradle = "3.0.6"
+google-services = "4.4.3"
 
 [libraries]
 accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist" }
@@ -226,6 +229,9 @@ workflow = { group = "org.smartregister", name = "workflow", version.ref = "fhir
 xercesImpl = { group = "xerces", name = "xercesImpl", version.ref = "xercesImpl" }
 androidx-fragment-compose = { group = "androidx.fragment", name = "fragment-compose", version.ref = "compose-fragment" }
 zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
+firebase-crashlytics-ndk = { group = "com.google.firebase", name = "firebase-crashlytics-ndk" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 
 
 [plugins]
@@ -239,6 +245,8 @@ org-jetbrains-dokka = { id = "org.jetbrains.dokka", version.ref = "jetbrains" }
 org-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 org-owasp-dependencycheck = { id = "org.owasp.dependencycheck", version.ref = "owasp" }
 org-jetbrains-kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-gradle" }
 
 [bundles]
 accompanist = ["accompanist-placeholder", "accompanist-flowlayout"]
