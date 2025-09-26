@@ -66,4 +66,7 @@ enum class ServicePointType(
   ECOLE_PRIVÉ(R.drawable.ic_epp_service_point, "Ecole Privé"),
   ECOLE_PRIVE(R.drawable.ic_epp_service_point, "École Privée"),
   LYCÉE(R.drawable.ic_epp_service_point, "Lycée"),
+  HOME(R.drawable.ic_home, "home"),
+  VISITED(R.drawable.ic_done, "visited"),
+  REJECTED(R.drawable.ic_reject, "rejected"),
 }

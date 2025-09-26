@@ -453,6 +453,28 @@ fun String.resourceClassType(): Class<out Resource> =
 fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")
 
 /**
+ * A function that extracts only the UUID part of a resource logicalId from a URI.
+ *
+ * Examples:
+ * 1. "http://smartreg.org/Library/3e2bb367-b9bb-4c30-9033-8f42657c5df7/history/3" returns
+ *
+ * ```
+ *    "3e2bb367-b9bb-4c30-9033-8f42657c5df7".
+ * ```
+ */
+fun String.extractLogicalIdUuidFromURI(resourceType: ResourceType): String {
+  val pathSegments: List<String> = this.split("/")
+  val resourceIndex = pathSegments.indexOf(resourceType.name)
+
+  // Check if the resource type was found and if there's a segment after it
+  return if (resourceIndex != -1 && resourceIndex + 1 < pathSegments.size) {
+    pathSegments[resourceIndex + 1]
+  } else {
+    "" // Return empty if the resource type or its ID is not found
+  }
+}
+
+/**
  * This suspend function updates the due date of the dependents of the current [Task], based on the
  * date of a related [Immunization] [Task]. The function loops through all the tasks that are
  * part-of the current task, loads the dependent tasks and their related immunization resources from

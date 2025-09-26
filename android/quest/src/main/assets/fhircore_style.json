@@ -12418,6 +12418,14 @@
             "rejected"
           ],
           "hsl(349, 92%, 42%)",
+          [
+            "visited"
+          ],
+          "hsl(119, 74%, 40%)",
+          [
+            "not_visited"
+          ],
+          "hsl(0, 0%, 56%)",
           "hsl(100, 100%, 100%)"
         ],
         "circle-opacity": 1

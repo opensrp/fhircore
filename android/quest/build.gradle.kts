@@ -23,6 +23,9 @@ plugins {
   id("androidx.navigation.safeargs")
   id("org.sonarqube") version "3.5.0.2730"
   id("io.sentry.android.gradle") version "3.11.1"
+  id("com.google.devtools.ksp")
+  id("com.google.dagger.hilt.android")
+  alias(libs.plugins.org.jetbrains.kotlin.plugin.compose)
 }
 
 sonar {
@@ -325,10 +328,17 @@ android {
       manifestPlaceholders["appLabel"] = "EIR"
     }
 
-    create("engage") {
+    create("columbiaEngagePreview") {
       dimension = "apps"
-      applicationIdSuffix = ".engage"
-      versionNameSuffix = "-engage"
+      applicationIdSuffix = ".columbiaEngagePreview"
+      versionNameSuffix = "-columbiaEngagePreview"
+      manifestPlaceholders["appLabel"] = "Engage Training App"
+    }
+
+    create("columbiaEngage") {
+      dimension = "apps"
+      applicationIdSuffix = ".columbiaEngage"
+      versionNameSuffix = "-columbiaEngage"
       manifestPlaceholders["appLabel"] = "Engage"
     }
 
@@ -564,8 +574,8 @@ dependencies {
   }
 
   // Annotation processors
-  kapt(libs.hilt.compiler)
-  kapt(libs.dagger.hilt.compiler)
+  ksp(libs.hilt.compiler)
+  ksp(libs.dagger.hilt.compiler)
 
   testRuntimeOnly(libs.bundles.junit.jupiter.runtime)
 
@@ -588,7 +598,7 @@ dependencies {
   debugImplementation(libs.fragment.testing)
   // debugImplementation(libs.leakcanary.android)
 
-  kapt(libs.androidx.room.compiler)
+  ksp(libs.androidx.room.compiler)
   implementation(libs.androidx.room.ktx)
   implementation(libs.androidx.room.runtime)
   testImplementation(libs.androidx.room.testing)
@@ -598,8 +608,8 @@ dependencies {
   implementation(libs.zip4j)
 
   // Annotation processors for test
-  kaptTest(libs.dagger.hilt.android.compiler)
-  kaptAndroidTest(libs.dagger.hilt.android.compiler)
+  kspTest(libs.dagger.hilt.android.compiler)
+  kspAndroidTest(libs.dagger.hilt.android.compiler)
 
   // Android test dependencies
   androidTestImplementation(libs.bundles.junit.test)
