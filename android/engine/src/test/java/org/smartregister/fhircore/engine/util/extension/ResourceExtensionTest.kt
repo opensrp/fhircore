@@ -52,6 +52,7 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
@@ -685,6 +686,24 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertEquals(
       "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4",
       otherLogicalId.extractLogicalIdUuid(),
+    )
+  }
+
+  @Test
+  fun testLogicalIdFromFhirPathExtractedURIReturnsCorrectValue() {
+    val libraryUri = "http://smartreg.org/Library/3e2bb367-b9bb-4c30-9033-8f42657c5df7/history/3"
+    Assert.assertEquals(
+      "3e2bb367-b9bb-4c30-9033-8f42657c5df7",
+      libraryUri.extractLogicalIdUuidFromURI(ResourceType.Library),
+    )
+  }
+
+  @Test
+  fun testLogicalIdFromFhirPathExtractedURIReturnsEmptyStringWhenResourceTypeIsMissing() {
+    val libraryUri = "http://smartreg.org/3e2bb367-b9bb-4c30-9033-8f42657c5df7/history/3"
+    Assert.assertEquals(
+      "",
+      libraryUri.extractLogicalIdUuidFromURI(ResourceType.Library),
     )
   }
 
