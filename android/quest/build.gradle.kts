@@ -76,7 +76,6 @@ android {
     buildConfigField("String", "OAUTH_SCOPE", """"${project.extra["OAUTH_SCOPE"]}"""")
     buildConfigField("String", "OPENSRP_APP_ID", """${project.extra["OPENSRP_APP_ID"]}""")
     buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
-    buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
     buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
     buildConfigField("String", "GEMINI_API_KEY", """"${project.extra["GEMINI_API_KEY"]}"""")
     buildConfigField(
