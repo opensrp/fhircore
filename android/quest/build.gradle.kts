@@ -707,7 +707,6 @@ tasks.register("evaluatePerformanceBenchmarkResults") {
   }
 }
 
-
 fun JSONObject.getTestName(): String {
   val className = getString("className").substringAfterLast(".")
   val methodName = getString("name").substringAfterLast("_")

@@ -19,10 +19,7 @@ package org.smartregister.fhircore.quest
 import android.content.Intent
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.spyk
 import kotlin.test.assertNotNull
 import org.junit.Assert
 import org.junit.Before
@@ -44,7 +41,6 @@ class QuestApplicationTest : RobolectricTest() {
     application.referenceUrlResolver = mockk()
     application.xFhirQueryResolver = mockk()
   }
-
 
   @Test
   fun testGetDataCaptureConfig() {
