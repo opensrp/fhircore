@@ -26,6 +26,8 @@ plugins {
   id("com.google.devtools.ksp")
   id("com.google.dagger.hilt.android")
   alias(libs.plugins.org.jetbrains.kotlin.plugin.compose)
+  id("com.google.gms.google-services")
+  id("com.google.firebase.crashlytics")
 }
 
 sonar {
@@ -559,6 +561,9 @@ dependencies {
   implementation(libs.androidx.fragment.compose)
   implementation(libs.bundles.cameraX)
   implementation(libs.log4j)
+  implementation(platform(libs.firebase.bom))
+  implementation(libs.firebase.crashlytics.ndk)
+  implementation(libs.firebase.analytics)
 
   // AI dependencies
   implementation(libs.google.cloud.speech) {
