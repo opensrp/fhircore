@@ -118,7 +118,7 @@ fun Resource.encodeResourceToString(): String =
   FhirContext.forR4().getCustomJsonParser().encodeResourceToString(this.copy())
 
 fun Resource.encodeResourceToString(
-  parser: IParser = FhirContext.forR4().getCustomJsonParser()
+  parser: IParser = FhirContext.forR4().getCustomJsonParser(),
 ): String = parser.encodeResourceToString(this.copy())
 
 fun StructureMap.encodeResourceToString(): String =
@@ -135,7 +135,7 @@ fun <T> String.decodeResourceFromString(): T =
 
 fun <T : Resource> T.updateFrom(
   updatedResource: Resource,
-  parser: IParser = FhirContext.forR4().getCustomJsonParser()
+  parser: IParser = FhirContext.forR4().getCustomJsonParser(),
 ): T {
   val extensionUpdateFrom: List<Extension> =
     if (updatedResource is Patient) updatedResource.extension else emptyList()
