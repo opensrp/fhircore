@@ -292,9 +292,19 @@ constructor(
         withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
       }
     } else {
-      fhirEngine.searchCompositionByIdentifier(parsedAppId)?.run {
-        populateConfigurationsMap(context, this, false, parsedAppId, configsLoadedCallback)
+      fhirEngine.searchCompositionByIdentifier(parsedAppId)?.let { foundComposition ->
+        populateConfigurationsMap(
+          context,
+          foundComposition,
+          false,
+          parsedAppId,
+          configsLoadedCallback,
+        )
       }
+        ?: run {
+          Timber.w("Composition not found for appId: $appId", parsedAppId)
+          configsLoadedCallback(false)
+        }
     }
   }
 
@@ -504,7 +514,7 @@ constructor(
     Timber.i("Fetching ImplementationGuide config for app $appId version $appVersionCode")
 
     val urlPath =
-      "ImplementationGuide?&name=$appId&context-quantity=le$appVersionCode&_sort=-context-quantity&_count=1"
+      "ImplementationGuide?&name:exact=$appId&context-quantity=le$appVersionCode&_sort=-context-quantity&_count=1"
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
         Timber.w("No response for ImplementationGuide resource on path $urlPath")

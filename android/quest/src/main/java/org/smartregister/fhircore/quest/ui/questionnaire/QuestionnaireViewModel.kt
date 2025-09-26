@@ -91,6 +91,7 @@ import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuidFromURI
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isIn
@@ -891,7 +892,9 @@ constructor(
 
     val libraryFilters =
       questionnaire.cqfLibraryUrls().map {
-        val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.extractLogicalIdUuid()) }
+        val apply: TokenParamFilterCriterion.() -> Unit = {
+          value = of(it.extractLogicalIdUuidFromURI(ResourceType.Library))
+        }
         apply
       }
 
