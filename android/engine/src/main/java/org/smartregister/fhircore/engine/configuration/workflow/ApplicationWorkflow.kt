@@ -65,4 +65,7 @@ enum class ApplicationWorkflow {
 
   /** A workflow to launch delete draft questionnaires */
   DELETE_DRAFT_QUESTIONNAIRE,
+
+  /** A workflow that opens URL in external app (browser, email, etc.) */
+  OPEN_URL,
 }
