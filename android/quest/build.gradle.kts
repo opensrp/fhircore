@@ -332,11 +332,11 @@ android {
       manifestPlaceholders["appLabel"] = "Engage"
     }
 
-    create("fpdEngage") {
+    create("fpdIPC") {
       dimension = "apps"
-      applicationIdSuffix = ".fpdEngage"
-      versionNameSuffix = "-fpdEngage"
-      manifestPlaceholders["appLabel"] = "Engage IPC"
+      applicationIdSuffix = ".fpdIPC"
+      versionNameSuffix = "-fpdIPC"
+      manifestPlaceholders["appLabel"] = "Engage"
     }
 
     create("eir") {
