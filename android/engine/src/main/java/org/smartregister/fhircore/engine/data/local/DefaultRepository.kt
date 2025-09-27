@@ -48,6 +48,10 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.ceil
+import kotlin.time.measureTime
+import kotlin.time.measureTimedValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -252,14 +256,28 @@ constructor(
    * param [addMandatoryTags]
    */
   suspend fun <R : Resource> addOrUpdate(addMandatoryTags: Boolean = true, resource: R) {
+    println("addOrUpdate: => ${resource.resourceType}")
     resource.updateLastUpdated()
     try {
-      fhirEngine.get(resource.resourceType, resource.logicalId).run {
-        val updateFrom = updateFrom(resource)
-        fhirEngine.update(updateFrom)
+      val (res, timetaken) =
+        measureTimedValue { fhirEngine.get(resource.resourceType, resource.logicalId) }
+      println("Gets =>  $timetaken")
+      val updateTimeTaken = measureTime { fhirEngine.update(resource) }
+      println("Updates: => $updateTimeTaken")
+
+      val mergeTime = measureTime {
+        CoroutineScope(dispatcherProvider.default()).launch {
+          val (updateFrom, updateFromCalcTime) = measureTimedValue { res.updateFrom(resource) }
+          println("updateFromCalcTime: => $updateFromCalcTime")
+          val updateMerged = measureTime { fhirEngine.update(updateFrom) }
+          println("Merged updates: => $updateMerged")
+        }
       }
+
+      println("Gets => $timetaken, updates => ${updateTimeTaken + mergeTime}")
     } catch (resourceNotFoundException: ResourceNotFoundException) {
-      create(addMandatoryTags, resource)
+      val createTime = measureTime { create(addMandatoryTags, resource) }
+      println("CreateTime: => $createTime")
     }
   }
 

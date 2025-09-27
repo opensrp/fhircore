@@ -37,14 +37,18 @@ import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.Serializable
 import javax.inject.Inject
+import kotlin.time.measureTime
+import kotlin.time.measureTimedValue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
@@ -75,6 +79,8 @@ import timber.log.Timber
 class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var fhirParser: IParser
   val viewModel by viewModels<QuestionnaireViewModel>()
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var actionParameters: ArrayList<ActionParameter>
@@ -290,32 +296,40 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private suspend fun launchQuestionnaire() {
     showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(true))
 
-    val questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig)
-    if (questionnaire == null) {
-      showToast(getString(R.string.questionnaire_not_found))
-      finish()
-    } else {
-      if (questionnaire.subjectType.isNullOrEmpty()) {
+    val (questionnaire, timeTaken) =
+      measureTimedValue { viewModel.retrieveQuestionnaire(questionnaireConfig) }
+    println("retrieveQuestionnaire: => $timeTaken")
+    when {
+      questionnaire == null -> {
+        showToast(getString(R.string.questionnaire_not_found))
+        finish()
+      }
+      questionnaire.subjectType.isNullOrEmpty() -> {
         val subjectRequiredMessage = getString(R.string.missing_subject_type)
         showToast(subjectRequiredMessage)
         Timber.e(subjectRequiredMessage)
         finish()
-        return
       }
-      viewModel.setQuestionnaire(questionnaire)
+      else -> {
+        viewModel.setQuestionnaire(questionnaire)
 
-      val (questionnaireResponse, launchContextResources) =
-        viewModel.populateQuestionnaire(
-          viewModel.currentQuestionnaire,
-          questionnaireConfig,
-          actionParameters,
-        )
+        val (resPair, populationTime) =
+          measureTimedValue {
+            viewModel.populateQuestionnaire(
+              viewModel.currentQuestionnaire,
+              questionnaireConfig,
+              actionParameters,
+            )
+          }
+        println("populationTime: => $populationTime")
+        val (questionnaireResponse, launchContextResources) = resPair
 
-      viewModel.showQuestionnaireResponse(questionnaireResponse)
+        viewModel.showQuestionnaireResponse(questionnaireResponse)
 
-      showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
+        showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
 
-      listenForQuestionnaireFormUpdates(viewModel.currentQuestionnaire, launchContextResources)
+        listenForQuestionnaireFormUpdates(viewModel.currentQuestionnaire, launchContextResources)
+      }
     }
   }
 
@@ -370,11 +384,14 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           viewBinding.speechToTextContainer.visibility = View.GONE
           viewBinding.editFormActionButton.visibility = View.GONE
           try {
-            renderQuestionnaire(
-              questionnaire,
-              it.newQuestionnaireResponse,
-              launchContextResources,
-            )
+            val renderQuestionnaireTime = measureTime {
+              renderQuestionnaire(
+                questionnaire,
+                it.newQuestionnaireResponse,
+                launchContextResources,
+              )
+            }
+            println("renderQuestionnaireTime: => $renderQuestionnaireTime")
 
             if (questionnaireConfig.enableSpeechToText) {
               handler.postDelayed(
@@ -398,14 +415,17 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     questionnaireResponse: QuestionnaireResponse?,
     launchContextResources: List<Resource>,
   ) {
-    val questionnaireFragment =
-      getQuestionnaireFragmentBuilder(
-          questionnaire,
-          questionnaireConfig,
-          questionnaireResponse,
-          launchContextResources,
-        )
-        .build()
+    val (questionnaireFragment, timeTaken) =
+      measureTimedValue {
+        getQuestionnaireFragmentBuilder(
+            questionnaire,
+            questionnaireConfig,
+            questionnaireResponse,
+            launchContextResources,
+          )
+          .build()
+      }
+    println("getQuestionnaireFragmentBuilder: => $timeTaken")
     viewBinding.clearAll.setOnClickListener { questionnaireFragment.clearAllAnswers() }
     supportFragmentManager.commit {
       setReorderingAllowed(true)
@@ -420,41 +440,49 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     questionnaireConfig: QuestionnaireConfig,
     questionnaireResponse: QuestionnaireResponse?,
     launchContextResources: List<Resource>,
-  ): QuestionnaireFragment.Builder {
-    return QuestionnaireFragment.builder()
-      .setQuestionnaire(questionnaire.json())
-      .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(
-        OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER,
-      )
-      .setSubmitButtonText(
-        questionnaireConfig.saveButtonText ?: getString(R.string.submit_questionnaire),
-      )
-      .showAsterisk(questionnaireConfig.showRequiredTextAsterisk)
-      .showRequiredText(questionnaireConfig.showRequiredText)
-      .setIsReadOnly(questionnaireConfig.isSummary())
-      .setShowSubmitAnywayButton(questionnaireConfig.showSubmitAnywayButton.toBooleanStrict())
-      .apply {
-        if (questionnaireResponse != null) {
-          questionnaireResponse
-            .takeIf {
-              viewModel.validateQuestionnaireResponse(
-                questionnaire,
-                it,
-                this@QuestionnaireActivity,
-              )
-            }
-            ?.let { setQuestionnaireResponse(questionnaireResponse.json()) }
-            ?: showToast(getString(R.string.error_populating_questionnaire))
+  ): QuestionnaireFragment.Builder =
+    withContext(dispatcherProvider.default()) {
+      QuestionnaireFragment.builder()
+        .setQuestionnaire(questionnaire.json())
+        .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(
+          OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER,
+        )
+        .setSubmitButtonText(
+          questionnaireConfig.saveButtonText ?: getString(R.string.submit_questionnaire),
+        )
+        .showAsterisk(questionnaireConfig.showRequiredTextAsterisk)
+        .showRequiredText(questionnaireConfig.showRequiredText)
+        .setIsReadOnly(questionnaireConfig.isSummary())
+        .setShowSubmitAnywayButton(questionnaireConfig.showSubmitAnywayButton.toBooleanStrict())
+        .apply {
+          if (questionnaireResponse != null) {
+            questionnaireResponse
+              .takeIf {
+                viewModel.validateQuestionnaireResponse(
+                  questionnaire,
+                  it,
+                  this@QuestionnaireActivity,
+                )
+              }
+              ?.let { setQuestionnaireResponse(questionnaireResponse.json()) }
+              ?: showToast(getString(R.string.error_populating_questionnaire))
+          }
+
+          val setLaunchContextMapTime = measureTime {
+            launchContextResources
+              .associate { Pair(it.resourceType.name.lowercase(), it.json()) }
+              .takeIf { it.isNotEmpty() }
+              ?.let { setQuestionnaireLaunchContextMap(it) }
+          }
+          println("setLaunchContextMap: => $setLaunchContextMapTime")
         }
+    }
 
-        launchContextResources
-          .associate { Pair(it.resourceType.name.lowercase(), it.encodeResourceToString()) }
-          .takeIf { it.isNotEmpty() }
-          ?.let { setQuestionnaireLaunchContextMap(it) }
-      }
+  private fun Resource.json(): String {
+    val (str, time) = measureTimedValue { this.encodeResourceToString(fhirParser) }
+    println("Resource.json: => $time")
+    return str
   }
-
-  private fun Resource.json(): String = this.encodeResourceToString()
 
   private fun registerFragmentResultListener(questionnaire: Questionnaire) {
     supportFragmentManager.setFragmentResultListener(
