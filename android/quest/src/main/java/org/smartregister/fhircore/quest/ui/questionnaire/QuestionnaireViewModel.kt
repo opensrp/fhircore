@@ -36,6 +36,7 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.measureTime
 import kotlin.time.measureTimedValue
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -249,6 +250,12 @@ constructor(
 
     updateResourcesLastUpdatedProperty(actionParameters)
 
+    val bundleCopy =
+      bundle.copyBundle(currentQuestionnaireResponse).also {
+        val extractedResources = it.entry.map { entry -> entry.resource }
+        validateWithFhirValidator(*extractedResources.toTypedArray())
+      }
+
     // Important to load subject resource to retrieve ID (as reference) correctly
     val subjectIdType: IdType? =
       if (currentQuestionnaireResponse.subject.reference.isNullOrEmpty()) {
@@ -257,38 +264,19 @@ constructor(
         IdType(currentQuestionnaireResponse.subject.reference)
       }
 
-    if (subjectIdType != null) {
+    if (subjectIdType != null && !questionnaireConfig.isReadOnly()) {
       val subject =
         loadResource(
           ResourceType.valueOf(subjectIdType.resourceType),
           subjectIdType.idPart,
         )
 
-      if (subject != null && !questionnaireConfig.isReadOnly()) {
-        val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
-
-        val extractedResources = newBundle.entry.map { it.resource }
-        validateWithFhirValidator(*extractedResources.toTypedArray())
-
-        generateCarePlan(
-          subject = subject,
-          bundle = newBundle,
-          questionnaireConfig = questionnaireConfig,
-        )
-
-        withContext(dispatcherProvider.io()) {
-          executeCql(
-            subject = subject,
-            bundle = newBundle,
-            questionnaire = questionnaire,
-            questionnaireConfig = questionnaireConfig,
-          )
-        }
-
-        fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
-          questionnaireConfig = questionnaireConfig,
-          subject = subject,
-          bundle = newBundle,
+      subject?.let {
+        launchPostSaveTasks(
+          it,
+          questionnaireConfig,
+          bundle = bundleCopy,
+          questionnaire,
         )
       }
     }
@@ -307,6 +295,33 @@ constructor(
       )
     }
   }
+
+  private fun launchPostSaveTasks(
+    subject: Resource,
+    questionnaireConfig: QuestionnaireConfig,
+    bundle: Bundle,
+    questionnaire: Questionnaire,
+  ) =
+    CoroutineScope(dispatcherProvider.default()).launch {
+      generateCarePlan(
+        subject = subject,
+        bundle = bundle,
+        questionnaireConfig = questionnaireConfig,
+      )
+
+      executeCql(
+        subject = subject,
+        bundle = bundle,
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
+      )
+
+      fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
+        questionnaireConfig = questionnaireConfig,
+        subject = subject,
+        bundle = bundle,
+      )
+    }
 
   fun validateWithFhirValidator(vararg resource: Resource) {
     if (BuildConfig.DEBUG) {
