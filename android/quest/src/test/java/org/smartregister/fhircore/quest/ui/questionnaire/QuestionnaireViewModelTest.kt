@@ -524,11 +524,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerifyOrder {
       questionnaireViewModel.updateResourcesLastUpdatedProperty(actionParameters)
 
-      questionnaireViewModel.softDeleteResources(updatedQuestionnaireConfig)
-
-      onSuccessfulSubmission(capture(idsTypesSlot), questionnaireResponse)
-
-      // Scheduled and ran (async) after submission has happened
       questionnaireViewModel.generateCarePlan(
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
@@ -547,6 +542,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
       )
+
+      questionnaireViewModel.softDeleteResources(updatedQuestionnaireConfig)
+
+      onSuccessfulSubmission(capture(idsTypesSlot), questionnaireResponse)
     }
 
     // Captured bundle slot should contain QuestionnaireResponse
