@@ -30,13 +30,11 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
-import io.sentry.android.navigation.SentryNavigationListener
 import java.time.Instant
 import javax.inject.Inject
 import kotlinx.coroutines.async
@@ -84,8 +82,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   val appMainViewModel by viewModels<AppMainViewModel>()
-  private val sentryNavListener =
-    SentryNavigationListener(enableNavigationBreadcrumbs = true, enableNavigationTracing = true)
 
   private val locationPermissionLauncher: ActivityResultLauncher<Array<String>> =
     registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -163,13 +159,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun onResume() {
     super.onResume()
-    findNavController(R.id.nav_host).addOnDestinationChangedListener(sentryNavListener)
     syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
   override fun onPause() {
     super.onPause()
-    findNavController(R.id.nav_host).removeOnDestinationChangedListener(sentryNavListener)
   }
 
   override fun onQuestionnaireLaunched(questionnaireConfig: QuestionnaireConfig) {

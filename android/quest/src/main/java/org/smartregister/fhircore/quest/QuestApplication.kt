@@ -19,22 +19,17 @@ package org.smartregister.fhircore.quest
 import android.app.Application
 import android.database.CursorWindow
 import android.util.Log
-import androidx.annotation.VisibleForTesting
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
 import dagger.hilt.InstallIn
 import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.components.SingletonComponent
-import io.sentry.android.core.SentryAndroid
-import io.sentry.android.core.SentryAndroidOptions
-import io.sentry.android.fragment.FragmentLifecycleIntegration
-import java.net.URL
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
-import org.smartregister.fhircore.engine.util.extension.getSubDomain
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
 import timber.log.Timber
@@ -61,9 +56,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
       Timber.plant(ReleaseTree())
     }
 
-    if (BuildConfig.DEBUG.not()) {
-      initSentryMonitoring()
-    }
+    initFirebaseCrashlytics()
 
     // TODO Fix this workaround for cursor size issue. Currently size set to 10 MB
     try {
@@ -77,30 +70,12 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
     }
   }
 
-  @VisibleForTesting
-  fun initSentryMonitoring(dsn: String = BuildConfig.SENTRY_DSN) {
-    if (dsn.isNotBlank()) {
-      val sentryConfiguration = { options: SentryAndroidOptions ->
-        options.dsn = dsn.trim { it <= ' ' }
-        // To set a uniform sample rate
-        options.tracesSampleRate = 1.0
-        options.isEnableUserInteractionTracing = true
-        options.isEnableUserInteractionBreadcrumbs = true
-        options.addIntegration(
-          FragmentLifecycleIntegration(
-            this,
-            enableFragmentLifecycleBreadcrumbs = true,
-            enableAutoFragmentLifecycleTracing = true,
-          ),
-        )
-        try {
-          options.environment = URL(BuildConfig.FHIR_BASE_URL).getSubDomain().replace('-', '.')
-        } catch (e: Exception) {
-          Timber.e(e)
-        }
-      }
-
-      SentryAndroid.init(this, sentryConfiguration)
+  private fun initFirebaseCrashlytics() {
+    try {
+      FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(true)
+      Timber.d("Firebase Crashlytics initialized successfully")
+    } catch (e: Exception) {
+      Timber.e(e, "Failed to initialize Firebase Crashlytics")
     }
   }
 
