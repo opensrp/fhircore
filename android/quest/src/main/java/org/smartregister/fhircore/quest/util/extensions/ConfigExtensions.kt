@@ -26,6 +26,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
@@ -244,6 +245,18 @@ fun ActionConfig.handleClickEvent(
           NavigationArg.QUESTIONNAIRE_CONFIG to questionnaireConfigInterpolated,
         )
       navController.navigate(MainNavigationScreen.AlertDialogFragment.route, args)
+    }
+    ApplicationWorkflow.OPEN_URL -> {
+      val url = interpolatedParams.find { it.key == "url" }?.value
+      if (!url.isNullOrBlank()) {
+        try {
+          val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+          intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+          ContextCompat.startActivity(navController.context, intent, null)
+        } catch (e: Exception) {
+          context?.showToast("Unable to open url ${e.message}", Toast.LENGTH_SHORT)
+        }
+      }
     }
     else -> return
   }
