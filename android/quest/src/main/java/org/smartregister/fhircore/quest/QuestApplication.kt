@@ -34,7 +34,6 @@ import io.sentry.android.core.SentryAndroidOptions
 import io.sentry.android.fragment.FragmentLifecycleIntegration
 import java.net.URL
 import javax.inject.Inject
-import kotlin.time.measureTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -114,9 +113,9 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
     }
   }
 
+  /** Prompts pre-loading of the SDC's fhirPathEngine through initialExpression population */
   fun triggerInitSDCFhirPathEngine() {
     CoroutineScope(Dispatchers.Default).launch {
-      // Sample questionnaire to initialize fhirPathEngine in the background
       val initFhirPathEngineQuestionnaire =
         Questionnaire()
           .addItem(
@@ -134,10 +133,8 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
                 )
             },
           )
-      val initQuestionnaireTime = measureTime {
-        ResourceMapper.populate(initFhirPathEngineQuestionnaire, emptyMap())
-      }
-      println("initQuestionnaireTime: => $initQuestionnaireTime")
+
+      ResourceMapper.populate(initFhirPathEngineQuestionnaire, emptyMap())
     }
   }
 

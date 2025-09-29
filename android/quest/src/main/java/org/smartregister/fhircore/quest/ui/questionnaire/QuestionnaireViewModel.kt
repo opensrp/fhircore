@@ -34,8 +34,6 @@ import java.util.Date
 import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
-import kotlin.time.measureTime
-import kotlin.time.measureTimedValue
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -511,11 +509,7 @@ constructor(
         // Set the Group's Related Entity Location metadata tag on Resource before saving.
         entryResource.applyRelatedEntityLocationMetaTag(questionnaireConfig, context, subjectType)
 
-        println("saveExtractedResources: => ${entryResource.resourceType}")
-        val calculatedTime = measureTime {
-          defaultRepository.addOrUpdate(true, resource = entryResource)
-        }
-        println("savedExtractedResources: => ${entryResource.resourceType} took $calculatedTime")
+        defaultRepository.addOrUpdate(true, resource = entryResource)
 
         updateGroupManagingEntity(
           resource = entryResource,
@@ -823,7 +817,6 @@ constructor(
    * updated.
    */
   suspend fun updateResourcesLastUpdatedProperty(actionParameters: List<ActionParameter>?) {
-    println("updateResourcesLastUpdatedProperty: => ")
     val updateOnEditParams =
       actionParameters?.filter {
         it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT && it.value.isNotEmpty()
@@ -834,12 +827,10 @@ constructor(
         defaultRepository.run {
           val resourceType = param.resourceType
           if (resourceType != null) {
-            println("updateResourcesLastUpdatedProperty: => $resourceType")
             loadResource(resourceType, param.value)?.let { addOrUpdate(resource = it) }
           } else {
             val valueResourceType = param.value.substringBefore("/")
             val valueResourceId = param.value.substringAfter("/")
-            println("updateResourcesLastUpdatedProperty: => $valueResourceType + $valueResourceId")
             addOrUpdate(
               resource =
                 loadResource(
@@ -1152,112 +1143,92 @@ constructor(
           ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
       val resourceIdentifier = questionnaireConfig.resourceIdentifier
 
-      val (launchContextResources, timeTakenLaunchContext) =
-        measureTimedValue {
-          launchContextResources(resourceType, resourceIdentifier, actionParameters)
-        }
-      println("launchContextResources: => $timeTakenLaunchContext")
-
-      val (launchContexts, timed) =
-        measureTimedValue {
-          launchContextResources.associateBy { it.resourceType.name.lowercase() }
-        }
-      println("launchContextResources.associateBy: => $timed")
+      val launchContextResources =
+        launchContextResources(resourceType, resourceIdentifier, actionParameters)
+      val launchContexts = launchContextResources.associateBy { it.resourceType.name.lowercase() }
 
       // Populate questionnaire with initial default values
-      val resourceMapperPopulateTime = measureTime {
-        ResourceMapper.populate(
-          questionnaire,
-          launchContexts = launchContexts,
-        )
-      }
-      println("resourceMapperPopulate: => $resourceMapperPopulateTime")
+      ResourceMapper.populate(
+        questionnaire,
+        launchContexts = launchContexts,
+      )
 
-      val prepopulateTime = measureTime {
-        questionnaire.prepopulateWithComputedConfigValues(
-          questionnaireConfig,
-          actionParameters,
-          {
-            val rules = rulesExecutor.rulesFactory.generateRules(it)
-            rulesExecutor.computeResourceDataRules(rules, null, emptyMap())
-          },
-          { uniqueIdAssignmentConfig, computedValues ->
-            // Extract ID from a Group, should be modified in future to support other resources
-            uniqueIdResource =
-              defaultRepository.retrieveUniqueIdAssignmentResource(
-                uniqueIdAssignmentConfig,
-                computedValues,
-              )
+      questionnaire.prepopulateWithComputedConfigValues(
+        questionnaireConfig,
+        actionParameters,
+        {
+          val rules = rulesExecutor.rulesFactory.generateRules(it)
+          rulesExecutor.computeResourceDataRules(rules, null, emptyMap())
+        },
+        { uniqueIdAssignmentConfig, computedValues ->
+          // Extract ID from a Group, should be modified in future to support other resources
+          uniqueIdResource =
+            defaultRepository.retrieveUniqueIdAssignmentResource(
+              uniqueIdAssignmentConfig,
+              computedValues,
+            )
 
-            withContext(dispatcherProvider.default()) {
-              fhirPathDataExtractor.extractValue(
-                base = uniqueIdResource,
-                expression = uniqueIdAssignmentConfig.idFhirPathExpression,
-              )
-            }
-          },
-        )
-      }
-      println("prepopulateConfig: => $prepopulateTime")
+          withContext(dispatcherProvider.default()) {
+            fhirPathDataExtractor.extractValue(
+              base = uniqueIdResource,
+              expression = uniqueIdAssignmentConfig.idFhirPathExpression,
+            )
+          }
+        },
+      )
 
       // Populate questionnaire with latest QuestionnaireResponse
-      val (questionnaireResponse, searchQrTime) =
-        measureTimedValue {
-          if (
-            resourceType != null &&
-              !resourceIdentifier.isNullOrEmpty() &&
-              (questionnaireConfig.isEditable() ||
-                questionnaireConfig.isReadOnly() ||
-                questionnaireConfig.isSummary() ||
-                questionnaireConfig.saveDraft)
-          ) {
-            defaultRepository
-              .searchQuestionnaireResponse(
-                resourceId = resourceIdentifier,
-                resourceType = resourceType,
-                questionnaireId = questionnaire.logicalId,
-                encounterId = questionnaireConfig.encounterId,
-                questionnaireResponseStatus = questionnaireConfig.questionnaireResponseStatus(),
-              )
-              ?.let {
-                QuestionnaireResponse().apply {
-                  /**
-                   * Only set the ID value when [saveDraft] is set to true] this ensues that a new
-                   * [QuestionnaireResponse] is generated when the questionnaire is submitted
-                   */
-                  if (questionnaireConfig.saveDraft) {
-                    id = it.id
-                  }
-                  status = it.status
-                  item = it.item.removeUnAnsweredItems()
-                  // Clearing the text prompts the SDK to re-process the content, which includes
-                  // HTML
-                  clearText()
+      val questionnaireResponse =
+        if (
+          resourceType != null &&
+            !resourceIdentifier.isNullOrEmpty() &&
+            (questionnaireConfig.isEditable() ||
+              questionnaireConfig.isReadOnly() ||
+              questionnaireConfig.isSummary() ||
+              questionnaireConfig.saveDraft)
+        ) {
+          defaultRepository
+            .searchQuestionnaireResponse(
+              resourceId = resourceIdentifier,
+              resourceType = resourceType,
+              questionnaireId = questionnaire.logicalId,
+              encounterId = questionnaireConfig.encounterId,
+              questionnaireResponseStatus = questionnaireConfig.questionnaireResponseStatus(),
+            )
+            ?.let {
+              QuestionnaireResponse().apply {
+                /**
+                 * Only set the ID value when [saveDraft] is set to true] this ensues that a new
+                 * [QuestionnaireResponse] is generated when the questionnaire is submitted
+                 */
+                if (questionnaireConfig.saveDraft) {
+                  id = it.id
                 }
+                status = it.status
+                item = it.item.removeUnAnsweredItems()
+                // Clearing the text prompts the SDK to re-process the content, which includes
+                // HTML
+                clearText()
               }
-          } else {
-            null
-          }
+            }
+        } else {
+          null
         }
-      println("searchQuestionnaireResponse: => $searchQrTime")
 
       // Exclude the configured fields from QR
       if (questionnaireResponse != null) {
-        val excludeLinkIdsTime = measureTime {
-          val exclusionLinkIdsMap: Map<String, Boolean> =
-            questionnaireConfig.linkIds
-              ?.asSequence()
-              ?.filter { it.type == LinkIdType.PREPOPULATION_EXCLUSION }
-              ?.associateBy { it.linkId }
-              ?.mapValues { it.value.type == LinkIdType.PREPOPULATION_EXCLUSION } ?: emptyMap()
+        val exclusionLinkIdsMap: Map<String, Boolean> =
+          questionnaireConfig.linkIds
+            ?.asSequence()
+            ?.filter { it.type == LinkIdType.PREPOPULATION_EXCLUSION }
+            ?.associateBy { it.linkId }
+            ?.mapValues { it.value.type == LinkIdType.PREPOPULATION_EXCLUSION } ?: emptyMap()
 
-          questionnaireResponse.item =
-            excludePrepopulationFields(
-              questionnaireResponse.item.toMutableList(),
-              exclusionLinkIdsMap,
-            )
-        }
-        println("excludeLinkIdPrepopulation: => $excludeLinkIdsTime")
+        questionnaireResponse.item =
+          excludePrepopulationFields(
+            questionnaireResponse.item.toMutableList(),
+            exclusionLinkIdsMap,
+          )
       }
 
       Pair(questionnaireResponse, launchContextResources)
@@ -1314,12 +1285,8 @@ constructor(
   /** Load [Resource] of type [ResourceType] for the provided [resourceIdentifier] */
   suspend fun loadResource(resourceType: ResourceType, resourceIdentifier: String): Resource? =
     try {
-      println("loadResource: => $resourceType/$resourceIdentifier")
-      val (res, timeTaken) =
-        measureTimedValue { defaultRepository.loadResource(resourceIdentifier, resourceType) }
-      println("loadResource: => $timeTaken")
-      res
-    } catch (resourceNotFoundException: ResourceNotFoundException) {
+      defaultRepository.loadResource(resourceIdentifier, resourceType)
+    } catch (_: ResourceNotFoundException) {
       null
     }
 

@@ -48,8 +48,6 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.ceil
-import kotlin.time.measureTime
-import kotlin.time.measureTimedValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -256,28 +254,18 @@ constructor(
    * param [addMandatoryTags]
    */
   suspend fun <R : Resource> addOrUpdate(addMandatoryTags: Boolean = true, resource: R) {
-    println("addOrUpdate: => ${resource.resourceType}")
     resource.updateLastUpdated()
     try {
-      val (res, timetaken) =
-        measureTimedValue { fhirEngine.get(resource.resourceType, resource.logicalId) }
-      println("Gets =>  $timetaken")
-      val updateTimeTaken = measureTime { fhirEngine.update(resource) }
-      println("Updates: => $updateTimeTaken")
+      val previousResourceCopy = fhirEngine.get(resource.resourceType, resource.logicalId)
+      fhirEngine.update(resource)
 
-      val mergeTime = measureTime {
-        CoroutineScope(dispatcherProvider.default()).launch {
-          val (updateFrom, updateFromCalcTime) = measureTimedValue { res.updateFrom(resource) }
-          println("updateFromCalcTime: => $updateFromCalcTime")
-          val updateMerged = measureTime { fhirEngine.update(updateFrom) }
-          println("Merged updates: => $updateMerged")
-        }
+      // Offload merging and updating of the merged resource to a separate context
+      CoroutineScope(dispatcherProvider.default()).launch {
+        val processedUpdatedFromResource = previousResourceCopy.updateFrom(resource, parser)
+        fhirEngine.update(processedUpdatedFromResource)
       }
-
-      println("Gets => $timetaken, updates => ${updateTimeTaken + mergeTime}")
-    } catch (resourceNotFoundException: ResourceNotFoundException) {
-      val createTime = measureTime { create(addMandatoryTags, resource) }
-      println("CreateTime: => $createTime")
+    } catch (_: ResourceNotFoundException) {
+      create(addMandatoryTags, resource)
     }
   }
 
