@@ -380,18 +380,16 @@ class GeoWidgetFragment : Fragment() {
     }
   }
 
-  /**
-   * This function clears the map markers that are currently on the map. These markers are used to
-   * indicate the location of a newly added point on the map. These red markers are not needed since
-   * FHIRCore adds icons that show the position of the location on the map. These red marker
-   * introduce a bug documented on [https://github.com/opensrp/fhircore/issues/3797]. The newly
-   * added locations do not respond to click events when the red marker is present. There is logic
-   * in the kujaku
-   * [com.mapbox.mapboxsdk.maps.MapGestureDetector.StandardGestureListener.onSingleTapConfirmed]
-   * that consumes the click events if the red marker is present.
-   *
-   * @param mapboxMap
-   */
+/**
+ * Removes all map markers to prevent click event conflicts.
+ * 
+ * Red markers are automatically added when new points are placed on the map, but they're
+ * redundant since FHIRCore renders custom location icons. More critically, these markers
+ * block click events on newly added locations due to how Kujaku's gesture detector handles
+ * tap events in [com.mapbox.mapboxsdk.maps.MapGestureDetector.StandardGestureDetector.onSingleTapConfirmed].
+ * 
+ * @param mapboxMap The MapboxMap instance to clear markers from
+ */
   fun clearMarkers(mapboxMap: MapboxMap) {
     if (mapboxMap.markers.isNotEmpty()) {
       mapboxMap.markers.forEach { mapboxMap.removeMarker(it) }
