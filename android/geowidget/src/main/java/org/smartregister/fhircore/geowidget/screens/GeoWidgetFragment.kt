@@ -37,6 +37,7 @@ import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.exceptions.MapboxConfigurationException
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
+import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.expressions.Expression
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
@@ -313,6 +314,7 @@ class GeoWidgetFragment : Fragment() {
         mapboxMap.getStyle { style ->
           style.getSourceAs<GeoJsonSource>(DATA_SET)?.setGeoJson(featureCollection)
         }
+        clearMarkers(mapboxMap)
         val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(locationPoints))
         val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, PADDING_IN_METRES)
         val bounds = LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0])
@@ -375,6 +377,24 @@ class GeoWidgetFragment : Fragment() {
           }
         }
       }
+    }
+  }
+
+  /**
+   * This function clears the map markers that are currently on the map. These markers are used to
+   * indicate the location of a newly added point on the map. These red markers are not needed since
+   * FHIRCore adds icons that show the position of the location on the map. These red marker
+   * introduce a bug documented on [https://github.com/opensrp/fhircore/issues/3797]. The newly
+   * added locations do not respond to click events when the red marker is present. There is logic
+   * in the kujaku
+   * [com.mapbox.mapboxsdk.maps.MapGestureDetector.StandardGestureListener.onSingleTapConfirmed]
+   * that consumes the click events if the red marker is present.
+   *
+   * @param mapboxMap
+   */
+  fun clearMarkers(mapboxMap: MapboxMap) {
+    if (mapboxMap.markers.isNotEmpty()) {
+      mapboxMap.removeMarker(mapboxMap.markers[0])
     }
   }
 
