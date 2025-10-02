@@ -394,7 +394,7 @@ class GeoWidgetFragment : Fragment() {
    */
   fun clearMarkers(mapboxMap: MapboxMap) {
     if (mapboxMap.markers.isNotEmpty()) {
-      mapboxMap.removeMarker(mapboxMap.markers[0])
+      mapboxMap.markers.forEach { mapboxMap.removeMarker(it) }
     }
   }
 
