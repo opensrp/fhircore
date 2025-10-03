@@ -380,16 +380,16 @@ class GeoWidgetFragment : Fragment() {
     }
   }
 
-/**
- * Removes all map markers to prevent click event conflicts.
- * 
- * Red markers are automatically added when new points are placed on the map, but they're
- * redundant since FHIRCore renders custom location icons. More critically, these markers
- * block click events on newly added locations due to how Kujaku's gesture detector handles
- * tap events in [com.mapbox.mapboxsdk.maps.MapGestureDetector.StandardGestureDetector.onSingleTapConfirmed].
- * 
- * @param mapboxMap The MapboxMap instance to clear markers from
- */
+  /**
+   * Removes all map markers to prevent click event conflicts.
+   *
+   * Red markers are automatically added when new points are placed on the map, but they're
+   * redundant since FHIRCore renders custom location icons. More critically, these markers block
+   * click events on newly added locations due to how Kujaku's gesture detector handles tap events
+   * in [com.mapbox.mapboxsdk.maps.MapGestureDetector.StandardGestureDetector.onSingleTapConfirmed].
+   *
+   * @param mapboxMap The MapboxMap instance to clear markers from
+   */
   fun clearMarkers(mapboxMap: MapboxMap) {
     if (mapboxMap.markers.isNotEmpty()) {
       mapboxMap.markers.forEach { mapboxMap.removeMarker(it) }
