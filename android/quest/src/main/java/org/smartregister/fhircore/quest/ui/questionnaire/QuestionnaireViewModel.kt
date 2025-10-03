@@ -35,6 +35,8 @@ import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -193,37 +195,39 @@ constructor(
         return@launch
       }
 
-      currentQuestionnaireResponse.processMetadata(
-        questionnaire = questionnaire,
-        questionnaireConfig = questionnaireConfig,
-        context = context,
-      )
-
-      val bundle =
-        performExtraction(
-          extractByStructureMap = questionnaire.extractByStructureMap(),
-          questionnaire = questionnaire,
-          questionnaireResponse = currentQuestionnaireResponse,
-          context = context,
-        )
-
-      defaultRepository.applyDbTransaction {
-        performSave(
-          bundle,
-          questionnaire,
-          questionnaireConfig,
-          currentQuestionnaireResponse,
-          context,
-          actionParameters,
-        )
-      }
-
       val idTypes =
-        bundle.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
-          ?: emptyList()
+        async(dispatcherProvider.default()) {
+          currentQuestionnaireResponse.processMetadata(
+            questionnaire = questionnaire,
+            questionnaireConfig = questionnaireConfig,
+            context = context,
+          )
+
+          val bundle =
+            performExtraction(
+              extractByStructureMap = questionnaire.extractByStructureMap(),
+              questionnaire = questionnaire,
+              questionnaireResponse = currentQuestionnaireResponse,
+              context = context,
+            )
+
+          defaultRepository.applyDbTransaction {
+            performSave(
+              bundle,
+              questionnaire,
+              questionnaireConfig,
+              currentQuestionnaireResponse,
+              context,
+              actionParameters,
+            )
+          }
+
+          bundle.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
+            ?: emptyList()
+        }
 
       onSuccessfulSubmission(
-        idTypes,
+        idTypes.await(),
         currentQuestionnaireResponse,
       )
     }
@@ -247,6 +251,12 @@ constructor(
 
     updateResourcesLastUpdatedProperty(actionParameters)
 
+    val bundleCopy =
+      bundle.copyBundle(currentQuestionnaireResponse).also {
+        val extractedResources = it.entry.map { entry -> entry.resource }
+        validateWithFhirValidator(*extractedResources.toTypedArray())
+      }
+
     // Important to load subject resource to retrieve ID (as reference) correctly
     val subjectIdType: IdType? =
       if (currentQuestionnaireResponse.subject.reference.isNullOrEmpty()) {
@@ -255,38 +265,19 @@ constructor(
         IdType(currentQuestionnaireResponse.subject.reference)
       }
 
-    if (subjectIdType != null) {
+    if (subjectIdType != null && !questionnaireConfig.isReadOnly()) {
       val subject =
         loadResource(
           ResourceType.valueOf(subjectIdType.resourceType),
           subjectIdType.idPart,
         )
 
-      if (subject != null && !questionnaireConfig.isReadOnly()) {
-        val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
-
-        val extractedResources = newBundle.entry.map { it.resource }
-        validateWithFhirValidator(*extractedResources.toTypedArray())
-
-        generateCarePlan(
-          subject = subject,
-          bundle = newBundle,
-          questionnaireConfig = questionnaireConfig,
-        )
-
-        withContext(dispatcherProvider.io()) {
-          executeCql(
-            subject = subject,
-            bundle = newBundle,
-            questionnaire = questionnaire,
-            questionnaireConfig = questionnaireConfig,
-          )
-        }
-
-        fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
-          questionnaireConfig = questionnaireConfig,
-          subject = subject,
-          bundle = newBundle,
+      subject?.let {
+        generateCarePlanExecuteCQL(
+          it,
+          questionnaireConfig,
+          bundle = bundleCopy,
+          questionnaire,
         )
       }
     }
@@ -304,6 +295,32 @@ constructor(
         questionnaireConfig = questionnaireConfig,
       )
     }
+  }
+
+  private suspend fun generateCarePlanExecuteCQL(
+    subject: Resource,
+    questionnaireConfig: QuestionnaireConfig,
+    bundle: Bundle,
+    questionnaire: Questionnaire,
+  ) = coroutineScope {
+    generateCarePlan(
+      subject = subject,
+      bundle = bundle,
+      questionnaireConfig = questionnaireConfig,
+    )
+
+    executeCql(
+      subject = subject,
+      bundle = bundle,
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig,
+    )
+
+    fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
+      questionnaireConfig = questionnaireConfig,
+      subject = subject,
+      bundle = bundle,
+    )
   }
 
   fun validateWithFhirValidator(vararg resource: Resource) {
