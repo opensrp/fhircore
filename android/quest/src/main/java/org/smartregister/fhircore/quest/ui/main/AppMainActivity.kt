@@ -41,6 +41,7 @@ import java.time.Instant
 import javax.inject.Inject
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -130,35 +131,29 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
-    lifecycleScope.launch(dispatcherProvider.main()) {
-      val navController =
-        (supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment).navController
-      val launcherType =
-        appMainViewModel.applicationConfiguration.navigationStartDestination.launcherType
+    val navController =
+      (supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment).navController
+    val launcherType =
+      appMainViewModel.applicationConfiguration.navigationStartDestination.launcherType
 
-      val graph =
-        withContext(dispatcherProvider.io()) {
-          navController.navInflater.inflate(R.navigation.application_nav_graph).apply {
-            val startDestination =
-              when (launcherType) {
-                LauncherType.MAP -> R.id.geoWidgetLauncherFragment
-                LauncherType.REGISTER -> R.id.registerFragment
-              }
-            setStartDestination(startDestination)
-          }
+    val graph =
+      runBlocking(dispatcherProvider.io()) {
+        navController.navInflater.inflate(R.navigation.application_nav_graph).apply {
+          val startDestination =
+            when (launcherType) {
+              LauncherType.MAP -> R.id.geoWidgetLauncherFragment
+              LauncherType.REGISTER -> R.id.registerFragment
+            }
+          setStartDestination(startDestination)
         }
-      findViewById<View>(R.id.mainScreenProgressBar).apply { visibility = View.GONE }
-      findViewById<View>(R.id.mainScreenProgressBarText).apply { visibility = View.GONE }
-
-      appMainViewModel.run {
-        navController.setGraph(graph, getStartDestinationArgs())
-        retrieveAppMainUiState()
-        schedulePeriodicJobs(this@AppMainActivity)
       }
-
-      setupLocationServices()
-      overrideOnBackPressListener()
-    }
+    findViewById<View>(R.id.mainScreenProgressBar).apply { visibility = View.GONE }
+    findViewById<View>(R.id.mainScreenProgressBarText).apply { visibility = View.GONE }
+    navController.setGraph(graph, appMainViewModel.getStartDestinationArgs())
+    appMainViewModel.retrieveAppMainUiState()
+    lifecycleScope.launch { appMainViewModel.schedulePeriodicJobs(this@AppMainActivity) }
+    setupLocationServices()
+    overrideOnBackPressListener()
   }
 
   override fun onResume() {

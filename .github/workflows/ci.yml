@@ -199,7 +199,7 @@ jobs:
         run:  bash <(curl -s https://codecov.io/bash) -F geowidget -f "geowidget/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
   quest-tests:
-    timeout-minutes: 90  # Extend timeout to 90 minutes
+#    timeout-minutes: 90  # Extend timeout to 90 minutes
     runs-on: ubuntu-latest
     strategy:
       matrix:

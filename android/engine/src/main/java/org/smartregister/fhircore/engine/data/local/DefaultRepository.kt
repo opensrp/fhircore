@@ -48,6 +48,8 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.ceil
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -254,11 +256,15 @@ constructor(
   suspend fun <R : Resource> addOrUpdate(addMandatoryTags: Boolean = true, resource: R) {
     resource.updateLastUpdated()
     try {
-      fhirEngine.get(resource.resourceType, resource.logicalId).run {
-        val updateFrom = updateFrom(resource)
-        fhirEngine.update(updateFrom)
+      val previousResourceCopy = fhirEngine.get(resource.resourceType, resource.logicalId)
+      fhirEngine.update(resource)
+
+      // Offload merging and updating of the merged resource to a separate context
+      CoroutineScope(dispatcherProvider.default()).launch {
+        val processedUpdatedFromResource = previousResourceCopy.updateFrom(resource, parser)
+        fhirEngine.update(processedUpdatedFromResource)
       }
-    } catch (resourceNotFoundException: ResourceNotFoundException) {
+    } catch (_: ResourceNotFoundException) {
       create(addMandatoryTags, resource)
     }
   }
