@@ -455,6 +455,7 @@ class RulesFactoryTest : RobolectricTest() {
       listOf(
         Patient().setBirthDate(LocalDate.parse("2015-10-03").toDate()),
         Patient().setActive(true).setBirthDate(LocalDate.parse("2019-10-03").toDate()),
+        Patient().setActive(true).setBirthDate(Date().plusYears(-3)),
         Patient().setActive(true).setBirthDate(LocalDate.parse("2020-10-03").toDate()),
       )
 
@@ -605,6 +606,10 @@ class RulesFactoryTest : RobolectricTest() {
         Patient().apply {
           birthDate = LocalDate.parse("2021-10-03").toDate()
           addName().apply { family = "light" }
+        },
+        Patient().apply {
+          birthDate = Date().plusYears(-3)
+          addName().apply { family = "odd" }
         },
       )
 
