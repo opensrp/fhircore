@@ -601,7 +601,6 @@ dependencies {
   androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
   androidTestImplementation(libs.dagger.hilt.android.testing)
-  androidTestImplementation(libs.mockk.android)
   androidTestImplementation(libs.benchmark.junit)
   androidTestImplementation(libs.work.testing)
   androidTestImplementation(libs.navigation.testing)
