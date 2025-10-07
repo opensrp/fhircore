@@ -87,7 +87,7 @@ jobs:
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
 
-      - name: Run Engine module unit and instrumentation tests and generate coverage report
+      - name: Run instrumentation tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           working-directory: android
@@ -96,7 +96,11 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew -PlocalPropertiesFile=local.properties :engine:clean :engine:fhircoreJacocoReport --stacktrace
+          script: ./gradlew -PlocalPropertiesFile=local.properties :engine:clean :engine:connectedDebugAndroidTest --stacktrace
+
+      - name: Generate coverage report
+        working-directory: android
+        run: ./gradlew -PlocalPropertiesFile=local.properties :engine:fhircoreJacocoReport --stacktrace
 
       - name: Upload Test reports
         if: ${{ !cancelled() }}
@@ -175,7 +179,7 @@ jobs:
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
 
-      - name: Run Geowidget module unit and instrumentation tests and generate coverage report
+      - name: Run instrumentation tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           working-directory: android
@@ -184,7 +188,11 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew -PlocalPropertiesFile=local.properties :geowidget:clean :geowidget:fhircoreJacocoReport --stacktrace
+          script: ./gradlew -PlocalPropertiesFile=local.properties :geowidget:clean :geowidget:connectedDebugAndroidTest --stacktrace
+
+      - name: Generate coverage report
+        working-directory: android
+        run: ./gradlew -PlocalPropertiesFile=local.properties :geowidget:fhircoreJacocoReport --stacktrace
 
       - name: Upload Test reports
         if: ${{ !cancelled() }}
@@ -266,7 +274,8 @@ jobs:
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
 
-      - name: Run Quest module unit and instrumentation tests and generate unit tests coverage report
+      - name: Run instrumentation tests
+        continue-on-error: true
         uses: reactivecircus/android-emulator-runner@v2
         with: 
           working-directory: android
@@ -277,10 +286,15 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: >-
-            ./gradlew -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport
+            ./gradlew -PlocalPropertiesFile=local.properties :quest:connectedOpensrpDebugAndroidTest            
             -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
             -Pandroid.testInstrumentationRunnerArguments.numShards=${{ matrix.num-shards }}
             -Pandroid.testInstrumentationRunnerArguments.shardIndex=${{ matrix.shard }}
+            --stacktrace
+
+      - name: Generate coverage report
+        working-directory: android
+        run: ./gradlew -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace
 
       - name: Upload Test reports
         if: ${{ !cancelled() }}

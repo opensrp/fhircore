@@ -4,7 +4,7 @@ val isApplication = (project.name == "quest")
 val actualProjectName : String = if(isApplication) "opensrp" else project.name
 
 project.tasks.register<JacocoReport>("fhircoreJacocoReport") {
-  val tasksList = mutableSetOf(
+  val tasksList = setOf(
     "test${if(isApplication) actualProjectName.replaceFirstChar { it.uppercase() } else ""}DebugUnitTest", // Generates unit test coverage report
   )
 
@@ -13,7 +13,7 @@ project.tasks.register<JacocoReport>("fhircoreJacocoReport") {
    * into functional tests and performance tests. Performance tests can take upto 1 hr and are not required
    * while functional tests alone will take ~40 mins and they are required.
    */
-  tasksList += "connected${if (isApplication)  actualProjectName.replaceFirstChar { it.uppercase() } else ""}DebugAndroidTest"
+//  tasksList += "connected${if (isApplication)  actualProjectName.replaceFirstChar { it.uppercase() } else ""}DebugAndroidTest"
 
   dependsOn(
     tasksList
