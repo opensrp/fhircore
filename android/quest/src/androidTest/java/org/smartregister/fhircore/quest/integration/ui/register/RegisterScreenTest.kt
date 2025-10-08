@@ -285,7 +285,6 @@ class RegisterScreenTest {
       .performTouchInput { swipeDown() }
   }
 
-  //  @Ignore("Fix NullPointerException: androidx.compose.runtime.State.getValue()")
   @Test
   fun testThatDialogIsDisplayedDuringSyncing() {
     val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()

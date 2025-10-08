@@ -207,7 +207,6 @@ jobs:
         run:  bash <(curl -s https://codecov.io/bash) -F geowidget -f "geowidget/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
   quest-tests:
-#    timeout-minutes: 90  # Extend timeout to 90 minutes
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -285,6 +284,7 @@ jobs:
           heap-size: 4608M
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
+          # Run instrumentation tests for the Quest module, excluding the long-running performance tests.
           script: >-
             ./gradlew -PlocalPropertiesFile=local.properties :quest:connectedOpensrpDebugAndroidTest            
             -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
