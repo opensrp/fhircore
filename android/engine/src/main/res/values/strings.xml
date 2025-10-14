@@ -41,6 +41,7 @@
     <string name="date_last_seen">Last seen %1$s</string>
     <string name="date_last_visited">Last visited %1$s</string>
     <string name="str_save">Save</string>
+    <string name="save">Save</string>
     <string name="login_error">Login error: %1$s</string>
     <string name="str_next">NEXT</string>
     <string name="str_previous">PREVIOUS</string>
