@@ -11,6 +11,9 @@ plugins {
   id("dagger.hilt.android.plugin")
   id("androidx.navigation.safeargs")
   id("org.jetbrains.kotlin.plugin.serialization")
+  id("com.google.devtools.ksp")
+  id("com.google.dagger.hilt.android")
+  alias(libs.plugins.org.jetbrains.kotlin.plugin.compose)
 }
 
 tasks.named("dokkaHtmlPartial") {
@@ -135,8 +138,8 @@ dependencies {
   }
 
   // Annotation processors
-  kapt(libs.hilt.compiler)
-  kapt(libs.dagger.hilt.compiler)
+  ksp(libs.hilt.compiler)
+  ksp(libs.dagger.hilt.compiler)
 
   testRuntimeOnly(libs.bundles.junit.jupiter.runtime)
 
@@ -155,8 +158,8 @@ dependencies {
   debugImplementation(libs.fragment.testing)
 
   // Annotation processors for test
-  kaptTest(libs.dagger.hilt.android.compiler)
-  kaptAndroidTest(libs.dagger.hilt.android.compiler)
+  kspTest(libs.dagger.hilt.android.compiler)
+  kspAndroidTest(libs.dagger.hilt.android.compiler)
 
   androidTestUtil(libs.orchestrator)
 
