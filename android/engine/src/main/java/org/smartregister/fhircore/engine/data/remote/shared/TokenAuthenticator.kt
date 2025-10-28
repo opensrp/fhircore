@@ -140,7 +140,10 @@ constructor(
     }
   }
 
-  fun isCurrentRefreshTokenActive() = isTokenActive(accountManager.getPassword(findAccount()))
+  fun isCurrentRefreshTokenActive(): Boolean {
+    val account = findAccount() ?: return false
+    return isTokenActive(accountManager.getPassword(account))
+  }
 
   private fun buildOAuthPayload(grantType: String) =
     mutableMapOf(
@@ -188,6 +191,7 @@ constructor(
             account.type,
             accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE),
           )
+          secureSharedPreference.deleteCredentials()
           Result.success(true)
         } else {
           Result.success(false)
