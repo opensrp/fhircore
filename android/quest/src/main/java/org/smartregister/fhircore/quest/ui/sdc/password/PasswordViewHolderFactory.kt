@@ -31,6 +31,8 @@ import com.google.android.fhir.datacapture.extensions.itemControlCode
 import com.google.android.fhir.datacapture.extensions.tryUnwrapContext
 import com.google.android.fhir.datacapture.views.HeaderView
 import com.google.android.fhir.datacapture.views.QuestionnaireViewItem
+import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemAndroidViewHolderDelegate
+import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemAndroidViewHolderFactory
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolderDelegate
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolderFactory
 import com.google.android.material.textfield.TextInputEditText
@@ -40,11 +42,11 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 
 object PasswordViewHolderFactory :
-  QuestionnaireItemViewHolderFactory(
+  QuestionnaireItemAndroidViewHolderFactory(
     org.smartregister.fhircore.quest.R.layout.password_view,
   ) {
   override fun getQuestionnaireItemViewHolderDelegate() =
-    object : QuestionnaireItemViewHolderDelegate {
+    object : QuestionnaireItemAndroidViewHolderDelegate {
       override lateinit var questionnaireViewItem: QuestionnaireViewItem
 
       private lateinit var header: HeaderView
@@ -58,7 +60,7 @@ object PasswordViewHolderFactory :
 
         passwordEditText =
           itemView
-            .findViewById<TextInputEditText?>(
+            .findViewById<TextInputEditText>(
               org.smartregister.fhircore.quest.R.id.password_edit_text,
             )
             .apply {
