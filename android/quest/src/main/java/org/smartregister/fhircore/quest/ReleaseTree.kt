@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest
 
 import android.util.Log
 import android.util.Log.ERROR
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.sentry.Sentry
 import timber.log.Timber
 
@@ -34,6 +35,9 @@ class ReleaseTree : Timber.Tree() {
     if (priority == ERROR || priority == Log.WARN || priority == Log.ASSERT) {
       if (throwable != null) {
         Sentry.captureException(throwable)
+        FirebaseCrashlytics.getInstance().recordException(throwable)
+      } else {
+        FirebaseCrashlytics.getInstance().log("$tag: $message")
       }
     }
   }

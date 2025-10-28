@@ -24,6 +24,8 @@ plugins {
   alias(libs.plugins.com.diffplug.spotless) apply false
   alias(libs.plugins.android.junit5) apply false
   alias(libs.plugins.org.jetbrains.kotlin.plugin.compose) apply false
+  alias(libs.plugins.google.services) apply false
+  alias(libs.plugins.firebase.crashlytics) apply false
 }
 
 tasks.dokkaHtmlMultiModule {

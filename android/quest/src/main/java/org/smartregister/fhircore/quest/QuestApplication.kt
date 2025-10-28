@@ -23,6 +23,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
 import dagger.hilt.InstallIn
@@ -65,6 +66,8 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
       initSentryMonitoring()
     }
 
+    initFirebaseCrashlytics()
+
     // TODO Fix this workaround for cursor size issue. Currently size set to 10 MB
     try {
       val field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
@@ -101,6 +104,15 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
       }
 
       SentryAndroid.init(this, sentryConfiguration)
+    }
+  }
+
+  private fun initFirebaseCrashlytics() {
+    try {
+      FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(true)
+      Timber.d("Firebase Crashlytics initialized successfully")
+    } catch (e: Exception) {
+      Timber.e(e, "Failed to initialize Firebase Crashlytics")
     }
   }
 

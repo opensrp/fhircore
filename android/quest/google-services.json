@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "660700053041",
+    "firebase_url": "https://opensrp-production.firebaseio.com",
+    "project_id": "opensrp-production",
+    "storage_bucket": "opensrp-production.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:660700053041:android:70e9dd66f9fb0c8c335f10",
+        "android_client_info": {
+          "package_name": "org.smartregister.opensrp.columbiaEngage"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbfvDM4FK-vYBQHX_vJV7PzKNH9hcloGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:660700053041:android:4f19eac3099a8a0c335f10",
+        "android_client_info": {
+          "package_name": "org.smartregister.opensrp.columbiaEngagePreview"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbfvDM4FK-vYBQHX_vJV7PzKNH9hcloGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
