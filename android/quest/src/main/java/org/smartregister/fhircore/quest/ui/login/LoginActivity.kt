@@ -87,6 +87,8 @@ open class LoginActivity : BaseMultiLanguageActivity() {
         ) {
           navigateToPinLogin(launchSetup = false)
         }
+      } else {
+        if (loginActivity.isRefreshTokenActive()) updateNavigateHome(true)
       }
       viewModelScope.launch { contentCache.invalidate() }
       navigateToHome.observe(loginActivity) { launchHomeScreen ->
