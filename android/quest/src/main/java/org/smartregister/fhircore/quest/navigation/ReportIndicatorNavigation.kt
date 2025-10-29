@@ -17,5 +17,14 @@
 package org.smartregister.fhircore.quest.navigation
 
 sealed class ReportIndicatorNavigation(val route: String) {
-  data object ReportIndicatorList : ReportIndicatorNavigation("reportIndicatorList")
+  data object DateSelector : ReportIndicatorNavigation("reportIndicatorDateSelector")
+
+  data object ReportIndicatorList :
+    ReportIndicatorNavigation(
+      "reportIndicatorList/{reportId}/{startDate}/{endDate}/{periodLabel}"
+    ) {
+    fun route(reportId: String, startDate: String, endDate: String, periodLabel: String): String {
+      return "reportIndicatorList/$reportId/$startDate/$endDate/$periodLabel"
+    }
+  }
 }

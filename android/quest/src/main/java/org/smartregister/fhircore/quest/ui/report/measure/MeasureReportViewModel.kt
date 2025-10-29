@@ -83,7 +83,7 @@ import org.smartregister.fhircore.quest.data.report.measure.MeasureReportSubject
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigation
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
-import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
+import org.smartregister.fhircore.quest.ui.report.models.ReportRangeSelectionData
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper
 import org.smartregister.fhircore.quest.util.nonNullGetOrDefault
