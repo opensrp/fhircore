@@ -20,12 +20,14 @@ import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
 data class ReportIndicatorConfiguration(
   override var appId: String,
   override var configType: String = ConfigType.ReportIndicator.name,
   val id: String,
+  val configRules: List<RuleConfig> = emptyList(),
   val indicators: List<ReportIndicator> = emptyList(),
 ) : Configuration()
 

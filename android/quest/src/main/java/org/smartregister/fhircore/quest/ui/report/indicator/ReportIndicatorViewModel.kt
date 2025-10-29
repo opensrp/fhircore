@@ -39,6 +39,10 @@ class ReportIndicatorViewModel @Inject constructor(val defaultRepository: Defaul
         ConfigType.ReportIndicator,
         reportId,
       )
+    val rules =
+      defaultRepository.configRulesExecutor.generateRules(reportIndicatorConfiguration.configRules)
+    val computedValues =
+      defaultRepository.configRulesExecutor.computeConfigRules(rules, baseResource = null)
 
     with(defaultRepository) {
       reportIndicatorConfiguration.indicators.forEach { config ->
@@ -49,7 +53,7 @@ class ReportIndicatorViewModel @Inject constructor(val defaultRepository: Defaul
               applyConfiguredSortAndFilters(
                 resourceConfig = resourceConfig,
                 sortData = false,
-                configComputedRuleValues = emptyMap(),
+                configComputedRuleValues = computedValues,
               )
             },
           )
