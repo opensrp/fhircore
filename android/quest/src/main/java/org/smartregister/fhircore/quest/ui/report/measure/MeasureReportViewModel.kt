@@ -80,7 +80,7 @@ import org.smartregister.fhircore.engine.util.extension.valueCode
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportSubjectsPagingSource
-import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
+import org.smartregister.fhircore.quest.navigation.MeasureReportNavigation
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
@@ -183,7 +183,7 @@ constructor(
               endDate = selectedDate.lastDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA),
             )
         }
-        event.navController.navigate(MeasureReportNavigationScreen.MeasureReportModule.route)
+        event.navController.navigate(MeasureReportNavigation.MeasureReportModule.route)
       }
       is MeasureReportEvent.OnDateRangeSelected -> {
         //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
@@ -198,7 +198,7 @@ constructor(
         with(event.measureReportType) {
           reportTypeState.value = this
           if (this == MeasureReport.MeasureReportType.INDIVIDUAL) {
-            event.navController.navigate(MeasureReportNavigationScreen.SubjectsList.route)
+            event.navController.navigate(MeasureReportNavigation.SubjectsList.route)
           } else {
             // Reset previously selected subject
             reportTypeSelectorUiState.value =
@@ -355,7 +355,7 @@ constructor(
         // Timber.w("measureReportPopulationResults${measureReportPopulationResults.value}")
 
         // Show results of measure report for individual/population
-        navController.navigate(MeasureReportNavigationScreen.MeasureReportResult.route) {
+        navController.navigate(MeasureReportNavigation.MeasureReportResult.route) {
           launchSingleTop = true
         }
       } catch (e: Exception) {
