@@ -128,10 +128,12 @@ This pattern counts unique patients who had specific types of encounters in the 
               {
                 "dataType": "DATETIME",
                 "computedRule": "startDate",
+                "valueAsDateTime": true,
                 "prefix": "GREATERTHAN_OR_EQUALS"
               },
               {
                 "dataType": "DATETIME",
+                "valueAsDateTime": true,
                 "computedRule": "endDate",
                 "prefix": "LESSTHAN_OR_EQUALS"
               }
@@ -181,11 +183,13 @@ This pattern counts encounters of a specific type within the date range.
             "filterCriteria": [
               {
                 "dataType": "DATETIME",
+                "valueAsDateTime": true,
                 "computedRule": "startDate",
                 "prefix": "GREATERTHAN_OR_EQUALS"
               },
               {
                 "dataType": "DATETIME",
+                "valueAsDateTime": true,
                 "computedRule": "endDate",
                 "prefix": "LESSTHAN_OR_EQUALS"
               }
@@ -227,11 +231,13 @@ For resources that have their own date fields (Immunization, Observation):
           {
             "dataType": "DATETIME",
             "computedRule": "startDate",
+            "valueAsDateTime": true,
             "prefix": "GREATERTHAN_OR_EQUALS"
           },
           {
             "dataType": "DATETIME",
             "computedRule": "endDate",
+            "valueAsDateTime": true,
             "prefix": "LESSTHAN_OR_EQUALS"
           }
         ],
@@ -274,11 +280,13 @@ Count patients who have specific related resources in the date range:
             "filterCriteria": [
               {
                 "dataType": "DATETIME",
+                "valueAsDateTime": true,
                 "computedRule": "startDate",
                 "prefix": "GREATERTHAN_OR_EQUALS"
               },
               {
                 "dataType": "DATETIME",
+                "valueAsDateTime": true,
                 "computedRule": "endDate",
                 "prefix": "LESSTHAN_OR_EQUALS"
               }
