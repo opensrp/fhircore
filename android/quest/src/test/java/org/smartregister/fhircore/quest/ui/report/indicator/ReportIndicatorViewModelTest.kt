@@ -299,7 +299,7 @@ class ReportIndicatorViewModelTest : RobolectricTest() {
         ReportIndicator(
           id = "old-indicator",
           title = "Old",
-          resourceConfig = ResourceConfig(resource = ResourceType.Patient)
+          resourceConfig = ResourceConfig(resource = ResourceType.Patient),
         ),
         10L,
       )
