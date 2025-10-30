@@ -58,6 +58,7 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LanguageBasicUtil
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.parcelableArrayList
@@ -447,8 +448,10 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             ?: showToast(getString(R.string.error_populating_questionnaire))
         }
 
+        val languageBasic = LanguageBasicUtil.createLanguageBasic()
         launchContextResources
           .associate { Pair(it.resourceType.name.lowercase(), it.encodeResourceToString()) }
+          .plus(LANGUAGE_VARIABLE_NAME to languageBasic.encodeResourceToString())
           .takeIf { it.isNotEmpty() }
           ?.let { setQuestionnaireLaunchContextMap(it) }
       }
@@ -607,6 +610,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     const val QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS = "questionnaireExtractedResourceIds"
     const val QUESTIONNAIRE_RESPONSE = "questionnaireResponse"
     const val QUESTIONNAIRE_ACTION_PARAMETERS = "questionnaireActionParameters"
+    const val LANGUAGE_VARIABLE_NAME = "language"
 
     fun intentBundle(
       questionnaireConfig: QuestionnaireConfig,
