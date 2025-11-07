@@ -74,6 +74,7 @@ class GeoWidgetViewModel : ViewModel() {
       ServicePointType.BUREAU_DE_DISTRICT_SANITAIRE,
       ServicePointType.SALLE_DE_CLASSE,
       ServicePointType.SERVICE_COMMUNAUTAIRE,
+      ServicePointType.ENTREPOT,
       ServicePointType.HOME,
       ServicePointType.VISITED,
       ServicePointType.REJECTED,
