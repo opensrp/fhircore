@@ -63,4 +63,3 @@ class GeoJsonFeatureTest {
     Assert.assertTrue(feature.geometry() is Point)
   }
 }
-

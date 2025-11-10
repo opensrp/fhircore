@@ -114,8 +114,10 @@ class GeoWidgetViewModelTest {
 
   @Test
   fun testAddGeoJsonFeaturesPreservesInsertionOrder() {
-    val firstFeature = GeoJsonFeature(id = "first", geometry = Geometry(coordinates = listOf(1.0, 2.0)))
-    val secondFeature = GeoJsonFeature(id = "second", geometry = Geometry(coordinates = listOf(3.0, 4.0)))
+    val firstFeature =
+      GeoJsonFeature(id = "first", geometry = Geometry(coordinates = listOf(1.0, 2.0)))
+    val secondFeature =
+      GeoJsonFeature(id = "second", geometry = Geometry(coordinates = listOf(3.0, 4.0)))
 
     geoWidgetViewModel.updateMapFeatures(listOf(firstFeature, secondFeature))
 
@@ -142,13 +144,13 @@ class GeoWidgetViewModelTest {
     val newFeatures =
       listOf(
         GeoJsonFeature(
-            id = "new-1",
-            geometry = Geometry(coordinates = listOf(1.0, 2.0)),
-          ),
+          id = "new-1",
+          geometry = Geometry(coordinates = listOf(1.0, 2.0)),
+        ),
         GeoJsonFeature(
-            id = "new-2",
-            geometry = Geometry(coordinates = listOf(3.0, 4.0)),
-          ),
+          id = "new-2",
+          geometry = Geometry(coordinates = listOf(3.0, 4.0)),
+        ),
       )
 
     geoWidgetViewModel.updateMapFeatures(newFeatures)
@@ -161,13 +163,13 @@ class GeoWidgetViewModelTest {
     val features =
       listOf(
         GeoJsonFeature(
-            id = "clear-1",
-            geometry = Geometry(coordinates = listOf(5.0, 6.0)),
-          ),
+          id = "clear-1",
+          geometry = Geometry(coordinates = listOf(5.0, 6.0)),
+        ),
         GeoJsonFeature(
-            id = "clear-2",
-            geometry = Geometry(coordinates = listOf(7.0, 8.0)),
-          ),
+          id = "clear-2",
+          geometry = Geometry(coordinates = listOf(7.0, 8.0)),
+        ),
       )
     geoWidgetViewModel.updateMapFeatures(features)
     Assert.assertTrue(geoWidgetViewModel.mapFeatures.isNotEmpty())
