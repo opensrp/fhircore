@@ -85,6 +85,7 @@
     <string name="more">أكثر</string>
     <string name="call_supervisor">يرجى الاتصال بالمشرف الخاص بك.</string>
     <string name="cancel" tools:ignore="ButtonCase">يلغي</string>
+    <string name="save">يحفظ</string>
     <string name="dial_number">رقم الاتصال</string>
     <string name="register">يسجل</string>
     <string name="visits">الزيارات</string>
