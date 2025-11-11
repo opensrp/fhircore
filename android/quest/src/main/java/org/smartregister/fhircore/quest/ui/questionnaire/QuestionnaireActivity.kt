@@ -456,14 +456,14 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
               ?: showToast(getString(R.string.error_populating_questionnaire))
           }
 
-        val languageBasic = LanguageBasicUtil.createLanguageBasic()
-        launchContextResources
-          .associate { Pair(it.resourceType.name.lowercase(), it.json()) }
-          .plus(LANGUAGE_VARIABLE_NAME to languageBasic.json())
-          .takeIf { it.isNotEmpty() }
-          ?.let { setQuestionnaireLaunchContextMap(it) }
-      }
-  }
+          val languageBasic = LanguageBasicUtil.createLanguageBasic()
+          launchContextResources
+            .associate { Pair(it.resourceType.name.lowercase(), it.json()) }
+            .plus(LANGUAGE_VARIABLE_NAME to languageBasic.json())
+            .takeIf { it.isNotEmpty() }
+            ?.let { setQuestionnaireLaunchContextMap(it) }
+        }
+    }
 
   private fun Resource.json(): String = this.encodeResourceToString(fhirParser)
 

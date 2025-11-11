@@ -1161,17 +1161,17 @@ constructor(
           ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
       val resourceIdentifier = questionnaireConfig.resourceIdentifier
 
-    val launchContextResources =
-      launchContextResources(resourceType, resourceIdentifier, actionParameters)
-    val languageBasic = LanguageBasicUtil.createLanguageBasic()
-    val launchContexts =
-      launchContextResources.associateBy { it.resourceType.name.lowercase() }.toMutableMap()
-    launchContexts["language"] = languageBasic
-    // Populate questionnaire with initial default values
-    ResourceMapper.populate(
-      questionnaire,
-      launchContexts = launchContexts,
-    )
+      val launchContextResources =
+        launchContextResources(resourceType, resourceIdentifier, actionParameters)
+      val languageBasic = LanguageBasicUtil.createLanguageBasic()
+      val launchContexts =
+        launchContextResources.associateBy { it.resourceType.name.lowercase() }.toMutableMap()
+      launchContexts["language"] = languageBasic
+      // Populate questionnaire with initial default values
+      ResourceMapper.populate(
+        questionnaire,
+        launchContexts = launchContexts,
+      )
 
       questionnaire.prepopulateWithComputedConfigValues(
         questionnaireConfig,
