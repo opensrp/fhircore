@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
@@ -116,6 +117,10 @@ fun CodeableConcept.stringValue(): String =
 fun Resource.encodeResourceToString(): String =
   FhirContext.forR4().getCustomJsonParser().encodeResourceToString(this.copy())
 
+fun Resource.encodeResourceToString(
+  parser: IParser = FhirContext.forR4().getCustomJsonParser(),
+): String = parser.encodeResourceToString(this.copy())
+
 fun StructureMap.encodeResourceToString(): String =
   FhirContext.forR4()
     .getCustomJsonParser()
@@ -128,49 +133,45 @@ fun StructureMap.encodeResourceToString(): String =
 fun <T> String.decodeResourceFromString(): T =
   FhirContext.forR4().getCustomJsonParser().parseResource(this) as T
 
-fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
-  var extensionUpdateFrom = listOf<Extension>()
-  if (updatedResource is Patient) {
-    extensionUpdateFrom = updatedResource.extension
-  }
-  var extension = listOf<Extension>()
-  if (this is Patient) {
-    extension = this.extension
-  }
-  val stringJson = encodeResourceToString()
+fun <T : Resource> T.updateFrom(
+  updatedResource: Resource,
+  parser: IParser = FhirContext.forR4().getCustomJsonParser(),
+): T {
+  val extensionUpdateFrom: List<Extension> =
+    if (updatedResource is Patient) updatedResource.extension else emptyList()
+  val extension: List<Extension> = if (this is Patient) this.extension else emptyList()
+
+  val stringJson = this.encodeResourceToString(parser)
   val originalResourceJson = JSONObject(stringJson)
 
-  originalResourceJson.updateFrom(JSONObject(updatedResource.encodeResourceToString()))
-  return FhirContext.forR4()
-    .getCustomJsonParser()
-    .parseResource(this::class.java, originalResourceJson.toString())
-    .apply {
-      val meta = this.meta
-      val metaUpdateFrom = this@updateFrom.meta
-      if ((meta == null || meta.isEmpty)) {
-        if (metaUpdateFrom != null) {
-          this.meta = metaUpdateFrom
-          this.meta.tag = metaUpdateFrom.tag
+  originalResourceJson.updateFrom(JSONObject(updatedResource.encodeResourceToString(parser)))
+  return parser.parseResource(this::class.java, originalResourceJson.toString()).apply {
+    val meta = this.meta
+    val metaUpdateFrom = this@updateFrom.meta
+    if ((meta == null || meta.isEmpty)) {
+      if (metaUpdateFrom != null) {
+        this.meta = metaUpdateFrom
+        this.meta.tag = metaUpdateFrom.tag
+      }
+    } else {
+      val setOfTags = mutableSetOf<Coding>()
+      setOfTags.addAll(meta.tag)
+      setOfTags.addAll(metaUpdateFrom.tag)
+      this.meta.tag = setOfTags.distinctBy { it.code + it.system }
+    }
+    if (this is Patient && this@updateFrom is Patient && updatedResource is Patient) {
+      if (extension.isEmpty()) {
+        if (extensionUpdateFrom.isNotEmpty()) {
+          this.extension = extensionUpdateFrom
         }
       } else {
-        val setOfTags = mutableSetOf<Coding>()
-        setOfTags.addAll(meta.tag)
-        setOfTags.addAll(metaUpdateFrom.tag)
-        this.meta.tag = setOfTags.distinctBy { it.code + it.system }
-      }
-      if (this is Patient && this@updateFrom is Patient && updatedResource is Patient) {
-        if (extension.isEmpty()) {
-          if (extensionUpdateFrom.isNotEmpty()) {
-            this.extension = extensionUpdateFrom
-          }
-        } else {
-          val setOfExtension = mutableSetOf<Extension>()
-          setOfExtension.addAll(extension)
-          setOfExtension.addAll(extensionUpdateFrom)
-          this.extension = setOfExtension.distinct()
-        }
+        val setOfExtension = mutableSetOf<Extension>()
+        setOfExtension.addAll(extension)
+        setOfExtension.addAll(extensionUpdateFrom)
+        this.extension = setOfExtension.distinct()
       }
     }
+  }
 }
 
 @Throws(JSONException::class)

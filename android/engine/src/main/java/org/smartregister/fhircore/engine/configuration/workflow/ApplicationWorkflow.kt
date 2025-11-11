@@ -65,4 +65,7 @@ enum class ApplicationWorkflow {
 
   /** A workflow to launch delete draft questionnaires */
   DELETE_DRAFT_QUESTIONNAIRE,
+
+  /** A workflow that launches report indicators screen */
+  LAUNCH_REPORT_INDICATORS,
 }
