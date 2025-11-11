@@ -23,11 +23,12 @@ import org.hl7.fhir.r4.model.Coding
 import timber.log.Timber
 
 /**
- * Utility class for creating and managing a FHIR Basic resource that represents the current
- * device language. This resource is used as a launch context in questionnaires, allowing
- * variable definitions to conditionally display text based on the device's language setting.
+ * Utility class for creating and managing a FHIR Basic resource that represents the current device
+ * language. This resource is used as a launch context in questionnaires, allowing variable
+ * definitions to conditionally display text based on the device's language setting.
  *
- * The Basic resource contains language information using ISO 639-1 language codes (e.g., en, es, fr).
+ * The Basic resource contains language information using ISO 639-1 language codes (e.g., en, es,
+ * fr).
  */
 object LanguageBasicUtil {
   /**
@@ -54,13 +55,15 @@ object LanguageBasicUtil {
     return Basic().apply {
       id = languageCode
 
-      code = CodeableConcept().addCoding(
-        Coding(
-          "urn:ietf:bcp:47",
-          languageCode,
-          languageDisplay
-        )
-      )
+      code =
+        CodeableConcept()
+          .addCoding(
+            Coding(
+              "urn:ietf:bcp:47",
+              languageCode,
+              languageDisplay,
+            ),
+          )
 
       Timber.d("Created language basic resource with language code: $languageCode")
     }
@@ -87,8 +90,7 @@ object LanguageBasicUtil {
   /**
    * Checks if a language code matches the current device language.
    *
-   * This is useful for FHIRPath expressions that need to conditionally evaluate based on
-   * language.
+   * This is useful for FHIRPath expressions that need to conditionally evaluate based on language.
    *
    * @param languageCode The ISO 639-1 language code to check (e.g., "en", "es", "fr").
    * @return True if the device language matches the provided code, false otherwise.

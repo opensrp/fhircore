@@ -81,9 +81,7 @@ class LanguageBasicUtilTest : RobolectricTest() {
   fun testIsLanguageWithNonMatchingLanguage() {
     // Test with a language that's not the current device language
     // Using a different language code that's unlikely to be the device language
-    val nonMatchingLanguage =
-      if (java.util.Locale.getDefault().language != "ja") "ja" else "es"
+    val nonMatchingLanguage = if (java.util.Locale.getDefault().language != "ja") "ja" else "es"
     Assert.assertFalse(LanguageBasicUtil.isLanguage(nonMatchingLanguage))
   }
-
 }
