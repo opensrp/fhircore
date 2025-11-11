@@ -90,7 +90,7 @@ import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGenera
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
-import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
+import org.smartregister.fhircore.quest.navigation.MeasureReportNavigation
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper
@@ -276,7 +276,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
     Assert.assertEquals(MeasureReportType.INDIVIDUAL, measureReportViewModel.reportTypeState.value)
     val routeSlot = slot<String>()
     verify { navController.navigate(capture(routeSlot)) }
-    Assert.assertEquals(MeasureReportNavigationScreen.SubjectsList.route, routeSlot.captured)
+    Assert.assertEquals(MeasureReportNavigation.SubjectsList.route, routeSlot.captured)
 
     // Test with report type other than INDIVIDUAL
     measureReportViewModel.onEvent(
