@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.pdf
 import androidx.lifecycle.ViewModel
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Locale
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -26,7 +27,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
-import java.util.Locale
 
 /**
  * ViewModel for managing PDF generation related operations.

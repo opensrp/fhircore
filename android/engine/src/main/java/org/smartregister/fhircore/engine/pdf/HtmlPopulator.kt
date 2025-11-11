@@ -31,8 +31,9 @@ import org.smartregister.fhircore.engine.util.extension.valueToString
 /**
  * HtmlPopulator class is responsible for processing an HTML template by replacing custom tags with
  * data from QuestionnaireResponses. The class uses various regex patterns to find and replace
- * custom tags such as @is-not-empty, @answer-as-list, @answer, @submitted-date, @contains,
- * @is-questionnaire-submitted, and @translate.
+ * custom tags such
+ * as @is-not-empty, @answer-as-list, @answer, @submitted-date, @contains, @is-questionnaire-submitted,
+ * and @translate.
  *
  * @property questionnaireResponses The QuestionnaireResponses object containing data for
  *   replacement.

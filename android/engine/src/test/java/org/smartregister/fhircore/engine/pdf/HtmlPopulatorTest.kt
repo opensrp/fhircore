@@ -682,9 +682,7 @@ class HtmlPopulatorTest {
     val html = "<p>@translate('hello.world')</p>"
     val questionnaireResponses = listOf<QuestionnaireResponse>()
     val translationMap = mapOf("hello.world" to "Hello World")
-    val htmlPopulator = HtmlPopulator(questionnaireResponses) { key ->
-      translationMap[key] ?: ""
-    }
+    val htmlPopulator = HtmlPopulator(questionnaireResponses) { key -> translationMap[key] ?: "" }
     val populatedHtml = htmlPopulator.populateHtml(html)
     Assert.assertEquals("<p>Hello World</p>", populatedHtml)
   }
@@ -693,13 +691,12 @@ class HtmlPopulatorTest {
   fun testTranslateShouldHandleMultipleTranslateTagsWithMap() {
     val html = "<p>@translate('key1') and @translate('key2')</p>"
     val questionnaireResponses = listOf<QuestionnaireResponse>()
-    val translationMap = mapOf(
-      "key1" to "Value 1",
-      "key2" to "Value 2",
-    )
-    val htmlPopulator = HtmlPopulator(questionnaireResponses) { key ->
-      translationMap[key] ?: ""
-    }
+    val translationMap =
+      mapOf(
+        "key1" to "Value 1",
+        "key2" to "Value 2",
+      )
+    val htmlPopulator = HtmlPopulator(questionnaireResponses) { key -> translationMap[key] ?: "" }
     val populatedHtml = htmlPopulator.populateHtml(html)
     Assert.assertEquals("<p>Value 1 and Value 2</p>", populatedHtml)
   }
@@ -709,13 +706,12 @@ class HtmlPopulatorTest {
     val html =
       "<div>Welcome: @translate('welcome.message')</div><p>Thank you: @translate('thank.you.message')</p>"
     val questionnaireResponses = listOf<QuestionnaireResponse>()
-    val translationMap = mapOf(
-      "welcome.message" to "Welcome to our service",
-      "thank.you.message" to "Thank you for using our app",
-    )
-    val htmlPopulator = HtmlPopulator(questionnaireResponses) { key ->
-      translationMap[key] ?: ""
-    }
+    val translationMap =
+      mapOf(
+        "welcome.message" to "Welcome to our service",
+        "thank.you.message" to "Thank you for using our app",
+      )
+    val htmlPopulator = HtmlPopulator(questionnaireResponses) { key -> translationMap[key] ?: "" }
     val populatedHtml = htmlPopulator.populateHtml(html)
     Assert.assertEquals(
       "<div>Welcome: Welcome to our service</div><p>Thank you: Thank you for using our app</p>",
