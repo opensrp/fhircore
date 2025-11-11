@@ -35,7 +35,7 @@ object LanguageBasicUtil {
    * Fixed identifier for the device language resource. This ensures the resource can be
    * consistently referenced and updated.
    */
-  const val LANGUAGE_BASIC_ID = "language-basic"
+  const val LANGUAGE_BASIC_ID = "device-language"
 
   /**
    * Creates a Basic FHIR resource representing the current device language.
@@ -53,7 +53,7 @@ object LanguageBasicUtil {
     val languageDisplay = getCurrentLanguageDisplay()
 
     return Basic().apply {
-      id = languageCode
+      id = LANGUAGE_BASIC_ID
 
       code =
         CodeableConcept()
