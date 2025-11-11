@@ -161,4 +161,7 @@
     <string name="listening">Listening\u2026</string>
     <string name="sync_counter"><b>Sync %1$d</b> of <b>%2$d </b></string>
     <string name="record_audio_error">Error initializing audio record</string>
+    <string name="no_encounter_data_available">No data available</string>
+    <string name="no_data_available_for_period">No data available for this period</string>
+    <string name="reports_suffix">Reports</string>
 </resources>

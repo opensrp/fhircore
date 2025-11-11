@@ -45,4 +45,6 @@ sealed class ConfigType(
   data object GeoWidget : ConfigType(name = "geoWidget", multiConfig = true)
 
   data object DataMigration : ConfigType(name = "dataMigration", multiConfig = true)
+
+  data object ReportIndicator : ConfigType(name = "reportIndicator", multiConfig = true)
 }
