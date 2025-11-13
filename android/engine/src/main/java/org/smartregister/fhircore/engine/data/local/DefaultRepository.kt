@@ -435,7 +435,7 @@ constructor(
     }
   }
 
-  protected fun Search.applyConfiguredSortAndFilters(
+  fun Search.applyConfiguredSortAndFilters(
     resourceConfig: ResourceConfig,
     filterActiveResources: List<ActiveResourceFilterConfig>? = null,
     sortData: Boolean,

@@ -21,11 +21,11 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.net.Uri
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
@@ -175,6 +175,14 @@ fun ActionConfig.handleClickEvent(
 
       navController.navigate(MainNavigationScreen.Reports.route, args)
     }
+    ApplicationWorkflow.LAUNCH_REPORT_INDICATORS -> {
+      val args =
+        bundleOf(
+          Pair(NavigationArg.REPORT_ID, actionConfig.id),
+        )
+
+      navController.navigate(MainNavigationScreen.ReportIndicators.route, args)
+    }
     ApplicationWorkflow.LAUNCH_SETTINGS ->
       navController.navigate(MainNavigationScreen.Settings.route)
     ApplicationWorkflow.LAUNCH_INSIGHT_SCREEN ->
@@ -205,7 +213,7 @@ fun ActionConfig.handleClickEvent(
       val actionParameter = interpolatedParams.first()
       val phoneNumber = actionParameter.value
       val intent = Intent(Intent.ACTION_DIAL)
-      intent.data = Uri.parse("tel:$phoneNumber")
+      intent.data = "tel:$phoneNumber".toUri()
       ContextCompat.startActivity(navController.context, intent, null)
     }
     ApplicationWorkflow.COPY_TEXT -> {
@@ -297,7 +305,7 @@ suspend fun List<ViewProperties>.decodeImageResourcesToBitmap(
             ICON_TYPE_REMOTE.equals(imageConfig?.type, ignoreCase = true) &&
               !imageConfig?.reference.isNullOrBlank()
           ) {
-            val resourceId = imageConfig!!.reference!!
+            val resourceId = imageConfig.reference!!
             fhirEngine.loadResource<Binary>(resourceId)?.let { binary: Binary ->
               binary.data.decodeToBitmap()?.let { bitmap -> decodedImageMap[resourceId] = bitmap }
             }

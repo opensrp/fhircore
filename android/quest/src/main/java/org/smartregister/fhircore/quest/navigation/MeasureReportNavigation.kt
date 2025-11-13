@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.report.measure.models
+package org.smartregister.fhircore.quest.navigation
 
-import java.util.Date
+sealed class MeasureReportNavigation(val route: String) {
+  object MeasureReportModule : MeasureReportNavigation("reportMeasuresModule")
 
-data class ReportRangeSelectionData(val month: String, val year: String, val date: Date)
+  object ReportDateSelector : MeasureReportNavigation("reportDateSelector")
+
+  object SubjectsList : MeasureReportNavigation("subjectsList")
+
+  object MeasureReportResult : MeasureReportNavigation("measureReportResult")
+}
