@@ -37,6 +37,7 @@ import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.exceptions.MapboxConfigurationException
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
+import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.expressions.Expression
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
@@ -313,6 +314,7 @@ class GeoWidgetFragment : Fragment() {
         mapboxMap.getStyle { style ->
           style.getSourceAs<GeoJsonSource>(DATA_SET)?.setGeoJson(featureCollection)
         }
+        clearMarkers(mapboxMap)
         val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(locationPoints))
         val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, PADDING_IN_METRES)
         val bounds = LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0])
@@ -375,6 +377,22 @@ class GeoWidgetFragment : Fragment() {
           }
         }
       }
+    }
+  }
+
+  /**
+   * Removes all map markers to prevent click event conflicts.
+   *
+   * Red markers are automatically added when new points are placed on the map, but they're
+   * redundant since FHIRCore renders custom location icons. More critically, these markers block
+   * click events on newly added locations due to how Kujaku's gesture detector handles tap events
+   * in [com.mapbox.mapboxsdk.maps.MapGestureDetector.StandardGestureDetector.onSingleTapConfirmed].
+   *
+   * @param mapboxMap The MapboxMap instance to clear markers from
+   */
+  fun clearMarkers(mapboxMap: MapboxMap) {
+    if (mapboxMap.markers.isNotEmpty()) {
+      mapboxMap.markers.forEach { mapboxMap.removeMarker(it) }
     }
   }
 
