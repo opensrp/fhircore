@@ -37,3 +37,7 @@ android/quest/src/main/assets/configs/*
 
 # Project resource directories
 android/quest/src/main/assets/resources/echis/
+
+# Claude Code documentation (local only)
+CLAUDE.md
+android/CLAUDE.md
