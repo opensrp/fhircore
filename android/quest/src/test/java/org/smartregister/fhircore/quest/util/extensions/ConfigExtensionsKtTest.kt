@@ -702,6 +702,26 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   }
 
   @Test
+  fun testCreateRegisterNavigationOptionsWhenCurrentDestinationIsHome() {
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        id = "registerId",
+        popNavigationBackStack = true,
+      )
+    every { navController.currentBackStackEntry } returns
+      mockk {
+        every { destination } returns mockk { every { id } returns MainNavigationScreen.Home.route }
+      }
+
+    val navOptions = createRegisterNavigationOptions(actionConfig, navController)
+
+    Assert.assertTrue(navOptions.shouldLaunchSingleTop())
+    Assert.assertFalse(navOptions.isPopUpToInclusive())
+  }
+
+  @Test
   fun testLaunchRegisterAllowsNavigationWhenCurrentRegisterIdIsNull() {
     val clickAction =
       ActionConfig(
