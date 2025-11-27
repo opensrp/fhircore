@@ -25,9 +25,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.datacapture.views.QuestionnaireViewItem
+import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemAndroidViewHolderDelegate
+import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemAndroidViewHolderFactory
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolder
-import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolderDelegate
-import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolderFactory
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
@@ -35,9 +35,9 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.quest.R
 
 object EditTextQrCodeViewHolderFactory :
-  QuestionnaireItemViewHolderFactory(R.layout.edit_text_qr_code_view) {
-  override fun getQuestionnaireItemViewHolderDelegate(): QuestionnaireItemViewHolderDelegate =
-    object : QuestionnaireItemViewHolderDelegate {
+  QuestionnaireItemAndroidViewHolderFactory(R.layout.edit_text_qr_code_view) {
+  override fun getQuestionnaireItemViewHolderDelegate() =
+    object : QuestionnaireItemAndroidViewHolderDelegate {
       override lateinit var questionnaireViewItem: QuestionnaireViewItem
 
       private val canHaveMultipleAnswers
