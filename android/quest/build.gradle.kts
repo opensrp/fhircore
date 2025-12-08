@@ -272,6 +272,13 @@ android {
       manifestPlaceholders["appLabel"] = "MOH eCHIS"
     }
 
+    create("echisSupervisor") {
+      dimension = "apps"
+      applicationIdSuffix = ".echisSupervisor"
+      versionNameSuffix = "-echis-supervisor"
+      manifestPlaceholders["appLabel"] = "MOH eCHIS Supervisor"
+    }
+
     create("sidBunda") {
       dimension = "apps"
       applicationIdSuffix = ".sidBunda"
@@ -342,11 +349,11 @@ android {
       manifestPlaceholders["appLabel"] = "Engage"
     }
 
-    create("fpdEngage") {
+    create("fpdIPC") {
       dimension = "apps"
-      applicationIdSuffix = ".fpdEngage"
-      versionNameSuffix = "-fpdEngage"
-      manifestPlaceholders["appLabel"] = "Engage IPC"
+      applicationIdSuffix = ".fpdIPC"
+      versionNameSuffix = "-fpdIPC"
+      manifestPlaceholders["appLabel"] = "Engage"
     }
 
     create("eir") {

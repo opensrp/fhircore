@@ -28,7 +28,16 @@ captures/
 # Fleet
 .fleet/
 .docusaurus/
+
+# Configs
 android/quest/src/main/assets/configs/*
+
+# Keep the default configs
 !android/quest/src/main/assets/configs/app
 
+# Project resource directories
 android/quest/src/main/assets/resources/echis/
+
+# Claude Code documentation (local only)
+CLAUDE.md
+android/CLAUDE.md
