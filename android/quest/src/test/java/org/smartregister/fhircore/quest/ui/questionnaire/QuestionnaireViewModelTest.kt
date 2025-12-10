@@ -1935,7 +1935,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testThatPopulateQuestionnaireSetInitialDefaultValueForQuestionnaireInitialExpression() =
+  fun testThatPopulateQuestionnaireSetsQuestionnaireResponseWithInitialDefaultValueForQuestionnaireInitialExpression() =
     runTest {
       val questionnaireViewModelInstance =
         QuestionnaireViewModel(
@@ -1972,22 +1972,22 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
         questionnaireWithDefaultDate
 
-      questionnaireViewModelInstance.populateQuestionnaire(
-        questionnaireWithDefaultDate,
-        questionnaireConfig,
-        emptyList(),
+      val (questionnaireResponse, _) =
+        questionnaireViewModelInstance.populateQuestionnaire(
+          questionnaireWithDefaultDate,
+          questionnaireConfig,
+          emptyList(),
+        )
+
+      Assert.assertTrue(
+        (questionnaireResponse!!.item.single { it.linkId == "defaultedDate" }.answerFirstRep.value
+            as DateType)
+          .isToday,
       )
-      val initialValueDate =
-        questionnaireWithDefaultDate.item
-          .first { it.linkId == "defaultedDate" }
-          .initial
-          .first()
-          .value as DateType
-      Assert.assertTrue(initialValueDate.isToday)
     }
 
   @Test
-  fun testThatPopulateQuestionnaireSetInitialDefaultValueButExcludesFieldFromResponse() =
+  fun testThatPopulateQuestionnaireSetsInitialDefaultValueButExcludesValueFromPreviousResponse() =
     runTest(timeout = 90.seconds) {
       val thisQuestionnaireConfig =
         questionnaireConfig.copy(
@@ -2069,7 +2069,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
 
       Assert.assertNotNull(result?.item)
-      Assert.assertTrue(result!!.item.isEmpty())
+      Assert.assertTrue(result!!.item.isNotEmpty())
+      Assert.assertTrue((result.item.single().answerFirstRep.value as DateType).isToday)
     }
 
   @Test
@@ -2513,7 +2514,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     val items = mutableListOf(item1, item2, item3)
     val exclusionMap = mapOf("2" to true, "3.1" to true, "3.2.2" to true)
-    val filteredItems = questionnaireViewModel.excludePrepopulationFields(items, exclusionMap)
+    val filteredItems =
+      questionnaireViewModel.excludePreviouslyAnsweredFields(items, emptyList(), exclusionMap)
     Assert.assertEquals(2, filteredItems.size)
     Assert.assertEquals("1", filteredItems.first().linkId)
     val itemThree = filteredItems.last()
