@@ -45,12 +45,12 @@ sonar {
     )
     property(
       "sonar.exclusions",
-      """**/*Test*/**,
+      """"**/*Test*/**,
           **/*test*/**,
           **/.gradle/**,
           **/R.class,
           *.json,
-          *.yaml""",
+          *.yaml"""",
     )
   }
 }
@@ -71,19 +71,19 @@ android {
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTHENTICATION", "${project.extra["SKIP_AUTHENTICATION"]}")
-    buildConfigField("String", "FHIR_BASE_URL", """"${project.extra["FHIR_BASE_URL"]}"""")
-    buildConfigField("String", "OAUTH_BASE_URL", """"${project.extra["OAUTH_BASE_URL"]}"""")
-    buildConfigField("String", "OAUTH_CLIENT_ID", """"${project.extra["OAUTH_CLIENT_ID"]}"""")
-    buildConfigField("String", "OAUTH_SCOPE", """"${project.extra["OAUTH_SCOPE"]}"""")
-    buildConfigField("String", "OPENSRP_APP_ID", """${project.extra["OPENSRP_APP_ID"]}""")
-    buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
-    buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
+    buildConfigField("String", "FHIR_BASE_URL", """""${project.extra["FHIR_BASE_URL"]}""""")
+    buildConfigField("String", "OAUTH_BASE_URL", """""${project.extra["OAUTH_BASE_URL"]}""""")
+    buildConfigField("String", "OAUTH_CLIENT_ID", """""${project.extra["OAUTH_CLIENT_ID"]}""""")
+    buildConfigField("String", "OAUTH_SCOPE", """""${project.extra["OAUTH_SCOPE"]}""""")
+    buildConfigField("String", "OPENSRP_APP_ID", """"${project.extra["OPENSRP_APP_ID"]}"""")
+    buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """""100""""")
+    buildConfigField("String", "SENTRY_DSN", """""${project.extra["SENTRY_DSN"]}""""")
     buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
-    buildConfigField("String", "GEMINI_API_KEY", """"${project.extra["GEMINI_API_KEY"]}"""")
+    buildConfigField("String", "GEMINI_API_KEY", """""${project.extra["GEMINI_API_KEY"]}""""")
     buildConfigField(
       "String",
       "SPEECH_TO_TEXT_API_KEY",
-      """"${project.extra["SPEECH_TO_TEXT_API_KEY"]}"""",
+      """""${project.extra["SPEECH_TO_TEXT_API_KEY"]}""""",
     )
 
     testInstrumentationRunner = "org.smartregister.fhircore.quest.QuestTestRunner"
@@ -95,16 +95,31 @@ android {
     // "pm clear" command after each test invocation. This command ensures
     // that the app's state is completely cleared between tests.
     testInstrumentationRunnerArguments["clearPackageData"] = "true"
+
+    // Configure NDK build flags for 16KB page size alignment
+    ndk {
+      abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+    }
+    
+    externalNativeBuild {
+      cmake {
+        cppFlags += listOf("-fPIC")
+        arguments += listOf(
+          "-DANDROID_ARM_MODE=arm",
+          "-DANDROID_STL=c++_shared"
+        )
+      }
+    }
   }
 
   signingConfigs {
     create("release") {
       enableV1Signing = false
       enableV2Signing = true
-      keyAlias = System.getenv("KEYSTORE_ALIAS") ?: """${project.extra["KEYSTORE_ALIAS"]}"""
-      keyPassword = System.getenv("KEY_PASSWORD") ?: """${project.extra["KEY_PASSWORD"]}"""
+      keyAlias = System.getenv("KEYSTORE_ALIAS") ?: """"${project.extra["KEYSTORE_ALIAS"]}""""
+      keyPassword = System.getenv("KEY_PASSWORD") ?: """"${project.extra["KEY_PASSWORD"]}""""
       storePassword =
-        System.getenv("KEYSTORE_PASSWORD") ?: """${project.extra["KEYSTORE_PASSWORD"]}"""
+        System.getenv("KEYSTORE_PASSWORD") ?: """"${project.extra["KEYSTORE_PASSWORD"]}""""
       storeFile = file(System.getProperty("user.home") + "/fhircore.keystore.jks")
     }
   }
@@ -135,7 +150,11 @@ android {
   }
 
   packaging {
-    jniLibs { useLegacyPackaging = true }
+    jniLibs { 
+      useLegacyPackaging = true
+      // Enable 16KB page size alignment for native libraries
+      pickFirsts += "**/lib*/lib*.so"
+    }
 
     resources.excludes.addAll(
       listOf(
@@ -458,6 +477,9 @@ android {
       isUniversalApk = false
     }
   }
+
+  // Configure NDK build for 16KB page size alignment
+  ndkVersion = "26.1.10909125"
 }
 
 val abiCodes =
@@ -530,7 +552,7 @@ configurations {
       force("com.fasterxml.jackson.core:jackson-core:2.15.2")
       force("ca.uhn.hapi.fhir:org.hl7.fhir.r4b:6.0.22")
       force("ca.uhn.hapi.fhir:hapi-fhir-structures-dstu2:6.8.0")
-      force("com.facebook.soloader:soloader:0.10.4")
+      force("com.facebook.soloader:soloader:0.10.5")
     }
   }
 }
@@ -703,15 +725,15 @@ sentry {
   debug.set(true)
 
   // The slug of the Sentry organization to use for uploading proguard mappings/source contexts.
-  org.set("""${project.extra["org"]}""")
+  org.set(""""${project.extra["org"]}"""")
 
   // The slug of the Sentry project to use for uploading proguard mappings/source contexts.
-  projectName.set("""${project.extra["project"]}""")
+  projectName.set(""""${project.extra["project"]}"""")
 
   // The authentication token to use for uploading proguard mappings/source contexts.
   // WARNING: Do not expose this token in your build.gradle files, but rather set an environment
   // variable and read it into this property.
-  authToken.set("""${project.extra["auth.token"]}""")
+  authToken.set(""""${project.extra["auth.token"]}"""")
 
   // The url of your Sentry instance. If you're using SAAS (not self hosting) you do not have to
   // set this. If you are self hosting you can set your URL here
