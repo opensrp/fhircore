@@ -62,6 +62,7 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherFragment
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+import org.smartregister.fhircore.quest.util.openExternalApp
 import org.smartregister.p2p.utils.startP2PScreen
 
 const val PRACTITIONER_ID = "practitionerId"
@@ -226,6 +227,11 @@ fun ActionConfig.handleClickEvent(
         context.getString(R.string.copy_text_success_message, copyTextActionParameter.value),
         Toast.LENGTH_LONG,
       )
+    }
+    ApplicationWorkflow.LAUNCH_EXTERNAL_APP -> {
+      actionConfig.externalAppConfig?.let { config ->
+        openExternalApp(navController.context, config)
+      }
     }
     ApplicationWorkflow.LAUNCH_LOCATION_SELECTOR -> {
       val args =

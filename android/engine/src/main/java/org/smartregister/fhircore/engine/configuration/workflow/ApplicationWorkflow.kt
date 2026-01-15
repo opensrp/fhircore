@@ -68,4 +68,7 @@ enum class ApplicationWorkflow {
 
   /** A workflow that launches report indicators screen */
   LAUNCH_REPORT_INDICATORS,
+
+  /** A workflow that launches an external application via Intent */
+  LAUNCH_EXTERNAL_APP,
 }
