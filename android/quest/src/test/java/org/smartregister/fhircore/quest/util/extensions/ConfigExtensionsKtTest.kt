@@ -52,6 +52,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.ExternalAppConfig
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
@@ -476,6 +477,74 @@ class ConfigExtensionsKtTest : RobolectricTest() {
           Assert.assertEquals(it.data, Uri.parse("tel:0700000000"))
         },
         null,
+      )
+    }
+  }
+
+  @Test
+  fun testLaunchExternalAppOnClickWhenAppIsInstalled() {
+    val externalAppConfig =
+      ExternalAppConfig(
+        id = "elearning",
+        label = "Go to eLearning",
+        packageName = "com.example.elearning",
+        playStoreUrl = "https://play.google.com/store/apps/details?id=com.example.elearning",
+      )
+
+    val clickAction =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_EXTERNAL_APP.name,
+        externalAppConfig = externalAppConfig,
+      )
+
+    val mockLaunchIntent = mockk<Intent>(relaxed = true)
+    val mockPackageManager = mockk<android.content.pm.PackageManager>()
+
+    every { context.packageManager } returns mockPackageManager
+    every { mockPackageManager.getLaunchIntentForPackage("com.example.elearning") } returns
+      mockLaunchIntent
+    every { context.startActivity(mockLaunchIntent) } returns Unit
+
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+
+    verify { context.startActivity(mockLaunchIntent) }
+  }
+
+  @Test
+  fun testLaunchExternalAppOnClickOpensPlayStoreWhenAppNotInstalled() {
+    val externalAppConfig =
+      ExternalAppConfig(
+        id = "elearning",
+        label = "Go to eLearning",
+        packageName = "com.example.elearning",
+        playStoreUrl = "https://play.google.com/store/apps/details?id=com.example.elearning",
+      )
+
+    val clickAction =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_EXTERNAL_APP.name,
+        externalAppConfig = externalAppConfig,
+      )
+
+    val mockPackageManager = mockk<android.content.pm.PackageManager>()
+
+    every { context.packageManager } returns mockPackageManager
+    every { mockPackageManager.getLaunchIntentForPackage("com.example.elearning") } returns null
+    every { context.startActivity(any()) } returns Unit
+
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+
+    verify {
+      context.startActivity(
+        withArg {
+          Assert.assertEquals(Intent.ACTION_VIEW, it.action)
+          Assert.assertEquals(
+            Uri.parse("https://play.google.com/store/apps/details?id=com.example.elearning"),
+            it.data,
+          )
+        },
       )
     }
   }
