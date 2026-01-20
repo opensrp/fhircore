@@ -164,4 +164,6 @@
     <string name="no_encounter_data_available">No data available</string>
     <string name="no_data_available_for_period">No data available for this period</string>
     <string name="reports_suffix">Reports</string>
+    <string name="external_app_not_installed">The app is not installed. Please contact your administrator.</string>
+    <string name="external_app_invalid_config">Invalid app configuration. Please contact your administrator.</string>
 </resources>
