@@ -39,6 +39,7 @@ import java.net.UnknownHostException
 import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.net.ssl.SSLHandshakeException
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -162,6 +163,12 @@ constructor(
       val oAuthResponse = oAuthService.fetchToken(body)
       saveToken(username = username, password = password, oAuthResponse = oAuthResponse)
       Result.success(oAuthResponse)
+    } catch (httpException: HttpException) {
+      Result.failure(httpException)
+    } catch (unknownHostException: UnknownHostException) {
+      Result.failure(unknownHostException)
+    } catch (sslHandShakeException: SSLHandshakeException) {
+      Result.failure(sslHandShakeException)
     } catch (e: Exception) {
       Result.failure(e)
     }
