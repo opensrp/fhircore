@@ -273,12 +273,13 @@ class TokenAuthenticatorTest : RobolectricTest() {
     val password = charArrayOf('P', '4', '5', '5', 'W', '4', '0')
 
     // Test with various exception types to verify generic exception handling
-    val exceptions = listOf(
-      HttpException(Response.error<OAuthResponse>(401, mockk(relaxed = true))),
-      UnknownHostException(),
-      SSLHandshakeException("SSL error"),
-      IOException("IO error")
-    )
+    val exceptions =
+      listOf(
+        HttpException(Response.error<OAuthResponse>(401, mockk(relaxed = true))),
+        UnknownHostException(),
+        SSLHandshakeException("SSL error"),
+        IOException("IO error"),
+      )
 
     exceptions.forEach { exception ->
       coEvery { oAuthService.fetchToken(any()) }.throws(exception)
