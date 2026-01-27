@@ -267,16 +267,16 @@ android {
 
     create("echis") {
       dimension = "apps"
-      applicationIdSuffix = ".echis"
+      applicationId = "ug.go.health.echis"
       versionNameSuffix = "-echis"
-      manifestPlaceholders["appLabel"] = "MOH eCHIS"
+      manifestPlaceholders["appLabel"] = "MOH UG eCHIS"
     }
 
     create("echisSupervisor") {
       dimension = "apps"
-      applicationIdSuffix = ".echisSupervisor"
+      applicationId = "ug.go.health.echisSupervisor"
       versionNameSuffix = "-echis-supervisor"
-      manifestPlaceholders["appLabel"] = "MOH eCHIS Supervisor"
+      manifestPlaceholders["appLabel"] = "MOH UG eCHIS Supervisor"
     }
 
     create("sidBunda") {
