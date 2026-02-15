@@ -50,8 +50,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.retrieveRelatedEntitySyncLocationState
-import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
-import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.util.extensions.referenceToBitmap

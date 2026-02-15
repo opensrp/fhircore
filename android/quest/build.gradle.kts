@@ -549,7 +549,7 @@ dependencies {
 
   // Application dependencies
   implementation(project(":engine"))
-  implementation(project(":geowidget")) { isTransitive = true }
+  // implementation(project(":geowidget")) { isTransitive = true }
   implementation(libs.core.ktx)
   implementation(libs.appcompat)
   implementation(libs.material)
