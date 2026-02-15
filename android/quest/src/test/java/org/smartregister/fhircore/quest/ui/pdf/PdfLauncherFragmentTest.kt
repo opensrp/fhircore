@@ -197,4 +197,84 @@ class PdfLauncherFragmentTest : RobolectricTest() {
     coVerify { pdfLauncherViewModel.retrieveBinary(any()) }
     verify(inverse = true) { pdfGenerator.generatePdfWithHtml(any(), any(), any()) }
   }
+
+  @Test
+  fun testPdfGenerationFallsBackToSearchWhenQuestionnaireResponseReferencesAreEmpty() =
+    runBlocking {
+      val questionnaireResponse =
+        QuestionnaireResponse().apply { questionnaire = "Questionnaire/id" }
+      val htmlBinary = Binary().apply { content = "mock content".toByteArray() }
+
+      coEvery { pdfLauncherViewModel.retrieveQuestionnaireResponse(any(), any()) } returns
+        questionnaireResponse
+      coEvery { pdfLauncherViewModel.retrieveBinary(any()) } returns htmlBinary
+
+      val pdfConfig =
+        PdfConfig(
+            title = "title",
+            titleSuffix = "suffix",
+            structureReference = "Binary/id",
+            subjectReference = "Patient/id",
+            questionnaireReferences = listOf("Questionnaire/id"),
+            questionnaireResponseReferences = listOf("", "", ""),
+          )
+          .encodeJson()
+
+      val fragmentArgs =
+        Bundle().apply { putString(PdfLauncherFragment.EXTRA_PDF_CONFIG_KEY, pdfConfig) }
+
+      val activity = Robolectric.buildActivity(HiltTestActivity::class.java).create().resume().get()
+
+      val fragment =
+        PdfLauncherFragment().apply {
+          arguments = fragmentArgs
+          pdfGenerator = this@PdfLauncherFragmentTest.pdfGenerator
+        }
+
+      activity.supportFragmentManager.beginTransaction().add(fragment, null).commitNow()
+
+      coVerify(inverse = true) { pdfLauncherViewModel.retrieveQuestionnaireResponseById(any()) }
+      coVerify { pdfLauncherViewModel.retrieveQuestionnaireResponse(any(), any()) }
+      coVerify { pdfLauncherViewModel.retrieveBinary(any()) }
+      verify { pdfGenerator.generatePdfWithHtml(any(), any(), any()) }
+    }
+
+  @Test
+  fun testPdfGenerationWithDirectQuestionnaireResponseReferences() = runBlocking {
+    val questionnaireResponse = QuestionnaireResponse().apply { questionnaire = "Questionnaire/id" }
+    val htmlBinary = Binary().apply { content = "mock content".toByteArray() }
+
+    coEvery { pdfLauncherViewModel.retrieveQuestionnaireResponseById(any()) } returns
+      questionnaireResponse
+    coEvery { pdfLauncherViewModel.retrieveBinary(any()) } returns htmlBinary
+
+    val pdfConfig =
+      PdfConfig(
+          title = "title",
+          titleSuffix = "suffix",
+          structureReference = "Binary/id",
+          subjectReference = "Patient/id",
+          questionnaireReferences = listOf("Questionnaire/id"),
+          questionnaireResponseReferences = listOf("QuestionnaireResponse/qr-uuid-1"),
+        )
+        .encodeJson()
+
+    val fragmentArgs =
+      Bundle().apply { putString(PdfLauncherFragment.EXTRA_PDF_CONFIG_KEY, pdfConfig) }
+
+    val activity = Robolectric.buildActivity(HiltTestActivity::class.java).create().resume().get()
+
+    val fragment =
+      PdfLauncherFragment().apply {
+        arguments = fragmentArgs
+        pdfGenerator = this@PdfLauncherFragmentTest.pdfGenerator
+      }
+
+    activity.supportFragmentManager.beginTransaction().add(fragment, null).commitNow()
+
+    coVerify { pdfLauncherViewModel.retrieveQuestionnaireResponseById("qr-uuid-1") }
+    coVerify(inverse = true) { pdfLauncherViewModel.retrieveQuestionnaireResponse(any(), any()) }
+    coVerify { pdfLauncherViewModel.retrieveBinary(any()) }
+    verify { pdfGenerator.generatePdfWithHtml(any(), any(), any()) }
+  }
 }
