@@ -67,7 +67,8 @@
             android:name=".ui.questionnaire.QuestionnaireActivity"
             android:exported="false"
             android:theme="@style/AppTheme"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name="androidx.compose.ui.tooling.PreviewActivity"
