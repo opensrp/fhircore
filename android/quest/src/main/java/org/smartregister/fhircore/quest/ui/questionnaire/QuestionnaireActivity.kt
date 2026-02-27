@@ -50,6 +50,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
+import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.domain.model.isSummary
@@ -75,6 +76,8 @@ import timber.log.Timber
 class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var tokenAuthenticator: TokenAuthenticator
   val viewModel by viewModels<QuestionnaireViewModel>()
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var actionParameters: ArrayList<ActionParameter>
@@ -137,6 +140,8 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       finish()
       return
     }
+
+    tokenAuthenticator.suppressLoginRedirect = true
 
     viewBinding.questionnaireToolbar.setNavigationIcon(R.drawable.ic_cancel)
     viewBinding.questionnaireToolbar.setNavigationOnClickListener { handleBackPress() }
@@ -598,6 +603,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private suspend fun retrieveQuestionnaireResponse(): QuestionnaireResponse? =
     (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment?)
       ?.getQuestionnaireResponse()
+
+  override fun onDestroy() {
+    tokenAuthenticator.suppressLoginRedirect = false
+    super.onDestroy()
+  }
 
   companion object {
 
