@@ -57,6 +57,7 @@ sonar {
 
 android {
   compileSdk = BuildConfigs.compileSdk
+  ndkVersion = "27.2.12479018"
 
   val buildDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
 
@@ -269,14 +270,7 @@ android {
       dimension = "apps"
       applicationId = "ug.go.health.echis"
       versionNameSuffix = "-echis"
-      manifestPlaceholders["appLabel"] = "MOH UG eCHIS"
-    }
-
-    create("echisSupervisor") {
-      dimension = "apps"
-      applicationId = "ug.go.health.echisSupervisor"
-      versionNameSuffix = "-echis-supervisor"
-      manifestPlaceholders["appLabel"] = "MOH UG eCHIS Supervisor"
+      manifestPlaceholders["appLabel"] = "eCHIS"
     }
 
     create("sidBunda") {
