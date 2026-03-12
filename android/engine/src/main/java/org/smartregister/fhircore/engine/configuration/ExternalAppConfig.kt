@@ -14,8 +14,17 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.report.measure.models
+package org.smartregister.fhircore.engine.configuration
 
-import java.util.Date
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-data class ReportRangeSelectionData(val month: String, val year: String, val date: Date)
+@Serializable
+@Parcelize
+data class ExternalAppConfig(
+  val id: String,
+  val label: String,
+  val packageName: String,
+  val playStoreUrl: String? = null,
+) : Parcelable

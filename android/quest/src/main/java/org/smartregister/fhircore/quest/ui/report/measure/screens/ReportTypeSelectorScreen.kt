@@ -45,9 +45,7 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -84,7 +82,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.ReportTypeSelectorUiSt
 import org.smartregister.fhircore.quest.ui.report.measure.components.DateSelectionBox
 import org.smartregister.fhircore.quest.ui.report.measure.components.SubjectSelector
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportTypeData
-import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
+import org.smartregister.fhircore.quest.ui.report.models.ReportRangeSelectionData
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 import org.smartregister.fhircore.quest.util.extensions.conditional
 
@@ -223,11 +221,7 @@ fun ReportFilterSelector(
         DateRangeSelector(
           startDate = uiState.startDate.ifEmpty { stringResource(id = R.string.start_date) },
           endDate = uiState.endDate.ifEmpty { stringResource(id = R.string.end_date) },
-          generateReport =
-            uiState.startDate.isNotEmpty() &&
-              uiState.endDate.isNotEmpty() &&
-              (uiState.subjectViewData != null ||
-                reportTypeState.value == MeasureReportType.SUMMARY),
+          generateReport = uiState.startDate.isNotEmpty() && uiState.endDate.isNotEmpty(),
           onGenerateReportClicked = { onSelectReportDate.invoke(null) },
           showProgressIndicator = uiState.showProgressIndicator,
           dateRange = dateRange!!,

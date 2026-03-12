@@ -128,7 +128,6 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.
 import org.smartregister.fhircore.quest.util.QuestionnaireResponseUtils
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
-import timber.log.Timber
 
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
@@ -259,8 +258,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         {
           runBlocking { (firstArg() as suspend () -> Unit).invoke() }
         }
-      val onSuccessfulSubmission =
-        spyk({ idsTypes: List<IdType>, _: QuestionnaireResponse -> Timber.i(idsTypes.toString()) })
+      val onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit = spyk()
       coEvery {
         ResourceMapper.extract(
           questionnaire = questionnaire,
@@ -1225,7 +1223,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     val cqlLibrary =
       Library().apply {
-        id = "Library/123"
+        id = "123"
         url = "http://smartreg.org/Library/123"
         name = "123"
         version = "1.0.0"
@@ -1244,9 +1242,18 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       },
     )
 
-    fhirEngine.create(patient)
+    defaultRepository.fhirEngine.create(cqlLibrary)
 
-    questionnaireViewModel.executeCql(patient, bundle, questionnaire)
+    // Load the CQL input resources from the questionnaireConfig
+    val questionnaireConfigCqlInputResources =
+      questionnaireConfig.copy(cqlInputResources = listOf("basic-resource-id"))
+
+    questionnaireViewModel.executeCql(
+      patient,
+      bundle,
+      questionnaire,
+      questionnaireConfigCqlInputResources,
+    )
 
     coVerify {
       fhirOperator.evaluateLibrary(

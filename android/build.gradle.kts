@@ -9,6 +9,7 @@ buildscript {
     classpath(libs.coveralls.gradle.plugin)
     classpath(libs.gradle)
     classpath(libs.dokka.base)
+    classpath("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:2.1.20-2.0.1")
   }
 }
 
@@ -22,6 +23,7 @@ plugins {
   alias(libs.plugins.org.owasp.dependencycheck)
   alias(libs.plugins.com.diffplug.spotless) apply false
   alias(libs.plugins.android.junit5) apply false
+  alias(libs.plugins.org.jetbrains.kotlin.plugin.compose) apply false
 }
 
 tasks.dokkaHtmlMultiModule {
@@ -46,8 +48,8 @@ allprojects {
     mavenCentral()
     maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
     maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots")
-    maven(url = "https://repo.spring.io/plugins-release")
     maven(url = "https://repository.liferay.com/nexus/content/repositories/public")
+    maven(url = "https://central.sonatype.com/repository/maven-snapshots")
     apply(plugin = "org.owasp.dependencycheck")
     tasks.dependencyCheckAggregate{
       dependencyCheck.formats.add("XML")

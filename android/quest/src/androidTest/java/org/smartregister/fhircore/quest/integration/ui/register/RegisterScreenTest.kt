@@ -30,23 +30,18 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeUp
 import androidx.navigation.compose.rememberNavController
-import androidx.paging.CombinedLoadStates
-import androidx.paging.LoadState
 import androidx.paging.PagingData
-import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.every
-import io.mockk.mockk
 import java.time.OffsetDateTime
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -291,7 +286,6 @@ class RegisterScreenTest {
   }
 
   @Test
-  @Ignore("Fix NullPointerException: androidx.compose.runtime.State.getValue()")
   fun testThatDialogIsDisplayedDuringSyncing() {
     val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
     val registerUiState =
@@ -307,15 +301,8 @@ class RegisterScreenTest {
       )
     val searchText = mutableStateOf(SearchQuery.emptyText)
     val currentPage = mutableStateOf(0)
-    val pagingItems = mockk<LazyPagingItems<ResourceData>>().apply {}
-    val combinedLoadState: CombinedLoadStates = mockk()
-    val loadState: LoadState = mockk()
-
-    every { pagingItems.itemCount } returns 0
-    every { combinedLoadState.refresh } returns loadState
-    every { combinedLoadState.append } returns loadState
-    every { loadState.endOfPaginationReached } returns true
-    every { pagingItems.loadState } returns combinedLoadState
+    val pagingDataMutableStateFlow =
+      PagingData.from(emptyList<ResourceData>()).let { MutableStateFlow(it) }
 
     composeTestRule.setContent {
       RegisterScreen(
@@ -332,7 +319,7 @@ class RegisterScreenTest {
         onAppMainEvent = {},
         searchQuery = searchText,
         currentPage = currentPage,
-        pagingItems = pagingItems,
+        pagingItems = pagingDataMutableStateFlow.collectAsLazyPagingItems(),
         navController = rememberNavController(),
         decodeImage = null,
       )

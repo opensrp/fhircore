@@ -25,7 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
+import org.smartregister.fhircore.quest.navigation.MeasureReportNavigation
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportListScreen
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportResultScreen
@@ -45,10 +45,10 @@ fun MeasureReportMainScreen(
 
   NavHost(
     navController = navController,
-    startDestination = MeasureReportNavigationScreen.ReportDateSelector.route,
+    startDestination = MeasureReportNavigation.ReportDateSelector.route,
   ) {
     // Display list of supported measures for reporting
-    composable(MeasureReportNavigationScreen.MeasureReportModule.route) {
+    composable(MeasureReportNavigation.MeasureReportModule.route) {
       MeasureReportListScreen(
         navController = navController,
         dataList = measureReportViewModel.reportMeasuresList(reportId),
@@ -66,7 +66,7 @@ fun MeasureReportMainScreen(
     }
     // Page for selecting report date
     composable(
-      route = MeasureReportNavigationScreen.ReportDateSelector.route,
+      route = MeasureReportNavigation.ReportDateSelector.route,
       arguments =
         listOf(
           navArgument(NavigationArg.SCREEN_TITLE) {
@@ -86,7 +86,7 @@ fun MeasureReportMainScreen(
     }
 
     // Page for selecting subject to evaluate their measure
-    composable(MeasureReportNavigationScreen.SubjectsList.route) {
+    composable(MeasureReportNavigation.SubjectsList.route) {
       MeasureReportSubjectsScreen(
         reportId = reportId,
         navController = navController,
@@ -95,7 +95,7 @@ fun MeasureReportMainScreen(
     }
 
     // Page for displaying measure report results
-    composable(MeasureReportNavigationScreen.MeasureReportResult.route) {
+    composable(MeasureReportNavigation.MeasureReportResult.route) {
       MeasureReportResultScreen(
         navController = navController,
         measureReportViewModel = measureReportViewModel,

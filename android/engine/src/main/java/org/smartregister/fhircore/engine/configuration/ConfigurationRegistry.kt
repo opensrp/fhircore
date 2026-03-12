@@ -288,13 +288,23 @@ constructor(
           )
         }
       } catch (fileNotFoundException: FileNotFoundException) {
-        Timber.e("Missing app configs for app ID: $parsedAppId", fileNotFoundException)
+        Timber.e(fileNotFoundException, "Missing app configs for app ID: $parsedAppId")
         withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
       }
     } else {
-      fhirEngine.searchCompositionByIdentifier(parsedAppId)?.run {
-        populateConfigurationsMap(context, this, false, parsedAppId, configsLoadedCallback)
+      fhirEngine.searchCompositionByIdentifier(parsedAppId)?.let { foundComposition ->
+        populateConfigurationsMap(
+          context,
+          foundComposition,
+          false,
+          parsedAppId,
+          configsLoadedCallback,
+        )
       }
+        ?: run {
+          Timber.w("Composition not found for appId: $appId", parsedAppId)
+          configsLoadedCallback(false)
+        }
     }
   }
 
@@ -320,9 +330,9 @@ constructor(
                 addOrUpdate(resource)
               }
             } catch (configurationException: ConfigurationException) {
-              Timber.e("Error parsing FHIR resource", configurationException)
+              Timber.e(configurationException, "Error parsing FHIR resource")
             } catch (dataFormatException: DataFormatException) {
-              Timber.e("Error parsing FHIR resource", dataFormatException)
+              Timber.e(dataFormatException, "Error parsing FHIR resource")
             }
           } else {
             val configKey =
@@ -371,7 +381,7 @@ constructor(
           val configBinary = fhirEngine.get<Binary>(extractedId.toString())
           configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
         } catch (resourceNotFoundException: ResourceNotFoundException) {
-          Timber.e("Missing Binary file with ID :$extractedId")
+          Timber.e(resourceNotFoundException, "Missing Binary file with ID :$extractedId")
           withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
         }
       }
@@ -504,7 +514,7 @@ constructor(
     Timber.i("Fetching ImplementationGuide config for app $appId version $appVersionCode")
 
     val urlPath =
-      "ImplementationGuide?&name=$appId&context-quantity=le$appVersionCode&_sort=-context-quantity&_count=1"
+      "ImplementationGuide?&name:exact=$appId&context-quantity=le$appVersionCode&_sort=-context-quantity&_count=1"
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
         Timber.w("No response for ImplementationGuide resource on path $urlPath")
@@ -578,7 +588,7 @@ constructor(
           }
         }
         .onFailure { throwable ->
-          Timber.e("Error occurred while retrieving resource via URL $url", throwable)
+          Timber.e(throwable, "Error occurred while retrieving resource via URL $url")
         }
         .getOrThrow()
     val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url

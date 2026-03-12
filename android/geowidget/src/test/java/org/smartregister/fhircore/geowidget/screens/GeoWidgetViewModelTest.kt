@@ -69,6 +69,7 @@ class GeoWidgetViewModelTest {
     configurationRegistry = mockk()
   }
 
+  @Test
   fun testMappingServicePointKeysToTypes() {
     val expectedMap = mutableMapOf<String, ServicePointType>()
     ServicePointType.entries.forEach { expectedMap[it.name.lowercase()] = it }
@@ -109,6 +110,82 @@ class GeoWidgetViewModelTest {
     geoWidgetViewModel.updateMapFeatures(geoJsonFeatures)
 
     Assert.assertEquals(geoWidgetViewModel.mapFeatures.size, geoJsonFeatures.size)
+  }
+
+  @Test
+  fun testAddGeoJsonFeaturesPreservesInsertionOrder() {
+    val firstFeature =
+      GeoJsonFeature(id = "first", geometry = Geometry(coordinates = listOf(1.0, 2.0)))
+    val secondFeature =
+      GeoJsonFeature(id = "second", geometry = Geometry(coordinates = listOf(3.0, 4.0)))
+
+    geoWidgetViewModel.updateMapFeatures(listOf(firstFeature, secondFeature))
+
+    val firstStoredFeature = geoWidgetViewModel.mapFeatures.first()
+    val secondStoredFeature = geoWidgetViewModel.mapFeatures.elementAt(1)
+
+    Assert.assertEquals("first", firstStoredFeature.id())
+    Assert.assertEquals("second", secondStoredFeature.id())
+  }
+
+  @Test
+  fun testUpdateMapFeaturesDoesNotExceedLimit() {
+    val existingFeatures =
+      List(GeoWidgetFragment.MAP_FEATURES_LIMIT + 1) { index ->
+        GeoJsonFeature(
+            id = "existing-$index",
+            geometry = Geometry(coordinates = listOf(10.0 + index, 20.0 + index)),
+          )
+          .toFeature()
+      }
+    geoWidgetViewModel.mapFeatures.addAll(existingFeatures)
+    val initialSize = geoWidgetViewModel.mapFeatures.size
+
+    val newFeatures =
+      listOf(
+        GeoJsonFeature(
+          id = "new-1",
+          geometry = Geometry(coordinates = listOf(1.0, 2.0)),
+        ),
+        GeoJsonFeature(
+          id = "new-2",
+          geometry = Geometry(coordinates = listOf(3.0, 4.0)),
+        ),
+      )
+
+    geoWidgetViewModel.updateMapFeatures(newFeatures)
+
+    Assert.assertEquals(initialSize, geoWidgetViewModel.mapFeatures.size)
+  }
+
+  @Test
+  fun testClearMapFeaturesEmptiesCollection() {
+    val features =
+      listOf(
+        GeoJsonFeature(
+          id = "clear-1",
+          geometry = Geometry(coordinates = listOf(5.0, 6.0)),
+        ),
+        GeoJsonFeature(
+          id = "clear-2",
+          geometry = Geometry(coordinates = listOf(7.0, 8.0)),
+        ),
+      )
+    geoWidgetViewModel.updateMapFeatures(features)
+    Assert.assertTrue(geoWidgetViewModel.mapFeatures.isNotEmpty())
+
+    geoWidgetViewModel.clearMapFeatures()
+
+    Assert.assertTrue(geoWidgetViewModel.mapFeatures.isEmpty())
+  }
+
+  @Test
+  fun testServicePointTypeMapSupportsAccentedKeys() {
+    val servicePointTypeMap = geoWidgetViewModel.getServicePointKeyToType()
+    val accentedKey = ServicePointType.ECOLE_PRIVÉ.name.lowercase()
+
+    Assert.assertTrue(servicePointTypeMap.containsKey(accentedKey))
+    Assert.assertEquals(ServicePointType.ECOLE_PRIVÉ, servicePointTypeMap[accentedKey])
   }
 
   @Test

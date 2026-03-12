@@ -181,7 +181,8 @@ fun AppDrawer(
         }
 
         // Display list of configurable client registers
-        items(navigationConfiguration.clientRegisters, { it.id }) { navigationMenu ->
+        items(navigationConfiguration.clientRegisters.filter { it.visible }, { it.id }) {
+          navigationMenu ->
           SideMenuItem(
             imageConfig = navigationMenu.menuIconConfig,
             title = navigationMenu.display,
@@ -217,7 +218,8 @@ fun AppDrawer(
         item { Divider(color = DividerColor) }
 
         // Display list of configurable static menu
-        items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
+        items(navigationConfiguration.staticMenu.filter { it.visible }, { it.id }) { navigationMenu,
+          ->
           SideMenuItem(
             imageConfig = navigationMenu.menuIconConfig,
             title = navigationMenu.display,

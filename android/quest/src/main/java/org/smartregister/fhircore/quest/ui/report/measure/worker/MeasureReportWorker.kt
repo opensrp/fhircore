@@ -140,7 +140,6 @@ constructor(
             end = endDateFormatted,
             reportType = MeasureReportViewModel.POPULATION,
             subjectId = null,
-            practitioner = null,
             /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
             practitionerId?.asReference(ResourceType.Practitioner)?.reference*/
           )

@@ -12,6 +12,14 @@
     <uses-feature android:name="android.hardware.camera" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" android:foregroundServiceType="dataSync" />
 
+    <!-- Required for Android 11+ to query if external apps are installed -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
     <application
         android:name=".QuestApplication"
         android:allowBackup="false"

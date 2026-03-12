@@ -41,6 +41,7 @@
     <string name="date_last_seen">Last seen %1$s</string>
     <string name="date_last_visited">Last visited %1$s</string>
     <string name="str_save">Save</string>
+    <string name="save">Save</string>
     <string name="login_error">Login error: %1$s</string>
     <string name="str_next">NEXT</string>
     <string name="str_previous">PREVIOUS</string>
@@ -176,6 +177,8 @@
     <string name="all_data_synced">All data synced</string>
     <string name="invalid_offline_login_state">User set up required. Enable your internet connection </string>
     <string name="select_month">Select Month</string>
+    <string name="select_period">Select Period</string>
+    <string name="full_year">Full Year</string>
     <string name="user">User</string>
     <string name="team">Team</string>
     <string name="locality" >Locality</string>

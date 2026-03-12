@@ -40,6 +40,12 @@ sealed class MainNavigationScreen(
       true,
     )
 
+  data object ReportIndicators :
+    MainNavigationScreen(
+      iconResource = R.drawable.ic_reports,
+      route = org.smartregister.fhircore.quest.R.id.reportIndicatorFragment,
+    )
+
   data object Settings :
     MainNavigationScreen(
       R.string.settings,
@@ -63,11 +69,6 @@ sealed class MainNavigationScreen(
   data object LocationSelector :
     MainNavigationScreen(
       route = org.smartregister.fhircore.quest.R.id.multiSelectBottomSheetFragment,
-    )
-
-  data object SummaryBottomSheetFragment :
-    MainNavigationScreen(
-      route = org.smartregister.fhircore.quest.R.id.summaryBottomSheetFragment,
     )
 
   data object AlertDialogFragment :

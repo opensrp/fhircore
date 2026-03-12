@@ -24,6 +24,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
@@ -51,6 +52,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.ExternalAppConfig
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
@@ -328,10 +330,15 @@ class ConfigExtensionsKtTest : RobolectricTest() {
         workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
         display = "menu",
         toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+        popNavigationBackStack = false,
       )
     every { navController.currentDestination } returns NavDestination(navigatorName = "navigating")
     every { navController.previousBackStackEntry } returns null
-    every { navController.currentBackStackEntry } returns null
+    every { navController.currentBackStackEntry } returns
+      mockk {
+        every { destination } returns mockk { every { id } returns 999 }
+        every { arguments } returns null
+      }
     every { navController.graph.id } returns 1
     listOf(clickAction)
       .handleClickEvent(
@@ -351,7 +358,7 @@ class ConfigExtensionsKtTest : RobolectricTest() {
       ToolBarHomeNavigation.NAVIGATE_BACK,
       slotBundle.captured.getSerializable(NavigationArg.TOOL_BAR_HOME_NAVIGATION),
     )
-    Assert.assertTrue(navOptions.captured.isPopUpToInclusive())
+    Assert.assertFalse(navOptions.captured.isPopUpToInclusive())
     Assert.assertTrue(navOptions.captured.shouldLaunchSingleTop())
   }
 
@@ -475,6 +482,74 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   }
 
   @Test
+  fun testLaunchExternalAppOnClickWhenAppIsInstalled() {
+    val externalAppConfig =
+      ExternalAppConfig(
+        id = "elearning",
+        label = "Go to eLearning",
+        packageName = "com.example.elearning",
+        playStoreUrl = "https://play.google.com/store/apps/details?id=com.example.elearning",
+      )
+
+    val clickAction =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_EXTERNAL_APP.name,
+        externalAppConfig = externalAppConfig,
+      )
+
+    val mockLaunchIntent = mockk<Intent>(relaxed = true)
+    val mockPackageManager = mockk<android.content.pm.PackageManager>()
+
+    every { context.packageManager } returns mockPackageManager
+    every { mockPackageManager.getLaunchIntentForPackage("com.example.elearning") } returns
+      mockLaunchIntent
+    every { context.startActivity(mockLaunchIntent) } returns Unit
+
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+
+    verify { context.startActivity(mockLaunchIntent) }
+  }
+
+  @Test
+  fun testLaunchExternalAppOnClickOpensPlayStoreWhenAppNotInstalled() {
+    val externalAppConfig =
+      ExternalAppConfig(
+        id = "elearning",
+        label = "Go to eLearning",
+        packageName = "com.example.elearning",
+        playStoreUrl = "https://play.google.com/store/apps/details?id=com.example.elearning",
+      )
+
+    val clickAction =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_EXTERNAL_APP.name,
+        externalAppConfig = externalAppConfig,
+      )
+
+    val mockPackageManager = mockk<android.content.pm.PackageManager>()
+
+    every { context.packageManager } returns mockPackageManager
+    every { mockPackageManager.getLaunchIntentForPackage("com.example.elearning") } returns null
+    every { context.startActivity(any()) } returns Unit
+
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+
+    verify {
+      context.startActivity(
+        withArg {
+          Assert.assertEquals(Intent.ACTION_VIEW, it.action)
+          Assert.assertEquals(
+            Uri.parse("https://play.google.com/store/apps/details?id=com.example.elearning"),
+            it.data,
+          )
+        },
+      )
+    }
+  }
+
+  @Test
   fun testNavigateBackToHomeWhenCurrentAndPreviousDestinationIdsAreNull() {
     val clickAction =
       ActionConfig(
@@ -496,9 +571,277 @@ class ConfigExtensionsKtTest : RobolectricTest() {
         resourceData = resourceData,
         navMenu = navigationMenuConfig,
       )
-    verify(exactly = 0) {
+    verify(exactly = 1) {
       navController.navigate(capture(slotInt), capture(slotBundle), capture(navOptions))
     }
+    Assert.assertTrue(navOptions.captured.shouldLaunchSingleTop())
+    Assert.assertFalse(navOptions.captured.isPopUpToInclusive())
+  }
+
+  @Test
+  fun testLaunchRegisterActionPreventsSameRegisterNavigation() {
+    val clickAction =
+      ActionConfig(
+        id = "registerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+      )
+    every { navController.currentBackStackEntry } returns
+      mockk { every { arguments } returns bundleOf(NavigationArg.REGISTER_ID to "currentRegister") }
+    every { navController.previousBackStackEntry } returns
+      mockk { every { arguments } returns bundleOf(NavigationArg.REGISTER_ID to "registerId") }
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    verify(exactly = 0) { navController.navigate(any<Int>(), any<Bundle>(), any<NavOptions>()) }
+  }
+
+  @Test
+  fun testLaunchRegisterActionWithPopNavigationBackStack() {
+    val clickAction =
+      ActionConfig(
+        id = "registerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        popNavigationBackStack = true,
+      )
+    every { navController.currentDestination } returns
+      NavDestination(navigatorName = "navigating").apply { id = 9999 }
+    every { navController.currentBackStackEntry } returns
+      mockk {
+        every { destination } returns mockk { every { id } returns 9999 }
+        every { arguments } returns null
+      }
+    every { navController.previousBackStackEntry } returns null
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
+    Assert.assertTrue(slotNavOptions.captured.isPopUpToInclusive())
+  }
+
+  @Test
+  fun testLaunchRegisterWithCurrentBackStackOnHomeDestination() {
+    val clickAction =
+      ActionConfig(
+        id = "registerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        popNavigationBackStack = true,
+      )
+    every { navController.currentDestination } returns
+      NavDestination(navigatorName = "navigating").apply { id = MainNavigationScreen.Home.route }
+    every { navController.currentBackStackEntry } returns
+      mockk {
+        every { destination } returns mockk { every { id } returns MainNavigationScreen.Home.route }
+        every { arguments } returns null
+      }
+    every { navController.previousBackStackEntry } returns null
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
+    Assert.assertFalse(slotNavOptions.captured.isPopUpToInclusive())
+  }
+
+  @Test
+  fun testLaunchRegisterActionWithPopNavigationBackStackWhenCurrentDestinationIsNotHome() {
+    val clickAction =
+      ActionConfig(
+        id = "registerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        popNavigationBackStack = true,
+      )
+    every { navController.currentDestination } returns
+      NavDestination(navigatorName = "navigating").apply { id = 1234 }
+    every { navController.currentBackStackEntry } returns
+      mockk {
+        every { destination } returns mockk { every { id } returns 1234 }
+        every { arguments } returns null
+      }
+    every { navController.previousBackStackEntry } returns null
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
+    Assert.assertTrue(slotNavOptions.captured.isPopUpToInclusive())
+    Assert.assertTrue(slotNavOptions.captured.shouldLaunchSingleTop())
+  }
+
+  @Test
+  fun testCreateRegisterNavigationOptionsWithPopBackStackFalse() {
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        id = "registerId",
+        popNavigationBackStack = false,
+      )
+    every { navController.currentBackStackEntry } returns
+      mockk { every { destination } returns mockk { every { id } returns 1234 } }
+
+    val navOptions = createRegisterNavigationOptions(actionConfig, navController)
+
+    Assert.assertTrue(navOptions.shouldLaunchSingleTop())
+    Assert.assertFalse(navOptions.isPopUpToInclusive())
+  }
+
+  @Test
+  fun testCreateRegisterNavigationOptionsWithPopBackStackTrue() {
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        id = "registerId",
+        popNavigationBackStack = true,
+      )
+    every { navController.currentBackStackEntry } returns
+      mockk { every { destination } returns mockk { every { id } returns 1234 } }
+
+    val navOptions = createRegisterNavigationOptions(actionConfig, navController)
+
+    Assert.assertTrue(navOptions.shouldLaunchSingleTop())
+    Assert.assertTrue(navOptions.isPopUpToInclusive())
+    Assert.assertEquals(1234, navOptions.popUpToId)
+  }
+
+  @Test
+  fun testCreateRegisterNavigationOptionsWithPopBackStackNull() {
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        id = "registerId",
+        popNavigationBackStack = null,
+      )
+    every { navController.currentBackStackEntry } returns
+      mockk { every { destination } returns mockk { every { id } returns 1234 } }
+
+    val navOptions = createRegisterNavigationOptions(actionConfig, navController)
+
+    Assert.assertTrue(navOptions.shouldLaunchSingleTop())
+    Assert.assertFalse(navOptions.isPopUpToInclusive())
+  }
+
+  @Test
+  fun testCreateRegisterNavigationOptionsWithNullCurrentBackStackEntry() {
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        id = "registerId",
+        popNavigationBackStack = true,
+      )
+    every { navController.currentBackStackEntry } returns null
+
+    val navOptions = createRegisterNavigationOptions(actionConfig, navController)
+
+    Assert.assertTrue(navOptions.shouldLaunchSingleTop())
+    Assert.assertFalse(navOptions.isPopUpToInclusive())
+  }
+
+  @Test
+  fun testCreateRegisterNavigationOptionsWithNullDestinationId() {
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        id = "registerId",
+        popNavigationBackStack = true,
+      )
+    every { navController.currentBackStackEntry } returns
+      mockk { every { destination } returns mockk { every { id } returns 0 } }
+
+    val navOptions = createRegisterNavigationOptions(actionConfig, navController)
+
+    Assert.assertTrue(navOptions.shouldLaunchSingleTop())
+    Assert.assertTrue(navOptions.isPopUpToInclusive())
+    Assert.assertEquals(0, navOptions.popUpToId)
+  }
+
+  @Test
+  fun testCreateRegisterNavigationOptionsWhenCurrentDestinationIsHome() {
+    val actionConfig =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        id = "registerId",
+        popNavigationBackStack = true,
+      )
+    every { navController.currentBackStackEntry } returns
+      mockk {
+        every { destination } returns mockk { every { id } returns MainNavigationScreen.Home.route }
+      }
+
+    val navOptions = createRegisterNavigationOptions(actionConfig, navController)
+
+    Assert.assertTrue(navOptions.shouldLaunchSingleTop())
+    Assert.assertFalse(navOptions.isPopUpToInclusive())
+  }
+
+  @Test
+  fun testLaunchRegisterAllowsNavigationWhenCurrentRegisterIdIsNull() {
+    val clickAction =
+      ActionConfig(
+        id = "registerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        popNavigationBackStack = false,
+      )
+    every { navController.currentBackStackEntry } returns mockk { every { arguments } returns null }
+    every { navController.previousBackStackEntry } returns
+      mockk { every { arguments } returns bundleOf(NavigationArg.REGISTER_ID to "registerId") }
+    every { navController.currentDestination } returns null
+
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
+    Assert.assertTrue(slotNavOptions.captured.shouldLaunchSingleTop())
+  }
+
+  @Test
+  fun testLaunchRegisterAllowsNavigationWhenPreviousRegisterIdIsNull() {
+    val clickAction =
+      ActionConfig(
+        id = "registerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
+        popNavigationBackStack = false,
+      )
+    every { navController.currentBackStackEntry } returns
+      mockk {
+        every { arguments } returns bundleOf(NavigationArg.REGISTER_ID to "currentRegisterId")
+      }
+    every { navController.previousBackStackEntry } returns null
+    every { navController.currentDestination } returns null
+
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.Home.route, slotInt.captured)
+    Assert.assertTrue(slotNavOptions.captured.shouldLaunchSingleTop())
   }
 
   @Test
@@ -627,13 +970,13 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   }
 
   @Test
-  fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapIfArrayIsEmpty() {
+  fun testConvertActionParameterArrayToMapShouldReturnEmptyMapIfArrayIsEmpty() {
     val array = emptyArray<ActionParameter>()
     Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap())
   }
 
   @Test
-  fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapValue() {
+  fun testConvertActionParameterArrayToMapShouldReturnEmptyMapValue() {
     val array =
       arrayOf(ActionParameter(key = "k", value = "", paramType = ActionParameterType.PARAMDATA))
     Assert.assertEquals("", array.toParamDataMap()["k"])

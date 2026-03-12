@@ -17,23 +17,34 @@
 package org.smartregister.fhircore.engine.util.location
 
 import android.Manifest
+import android.content.Intent
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 
+@HiltAndroidTest
 class PermissionsUtilsTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   private val activityController: ActivityController<HiltActivityForTest> =
-    Robolectric.buildActivity(HiltActivityForTest::class.java)
+    Robolectric.buildActivity(
+      HiltActivityForTest::class.java,
+      Intent().apply { putExtra(HiltActivityForTest.THEME_EXTRAS_BUNDLE_KEY, R.style.AppTheme) },
+    )
   private lateinit var context: HiltActivityForTest
 
   @Before
   fun setUp() {
+    hiltRule.inject()
     context = activityController.create().resume().get()
   }
 

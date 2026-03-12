@@ -23,6 +23,9 @@ plugins {
   id("androidx.navigation.safeargs")
   id("org.sonarqube") version "3.5.0.2730"
   id("io.sentry.android.gradle") version "3.11.1"
+  id("com.google.devtools.ksp")
+  id("com.google.dagger.hilt.android")
+  alias(libs.plugins.org.jetbrains.kotlin.plugin.compose)
 }
 
 sonar {
@@ -264,9 +267,16 @@ android {
 
     create("echis") {
       dimension = "apps"
-      applicationIdSuffix = ".echis"
+      applicationId = "ug.go.health.echis"
       versionNameSuffix = "-echis"
-      manifestPlaceholders["appLabel"] = "MOH eCHIS"
+      manifestPlaceholders["appLabel"] = "MOH UG eCHIS"
+    }
+
+    create("echisSupervisor") {
+      dimension = "apps"
+      applicationId = "ug.go.health.echisSupervisor"
+      versionNameSuffix = "-echis-supervisor"
+      manifestPlaceholders["appLabel"] = "MOH UG eCHIS Supervisor"
     }
 
     create("sidBunda") {
@@ -325,18 +335,25 @@ android {
       manifestPlaceholders["appLabel"] = "EIR"
     }
 
-    create("engage") {
+    create("columbiaEngagePreview") {
       dimension = "apps"
-      applicationIdSuffix = ".engage"
-      versionNameSuffix = "-engage"
+      applicationIdSuffix = ".columbiaEngagePreview"
+      versionNameSuffix = "-columbiaEngagePreview"
+      manifestPlaceholders["appLabel"] = "Engage Training App"
+    }
+
+    create("columbiaEngage") {
+      dimension = "apps"
+      applicationIdSuffix = ".columbiaEngage"
+      versionNameSuffix = "-columbiaEngage"
       manifestPlaceholders["appLabel"] = "Engage"
     }
 
-    create("fpdEngage") {
+    create("fpdIPC") {
       dimension = "apps"
-      applicationIdSuffix = ".fpdEngage"
-      versionNameSuffix = "-fpdEngage"
-      manifestPlaceholders["appLabel"] = "Engage IPC"
+      applicationIdSuffix = ".fpdIPC"
+      versionNameSuffix = "-fpdIPC"
+      manifestPlaceholders["appLabel"] = "Engage"
     }
 
     create("eir") {
@@ -482,21 +499,6 @@ tasks.withType<Test> {
   testLogging { events = setOf(TestLogEvent.FAILED) }
   minHeapSize = "4608m"
   maxHeapSize = "4608m"
-  addTestListener(
-    object : TestListener {
-      override fun beforeSuite(p0: TestDescriptor?) {}
-
-      override fun afterSuite(p0: TestDescriptor?, p1: TestResult?) {}
-
-      override fun beforeTest(p0: TestDescriptor?) {
-        logger.lifecycle("Running test: $p0")
-      }
-
-      override fun afterTest(p0: TestDescriptor?, p1: TestResult?) {
-        logger.lifecycle("Done executing: $p0")
-      }
-    },
-  )
 
   // maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
   configure<JacocoTaskExtension> { isIncludeNoLocationClasses = true }
@@ -564,8 +566,8 @@ dependencies {
   }
 
   // Annotation processors
-  kapt(libs.hilt.compiler)
-  kapt(libs.dagger.hilt.compiler)
+  ksp(libs.hilt.compiler)
+  ksp(libs.dagger.hilt.compiler)
 
   testRuntimeOnly(libs.bundles.junit.jupiter.runtime)
 
@@ -588,7 +590,7 @@ dependencies {
   debugImplementation(libs.fragment.testing)
   // debugImplementation(libs.leakcanary.android)
 
-  kapt(libs.androidx.room.compiler)
+  ksp(libs.androidx.room.compiler)
   implementation(libs.androidx.room.ktx)
   implementation(libs.androidx.room.runtime)
   testImplementation(libs.androidx.room.testing)
@@ -598,15 +600,14 @@ dependencies {
   implementation(libs.zip4j)
 
   // Annotation processors for test
-  kaptTest(libs.dagger.hilt.android.compiler)
-  kaptAndroidTest(libs.dagger.hilt.android.compiler)
+  kspTest(libs.dagger.hilt.android.compiler)
+  kspAndroidTest(libs.dagger.hilt.android.compiler)
 
   // Android test dependencies
   androidTestImplementation(libs.bundles.junit.test)
   androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
   androidTestImplementation(libs.dagger.hilt.android.testing)
-  androidTestImplementation(libs.mockk.android)
   androidTestImplementation(libs.benchmark.junit)
   androidTestImplementation(libs.work.testing)
   androidTestImplementation(libs.navigation.testing)

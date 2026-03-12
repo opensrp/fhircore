@@ -258,9 +258,9 @@ constructor(
   ) {
     val updatedQuestionnaireConfig =
       addMatchingCoordinatesToActionParameters(
-        feature.geometry?.coordinates?.get(0),
-        feature.geometry?.coordinates?.get(1),
-        questionnaireConfig,
+        longitude = feature.geometry?.coordinates?.get(0),
+        latitude = feature.geometry?.coordinates?.get(1),
+        questionnaireConfig = questionnaireConfig,
       )
     if (context is QuestionnaireHandler) {
       context.launchQuestionnaire(
@@ -276,8 +276,8 @@ constructor(
    * [ActionParameter.key] matches with [KEY_LATITUDE] or [KEY_LONGITUDE] constants. *
    */
   private fun addMatchingCoordinatesToActionParameters(
-    latitude: Double?,
     longitude: Double?,
+    latitude: Double?,
     questionnaireConfig: QuestionnaireConfig,
   ): QuestionnaireConfig {
     if (latitude == null || longitude == null) {

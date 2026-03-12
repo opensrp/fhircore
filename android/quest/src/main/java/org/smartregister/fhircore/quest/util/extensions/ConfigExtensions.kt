@@ -21,11 +21,11 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.net.Uri
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
@@ -62,6 +62,7 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherFragment
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+import org.smartregister.fhircore.quest.util.openExternalApp
 import org.smartregister.p2p.utils.startP2PScreen
 
 const val PRACTITIONER_ID = "practitionerId"
@@ -158,16 +159,13 @@ fun ActionConfig.handleClickEvent(
 
       if (!currentRegisterId.isNullOrEmpty() && sameRegisterNavigation) {
         return
-      } else {
-        navController.navigate(
-          resId = MainNavigationScreen.Home.route,
-          args = args,
-          navOptions =
-            navController.currentDestination?.id?.let {
-              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack != false)
-            },
-        )
       }
+
+      navController.navigate(
+        resId = MainNavigationScreen.Home.route,
+        args = args,
+        navOptions = createRegisterNavigationOptions(actionConfig, navController),
+      )
     }
     ApplicationWorkflow.LAUNCH_REPORT -> {
       val args =
@@ -177,6 +175,14 @@ fun ActionConfig.handleClickEvent(
         )
 
       navController.navigate(MainNavigationScreen.Reports.route, args)
+    }
+    ApplicationWorkflow.LAUNCH_REPORT_INDICATORS -> {
+      val args =
+        bundleOf(
+          Pair(NavigationArg.REPORT_ID, actionConfig.id),
+        )
+
+      navController.navigate(MainNavigationScreen.ReportIndicators.route, args)
     }
     ApplicationWorkflow.LAUNCH_SETTINGS ->
       navController.navigate(MainNavigationScreen.Settings.route)
@@ -208,7 +214,7 @@ fun ActionConfig.handleClickEvent(
       val actionParameter = interpolatedParams.first()
       val phoneNumber = actionParameter.value
       val intent = Intent(Intent.ACTION_DIAL)
-      intent.data = Uri.parse("tel:$phoneNumber")
+      intent.data = "tel:$phoneNumber".toUri()
       ContextCompat.startActivity(navController.context, intent, null)
     }
     ApplicationWorkflow.COPY_TEXT -> {
@@ -221,6 +227,11 @@ fun ActionConfig.handleClickEvent(
         context.getString(R.string.copy_text_success_message, copyTextActionParameter.value),
         Toast.LENGTH_LONG,
       )
+    }
+    ApplicationWorkflow.LAUNCH_EXTERNAL_APP -> {
+      actionConfig.externalAppConfig?.let { config ->
+        openExternalApp(navController.context, config)
+      }
     }
     ApplicationWorkflow.LAUNCH_LOCATION_SELECTOR -> {
       val args =
@@ -300,7 +311,7 @@ suspend fun List<ViewProperties>.decodeImageResourcesToBitmap(
             ICON_TYPE_REMOTE.equals(imageConfig?.type, ignoreCase = true) &&
               !imageConfig?.reference.isNullOrBlank()
           ) {
-            val resourceId = imageConfig!!.reference!!
+            val resourceId = imageConfig.reference!!
             fhirEngine.loadResource<Binary>(resourceId)?.let { binary: Binary ->
               binary.data.decodeToBitmap()?.let { bitmap -> decodedImageMap[resourceId] = bitmap }
             }
@@ -319,4 +330,22 @@ suspend fun List<ViewProperties>.decodeImageResourcesToBitmap(
       }
     }
   }
+}
+
+internal fun createRegisterNavigationOptions(
+  actionConfig: ActionConfig,
+  navController: NavController,
+): NavOptions {
+  val navOptionsBuilder = NavOptions.Builder().setLaunchSingleTop(true)
+
+  if (
+    actionConfig.popNavigationBackStack == true &&
+      navController.currentBackStackEntry?.destination?.id != MainNavigationScreen.Home.route
+  ) {
+    navController.currentBackStackEntry?.destination?.id?.let {
+      navOptionsBuilder.setPopUpTo(it, inclusive = true)
+    }
+  }
+
+  return navOptionsBuilder.build()
 }
