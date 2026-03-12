@@ -22,4 +22,6 @@ sealed class ClearDataEvent {
   data class SyncData(val context: Context) : ClearDataEvent()
 
   data class ClearAppData(val context: Context) : ClearDataEvent()
+
+  data object AbortClearData : ClearDataEvent()
 }

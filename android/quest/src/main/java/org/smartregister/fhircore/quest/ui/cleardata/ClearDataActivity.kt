@@ -19,12 +19,10 @@ package org.smartregister.fhircore.quest.ui.cleardata
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.quest.BuildConfig
+import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
 
 @AndroidEntryPoint
 class ClearDataActivity : BaseMultiLanguageActivity() {
@@ -33,23 +31,7 @@ class ClearDataActivity : BaseMultiLanguageActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
-    lifecycleScope.launch {
-      val unsyncedResources = viewModel.getUnsyncedResourceCount()
-      val appName = viewModel.getAppName()
-
-      setContent {
-        AppTheme {
-          ClearDataScreen(
-            viewModel = viewModel,
-            unsyncedResourceCount = unsyncedResources,
-            appName = appName,
-            isDebug = BuildConfig.DEBUG,
-            // onSyncData = { viewModel.onEvent(ClearDataEvent.SyncData) },
-            onDeleteData = { viewModel.clearAppData(this@ClearDataActivity) },
-          )
-        }
-      }
-    }
+    applyWindowInsetListener()
+    setContent { AppTheme { ClearDataScreen(viewModel = viewModel) } }
   }
 }
