@@ -142,7 +142,7 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
         AppTheme {
           Scaffold(
-            drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
+            drawerGesturesEnabled = true,
             scaffoldState = scaffoldState,
             drawerContent = {
               AppDrawer(

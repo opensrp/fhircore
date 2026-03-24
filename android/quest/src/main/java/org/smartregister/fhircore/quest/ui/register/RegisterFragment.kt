@@ -134,7 +134,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
               .collectAsLazyPagingItems()
 
           Scaffold(
-            drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
+            drawerGesturesEnabled = true,
             scaffoldState = scaffoldState,
             drawerContent = {
               AppDrawer(
