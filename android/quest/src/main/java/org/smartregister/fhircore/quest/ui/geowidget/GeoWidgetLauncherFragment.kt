@@ -51,6 +51,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.sync.SyncState
@@ -142,7 +143,9 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
 
         AppTheme {
           Scaffold(
-            drawerGesturesEnabled = true,
+            drawerGesturesEnabled =
+              navArgs.toolBarHomeNavigation == ToolBarHomeNavigation.OPEN_DRAWER ||
+                scaffoldState.drawerState.isOpen,
             scaffoldState = scaffoldState,
             drawerContent = {
               AppDrawer(

@@ -53,6 +53,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.sync.SyncState
@@ -134,7 +135,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
               .collectAsLazyPagingItems()
 
           Scaffold(
-            drawerGesturesEnabled = true,
+            drawerGesturesEnabled =
+              registerFragmentArgs.toolBarHomeNavigation == ToolBarHomeNavigation.OPEN_DRAWER ||
+                scaffoldState.drawerState.isOpen,
             scaffoldState = scaffoldState,
             drawerContent = {
               AppDrawer(
