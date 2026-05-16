@@ -58,6 +58,17 @@ The `logGpsLocation` config takes in a list of `LocationLogOptions` to toggle wh
 
 
 
+## How to run the app using local resources
+
+To run the app using local configuration files instead of remote content, place your JSON config files inside:
+
+`android/app/src/main/assets/configs/`
+
+The reference app uses the same structure, so map the config types (application, register, profile, navigation, etc.) into the same folder with their respective file names, for example:
+
+`android/app/src/main/assets/configs/application.json`
+
+
 ## Config properties
 
 |Property | Description | Required | Default |
