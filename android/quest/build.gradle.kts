@@ -273,6 +273,13 @@ android {
       manifestPlaceholders["appLabel"] = "eCHIS"
     }
 
+    create("echisTraining") {
+      dimension = "apps"
+      applicationId = "ug.go.health.echis.training"
+      versionNameSuffix = "-echisTraining"
+      manifestPlaceholders["appLabel"] = "Training eCHIS"
+    }
+
     create("sidBunda") {
       dimension = "apps"
       applicationIdSuffix = ".sidBunda"
