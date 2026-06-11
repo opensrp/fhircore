@@ -247,4 +247,27 @@ class QuestionnaireActivityTest : RobolectricTest() {
       )
     questionnaireActivity = questionnaireActivityController.create().resume().get()
   }
+
+  @Test
+  fun testSuppressLoginRedirectIsEnabledOnLaunchAndDisabledOnDestroy() {
+    // suppressLoginRedirect is toggled synchronously in onCreate/onDestroy, so the questionnaire
+    // does not need to be seeded. A local controller keeps the shared tearDown from destroying it
+    // twice, and driving the lifecycle outside a coroutine scope avoids cancelling the in-flight
+    // launchQuestionnaire() coroutine.
+    val bundle = QuestionnaireActivity.intentBundle(questionnaireConfig, emptyList())
+    val controller =
+      Robolectric.buildActivity(
+        QuestionnaireActivity::class.java,
+        Intent().apply { putExtras(bundle) },
+      )
+    val activity = controller.create().resume().get()
+
+    // While the questionnaire is open the token authenticator must not redirect to login
+    Assert.assertTrue(activity.tokenAuthenticator.suppressLoginRedirect)
+
+    controller.destroy()
+
+    // Once the questionnaire is closed the default redirect behaviour is restored
+    Assert.assertFalse(activity.tokenAuthenticator.suppressLoginRedirect)
+  }
 }

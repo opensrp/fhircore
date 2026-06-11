@@ -18,9 +18,12 @@ package org.smartregister.fhircore.engine.auth
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.accounts.AccountManagerCallback
 import android.accounts.AccountManagerFuture
 import android.accounts.AuthenticatorException
 import android.accounts.OperationCanceledException
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
@@ -445,6 +448,95 @@ class TokenAuthenticatorTest : RobolectricTest() {
     every { accountManager.getPassword(account) } returns token
 
     Assert.assertTrue(tokenAuthenticator.isCurrentRefreshTokenActive())
+  }
+
+  @Test
+  fun testGetAccessTokenWithSuppressedLoginRedirectDoesNotDeletePinOrLaunchLogin() {
+    val account = Account(sampleUsername, PROVIDER)
+    val accessToken = "gibberishaccesstoken"
+    val spiedSecureSharedPreference = spyk(secureSharedPreference)
+    val mockedContext = mockk<Context>(relaxed = true)
+    val tokenAuthenticator =
+      spyk(
+        TokenAuthenticator(
+          secureSharedPreference = spiedSecureSharedPreference,
+          configService = configService,
+          oAuthService = oAuthService,
+          dispatcherProvider = dispatcherProvider,
+          accountManager = accountManager,
+          context = mockedContext,
+        ),
+      )
+    tokenAuthenticator.suppressLoginRedirect = true
+
+    val callbackSlot = slot<AccountManagerCallback<Bundle>>()
+    val accountManagerFuture = mockk<AccountManagerFuture<Bundle>>()
+    every { accountManagerFuture.result } returns bundleOf(AccountManager.KEY_INTENT to Intent())
+    every { tokenAuthenticator.findAccount() } returns account
+    every { tokenAuthenticator.isTokenActive(any()) } returns false
+    every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns accessToken
+    every { accountManager.invalidateAuthToken(account.type, accessToken) } just runs
+    every {
+      accountManager.getAuthToken(
+        account,
+        AUTH_TOKEN_TYPE,
+        any(),
+        true,
+        capture(callbackSlot),
+        any(),
+      )
+    } returns accountManagerFuture
+
+    tokenAuthenticator.getAccessToken()
+    // Simulate AccountManager invoking the callback with a re-authentication intent
+    callbackSlot.captured.run(accountManagerFuture)
+
+    verify(exactly = 0) { spiedSecureSharedPreference.deleteSessionPin() }
+    verify(exactly = 0) { mockedContext.startActivity(any()) }
+  }
+
+  @Test
+  fun testGetAccessTokenWithoutSuppressedLoginRedirectDeletesPinAndLaunchesLogin() {
+    val account = Account(sampleUsername, PROVIDER)
+    val accessToken = "gibberishaccesstoken"
+    val spiedSecureSharedPreference = spyk(secureSharedPreference)
+    val mockedContext = mockk<Context>(relaxed = true)
+    val tokenAuthenticator =
+      spyk(
+        TokenAuthenticator(
+          secureSharedPreference = spiedSecureSharedPreference,
+          configService = configService,
+          oAuthService = oAuthService,
+          dispatcherProvider = dispatcherProvider,
+          accountManager = accountManager,
+          context = mockedContext,
+        ),
+      )
+
+    val callbackSlot = slot<AccountManagerCallback<Bundle>>()
+    val accountManagerFuture = mockk<AccountManagerFuture<Bundle>>()
+    every { accountManagerFuture.result } returns bundleOf(AccountManager.KEY_INTENT to Intent())
+    every { tokenAuthenticator.findAccount() } returns account
+    every { tokenAuthenticator.isTokenActive(any()) } returns false
+    every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns accessToken
+    every { accountManager.invalidateAuthToken(account.type, accessToken) } just runs
+    every {
+      accountManager.getAuthToken(
+        account,
+        AUTH_TOKEN_TYPE,
+        any(),
+        true,
+        capture(callbackSlot),
+        any(),
+      )
+    } returns accountManagerFuture
+
+    tokenAuthenticator.getAccessToken()
+    // Simulate AccountManager invoking the callback with a re-authentication intent
+    callbackSlot.captured.run(accountManagerFuture)
+
+    verify { spiedSecureSharedPreference.deleteSessionPin() }
+    verify { mockedContext.startActivity(any()) }
   }
 
   companion object {
