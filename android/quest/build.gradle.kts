@@ -440,6 +440,16 @@ android {
       "app_name",
       "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"",
     )
+
+    variant.outputs.all {
+      val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+      val buildTypeName = variant.buildType.name
+      output.outputFileName =
+        output.outputFileName.replace(
+          "-$buildTypeName.apk",
+          "-${BuildConfigs.versionName}(${BuildConfigs.versionCode})-$buildTypeName.apk",
+        )
+    }
   }
 
   applicationVariants.all {
