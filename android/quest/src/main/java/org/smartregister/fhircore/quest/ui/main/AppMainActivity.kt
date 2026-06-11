@@ -59,6 +59,7 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.serializable
@@ -125,7 +126,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         }
 
         // Check if session expired while questionnaire was open
-        if (!tokenAuthenticator.isCurrentRefreshTokenActive()) {
+        if (isDeviceOnline() && !tokenAuthenticator.isCurrentRefreshTokenActive()) {
           delay(3000) // Let user see data was saved
           showSessionExpiredDialog()
         }
