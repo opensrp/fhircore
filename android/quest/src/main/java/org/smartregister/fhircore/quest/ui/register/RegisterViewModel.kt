@@ -680,11 +680,6 @@ constructor(
                   .toInt(),
             )
 
-          // Re-emit with isFirstTimeSync recomputed now that the up-to-date record count is
-          // available. The synchronous assignment below runs before this coroutine resolves, so it
-          // reads a stale (previous) _totalRecordsCount; without this re-emission a register that
-          // already holds synced data could keep isFirstTimeSync == true and strand the sync
-          // dialog.
           registerUiState.value = buildRegisterUiState()
         }
       }

@@ -109,11 +109,6 @@ private fun LoaderContent(
   showBackground: Boolean,
   showLineSpinIndicator: Boolean,
 ) {
-  // NOTE: This composable intentionally has no self-dismiss logic. Its presence in the
-  // composition (and therefore the surrounding Dialog window + scrim) is controlled solely by the
-  // caller. A previous SideEffect hid this content at 100% while leaving the Dialog window - and
-  // its full-screen scrim - composed, which orphaned a touch-blocking overlay on screen. Content
-  // and window must appear and disappear together; the caller is the single source of truth.
   Box(modifier.size(boxWidth, boxHeight)) {
     Column(
       modifier = modifier.padding(8.dp),
