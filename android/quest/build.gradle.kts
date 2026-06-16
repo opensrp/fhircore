@@ -1,4 +1,5 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
+import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import io.sentry.android.gradle.extensions.InstrumentationFeature
 import io.sentry.android.gradle.instrumentation.logcat.LogcatLevel
 import java.io.FileReader
@@ -440,6 +441,16 @@ android {
       "app_name",
       "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"",
     )
+
+    variant.outputs.all {
+      val output = this as BaseVariantOutputImpl
+      val buildTypeName = variant.buildType.name
+      output.outputFileName =
+        output.outputFileName.replace(
+          "-$buildTypeName.apk",
+          "-${BuildConfigs.versionName}(${BuildConfigs.versionCode})-$buildTypeName.apk",
+        )
+    }
   }
 
   applicationVariants.all {

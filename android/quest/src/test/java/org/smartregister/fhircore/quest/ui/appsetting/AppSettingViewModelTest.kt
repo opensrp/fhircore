@@ -446,7 +446,10 @@ class AppSettingViewModelTest : RobolectricTest() {
         appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any())
       }
       coVerify(exactly = 0) {
-        appSettingViewModel.configurationRegistry.fetchRemoteImplementationGuideByAppId(any(), any())
+        appSettingViewModel.configurationRegistry.fetchRemoteImplementationGuideByAppId(
+          any(),
+          any()
+        )
       }
     }
   }
@@ -484,7 +487,10 @@ class AppSettingViewModelTest : RobolectricTest() {
         }
 
       coEvery {
-        appSettingViewModel.configurationRegistry.fetchRemoteImplementationGuideByAppId(any(), any())
+        appSettingViewModel.configurationRegistry.fetchRemoteImplementationGuideByAppId(
+          any(),
+          any()
+        )
       } returns null
       coEvery {
         appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any())

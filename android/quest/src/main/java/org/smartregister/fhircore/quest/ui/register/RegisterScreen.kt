@@ -51,6 +51,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import kotlinx.coroutines.flow.flowOf
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
@@ -172,7 +173,15 @@ fun RegisterScreen(
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (!BuildConfig.SKIP_AUTHENTICATION && registerUiState.isFirstTimeSync) {
+      // Tear down the first-time sync dialog (and its full-screen scrim) on a single authoritative
+      // signal: the sync reaching a terminal state. Relying on isFirstTimeSync alone left the scrim
+      // composed until a fragile, async recompute (timestamp write + register count) landed, which
+      // could lag badly or never complete on low-resource devices, stranding a touch-blocking
+      // overlay. The terminal CurrentSyncJobStatus is delivered to all listeners on the same event.
+      val syncTerminated =
+        appDrawerUIState.currentSyncJobStatus is CurrentSyncJobStatus.Succeeded ||
+          appDrawerUIState.currentSyncJobStatus is CurrentSyncJobStatus.Failed
+      if (!BuildConfig.SKIP_AUTHENTICATION && registerUiState.isFirstTimeSync && !syncTerminated) {
         LoaderDialog(
           modifier = modifier.testTag(FIRST_TIME_SYNC_DIALOG),
           percentageProgressFlow = flowOf(appDrawerUIState.percentageProgress ?: 0),
