@@ -51,7 +51,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
-import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.sync.SyncState
@@ -77,6 +76,7 @@ import org.smartregister.fhircore.quest.ui.shared.viewmodels.SearchViewModel
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
+import org.smartregister.fhircore.quest.util.extensions.shouldEnableDrawerGestures
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -144,8 +144,9 @@ class GeoWidgetLauncherFragment : Fragment(), OnSyncListener {
         AppTheme {
           Scaffold(
             drawerGesturesEnabled =
-              navArgs.toolBarHomeNavigation == ToolBarHomeNavigation.OPEN_DRAWER ||
+              navArgs.toolBarHomeNavigation.shouldEnableDrawerGestures(
                 scaffoldState.drawerState.isOpen,
+              ),
             scaffoldState = scaffoldState,
             drawerContent = {
               AppDrawer(

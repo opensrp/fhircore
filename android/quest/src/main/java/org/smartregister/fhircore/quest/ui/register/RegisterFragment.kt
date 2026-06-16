@@ -53,7 +53,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.sync.SyncState
@@ -72,6 +71,7 @@ import org.smartregister.fhircore.quest.ui.shared.viewmodels.SearchViewModel
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
+import org.smartregister.fhircore.quest.util.extensions.shouldEnableDrawerGestures
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
@@ -136,8 +136,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
           Scaffold(
             drawerGesturesEnabled =
-              registerFragmentArgs.toolBarHomeNavigation == ToolBarHomeNavigation.OPEN_DRAWER ||
+              registerFragmentArgs.toolBarHomeNavigation.shouldEnableDrawerGestures(
                 scaffoldState.drawerState.isOpen,
+              ),
             scaffoldState = scaffoldState,
             drawerContent = {
               AppDrawer(

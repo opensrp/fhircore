@@ -24,6 +24,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
+
+fun ToolBarHomeNavigation.shouldEnableDrawerGestures(isDrawerOpen: Boolean): Boolean =
+  this == ToolBarHomeNavigation.OPEN_DRAWER || isDrawerOpen
 
 /**
  * Apply [Modifier] conditionally. If the condition is met the [ifTrue] block will be called
