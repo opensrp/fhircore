@@ -78,6 +78,7 @@ import org.smartregister.fhircore.engine.domain.model.isSummary
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LanguageBasicUtil
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.allItems
@@ -1162,8 +1163,10 @@ constructor(
 
       val launchContextResources =
         launchContextResources(resourceType, resourceIdentifier, actionParameters)
-      val launchContexts = launchContextResources.associateBy { it.resourceType.name.lowercase() }
-
+      val languageBasic = LanguageBasicUtil.createLanguageBasic()
+      val launchContexts =
+        launchContextResources.associateBy { it.resourceType.name.lowercase() }.toMutableMap()
+      launchContexts["language"] = languageBasic
       // Populate questionnaire with initial default values
       ResourceMapper.populate(
         questionnaire,
