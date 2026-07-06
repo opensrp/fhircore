@@ -429,6 +429,20 @@ android {
       versionNameSuffix = "-trueCover"
       manifestPlaceholders["appLabel"] = "True Cover"
     }
+
+    create("echisDataFi") {
+      dimension = "apps"
+      applicationId = "org.dataforimplementation.echis"
+      versionNameSuffix = "-echis"
+      manifestPlaceholders["appLabel"] = "Data.FI eCHIS Reference App"
+    }
+
+    create("echisNawi") {
+      dimension = "apps"
+      applicationId = "ke.nawi.echis"
+      versionNameSuffix = "-echis"
+      manifestPlaceholders["appLabel"] = "Nawi eCHIS"
+    }
   }
 
   applicationVariants.all {

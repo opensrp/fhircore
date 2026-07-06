@@ -99,7 +99,7 @@
     <string name="application_id">معرف التطبيق</string>
     <string name="app_id_sample" translatable="false">e.g. ecbis, quest, cha</string>
     <string name="load_configurations">تكوينات التحميل</string>
-    <string name="fhir_core_app" translatable="false">FHIRCORE APP</string>
+    <string name="fhir_core_app" translatable="false">OPENSRP 2</string>
     <string name="remember_app">تذكر التطبيق</string>
     <string name="done">منتهي</string>
     <string name="replace_photo">استبدال الصورة</string>
