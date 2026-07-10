@@ -434,7 +434,7 @@ android {
       dimension = "apps"
       applicationId = "org.dataforimplementation.echis"
       versionNameSuffix = "-echis"
-      manifestPlaceholders["appLabel"] = "Data.FI eCHIS Reference App"
+      manifestPlaceholders["appLabel"] = "Data.FI eCHIS Reference"
     }
 
     create("echisNawi") {
@@ -453,6 +453,13 @@ android {
       "app_name",
       "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"",
     )
+
+    variant.outputs
+      .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
+      .forEach { output ->
+        output.outputFileName =
+          "quest-${variant.flavorName}-${variant.buildType.name}-${variant.versionName}.apk"
+      }
   }
 
   applicationVariants.all {
