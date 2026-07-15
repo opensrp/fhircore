@@ -1,4 +1,5 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
+import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import io.sentry.android.gradle.extensions.InstrumentationFeature
 import io.sentry.android.gradle.instrumentation.logcat.LogcatLevel
 import java.io.FileReader
@@ -455,7 +456,7 @@ android {
     )
 
     variant.outputs
-      .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
+      .map { it as BaseVariantOutputImpl }
       .forEach { output ->
         output.outputFileName =
           "quest-${variant.flavorName}-${variant.buildType.name}-${variant.versionName}.apk"
