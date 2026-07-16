@@ -205,7 +205,7 @@
     <string name="sync_down_inprogress"> %1$d%% Syncing down…</string>
     <string name="default_html_title">file</string>
     <string name="retry">RETRY</string>
-    <string name="unsynced_data_present">There\'s some un-synced data</string>
+    <string name="unsynced_data_present">There\'s some unsynced data</string>
     <string name="missing_supervisor_contact">Supervisor contact missing or the provided phone number is invalid</string>
     <string name="apply_filter">APPLY FILTER</string>
     <string name="questionnaire_save_draft_title">Save draft changes</string>
