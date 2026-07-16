@@ -137,10 +137,11 @@ class ProfileFragment : Fragment() {
         profileViewModel.emitSnackBarState(snackBarMessageConfig)
       }
 
+      appMainViewModel.retrieveAppMainUiState(refreshAll = false)
+
       // Perform optional on submit actions
       val onSubmitActions = questionnaireConfig.onSubmitActions
       if (onSubmitActions != null) {
-        appMainViewModel.retrieveAppMainUiState(refreshAll = false)
         onSubmitActions.handleClickEvent(
           navController = findNavController(),
           resourceData = profileViewModel.profileUiState.value.resourceData,
