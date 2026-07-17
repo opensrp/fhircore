@@ -105,6 +105,7 @@ constructor(
 
   val appVersionCode = BuildConfig.VERSION_CODE
   val appVersionName = BuildConfig.VERSION_NAME
+  val appBuildType = BuildConfig.BUILD_TYPE
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
