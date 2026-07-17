@@ -11,7 +11,7 @@
     <string name="empty_client_list_message_title">Tidak Ada Hasil</string>
     <string name="empty_client_list_message_details">Maaf, kami tidak dapat menemukan klien dengan nama atau nomor ID tersebut</string>
     <string name="register_new_client">Daftarkan klien baru</string>
-    <string name="default_app_title" translatable="false">Fhir App</string>
+    <string name="default_app_title" translatable="false">OpenSRP</string>
     <string name="app_logo">Logo aplikasi</string>
     <string name="powered_by">Dipersembahkan oleh</string>
     <string name="app_version">App versi %1$d(%2$s)</string>
@@ -177,6 +177,7 @@
     <string name="care_team">Tim Perawatan</string>
     <string name="location">Lokasi</string>
     <string name="app_version_code">Kode versi aplikasi</string>
+    <string name="app_build_type">Jenis pembuatan aplikasi</string>
     <string name="build_date">Tanggal build</string>
     <string name="manufacture">Manufaktur</string>
     <string name="app_versions">Versi Aplikasi</string>

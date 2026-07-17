@@ -139,4 +139,5 @@
     <string name="invalid_offline_login_state">Usanidi wa mtumiaji unahitajika. Washa mtandao</string>
     <string name="sync_completed_with_errors">Usawazishaji umekamilika na hitilafu. Inajaribu tena…</string>
     <string name="error_occurred">Hitilafu fulani imetokea…</string>
+    <string name="app_build_type">Aina ya uundaji wa programu</string>
 </resources>

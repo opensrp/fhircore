@@ -10,7 +10,7 @@
     <string name="empty_client_list_message_title">Sin resultados</string>
     <string name="empty_client_list_message_details">Lo sentimos, no pudimos encontrar el cliente con su nombre o ID</string>
     <string name="register_new_client">Registrar nuevo cliente</string>
-    <string name="default_app_title" translatable="false">Aplicación Fhir</string>
+    <string name="default_app_title" translatable="false">OpenSRP</string>
     <string name="app_logo">Logotipo de la aplicación</string>
     <string name="powered_by">Desarrollado por</string>
     <string name="app_version">Versión de la aplicación %1$d(%2$s)</string>
@@ -94,7 +94,7 @@
     <string name="application_id">ID de aplicación</string>
     <string name="app_id_sample" translatable="false">por ejemplo, ecbis, quest, cha</string>
     <string name="load_configurations">CARGAR CONFIGURACIONES</string>
-    <string name="fhir_core_app" translatable="false">APLICACIÓN FHIRCORE</string>
+    <string name="fhir_core_app" translatable="false">OpenSRP</string>
     <string name="remember_app">Recordar aplicación</string>
     <string name="done">Listo</string>
     <string name="replace_photo">Reemplazar foto</string>
@@ -176,6 +176,7 @@
     <string name="care_team">Equipo de atención</string>
     <string name="location">Ubicación</string>
     <string name="app_version_code">Código de versión de la aplicación</string>
+    <string name="app_build_type">Tipo de compilación de la aplicación</string>
     <string name="build_date">Fecha de compilación</string>
     <string name="manufacture">Fabricante</string>
     <string name="app_versions">Versión de la aplicación</string>
