@@ -29,9 +29,6 @@ const val OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER =
   "org.smartregister.fhircore.quest.QuestionnaireItemViewHolderFactoryMatchersProvider"
 private const val BARCODE_URL = "https://smartregister.org/barcode-type-widget-extension"
 const val BARCODE_NAME = "barcode"
-private const val PASSWORD_EXTENSION_URL =
-  "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl"
-private const val PASSWORD_VALUE = "password-widget"
 
 object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
   QuestionnaireItemViewHolderFactoryMatchersProviderFactory {
@@ -52,12 +49,9 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
     override fun get(): List<QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher> {
       return listOf(
         QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
-          PasswordViewHolderFactory,
-        ) { questionnaireItem ->
-          questionnaireItem.getExtensionByUrl(PASSWORD_EXTENSION_URL).let {
-            if (it == null) false else it.value.toString() == PASSWORD_VALUE
-          }
-        },
+          factory = PasswordViewHolderFactory,
+          matches = PasswordViewHolderFactory::matcher,
+        ),
         QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
           BarCodeReaderViewHolderFactory,
         ) { questionnaireItem ->
