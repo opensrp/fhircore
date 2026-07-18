@@ -11,7 +11,7 @@
     <string name="empty_client_list_message_title">لا توجد نتائج</string>
     <string name="empty_client_list_message_details">نأسف، لم نتمكن من العثور على العميل بالاسم أو المعرف المحدد</string>
     <string name="register_new_client">تسجيل عميل جديد</string>
-    <string name="default_app_title" translatable="false">Fhir App</string>
+    <string name="default_app_title" translatable="false">OpenSRP</string>
     <string name="app_logo">شعار التطبيق</string>
     <string name="powered_by">مدعوم من</string>
     <string name="app_version">نسخة التطبيق %1$d(%2$s)</string>
@@ -99,7 +99,7 @@
     <string name="application_id">معرف التطبيق</string>
     <string name="app_id_sample" translatable="false">e.g. ecbis, quest, cha</string>
     <string name="load_configurations">تكوينات التحميل</string>
-    <string name="fhir_core_app" translatable="false">FHIRCORE APP</string>
+    <string name="fhir_core_app" translatable="false">OPENSRP 2</string>
     <string name="remember_app">تذكر التطبيق</string>
     <string name="done">منتهي</string>
     <string name="replace_photo">استبدال الصورة</string>
@@ -184,6 +184,7 @@
     <string name="care_team">فريق الرعاية</string>
     <string name="location">موقع</string>
     <string name="app_version_code">رمز إصدار التطبيق</string>
+    <string name="app_build_type">نوع خطة التطبيق</string>
     <string name="build_date">تاريخ البناء</string>
     <string name="manufacture">الشركة المصنعة</string>
     <string name="app_versions">نسخة التطبيق</string>

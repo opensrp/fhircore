@@ -1,4 +1,5 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
+import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import io.sentry.android.gradle.extensions.InstrumentationFeature
 import io.sentry.android.gradle.instrumentation.logcat.LogcatLevel
 import java.io.FileReader
@@ -429,6 +430,20 @@ android {
       versionNameSuffix = "-trueCover"
       manifestPlaceholders["appLabel"] = "True Cover"
     }
+
+    create("echisDataFi") {
+      dimension = "apps"
+      applicationId = "org.dataforimplementation.echis"
+      versionNameSuffix = "-echis"
+      manifestPlaceholders["appLabel"] = "Data.FI eCHIS Reference"
+    }
+
+    create("echisNawi") {
+      dimension = "apps"
+      applicationId = "ke.nawi.echis"
+      versionNameSuffix = "-echis"
+      manifestPlaceholders["appLabel"] = "Nawi eCHIS"
+    }
   }
 
   applicationVariants.all {
@@ -439,6 +454,13 @@ android {
       "app_name",
       "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"",
     )
+
+    variant.outputs
+      .map { it as BaseVariantOutputImpl }
+      .forEach { output ->
+        output.outputFileName =
+          "quest-${variant.flavorName}-${variant.buildType.name}-${variant.versionName}.apk"
+      }
   }
 
   applicationVariants.all {

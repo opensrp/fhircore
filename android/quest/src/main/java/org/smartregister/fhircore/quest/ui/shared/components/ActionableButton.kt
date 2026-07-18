@@ -181,7 +181,7 @@ fun ActionableButton(
         } else {
           if (colorOpacity == 0f) DefaultColor else statusColor.copy(alpha = colorOpacity)
         }
-      if (buttonProperties.startIcon != null) {
+      if (buttonProperties.startIcon != null && status != ServiceStatus.COMPLETED.name) {
         Image(
           imageProperties =
             ImageProperties(
@@ -219,7 +219,7 @@ fun ActionableButton(
         color =
           if (isButtonEnabled) {
             when (status) {
-              ServiceStatus.COMPLETED.name -> DefaultColor.copy(0.9f)
+              ServiceStatus.COMPLETED.name -> SuccessColor
               else -> statusColor
             }
           } else {

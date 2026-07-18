@@ -128,6 +128,7 @@ class UserSettingInsightScreenTest {
           location = "location",
           appVersionCode = "v.123",
           appVersion = "3",
+          appBuildType = "debug",
           buildDate = "29 jan 2023",
           unsyncedResourcesFlow = unsyncedResourcesFlow,
           navController = rememberNavController(),
