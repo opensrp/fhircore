@@ -426,4 +426,120 @@ class AppSettingViewModelTest : RobolectricTest() {
       coVerify { appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any()) }
     }
   }
+
+  @Test
+  fun `fetchConfigurations() with debug suffix should call loadConfigurations() not fetchRemoteConfigurations()`() {
+    runTest {
+      // Given: App ID with /debug suffix
+      val appId = "echis/debug"
+      appSettingViewModel.onApplicationIdChanged(appId)
+
+      coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
+
+      // When: fetchConfigurations is called
+      appSettingViewModel.fetchConfigurations(context)
+
+      // Then: Should call loadConfigurations (local assets)
+      coVerify { appSettingViewModel.loadConfigurations(context) }
+      // And should NOT fetch from remote
+      coVerify(exactly = 0) {
+        appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any())
+      }
+      coVerify(exactly = 0) {
+        appSettingViewModel.configurationRegistry.fetchRemoteImplementationGuideByAppId(
+          any(),
+          any()
+        )
+      }
+    }
+  }
+
+  @Test
+  fun `fetchConfigurations() with DEBUG suffix in uppercase should call loadConfigurations()`() {
+    runTest {
+      // Given: App ID with /DEBUG suffix (uppercase)
+      val appId = "echis/DEBUG"
+      appSettingViewModel.onApplicationIdChanged(appId)
+
+      coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
+
+      // When: fetchConfigurations is called
+      appSettingViewModel.fetchConfigurations(context)
+
+      // Then: Should call loadConfigurations (case-insensitive check)
+      coVerify { appSettingViewModel.loadConfigurations(context) }
+      coVerify(exactly = 0) {
+        appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any())
+      }
+    }
+  }
+
+  @Test
+  fun `fetchConfigurations() without debug suffix should call fetchRemoteConfigurations()`() {
+    runTest {
+      // Given: App ID without /debug suffix
+      val appId = "echis"
+      appSettingViewModel.onApplicationIdChanged(appId)
+
+      val composition =
+        Composition().apply {
+          addSection().apply { this.focus = Reference().apply { reference = "Binary/123" } }
+        }
+
+      coEvery {
+        appSettingViewModel.configurationRegistry.fetchRemoteImplementationGuideByAppId(
+          any(),
+          any()
+        )
+      } returns null
+      coEvery {
+        appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any())
+      } returns composition
+      coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
+      coEvery { appSettingViewModel.fhirResourceDataSource.post(requestBody = any()) } returns
+        Bundle()
+
+      // When: fetchConfigurations is called
+      appSettingViewModel.fetchConfigurations(context)
+
+      // Then: Should fetch from remote
+      coVerify { appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any()) }
+      // And should NOT call loadConfigurations
+      coVerify(exactly = 0) { appSettingViewModel.loadConfigurations(any()) }
+    }
+  }
+
+  @Test
+  fun `fetchConfigurations() with empty appId should not proceed`() {
+    runTest {
+      // Given: Empty App ID
+      appSettingViewModel.onApplicationIdChanged("")
+
+      // When: fetchConfigurations is called
+      appSettingViewModel.fetchConfigurations(context)
+
+      // Then: Should not fetch anything
+      coVerify(exactly = 0) {
+        appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any())
+      }
+      coVerify(exactly = 0) { appSettingViewModel.loadConfigurations(any()) }
+    }
+  }
+
+  @Test
+  fun `fetchConfigurations() with null appId should not proceed`() {
+    runTest {
+      // Given: Null App ID (not set)
+      appSettingViewModel.appId.value = null
+
+      // When: fetchConfigurations is called
+      appSettingViewModel.fetchConfigurations(context)
+
+      // Then: Should not fetch anything
+      coVerify(exactly = 0) {
+        appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any())
+      }
+      coVerify(exactly = 0) { appSettingViewModel.loadConfigurations(any()) }
+    }
+  }
 }
