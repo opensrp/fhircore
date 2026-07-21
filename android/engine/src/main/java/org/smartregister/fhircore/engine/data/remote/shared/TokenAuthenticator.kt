@@ -47,6 +47,7 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.engine.util.toPasswordHash
 import retrofit2.HttpException
@@ -121,15 +122,19 @@ constructor(
         bundle.containsKey(AccountManager.KEY_INTENT) -> {
           val launchIntent = bundle.get(AccountManager.KEY_INTENT) as? Intent
 
-          if (suppressLoginRedirect) {
-            Timber.w("Login redirect suppressed — questionnaire in progress")
-          } else {
-            // Deletes session PIN to allow reset
-            secureSharedPreference.deleteSessionPin()
+          when {
+            suppressLoginRedirect ->
+              Timber.w("Login redirect suppressed — questionnaire in progress")
+            !context.isDeviceOnline() ->
+              Timber.w("Offline — skipping login redirect; offline session retained")
+            else -> {
+              // Deletes session PIN to allow reset
+              secureSharedPreference.deleteSessionPin()
 
-            if (launchIntent != null && !isLoginPageRendered) {
-              context.startActivity(launchIntent.putExtra(CANCEL_BACKGROUND_SYNC, true))
-              isLoginPageRendered = true
+              if (launchIntent != null && !isLoginPageRendered) {
+                context.startActivity(launchIntent.putExtra(CANCEL_BACKGROUND_SYNC, true))
+                isLoginPageRendered = true
+              }
             }
           }
         }
