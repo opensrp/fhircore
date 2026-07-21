@@ -124,12 +124,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             ActivityOnResultType.valueOf(onResultType) == ActivityOnResultType.QUESTIONNAIRE
         ) {
           onSubmitQuestionnaire(activityResult)
-        }
 
-        // Check if session expired while questionnaire was open
-        if (isDeviceOnline() && !tokenAuthenticator.isCurrentRefreshTokenActive()) {
-          delay(3000) // Let user see data was saved
-          showSessionExpiredDialog()
+          // Check if session expired while questionnaire was open
+          if (isDeviceOnline() && !tokenAuthenticator.isCurrentRefreshTokenActive()) {
+            delay(3000) // Let user see data was saved
+            showSessionExpiredDialog()
+          }
         }
       }
     }
