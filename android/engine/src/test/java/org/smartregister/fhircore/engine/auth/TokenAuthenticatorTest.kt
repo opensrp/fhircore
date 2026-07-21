@@ -18,9 +18,12 @@ package org.smartregister.fhircore.engine.auth
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.accounts.AccountManagerCallback
 import android.accounts.AccountManagerFuture
 import android.accounts.AuthenticatorException
 import android.accounts.OperationCanceledException
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
@@ -32,9 +35,11 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import io.mockk.verifyOrder
 import java.io.IOException
@@ -58,6 +63,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.toPasswordHash
 import retrofit2.HttpException
 import retrofit2.Response
@@ -100,6 +106,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
   @After
   fun tearDown() {
     secureSharedPreference.deleteCredentials()
+    unmockkStatic(Context::isDeviceOnline)
   }
 
   @Test
@@ -445,6 +452,130 @@ class TokenAuthenticatorTest : RobolectricTest() {
     every { accountManager.getPassword(account) } returns token
 
     Assert.assertTrue(tokenAuthenticator.isCurrentRefreshTokenActive())
+  }
+
+  @Test
+  fun testHandleKeyIntentSkipsLoginRedirectWhenDeviceOffline() {
+    val scenario = createKeyIntentScenario(isOnline = false)
+
+    scenario.dispatchKeyIntent()
+
+    verify(exactly = 0) { scenario.secureSharedPreference.deleteSessionPin() }
+    verify(exactly = 0) { scenario.context.startActivity(any()) }
+  }
+
+  @Test
+  fun testHandleKeyIntentLaunchesLoginRedirectWhenDeviceOnline() {
+    val scenario = createKeyIntentScenario(isOnline = true)
+
+    scenario.dispatchKeyIntent()
+
+    verify(exactly = 1) { scenario.secureSharedPreference.deleteSessionPin() }
+    verify(exactly = 1) { scenario.context.startActivity(any()) }
+  }
+
+  @Test
+  fun testHandleKeyIntentSuppressedDuringQuestionnaireDoesNotRedirect() {
+    val scenario = createKeyIntentScenario(isOnline = true, suppressLoginRedirect = true)
+
+    scenario.dispatchKeyIntent()
+
+    verify(exactly = 0) { scenario.secureSharedPreference.deleteSessionPin() }
+    verify(exactly = 0) { scenario.context.startActivity(any()) }
+  }
+
+  @Test
+  fun testHandleKeyIntentDeferredRedirectFiresAfterReconnect() {
+    val scenario = createKeyIntentScenario(isOnline = false)
+
+    scenario.dispatchKeyIntent()
+    verify(exactly = 0) { scenario.context.startActivity(any()) }
+
+    scenario.isOnline = true
+    scenario.dispatchKeyIntent()
+
+    verify(exactly = 1) { scenario.context.startActivity(any()) }
+  }
+
+  private fun createKeyIntentScenario(
+    isOnline: Boolean,
+    suppressLoginRedirect: Boolean = false,
+  ): KeyIntentScenario {
+    mockkStatic(Context::isDeviceOnline)
+    val online = booleanArrayOf(isOnline)
+    val context = mockk<Context>(relaxed = true)
+    every { context.isDeviceOnline() } answers { online[0] }
+    val secureSharedPreference = spyk(this.secureSharedPreference)
+    every { secureSharedPreference.deleteSessionPin() } just runs
+    val authenticator =
+      buildTokenAuthenticator(context, secureSharedPreference).apply {
+        this.suppressLoginRedirect = suppressLoginRedirect
+      }
+    val account = Account(sampleUsername, PROVIDER)
+    val keyIntentBundle = Bundle().apply { putParcelable(AccountManager.KEY_INTENT, Intent()) }
+    val resultFuture =
+      mockk<AccountManagerFuture<Bundle>> { every { result } returns keyIntentBundle }
+    val callbacks = mutableListOf<AccountManagerCallback<Bundle>>()
+    val accessToken = "expiredAccessToken"
+
+    every { authenticator.findAccount() } returns account
+    every { authenticator.isTokenActive(any()) } returns false
+    every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns accessToken
+    every { accountManager.invalidateAuthToken(account.type, accessToken) } just runs
+    every {
+      accountManager.getAuthToken(
+        account,
+        AUTH_TOKEN_TYPE,
+        any<Bundle>(),
+        true,
+        capture(callbacks),
+        any(),
+      )
+    } returns resultFuture
+
+    return KeyIntentScenario(
+      context = context,
+      secureSharedPreference = secureSharedPreference,
+      authenticator = authenticator,
+      resultFuture = resultFuture,
+      callbacks = callbacks,
+      online = online,
+    )
+  }
+
+  private fun buildTokenAuthenticator(
+    appContext: Context,
+    secureSharedPreference: SecureSharedPreference,
+  ) =
+    spyk(
+      TokenAuthenticator(
+        secureSharedPreference = secureSharedPreference,
+        configService = configService,
+        oAuthService = oAuthService,
+        dispatcherProvider = dispatcherProvider,
+        accountManager = accountManager,
+        context = appContext,
+      ),
+    )
+
+  private class KeyIntentScenario(
+    val context: Context,
+    val secureSharedPreference: SecureSharedPreference,
+    private val authenticator: TokenAuthenticator,
+    private val resultFuture: AccountManagerFuture<Bundle>,
+    private val callbacks: MutableList<AccountManagerCallback<Bundle>>,
+    private val online: BooleanArray,
+  ) {
+    var isOnline: Boolean
+      get() = online[0]
+      set(value) {
+        online[0] = value
+      }
+
+    fun dispatchKeyIntent() {
+      authenticator.getAccessToken()
+      callbacks.last().run(resultFuture)
+    }
   }
 
   companion object {
