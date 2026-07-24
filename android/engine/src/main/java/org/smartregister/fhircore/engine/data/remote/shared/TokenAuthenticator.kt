@@ -21,8 +21,6 @@ import android.accounts.AccountManager
 import android.accounts.AccountManagerFuture
 import android.accounts.AuthenticatorException
 import android.accounts.OperationCanceledException
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -33,7 +31,6 @@ import com.auth0.jwt.exceptions.JWTDecodeException
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.google.android.fhir.sync.HttpAuthenticationMethod
 import com.google.android.fhir.sync.HttpAuthenticator as FhirAuthenticator
-import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
 import java.net.UnknownHostException
 import java.util.Base64
@@ -47,7 +44,6 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.engine.util.toPasswordHash
 import retrofit2.HttpException
@@ -62,20 +58,14 @@ constructor(
   val oAuthService: OAuthService,
   val dispatcherProvider: DispatcherProvider,
   val accountManager: AccountManager,
-  @ApplicationContext val context: Context,
 ) : FhirAuthenticator {
 
   private val authConfiguration by lazy { configService.provideAuthConfiguration() }
-  private var isLoginPageRendered = false
-
-  /** When true, suppresses automatic LoginActivity launch (e.g., during questionnaire filling) */
-  var suppressLoginRedirect = false
 
   fun getAccessToken(): String {
     val account = findAccount() ?: return ""
     val accessToken = accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) ?: ""
     if (isTokenActive(accessToken)) {
-      isLoginPageRendered = false
       return accessToken
     }
 
@@ -119,25 +109,10 @@ constructor(
           val token = bundle.getString(AccountManager.KEY_AUTHTOKEN)
           setAuthToken(account, AUTH_TOKEN_TYPE, token)
         }
-        bundle.containsKey(AccountManager.KEY_INTENT) -> {
-          val launchIntent = bundle.get(AccountManager.KEY_INTENT) as? Intent
-
-          when {
-            suppressLoginRedirect ->
-              Timber.w("Login redirect suppressed — questionnaire in progress")
-            !context.isDeviceOnline() ->
-              Timber.w("Offline — skipping login redirect; offline session retained")
-            else -> {
-              // Deletes session PIN to allow reset
-              secureSharedPreference.deleteSessionPin()
-
-              if (launchIntent != null && !isLoginPageRendered) {
-                context.startActivity(launchIntent.putExtra(CANCEL_BACKGROUND_SYNC, true))
-                isLoginPageRendered = true
-              }
-            }
-          }
-        }
+        bundle.containsKey(AccountManager.KEY_INTENT) ->
+          // Interactive re-auth is required. The UI decides whether/when to redirect to login;
+          // see AppMainActivity.redirectIfSessionExpired.
+          Timber.w("Interactive re-auth required; redirect deferred to UI")
       }
     }
 

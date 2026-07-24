@@ -29,6 +29,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -60,6 +61,7 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.parcelable
@@ -90,6 +92,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var tokenAuthenticator: TokenAuthenticator
+
+  @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
   val appMainViewModel by viewModels<AppMainViewModel>()
   private val sentryNavListener =
@@ -125,11 +129,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         ) {
           onSubmitQuestionnaire(activityResult)
 
-          // Check if session expired while questionnaire was open
-          if (isDeviceOnline() && !tokenAuthenticator.isCurrentRefreshTokenActive()) {
-            delay(3000) // Let user see data was saved
-            showSessionExpiredDialog()
-          }
+          // Session may have expired while the questionnaire was open
+          redirectIfSessionExpired(delayMillis = 3000)
         }
       }
     }
@@ -175,6 +176,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     super.onResume()
     findNavController(R.id.nav_host).addOnDestinationChangedListener(sentryNavListener)
     syncListenerManager.registerSyncListener(this, lifecycle)
+    redirectIfSessionExpired()
   }
 
   override fun onPause() {
@@ -307,7 +309,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             currentSyncJobStatus = syncJobStatus,
           )
         }
-      is CurrentSyncJobStatus.Failed ->
+      is CurrentSyncJobStatus.Failed -> {
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
@@ -321,8 +323,28 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             currentSyncJobStatus = syncJobStatus,
           )
         }
+        // A sync can fail because the session expired; prompt re-login when that is the cause
+        redirectIfSessionExpired()
+      }
       else -> {
         // Do Nothing
+      }
+    }
+  }
+
+  private var redirectingToLogin = false
+
+  /**
+   * Routes the user to login when the device is online and the refresh token has expired. Guarded
+   * so repeated triggers (e.g. sync failures, resume) do not stack dialogs.
+   */
+  private fun redirectIfSessionExpired(delayMillis: Long = 0) {
+    if (redirectingToLogin) return
+    if (isDeviceOnline() && !tokenAuthenticator.isCurrentRefreshTokenActive()) {
+      redirectingToLogin = true
+      lifecycleScope.launch {
+        delay(delayMillis) // Let the user see saved data before redirecting (post-questionnaire)
+        showSessionExpiredDialog()
       }
     }
   }
@@ -337,7 +359,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         AlertDialogButton(
           listener = { dialog ->
             dialog.dismiss()
-            launchActivityWithNoBackStackHistory<LoginActivity>()
+            // Force full re-login (fetches fresh tokens); a PIN unlock would not
+            secureSharedPreference.deleteSessionPin()
+            launchActivityWithNoBackStackHistory<LoginActivity>(
+              bundle = bundleOf(TokenAuthenticator.CANCEL_BACKGROUND_SYNC to true),
+            )
           },
           text = org.smartregister.fhircore.engine.R.string.questionnaire_alert_ack_button_title,
         ),
