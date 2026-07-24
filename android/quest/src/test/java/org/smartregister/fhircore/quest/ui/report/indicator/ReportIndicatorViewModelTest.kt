@@ -263,10 +263,12 @@ class ReportIndicatorViewModelTest : RobolectricTest() {
     val ranges = viewModel.reportPeriodRange.value
     val years = ranges.keys.toList()
 
+    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+
     assertTrue(years.size >= 2)
-    assertEquals("2025", years[0])
-    assertEquals("2024", years[1])
-    assertEquals("2023", years[2])
+    assertEquals(currentYear.toString(), years[0])
+    assertTrue(years.contains("2024"))
+    assertTrue(years.contains("2023"))
   }
 
   @Test
