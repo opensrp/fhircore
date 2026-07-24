@@ -452,7 +452,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
                 )
               }
               ?.let { setQuestionnaireResponse(questionnaireResponse.json()) }
-              ?: showToast(getString(R.string.error_populating_questionnaire))
+              ?: withContext(dispatcherProvider.main()) {
+                showToast(getString(R.string.error_populating_questionnaire))
+              }
           }
 
           launchContextResources
