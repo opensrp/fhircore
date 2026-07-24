@@ -249,6 +249,10 @@ suspend fun Questionnaire.prepopulateWithComputedConfigValues(
         ?: questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
       ?.let { barcodeLinkId ->
         find(barcodeLinkId)?.apply {
+          if (hasExtension(EXTENSION_INITIAL_EXPRESSION_URL)) {
+            removeExtension(EXTENSION_INITIAL_EXPRESSION_URL)
+          }
+
           initial =
             mutableListOf(
               Questionnaire.QuestionnaireItemInitialComponent()
@@ -285,6 +289,10 @@ suspend fun Questionnaire.prepopulateUniqueIdAssignment(
           questionnaireComputedValues,
         )
       if (extractedId.isNotEmpty()) {
+        if (hasExtension(EXTENSION_INITIAL_EXPRESSION_URL)) {
+          removeExtension(EXTENSION_INITIAL_EXPRESSION_URL)
+        }
+
         initial =
           mutableListOf(
             Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(extractedId)),

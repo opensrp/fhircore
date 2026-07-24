@@ -1164,12 +1164,6 @@ constructor(
         launchContextResources(resourceType, resourceIdentifier, actionParameters)
       val launchContexts = launchContextResources.associateBy { it.resourceType.name.lowercase() }
 
-      // Populate questionnaire with initial default values
-      ResourceMapper.populate(
-        questionnaire,
-        launchContexts = launchContexts,
-      )
-
       questionnaire.prepopulateWithComputedConfigValues(
         questionnaireConfig,
         actionParameters,
@@ -1194,82 +1188,118 @@ constructor(
         },
       )
 
-      // Populate questionnaire with latest QuestionnaireResponse
+      // Populate questionnaire with latest QuestionnaireResponse and initial default values
       val questionnaireResponse =
-        if (
-          resourceType != null &&
-            !resourceIdentifier.isNullOrEmpty() &&
-            (questionnaireConfig.isEditable() ||
-              questionnaireConfig.isReadOnly() ||
-              questionnaireConfig.isSummary() ||
-              questionnaireConfig.saveDraft)
-        ) {
-          defaultRepository
-            .searchQuestionnaireResponse(
-              resourceId = resourceIdentifier,
-              resourceType = resourceType,
-              questionnaireId = questionnaire.logicalId,
-              encounterId = questionnaireConfig.encounterId,
-              questionnaireResponseStatus = questionnaireConfig.questionnaireResponseStatus(),
-            )
-            ?.let {
-              QuestionnaireResponse().apply {
-                /**
-                 * Only set the ID value when [saveDraft] is set to true] this ensues that a new
-                 * [QuestionnaireResponse] is generated when the questionnaire is submitted
-                 */
-                if (questionnaireConfig.saveDraft) {
-                  id = it.id
-                }
-                status = it.status
-                item = it.item.removeUnAnsweredItems()
-                // Clearing the text prompts the SDK to re-process the content, which includes
-                // HTML
-                clearText()
-              }
-            }
-        } else {
-          null
-        }
+        fetchRepositoryQuestionnaireResponse(
+          questionnaireConfig,
+          resourceIdentifier,
+          resourceType,
+          questionnaire,
+          defaultQuestionnaire =
+            withContext(dispatcherProvider.default()) {
+              ResourceMapper.populate(
+                questionnaire,
+                launchContexts = launchContexts,
+              )
+            },
+        )
 
-      // Exclude the configured fields from QR
-      if (questionnaireResponse != null) {
-        val exclusionLinkIdsMap: Map<String, Boolean> =
-          questionnaireConfig.linkIds
-            ?.asSequence()
-            ?.filter { it.type == LinkIdType.PREPOPULATION_EXCLUSION }
-            ?.associateBy { it.linkId }
-            ?.mapValues { it.value.type == LinkIdType.PREPOPULATION_EXCLUSION } ?: emptyMap()
-
-        questionnaireResponse.item =
-          excludePrepopulationFields(
-            questionnaireResponse.item.toMutableList(),
-            exclusionLinkIdsMap,
-          )
-      }
+      questionnaireResponse.apply { item = item.removeUnAnsweredItems() }
 
       Pair(questionnaireResponse, launchContextResources)
     }
 
-  fun excludePrepopulationFields(
-    items: MutableList<QuestionnaireResponseItemComponent>,
+  private suspend fun fetchRepositoryQuestionnaireResponse(
+    questionnaireConfig: QuestionnaireConfig,
+    resourceIdentifier: String?,
+    resourceType: ResourceType?,
+    questionnaire: Questionnaire,
+    defaultQuestionnaire: QuestionnaireResponse,
+  ): QuestionnaireResponse {
+    if (resourceType == null || resourceIdentifier.isNullOrEmpty()) return defaultQuestionnaire
+
+    val searchQR =
+      questionnaireConfig
+        .takeIf { it.isEditable() || it.isReadOnly() || it.isSummary() || it.saveDraft }
+        ?.let {
+          defaultRepository.searchQuestionnaireResponse(
+            resourceId = resourceIdentifier,
+            resourceType = resourceType,
+            questionnaireId = questionnaire.logicalId,
+            encounterId = questionnaireConfig.encounterId,
+            questionnaireResponseStatus = questionnaireConfig.questionnaireResponseStatus(),
+          )
+        }
+
+    if (searchQR == null) return defaultQuestionnaire
+
+    val exclusionLinkIdsMap: Map<String, Boolean> =
+      questionnaireConfig.linkIds
+        ?.asSequence()
+        ?.filter { it.type == LinkIdType.PREPOPULATION_EXCLUSION }
+        ?.associateBy { it.linkId }
+        ?.mapValues { it.value.type == LinkIdType.PREPOPULATION_EXCLUSION } ?: emptyMap()
+
+    return QuestionnaireResponse().apply {
+      /**
+       * Only set the ID value when [saveDraft] is set to true] this ensues that a new
+       * [QuestionnaireResponse] is generated when the questionnaire is submitted
+       */
+      if (questionnaireConfig.saveDraft) {
+        id = searchQR.id
+      }
+      status = searchQR.status
+
+      // Exclude the configured fields from QR
+      item =
+        excludePreviouslyAnsweredFields(
+          searchQR.item,
+          defaultQuestionnaire.item,
+          exclusionLinkIdsMap,
+        )
+
+      // Clearing the text prompts the SDK to re-process the content, which includes
+      // HTML
+      clearText()
+    }
+  }
+
+  fun excludePreviouslyAnsweredFields(
+    previouslyAnsweredItems: MutableList<QuestionnaireResponseItemComponent>,
+    newlyPopulatedItems: List<QuestionnaireResponseItemComponent>,
     exclusionMap: Map<String, Boolean>,
   ): MutableList<QuestionnaireResponseItemComponent> {
-    val stack = LinkedList<MutableList<QuestionnaireResponseItemComponent>>()
-    stack.push(items)
-    while (stack.isNotEmpty()) {
-      val currentItems = stack.pop()
-      val iterator = currentItems.iterator()
-      while (iterator.hasNext()) {
-        val item = iterator.next()
-        if (exclusionMap.containsKey(item.linkId)) {
-          iterator.remove()
-        } else if (item.item.isNotEmpty()) {
-          stack.push(item.item)
+    val prevStack =
+      LinkedList<MutableList<QuestionnaireResponseItemComponent>>().apply {
+        push(previouslyAnsweredItems)
+      }
+    val newlyStack =
+      LinkedList<List<QuestionnaireResponseItemComponent>>().apply { push(newlyPopulatedItems) }
+
+    while (prevStack.isNotEmpty()) {
+      val prevAnswerItemsIterator = prevStack.pop().listIterator()
+      val newItemsIterator: Iterator<QuestionnaireResponseItemComponent> =
+        (if (newlyStack.isNotEmpty()) newlyStack.pop() else emptyList()).iterator()
+
+      while (prevAnswerItemsIterator.hasNext()) {
+        val item = prevAnswerItemsIterator.next()
+        val newPopulatedItem = if (newItemsIterator.hasNext()) newItemsIterator.next() else null
+
+        when {
+          exclusionMap.containsKey(item.linkId) && newPopulatedItem?.linkId == item.linkId -> {
+            prevAnswerItemsIterator.set(newPopulatedItem)
+          }
+          exclusionMap.containsKey(item.linkId) -> {
+            prevAnswerItemsIterator.remove()
+          }
+          else -> {
+            prevStack.push(item.item)
+            newPopulatedItem?.let { newlyStack.push(it.item) }
+          }
         }
       }
     }
-    return items
+    return previouslyAnsweredItems
   }
 
   private fun List<QuestionnaireResponseItemComponent>.removeUnAnsweredItems():
