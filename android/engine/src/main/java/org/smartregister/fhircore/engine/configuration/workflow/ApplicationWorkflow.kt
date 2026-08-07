@@ -71,4 +71,12 @@ enum class ApplicationWorkflow {
 
   /** A workflow that launches an external application via Intent */
   LAUNCH_EXTERNAL_APP,
+
+  /**
+   * Discovers PlanDefinitions with a configured named-event trigger (e.g. `available-care`), runs
+   * `$apply` so applicability conditions are evaluated, and presents RequestGroup recommendations
+   * for the user to start an intervention. Intervention catalog is synced FHIR content — not
+   * hardcoded in the app. See `feature/register-tricc.md`.
+   */
+  APPLY_NAMED_EVENT,
 }

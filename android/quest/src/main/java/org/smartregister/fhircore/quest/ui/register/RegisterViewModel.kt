@@ -65,6 +65,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterFilterField
+import org.smartregister.fhircore.engine.configuration.view.retrieveListProperties
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.Code
@@ -144,6 +145,7 @@ constructor(
     val currentRegisterConfig = retrieveRegisterConfiguration(registerId)
     val pageSize = currentRegisterConfig.pageSize
     val rules = rulesExecutor.rulesFactory.generateRules(currentRegisterConfig.registerCard.rules)
+    val listProperties = currentRegisterConfig.registerCard.views.retrieveListProperties()
     return Pager(
         config = PagingConfig(pageSize = pageSize, prefetchDistance = pageSize / 2),
         pagingSourceFactory = {
@@ -157,6 +159,7 @@ constructor(
                 loadAll = loadAll,
                 currentPage = if (loadAll) 0 else currentPage.value,
                 rules = rules,
+                listProperties = listProperties,
               ),
             rulesExecutor = rulesExecutor,
           )

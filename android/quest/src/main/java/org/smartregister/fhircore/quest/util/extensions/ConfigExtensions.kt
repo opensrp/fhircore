@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.util.extensions
 
+import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -27,11 +28,16 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.EntryPointAccessors
 import kotlin.collections.set
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Binary
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
@@ -49,6 +55,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.task.NamedEventInterventionService
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -58,12 +65,14 @@ import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.di.NamedEventInterventionEntryPoint
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherFragment
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.util.openExternalApp
 import org.smartregister.p2p.utils.startP2PScreen
+import timber.log.Timber
 
 const val PRACTITIONER_ID = "practitionerId"
 
@@ -256,8 +265,107 @@ fun ActionConfig.handleClickEvent(
         )
       navController.navigate(MainNavigationScreen.AlertDialogFragment.route, args)
     }
+    ApplicationWorkflow.APPLY_NAMED_EVENT -> {
+      handleApplyNamedEvent(
+        navController = navController,
+        interpolatedParams = interpolatedParams,
+        resourceId = resourceId,
+        computedValuesMap = computedValuesMap,
+      )
+    }
     else -> return
   }
+}
+
+private fun handleApplyNamedEvent(
+  navController: NavController,
+  interpolatedParams: List<ActionParameter>,
+  resourceId: String?,
+  computedValuesMap: Map<String, Any>,
+) {
+  val context = navController.context
+  val namedEvent =
+    interpolatedParams.find { it.key == "namedEvent" }?.value?.takeIf { it.isNotBlank() }
+      ?: "available-care"
+  val subjectId =
+    interpolatedParams.find { it.key == "subjectId" }?.value?.extractLogicalIdUuid()
+      ?: resourceId?.extractLogicalIdUuid()
+  if (subjectId.isNullOrBlank()) {
+    context.showToast("No client selected for care", Toast.LENGTH_SHORT)
+    return
+  }
+
+  val lifecycleOwner = context as? LifecycleOwner
+  if (lifecycleOwner == null) {
+    Timber.e("APPLY_NAMED_EVENT requires a LifecycleOwner context")
+    context.showToast("Unable to start care", Toast.LENGTH_SHORT)
+    return
+  }
+
+  val service =
+    EntryPointAccessors.fromApplication(
+        context.applicationContext,
+        NamedEventInterventionEntryPoint::class.java,
+      )
+      .namedEventInterventionService()
+
+  lifecycleOwner.lifecycleScope.launch {
+    val options =
+      runCatching { service.listInterventions(namedEvent, subjectId) }
+        .onFailure { Timber.e(it, "Failed to list interventions for event=$namedEvent") }
+        .getOrDefault(emptyList())
+
+    if (options.isEmpty()) {
+      context.showToast("No care available for this client", Toast.LENGTH_LONG)
+      return@launch
+    }
+
+    val labels = options.map { it.title }.toTypedArray()
+    AlertDialog.Builder(context)
+      .setTitle(actionDisplayOrDefault(computedValuesMap, "Start care"))
+      .setItems(labels) { _, which ->
+        val selected = options.getOrNull(which) ?: return@setItems
+        launchInterventionOption(navController, selected)
+      }
+      .setNegativeButton(android.R.string.cancel, null)
+      .show()
+  }
+}
+
+private fun actionDisplayOrDefault(computedValuesMap: Map<String, Any>, default: String): String {
+  val fromMap = computedValuesMap["actionDisplay"] as? String
+  return fromMap?.takeIf { it.isNotBlank() } ?: default
+}
+
+private fun launchInterventionOption(
+  navController: NavController,
+  option: NamedEventInterventionService.InterventionOption,
+) {
+  val questionnaireId = option.questionnaireId
+  if (!questionnaireId.isNullOrBlank() && navController.context is QuestionnaireHandler) {
+    (navController.context as QuestionnaireHandler).launchQuestionnaire(
+      context = navController.context,
+      questionnaireConfig =
+        QuestionnaireConfig(
+          id = questionnaireId,
+          title = option.title,
+          saveButtonText = "Save",
+        ),
+      actionParams = emptyList(),
+    )
+    return
+  }
+
+  // Nested PlanDefinition without a direct Questionnaire: surface title for now; full
+  // apply-on-select
+  // can be extended once TRICC emits strategy PDs consistently.
+  navController.context.showToast(
+    "Selected: ${option.title}" + (option.definitionCanonical?.let { " ($it)" } ?: ""),
+    Toast.LENGTH_LONG,
+  )
+  Timber.i(
+    "APPLY_NAMED_EVENT selected option id=${option.id} definition=${option.definitionCanonical}",
+  )
 }
 
 fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =

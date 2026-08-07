@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.data.register.model
+package org.smartregister.fhircore.quest.di
 
-import org.jeasy.rules.api.Rules
-import org.smartregister.fhircore.engine.configuration.view.ListProperties
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import org.smartregister.fhircore.engine.task.NamedEventInterventionService
 
-data class RegisterPagingSourceState(
-  val registerId: String,
-  val currentPage: Int = 0,
-  val loadAll: Boolean = false,
-  val rules: Rules,
-  /** Nested LIST view configs from the register card (e.g. dependent children). */
-  val listProperties: List<ListProperties> = emptyList(),
-)
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface NamedEventInterventionEntryPoint {
+  fun namedEventInterventionService(): NamedEventInterventionService
+}
