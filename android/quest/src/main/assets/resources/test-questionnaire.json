@@ -18,6 +18,11 @@
         "system": "urn:ietf:bcp:47",
         "code": "en-GB",
         "display": "English"
+      },
+      {
+        "system": "https://smartregister.org/app-id",
+        "code": "cdss",
+        "display": "CDSS application"
       }
     ]
   },
@@ -363,7 +368,7 @@
       "extension": [
         {
           "url": "http://hl7.org/fhir/StructureDefinition/regex",
-          "valueString": "^[æøåÆØÅa-zA-Z\\- ]*$"
+          "valueString": "^[\u00e6\u00f8\u00e5\u00c6\u00d8\u00c5a-zA-Z\\- ]*$"
         }
       ],
       "linkId": "aa9b9809-0353-44a8-864c-5c18240c0d64",

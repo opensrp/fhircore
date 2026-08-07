@@ -322,7 +322,7 @@ private fun handleApplyNamedEvent(
 
     val labels = options.map { it.title }.toTypedArray()
     AlertDialog.Builder(context)
-      .setTitle(actionDisplayOrDefault(computedValuesMap, "Start care"))
+      .setTitle(actionDisplayOrDefault(computedValuesMap))
       .setItems(labels) { _, which ->
         val selected = options.getOrNull(which) ?: return@setItems
         launchInterventionOption(navController, selected)
@@ -332,9 +332,9 @@ private fun handleApplyNamedEvent(
   }
 }
 
-private fun actionDisplayOrDefault(computedValuesMap: Map<String, Any>, default: String): String {
+private fun actionDisplayOrDefault(computedValuesMap: Map<String, Any>): String {
   val fromMap = computedValuesMap["actionDisplay"] as? String
-  return fromMap?.takeIf { it.isNotBlank() } ?: default
+  return fromMap?.takeIf { it.isNotBlank() } ?: "Start care"
 }
 
 private fun launchInterventionOption(
@@ -343,12 +343,16 @@ private fun launchInterventionOption(
 ) {
   val questionnaireId = option.questionnaireId
   if (!questionnaireId.isNullOrBlank() && navController.context is QuestionnaireHandler) {
+    Timber.i(
+      "APPLY_NAMED_EVENT launching Questionnaire/$questionnaireId title=${option.title}",
+    )
     (navController.context as QuestionnaireHandler).launchQuestionnaire(
       context = navController.context,
       questionnaireConfig =
         QuestionnaireConfig(
           id = questionnaireId,
           title = option.title,
+          resourceType = org.hl7.fhir.r4.model.ResourceType.Patient,
           saveButtonText = "Save",
         ),
       actionParams = emptyList(),
@@ -356,15 +360,13 @@ private fun launchInterventionOption(
     return
   }
 
-  // Nested PlanDefinition without a direct Questionnaire: surface title for now; full
-  // apply-on-select
-  // can be extended once TRICC emits strategy PDs consistently.
+  // Should not happen once listInterventions filters to Questionnaire-only options.
   navController.context.showToast(
-    "Selected: ${option.title}" + (option.definitionCanonical?.let { " ($it)" } ?: ""),
+    "No questionnaire for: ${option.title}",
     Toast.LENGTH_LONG,
   )
-  Timber.i(
-    "APPLY_NAMED_EVENT selected option id=${option.id} definition=${option.definitionCanonical}",
+  Timber.e(
+    "APPLY_NAMED_EVENT option has no Questionnaire id=${option.id} definition=${option.definitionCanonical}",
   )
 }
 

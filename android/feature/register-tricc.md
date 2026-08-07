@@ -209,7 +209,7 @@ Register rows currently only run `processResourceData` (no `listResourceDataMap`
 
 ### 7.1 FHIR resource config sketch
 
-```json
+```jsonc
 "fhirResource": {
   "baseResource": {
     "resource": "Patient",
@@ -241,7 +241,7 @@ Nesting under a guardian requires RelatedPersons whose `identifier` holds that g
 
 ### 7.2 Nested LIST view sketch
 
-```json
+```jsonc
 {
   "viewType": "LIST",
   "id": "dependentChildren",
@@ -375,6 +375,14 @@ Example action:
 }
 ```
 
+**Important:** openSRP `APPLY_NAMED_EVENT` launches **Questionnaires** when the form is
+**due now**. Leaf and catalog child actions must use `definitionCanonical` → Questionnaire URL.
+
+**Task-wrapped Questionnaire** (ActivityDefinition `kind: Task` + transform → Task with
+`reasonReference` → Questionnaire) is reserved for the **upcoming planning** feature when
+the questionnaire is **not due now** (worklist / task register). It is **not** the Start care
+launch path. See tricc_oo `feature/opensrp-register.md` §2.1.
+
 ### 8.8 Example strategy PlanDefinition (preferred for compute)
 
 ```json
@@ -437,6 +445,86 @@ Example action:
 | Relationship codes / labels | Data + display rules in config |
 
 **Success test:** publishing a new intervention PD + Questionnaire and syncing the device makes the intervention appear for matching clients **without an app release**.
+
+---
+
+# Part V-bis — Shell Composition vs TRICC content packages
+
+## 9. Problem
+
+OpenSRP loads **one** app Composition for app id `cdss`:
+
+- `Composition?identifier=cdss` → **`entryFirstRep` only**, or  
+- `ImplementationGuide` → first definition resource as that Composition.
+
+That Composition is both:
+
+1. **Shell** — Binary configs (application, navigation, register, profile, sync).  
+2. **Content pin list** — section focuses for `Questionnaire` / `StructureMap` / … that `fetchNonWorkflowConfigResources` downloads by id.
+
+TRICC already emits **one Composition per form package** (`identifier.system = https://fhir.tricc.io`, value `{form}-composition`). That is a **package manifest**, not the app-id shell.
+
+**There is no built-in “load all Compositions matching a search key.”**  
+You do **not** need (and must not use) one app-id Composition per TRICC output.
+
+## 10. Recommended model (Option A — sync-driven content)
+
+```text
+Shell Composition (identifier.system = smartregister app-id, value = cdss)
+  Binary application / navigation / register / profile / sync
+  Questionnaire + StructureMap for client registration only
+
+Content packages (0..N TRICC exports) — NOT app-id Composition
+  Questionnaire, StructureMap, PlanDefinition, Library, ValueSet
+  + package Composition (export/audit/push checklist only)
+  meta.tag: system = https://smartregister.org/app-id, code = cdss
+```
+
+| Layer | Role |
+|-------|------|
+| Shell Composition | Generic app behaviour; rarely rewritten |
+| Sync SearchParameters (shell Binary) | Pull clinical content by **tag / type**, not by enumerating ids on shell |
+| TRICC package Composition | Per-export manifest; **never** `identifier.value = cdss` |
+| Runtime `NamedEventInterventionService` | All **local** PlanDefinitions with named-event `available-care` |
+| Runtime questionnaire save | Local `StructureMap/{id}` from `targetStructureMap` canonical |
+
+**Composition search key is not required** for multi-package delivery. The delivery key is **resource tags + sync config**.
+
+### Why not one Composition per TRICC output as app id?
+
+| Approach | Result |
+|----------|--------|
+| Package Composition uses `identifier=cdss` | Collides with shell; `entryFirstRep` is non-deterministic |
+| Replace shell with last published form package | Loses generic register/nav; only last form’s pin list |
+| Merge every package into shell Composition (Option D) | Works without app change but every publish rewrites shell |
+
+### Optional follow-on (Option B — multi-Composition)
+
+If gateway policy needs explicit manifests: shell Binary documents e.g.  
+`contentCompositionSearch = Composition?_tag=https://smartregister.org/app-id|cdss-content`  
+and the app **unions** all matching package Composition sections before `fetchNonWorkflowConfigResources`. **Not implemented today** — product change in `ConfigurationRegistry` / `AppSettingViewModel`.
+
+### Optional List indirection (Option C)
+
+Shell can reference `List` resources; `processCompositionListResources` expands entries. Shared Lists become a publish-time merge point.
+
+## 11. TRICC export rules (content contract)
+
+1. **Never** set package Composition `identifier` to app id `cdss`.
+2. Tag all clinical resources with app id (`https://smartregister.org/app-id` \| `cdss`) and optional form id.
+3. StructureMap **logical id** = last path segment of questionnaire `sdc-questionnaire-targetStructureMap` (app loads by id after `/`).
+4. Registration Questionnaire/StructureMap stay on the **shell** (platform), not on every clinical form package.
+5. Package Binary “app config” from TRICC must **not** override shell navigation when multiple forms coexist.
+
+## 12. Implication for StructureMaps
+
+| Path | How StructureMap reaches the device |
+|------|-------------------------------------|
+| Shell registration SM | Listed on shell Composition (current POC) **or** shipped in `cdss/debug` assets |
+| TRICC form SM | **Preferred:** tagged sync (Option A). Alternative: package Composition multi-load (Option B) or List (Option C) |
+| Save time | Always local FHIR Engine `StructureMap/{id}` — no remote fetch mid-save |
+
+OpenSRP **does** support StructureMap extraction (`ResourceMapper.extract`); packaging must ensure the map is local before save.
 
 ---
 
@@ -508,6 +596,8 @@ Do **not** add a second “Household TRICC” register that duplicates All clien
 2. CQL vs FHIRPath for applicability on first TRICC content wave (engine support matrix).
 3. Whether nested children should be **hidden** from top-level list (config flag) after field feedback.
 4. Composition Binary folder layout vs flat ids for assets loader in this fork.
+5. **Content delivery:** Option A wired for `cdss` (`sync_config.json` `_tag=https://smartregister.org/app-id|cdss`); TRICC must stamp the same `meta.tag` on published resources.
+6. **Gateway:** POC uses `conf/gateway/hapi_sync_filter_ignored_queries.json` with explicit `_tag` skip entries (and ValueSet). Confirm production gateway deploys the same skip list.
 
 ---
 

@@ -38,8 +38,10 @@ import timber.log.Timber
 
 /**
  * Discovers synced PlanDefinitions by named-event trigger, evaluates applicability (trigger +
- * conditions), and returns intervention options for the user to pick. Catalog is FHIR content only
- * — see `feature/register-tricc.md`.
+ * conditions), and returns intervention options that can launch a **Questionnaire**. Catalog is
+ * FHIR content only — see `feature/register-tricc.md`.
+ *
+ * Options without a resolvable Questionnaire id are **omitted** (no empty toast entries).
  */
 @Singleton
 class NamedEventInterventionService
@@ -64,10 +66,11 @@ constructor(
    * named-event [namedEvent] (default `available-care`).
    *
    * Prefers evaluating action.condition with FHIRPath (no side effects). Falls back to workflow
-   * `$apply` when RequestGroup recommendations are needed or conditions use non-FHIRPath languages.
-   * This is a read-only discovery/preview operation: the `$apply` fallback runs with
-   * `persist = false`, so browsing for applicable care never writes Task/RequestGroup/CarePlan
-   * resources to the local database — only actually starting an intervention should do that.
+   * `$apply` when conditions use non-FHIRPath languages. Browse path is read-only (`persist =
+   * false`).
+   *
+   * Only options with a **Questionnaire** launch target are returned. A PD that matches the
+   * named-event but has no applicable action that points at a Questionnaire contributes nothing.
    */
   suspend fun listInterventions(
     namedEvent: String,
@@ -102,7 +105,15 @@ constructor(
       )
     }
 
-    return options.values.toList()
+    // Only launchable questionnaires — drop Task/AD/#fragment or empty apply results
+    val launchable =
+      options.values.filter { !it.questionnaireId.isNullOrBlank() }.also { list ->
+        Timber.i(
+          "Named-event '$namedEvent': ${list.size} launchable intervention(s) " +
+            "(${options.size} raw option(s) before Questionnaire filter)",
+        )
+      }
+    return launchable
   }
 
   private suspend fun loadPlanDefinitions(): List<PlanDefinition> {
@@ -124,13 +135,20 @@ constructor(
     val actionsWithEvent = planDefinition.action.filter { it.hasNamedEventTrigger(namedEvent) }
     val actionsToEvaluate =
       if (actionsWithEvent.isNotEmpty()) {
-        // Include nested actions under matching top-level actions (strategy PD)
+        // Strategy PD: evaluate nested children; leaf PD: evaluate the matching action itself
         actionsWithEvent.flatMap { parent ->
           if (parent.action.isNullOrEmpty()) listOf(parent) else parent.action
         }
       } else {
         emptyList()
       }
+
+    if (actionsToEvaluate.isEmpty()) {
+      Timber.d(
+        "PlanDefinition/${planDefinition.logicalId} matched named-event but has no actions to evaluate",
+      )
+      return
+    }
 
     val needsApply =
       actionsToEvaluate.any { action ->
@@ -146,17 +164,13 @@ constructor(
     }
 
     actionsToEvaluate.forEach { action ->
-      if (!action.passesFhirPathConditions(patient)) return@forEach
-      val option = action.toInterventionOption(planDefinition)
-      if (option != null) {
-        options.putIfAbsent(option.id, option)
+      if (!action.passesFhirPathConditions(patient)) {
+        Timber.d(
+          "Skipping non-applicable action '${action.title}' on PlanDefinition/${planDefinition.logicalId}",
+        )
+        return@forEach
       }
-    }
-
-    // Nested strategy actions may not carry the named-event themselves; if top-level matched and
-    // we only evaluated children via flatMap above, also try apply when no options yet.
-    if (options.isEmpty() && planDefinition.action.any { it.action.isNotEmpty() }) {
-      collectFromWorkflowApply(planDefinition, patient, options)
+      addResolvedOption(action.toInterventionOption(planDefinition), options)
     }
   }
 
@@ -181,35 +195,50 @@ constructor(
         )
         carePlan.contained.filterIsInstance<RequestGroup>().forEach { requestGroup ->
           requestGroup.action.forEach { rgAction ->
-            val option = rgAction.toInterventionOption(planDefinition)
-            if (option != null) options.putIfAbsent(option.id, option)
+            addResolvedOption(rgAction.toInterventionOption(planDefinition), options)
           }
         }
-        // Fallback: activities with descriptions
-        if (options.isEmpty()) {
-          carePlan.activity.forEachIndexed { index, activity ->
-            val title =
-              activity.detail?.description
-                ?: activity.detail?.code?.codingFirstRep?.display
-                ?: planDefinition.title
-                ?: planDefinition.name
-                ?: "Intervention ${index + 1}"
-            val id = "${planDefinition.logicalId}-activity-$index"
-            options.putIfAbsent(
-              id,
-              InterventionOption(
-                id = id,
-                title = title,
-                description = activity.detail?.description,
-                planDefinitionId = planDefinition.logicalId,
-              ),
-            )
-          }
-        }
+        // Do not invent toast-only options from CarePlan.activity without a Questionnaire.
       }
       .onFailure {
         Timber.e(it, "Workflow \$apply failed for PlanDefinition/${planDefinition.logicalId}")
       }
+  }
+
+  /**
+   * Prefer options that already resolve to a Questionnaire. If the action points at another
+   * PlanDefinition, follow one level to its first applicable Questionnaire action.
+   */
+  private suspend fun addResolvedOption(
+    option: InterventionOption?,
+    options: MutableMap<String, InterventionOption>,
+  ) {
+    if (option == null) return
+    if (!option.questionnaireId.isNullOrBlank()) {
+      // Dedupe by questionnaire id so catalog + leaf do not double-list
+      options.putIfAbsent(option.questionnaireId!!, option.copy(id = option.questionnaireId!!))
+      return
+    }
+    val nestedPlanId = option.planDefinitionId
+    if (!nestedPlanId.isNullOrBlank() && nestedPlanId != option.id) {
+      val nested =
+        runCatching { fhirEngine.get<PlanDefinition>(nestedPlanId) }
+          .onFailure {
+            Timber.w(it, "Could not load nested PlanDefinition/$nestedPlanId for intervention")
+          }
+          .getOrNull()
+      if (nested != null) {
+        nested.action.forEach { nestedAction ->
+          val nestedOption = nestedAction.toInterventionOption(nested)
+          if (nestedOption != null && !nestedOption.questionnaireId.isNullOrBlank()) {
+            options.putIfAbsent(
+              nestedOption.questionnaireId!!,
+              nestedOption.copy(id = nestedOption.questionnaireId!!),
+            )
+          }
+        }
+      }
+    }
   }
 
   private fun PlanDefinition.PlanDefinitionActionComponent.passesFhirPathConditions(
@@ -223,6 +252,7 @@ constructor(
       if (!conditionComponent.hasExpression()) return@all true
       val language = conditionComponent.expression.language
       if (language != Expression.ExpressionLanguage.TEXT_FHIRPATH.toCode()) {
+        // Non-FHIRPath handled by needsApply branch; treat as not applicable on this path
         Timber.w("Skipping non-FHIRPath condition language=$language")
         return@all false
       }
@@ -261,7 +291,11 @@ constructor(
         ?.substringAfter("PlanDefinition/", missingDelimiterValue = "")
         ?.takeIf { definition.contains("PlanDefinition/") && it.isNotBlank() }
         ?.extractLogicalIdUuid()
-    val id = id ?: definition ?: "${planDefinition.logicalId}-${title.hashCode()}"
+    val id =
+      questionnaireId
+        ?: id
+        ?: definition
+        ?: "${planDefinition.logicalId}-${title.hashCode()}"
     return InterventionOption(
       id = id,
       title = title,
@@ -288,7 +322,11 @@ constructor(
         ?.substringAfter("PlanDefinition/", missingDelimiterValue = "")
         ?.takeIf { resourceRef.contains("PlanDefinition/") && it.isNotBlank() }
         ?.extractLogicalIdUuid()
-    val id = this.id ?: definition ?: "${planDefinition.logicalId}-${title.hashCode()}"
+    val id =
+      questionnaireId
+        ?: this.id
+        ?: definition
+        ?: "${planDefinition.logicalId}-${title.hashCode()}"
     return InterventionOption(
       id = id,
       title = title,

@@ -39,7 +39,7 @@ PlanDefinition/Questionnaire IDs known to the app binary.
 | Applicability evaluation — CQL path | When any condition uses a non-FHIRPath language (i.e. CQL), fall back to a full `PlanDefinition/$apply` via `WorkflowCarePlanGenerator` to get a correctly-evaluated `RequestGroup`. This path is **read-only** (`persist = false`, see §8): it never writes Task/RequestGroup/CarePlan resources to the local database just from browsing. |
 | Strategy vs leaf PlanDefinitions | A "strategy" PD (nested `action.action` under the named-event action, per `register-tricc.md` §8.8) is supported: its child actions are evaluated as the candidate interventions rather than the parent wrapper action. |
 | Where the picker lives | A native `AlertDialog` list of intervention titles, shown from the config-action handler — not a config-declared bottom sheet. |
-| Selecting an option | If it resolves to a `Questionnaire` id, launch it directly. Otherwise (nested `PlanDefinition` with no direct Questionnaire) show a toast placeholder — full apply-on-select for nested PDs is not yet wired (see Part IV). |
+| Selecting an option | **Only options with a resolvable Questionnaire id** are listed. Select launches the Questionnaire directly. Leaf/catalog PDs must set `action.definitionCanonical` to a Questionnaire URL (not Task ActivityDefinition). |
 
 ---
 

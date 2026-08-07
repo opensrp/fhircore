@@ -62,11 +62,20 @@ class RegisterPagingSource(
             paramsMap = actionParameters,
           )
           .map {
-            rulesExecutor.processResourceData(
-              repositoryResourceData = it,
-              params = actionParameters,
-              rules = registerPagingSourceState.rules,
-            )
+            if (registerPagingSourceState.listProperties.isEmpty()) {
+              rulesExecutor.processResourceData(
+                repositoryResourceData = it,
+                params = actionParameters,
+                rules = registerPagingSourceState.rules,
+              )
+            } else {
+              rulesExecutor.processResourceDataWithLists(
+                repositoryResourceData = it,
+                params = actionParameters,
+                rules = registerPagingSourceState.rules,
+                listProperties = registerPagingSourceState.listProperties,
+              )
+            }
           }
 
       val prevKey =

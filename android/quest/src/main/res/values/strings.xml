@@ -111,6 +111,8 @@
     <string name="application_version">Application Version</string>
     <string name="missing_subject_type">Missing subject type on questionnaire. Provide Questionnaire.subjectType to resolve.</string>
     <string name="missing_questionnaire_config">QuestionnaireConfig is required but missing.</string>
+    <string name="error_loading_questionnaire_form_title">Unable to load form</string>
+    <string name="error_loading_questionnaire_form">This form could not be loaded due to a configuration error. The issue has been reported. Please try again later or contact support if the problem persists.</string>
     <string name="error_populating_questionnaire">Error populating some questionnaire fields. Invalid QuestionnaireResponse.</string>
     <string name="extraction_in_progress">Processing questionnaire data…</string>
     <string name="loading_questionnaire">Loading questionnaire…</string>

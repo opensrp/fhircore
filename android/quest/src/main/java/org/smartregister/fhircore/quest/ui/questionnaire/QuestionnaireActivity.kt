@@ -84,6 +84,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private lateinit var actionParameters: ArrayList<ActionParameter>
   private lateinit var viewBinding: QuestionnaireActivityBinding
   private var alertDialog: AlertDialog? = null
+  private var previousUncaughtExceptionHandler: Thread.UncaughtExceptionHandler? = null
   private lateinit var fusedLocationClient: FusedLocationProviderClient
   private var currentLocation: Location? = null
   private val locationPermissionLauncher: ActivityResultLauncher<Array<String>> =
@@ -142,6 +143,13 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       return
     }
 
+    // The FHIR SDK's QuestionnaireFragment/QuestionnaireViewModel evaluates config-driven
+    // FHIRPath expressions (enableWhen, calculatedExpression, etc.) inside its own internal
+    // coroutine scope. A malformed expression throws there, outside any try/catch we control,
+    // and would otherwise crash the whole app. Guard against that while this activity is alive.
+    previousUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+    Thread.setDefaultUncaughtExceptionHandler(this::handleUncaughtQuestionnaireException)
+
     viewBinding.questionnaireToolbar.setNavigationIcon(R.drawable.ic_cancel)
     viewBinding.questionnaireToolbar.setNavigationOnClickListener { handleBackPress() }
     viewBinding.questionnaireTitle.text = questionnaireConfig.title
@@ -170,6 +178,41 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       },
     )
   }
+
+  override fun onDestroy() {
+    Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler)
+    super.onDestroy()
+  }
+
+  /**
+   * Handles exceptions thrown from the FHIR SDK's questionnaire rendering internals (e.g. a
+   * malformed FHIRPath expression in the Questionnaire config) that would otherwise crash the
+   * whole app. Anything unrelated to questionnaire rendering is passed on to the previous
+   * handler so normal crash reporting/behaviour is preserved.
+   */
+  private fun handleUncaughtQuestionnaireException(thread: Thread, throwable: Throwable) {
+    if (!isQuestionnaireRenderingException(throwable)) {
+      previousUncaughtExceptionHandler?.uncaughtException(thread, throwable)
+      return
+    }
+
+    Timber.e(throwable, "Failed to render questionnaire ${questionnaireConfig.id}")
+
+    runOnUiThread {
+      AlertDialogue.showAlert(
+        context = this,
+        alertIntent = AlertIntent.ERROR,
+        message = getString(R.string.error_loading_questionnaire_form),
+        title = getString(R.string.error_loading_questionnaire_form_title),
+        confirmButton = AlertDialogButton(listener = { finish() }),
+      )
+    }
+  }
+
+  private fun isQuestionnaireRenderingException(throwable: Throwable): Boolean =
+    generateSequence(throwable) { it.cause }
+      .flatMap { it.stackTrace.asSequence() }
+      .any { it.className.startsWith("com.google.android.fhir.datacapture") }
 
   private fun reviewRecordAudioPermissionToLaunchSpeechToText() {
     when {
@@ -529,6 +572,18 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             // Dismiss progress indicator dialog, submit result then finish activity
             // TODO Ensure this dialog is dismissed even when an exception is encountered
             showProgressDialog(QuestionnaireProgressState.ExtractionInProgress(false))
+            // StructureMap path must create resources; empty id list means extraction failed.
+            if (
+              idTypes.isEmpty() &&
+                questionnaire.extension.any {
+                  it.url.contains("sdc-questionnaire-targetStructureMap")
+                }
+            ) {
+              Timber.e(
+                "Not finishing QuestionnaireActivity: StructureMap extraction returned no resources",
+              )
+              return@handleQuestionnaireSubmission
+            }
             setResult(
               Activity.RESULT_OK,
               Intent().apply {

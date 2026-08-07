@@ -206,13 +206,33 @@ constructor(
             context = context,
           )
 
+          val useStructureMap = questionnaire.extractByStructureMap()
           val bundle =
             performExtraction(
-              extractByStructureMap = questionnaire.extractByStructureMap(),
+              extractByStructureMap = useStructureMap,
               questionnaire = questionnaire,
               questionnaireResponse = currentQuestionnaireResponse,
               context = context,
             )
+
+          val extractedCount = bundle.entry?.size ?: 0
+          Timber.d(
+            "StructureMap extraction start for Questionnaire/${questionnaire.logicalId}",
+          )
+          // StructureMap extraction must produce at least one resource (e.g. Patient).
+          // Empty bundle means transform failed or StructureMap missing — do not pretend success.
+          if (useStructureMap && extractedCount == 0) {
+            Timber.e(
+              "StructureMap extraction produced 0 resources for Questionnaire/${questionnaire.logicalId}",
+            )
+            withContext(dispatcherProvider.main()) {
+              context.showToast(
+                context.getString(R.string.structuremap_failed, questionnaire.name ?: questionnaire.logicalId),
+                Toast.LENGTH_LONG,
+              )
+            }
+            return@async emptyList()
+          }
 
           defaultRepository.applyDbTransaction {
             performSave(
@@ -229,8 +249,10 @@ constructor(
             ?: emptyList()
         }
 
+      val extractedIds = idTypes.await()
+      // Still invoke callback so the Activity can dismiss progress; it should not finish on empty SM extract.
       onSuccessfulSubmission(
-        idTypes.await(),
+        extractedIds,
         currentQuestionnaireResponse,
       )
     }
@@ -763,16 +785,36 @@ constructor(
   ): Bundle =
     runCatching {
         if (extractByStructureMap) {
+          val targetUrl =
+            questionnaire
+              .getExtensionByUrl(
+                "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+              )
+              ?.value
+              ?.toString()
+          val structureMapId = targetUrl?.substringAfterLast("/")?.substringBefore("|")
+          Timber.d(
+            "StructureMap extraction: target=$targetUrl id=$structureMapId answers=${questionnaireResponse.item.size}",
+          )
           ResourceMapper.extract(
             questionnaire = questionnaire,
             questionnaireResponse = questionnaireResponse,
             structureMapExtractionContext =
               StructureMapExtractionContext(
                 transformSupportServices = transformSupportServices,
-                structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
-                  structureMapUrl?.substringAfterLast("/")?.let { structureMapId ->
-                    defaultRepository.loadResourceFromCache<StructureMap>(structureMapId)
+                // Reuse the same worker as TransformSupportServices (terminology-safe).
+                workerContext = transformSupportServices.simpleWorkerContext,
+                structureMapProvider = { structureMapUrl: String, _: IWorkerContext ->
+                  val id = structureMapUrl.substringAfterLast("/").substringBefore("|")
+                  val sm = defaultRepository.loadResourceFromCache<StructureMap>(id)
+                  if (sm == null) {
+                    Timber.e("StructureMap not found in local store for id=$id url=$structureMapUrl")
+                  } else {
+                    Timber.w(
+                      "Loaded StructureMap/$id groups=${sm.group?.size} rules=${sm.group?.firstOrNull()?.rule?.size}",
+                    )
                   }
+                  sm
                 },
               ),
           )
@@ -784,16 +826,17 @@ constructor(
         }
       }
       .onFailure { exception ->
-        Timber.e(exception)
+        Timber.e(exception, "Questionnaire extraction failed")
         viewModelScope.launch(dispatcherProvider.main()) {
-          if (exception is NullPointerException && exception.message!!.contains("StructureMap")) {
+          val msg = exception.message.orEmpty()
+          if (exception is NullPointerException && msg.contains("StructureMap")) {
             context.showToast(
               context.getString(R.string.structure_map_missing_message),
               Toast.LENGTH_LONG,
             )
           } else {
             context.showToast(
-              context.getString(R.string.structuremap_failed, questionnaire.name),
+              context.getString(R.string.structuremap_failed, questionnaire.name ?: questionnaire.logicalId),
               Toast.LENGTH_LONG,
             )
           }
