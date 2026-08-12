@@ -24,8 +24,8 @@ import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.isAccessible
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.instance.model.api.IBaseResource
@@ -211,8 +211,7 @@ constructor(
   }
 
   /**
-   * Invokes the respective [RequestResourceManager] to create new request resources as per the
-   * proposed [CarePlan]
+   * Classifies and creates new request resources as per the proposed [CarePlan]
    *
    * @param resourceList List of request resources to be created
    * @param persist Whether matched resources should be persisted via [DefaultRepository]. When
@@ -290,13 +289,5 @@ constructor(
       Task.TaskStatus.NULL -> CarePlan.CarePlanActivityStatus.NULL
       else -> CarePlan.CarePlanActivityStatus.NULL
     }
-  }
-
-  private inline fun <reified T : Any> getPrivateProperty(property: String, obj: T): Any? {
-    return T::class
-      .declaredMemberProperties
-      .find { it.name == property }!!
-      .apply { isAccessible = true }
-      .get(obj)
   }
 }

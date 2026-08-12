@@ -237,13 +237,13 @@ constructor(
       val searchBar = registerUiState.value.registerConfiguration?.searchBar
       val registerId = registerUiState.value.registerId
       if (!searchBar?.dataFilterFields.isNullOrEmpty()) {
-        val dataFilterFields = searchBar?.dataFilterFields
+        val dataFilterFields = searchBar.dataFilterFields
         updateRegisterFilterState(
           registerId = registerId,
           questionnaireResponse =
             constructSearchQuestionnaireResponse(
               searchText = searchText,
-              dataFilterFields = searchBar?.dataFilterFields ?: emptyList(),
+              dataFilterFields = searchBar.dataFilterFields ?: emptyList(),
             ),
           dataFilterFields = dataFilterFields,
         )

@@ -20,7 +20,6 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.RelatedPerson
-import org.hl7.fhir.r4.model.Resource
 
 /**
  * TRICC / flexible client register convention: mother, father and guardian always exist as
@@ -160,7 +159,7 @@ private fun patientLinkTypeDisplay(typeCode: String): String =
   }
 
 /**
- * Groups [relatedPersons] by guardian Patient logical id using
+ * Groups this list of [RelatedPerson]s by guardian Patient logical id using
  * [RelatedPerson.guardianPatientReference].
  */
 fun List<RelatedPerson>.groupByGuardianPatientId(): Map<String, List<RelatedPerson>> {
@@ -171,9 +170,6 @@ fun List<RelatedPerson>.groupByGuardianPatientId(): Map<String, List<RelatedPers
     }
     .groupBy({ it.first }, { it.second })
 }
-
-/** From a mixed list of [Resource], returns only [RelatedPerson] instances. */
-fun List<Resource>.asRelatedPersons(): List<RelatedPerson> = mapNotNull { it as? RelatedPerson }
 
 /**
  * Parses [this] as a Patient reference or absolute Patient URL into normalized `Patient/{id}`.
@@ -187,12 +183,9 @@ fun String.patientReferenceFromIdentifierValue(): String? {
   val trimmed = trim()
   if (trimmed.isEmpty()) return null
 
-  val afterPatient =
-    when {
-      trimmed.contains("Patient/", ignoreCase = true) ->
-        trimmed.substringAfter("Patient/", "").substringAfter("patient/", "")
-      else -> return null
-    }
+  val delimiterIndex = trimmed.indexOf("Patient/", ignoreCase = true)
+  if (delimiterIndex == -1) return null
+  val afterPatient = trimmed.substring(delimiterIndex + "Patient/".length)
   val logicalId =
     afterPatient
       .substringBefore("/")
