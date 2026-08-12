@@ -197,8 +197,9 @@ constructor(
         }
       } catch (httpException: HttpException) {
         Result.failure(httpException)
-      } catch (unknownHostException: UnknownHostException) {
-        Result.failure(unknownHostException)
+      } catch (ioException: IOException) {
+        // Covers the connection failures a logout can hit, e.g. timeouts and SSL handshake errors
+        Result.failure(ioException)
       }
     }
   }

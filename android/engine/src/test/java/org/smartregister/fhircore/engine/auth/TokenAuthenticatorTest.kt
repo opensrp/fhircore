@@ -339,6 +339,20 @@ class TokenAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
+  fun testLogoutShouldCatchSslHandshakeException() {
+    val account = Account(sampleUsername, PROVIDER)
+    every { tokenAuthenticator.findAccount() } returns account
+    every { accountManager.getPassword(account) } returns "gibberishaccesstoken"
+
+    val sslHandshakeException = SSLHandshakeException("Handshake failed")
+
+    coEvery { oAuthService.logout(any(), any()) }.throws(sslHandshakeException)
+
+    val result = tokenAuthenticator.logout()
+    Assert.assertEquals(Result.failure<SSLHandshakeException>(sslHandshakeException), result)
+  }
+
+  @Test
   fun testRefreshTokenShouldReturnToken() {
     val account = Account(sampleUsername, PROVIDER)
     val accessToken = "soRefreshingNewToken"
