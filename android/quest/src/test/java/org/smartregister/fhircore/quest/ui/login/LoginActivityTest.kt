@@ -186,6 +186,18 @@ class LoginActivityTest : RobolectricTest() {
     unmockkObject(P2PLibrary)
   }
 
+  @Test
+  fun testNavigateToScreenShouldNotResumeSessionWhenUserLoggedOut() {
+    val controller = Robolectric.buildActivity(Faker.TestLoginActivityLoggedOut::class.java)
+    val activity = controller.create().resume().get()
+    shadowOf(Looper.getMainLooper()).idle()
+
+    // The refresh token is still active, but an explicit logout must not resume the session
+    Assert.assertFalse(activity.loginViewModel.navigateToHome.value!!)
+
+    controller.destroy()
+  }
+
   @OptIn(ExperimentalMaterialApi::class)
   @Test
   fun testNavigateToScreenShouldLaunchHomeScreen() {
