@@ -447,6 +447,13 @@ class TokenAuthenticatorTest : RobolectricTest() {
     Assert.assertTrue(tokenAuthenticator.isCurrentRefreshTokenActive())
   }
 
+  @Test
+  fun testIsCurrentRefreshTokenActiveWithNoAccountReturnsFalse() {
+    every { tokenAuthenticator.findAccount() } returns null
+
+    Assert.assertFalse(tokenAuthenticator.isCurrentRefreshTokenActive())
+  }
+
   companion object {
     private const val SCOPE = "openid"
     private const val PROVIDER = "provider"
