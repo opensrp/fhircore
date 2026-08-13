@@ -34,8 +34,12 @@ import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.EntryPointAccessors
+import java.util.UUID
 import kotlin.collections.set
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.hl7.fhir.r4.model.Binary
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
@@ -66,6 +70,8 @@ import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.di.NamedEventInterventionEntryPoint
+import org.smartregister.fhircore.quest.event.AppEvent
+import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherFragment
@@ -302,33 +308,34 @@ private fun handleApplyNamedEvent(
     return
   }
 
-  val service =
+  val entryPoint =
     EntryPointAccessors.fromApplication(
-        context.applicationContext,
-        NamedEventInterventionEntryPoint::class.java,
-      )
-      .namedEventInterventionService()
+      context.applicationContext,
+      NamedEventInterventionEntryPoint::class.java,
+    )
+  val service = entryPoint.namedEventInterventionService()
 
   lifecycleOwner.lifecycleScope.launch {
-    val options =
-      runCatching { service.listInterventions(namedEvent, subjectId) }
-        .onFailure { Timber.e(it, "Failed to list interventions for event=$namedEvent") }
+    val plans =
+      runCatching { service.listAvailableCarePlans(namedEvent, subjectId) }
+        .onFailure { Timber.e(it, "Failed to list available care plans for event=$namedEvent") }
         .getOrDefault(emptyList())
 
-    if (options.isEmpty()) {
+    if (plans.isEmpty()) {
       context.showToast("No care available for this client", Toast.LENGTH_LONG)
       return@launch
     }
 
-    val labels = options.map { it.title }.toTypedArray()
-    AlertDialog.Builder(context)
-      .setTitle(actionDisplayOrDefault(computedValuesMap))
-      .setItems(labels) { _, which ->
-        val selected = options.getOrNull(which) ?: return@setItems
-        launchInterventionOption(navController, selected)
-      }
-      .setNegativeButton(android.R.string.cancel, null)
-      .show()
+    showAvailableCarePicker(
+      context = context,
+      navController = navController,
+      service = service,
+      eventBus = entryPoint.eventBus(),
+      namedEvent = namedEvent,
+      subjectId = subjectId,
+      plans = plans,
+      title = actionDisplayOrDefault(computedValuesMap),
+    )
   }
 }
 
@@ -337,15 +344,183 @@ private fun actionDisplayOrDefault(computedValuesMap: Map<String, Any>): String 
   return fromMap?.takeIf { it.isNotBlank() } ?: "Start care"
 }
 
+/**
+ * One checkbox per PlanDefinition that carries the named-event trigger and has at least one
+ * valid ($apply-resolved) action, plus a Start button — per
+ * `feature/20260812-intervention-order-and-dedup.md`'s companion Android spec. All rows default
+ * checked (everything listed is already eligible); Start begins the ordered launch sequence for
+ * whichever rows remain checked.
+ */
+private fun showAvailableCarePicker(
+  context: Context,
+  navController: NavController,
+  service: NamedEventInterventionService,
+  eventBus: EventBus,
+  namedEvent: String,
+  subjectId: String,
+  plans: List<NamedEventInterventionService.AvailableCarePlan>,
+  title: String,
+) {
+  val labels = plans.map { it.title }.toTypedArray()
+  val checked = BooleanArray(plans.size) { true }
+  val selectedIndices = plans.indices.toMutableSet()
+  AlertDialog.Builder(context)
+    .setTitle(title)
+    .setMultiChoiceItems(labels, checked) { _, which, isChecked ->
+      if (isChecked) selectedIndices.add(which) else selectedIndices.remove(which)
+    }
+    .setPositiveButton("Start") { _, _ ->
+      val selectedPlans = selectedIndices.mapNotNull { plans.getOrNull(it) }
+      if (selectedPlans.isEmpty()) return@setPositiveButton
+      val session =
+        AvailableCareSession(
+          namedEvent = namedEvent,
+          subjectId = subjectId,
+          selectedPlanIds = selectedPlans.map { it.planDefinitionId }.toSet(),
+          initialPlans = selectedPlans,
+        )
+      advanceAvailableCareSession(context, navController, service, eventBus, session)
+    }
+    .setNegativeButton(android.R.string.cancel, null)
+    .show()
+}
+
+/**
+ * Tracks one "select available care" run across its whole sequence of launches: which PDs the
+ * user checked, which questionnaires are already submitted this session (so a re-`$apply` never
+ * re-shows something just completed — no PD-level applicability condition exists yet, see
+ * `feature/careplan-intervention-plandefinition.md` §26), and the current-visit Encounter id
+ * once known (learned from the first submission that produced one).
+ */
+private class AvailableCareSession(
+  val namedEvent: String,
+  val subjectId: String,
+  val selectedPlanIds: Set<String>,
+  initialPlans: List<NamedEventInterventionService.AvailableCarePlan>,
+) {
+  /** Unique per session so [EventBus]'s one-time-per-consumer delivery doesn't cross sessions. */
+  val consumerId: String = UUID.randomUUID().toString()
+  val submittedQuestionnaireIds: MutableSet<String> = mutableSetOf()
+  var encounterId: String? = null
+
+  /**
+   * The picker's own already-computed `$apply` result, reused for exactly the first batch
+   * ("should have been saved, no need to run it again") — cleared after first use so every
+   * subsequent batch re-runs `$apply` for real (an earlier submission may have unlocked a
+   * lower-order action).
+   */
+  var cachedPlans: List<NamedEventInterventionService.AvailableCarePlan>? = initialPlans
+}
+
+/** Consolidates the selected PDs' current options, finds the lowest order still due. */
+private suspend fun resolveNextBatch(
+  service: NamedEventInterventionService,
+  session: AvailableCareSession,
+): List<NamedEventInterventionService.InterventionOption> {
+  val plans =
+    session.cachedPlans
+      ?: runCatching { service.listAvailableCarePlans(session.namedEvent, session.subjectId) }
+        .onFailure { Timber.e(it, "Failed to re-apply available-care PlanDefinitions") }
+        .getOrDefault(emptyList())
+  session.cachedPlans = null
+
+  val consolidated =
+    plans
+      .filter { it.planDefinitionId in session.selectedPlanIds }
+      .flatMap { it.options }
+      .filterNot { session.submittedQuestionnaireIds.contains(it.questionnaireId) }
+      .distinctBy { it.questionnaireId }
+  val lowestOrder = consolidated.minOfOrNull { it.order } ?: return emptyList()
+  return consolidated.filter { it.order == lowestOrder }
+}
+
+/**
+ * Launches the next lowest-order due questionnaire(s) from [session]'s selected PDs, then waits
+ * for its submission (via [EventBus]) to advance again. Ends silently once nothing is left due.
+ *
+ * Note: if the user backs out of the launched Questionnaire without submitting, no event fires
+ * (matches today's `AppMainActivity.onSubmitQuestionnaire`, which only triggers on `RESULT_OK`)
+ * and this session simply stops advancing — bounded by [LifecycleOwner]'s own scope cancellation,
+ * not a leak, but the user would need to re-open the picker to resume.
+ */
+private fun advanceAvailableCareSession(
+  context: Context,
+  navController: NavController,
+  service: NamedEventInterventionService,
+  eventBus: EventBus,
+  session: AvailableCareSession,
+) {
+  val lifecycleOwner = context as? LifecycleOwner ?: return
+  lifecycleOwner.lifecycleScope.launch {
+    val batch = resolveNextBatch(service, session)
+    if (batch.isEmpty()) {
+      Timber.i("Available-care session for subject=${session.subjectId} complete")
+      return@launch
+    }
+    val chosen = if (batch.size == 1) batch.first() else awaitTieBreakChoice(context, batch)
+    val chosenQuestionnaireId = chosen?.questionnaireId
+    if (chosen == null || chosenQuestionnaireId.isNullOrBlank()) return@launch
+
+    launchInterventionOption(navController, chosen, session.encounterId)
+
+    val submission =
+      eventBus.events
+        .getFor(session.consumerId)
+        .filterIsInstance<AppEvent.OnSubmitQuestionnaire>()
+        .first { it.questionnaireSubmission.questionnaireConfig.id == chosenQuestionnaireId }
+        .questionnaireSubmission
+
+    session.submittedQuestionnaireIds.add(chosenQuestionnaireId)
+    if (session.encounterId == null && submission.questionnaireResponse.hasEncounter()) {
+      session.encounterId =
+        submission.questionnaireResponse.encounter.reference?.extractLogicalIdUuid()
+    }
+    advanceAvailableCareSession(context, navController, service, eventBus, session)
+  }
+}
+
+/** Single-choice fallback when more than one option ties at the lowest order. */
+private suspend fun awaitTieBreakChoice(
+  context: Context,
+  batch: List<NamedEventInterventionService.InterventionOption>,
+): NamedEventInterventionService.InterventionOption? = suspendCancellableCoroutine { cont ->
+  val labels = batch.map { it.title }.toTypedArray()
+  val dialog =
+    AlertDialog.Builder(context)
+      .setTitle("Choose one")
+      .setItems(labels) { _, which -> cont.resume(batch.getOrNull(which)) {} }
+      .setOnCancelListener { cont.resume(null) {} }
+      .show()
+  cont.invokeOnCancellation { dialog.dismiss() }
+}
+
 private fun launchInterventionOption(
   navController: NavController,
   option: NamedEventInterventionService.InterventionOption,
+  encounterId: String? = null,
 ) {
   val questionnaireId = option.questionnaireId
   if (!questionnaireId.isNullOrBlank() && navController.context is QuestionnaireHandler) {
     Timber.i(
-      "APPLY_NAMED_EVENT launching Questionnaire/$questionnaireId title=${option.title}",
+      "APPLY_NAMED_EVENT launching Questionnaire/$questionnaireId title=${option.title} " +
+        "order=${option.order} encounter=$encounterId",
     )
+    val actionParams =
+      if (encounterId.isNullOrBlank()) {
+        emptyList()
+      } else {
+        // Makes the current-visit Encounter id available to CQL as the `encounterid` library
+        // parameter (see `feature/20260812-intervention-order-and-dedup.md`, tricc) so the
+        // dedup `initialExpression`s it wires up can actually resolve.
+        listOf(
+          ActionParameter(
+            key = "encounter",
+            paramType = ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE,
+            value = encounterId,
+            resourceType = org.hl7.fhir.r4.model.ResourceType.Encounter,
+          ),
+        )
+      }
     (navController.context as QuestionnaireHandler).launchQuestionnaire(
       context = navController.context,
       questionnaireConfig =
@@ -355,12 +530,12 @@ private fun launchInterventionOption(
           resourceType = org.hl7.fhir.r4.model.ResourceType.Patient,
           saveButtonText = "Save",
         ),
-      actionParams = emptyList(),
+      actionParams = actionParams,
     )
     return
   }
 
-  // Should not happen once listInterventions filters to Questionnaire-only options.
+  // Should not happen once listAvailableCarePlans filters to Questionnaire-only options.
   navController.context.showToast(
     "No questionnaire for: ${option.title}",
     Toast.LENGTH_LONG,

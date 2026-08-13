@@ -25,16 +25,26 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Expression
+import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.RequestGroup
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.TriggerDefinition
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import timber.log.Timber
+
+/**
+ * Extension URL suffixes stamped by TRICC on each Intervention PD's per-process action — see
+ * `feature/20260812-intervention-order-and-dedup.md` (tricc). Matched by suffix, not exact URL,
+ * since the base URL is per-project configurable at export time.
+ */
+private const val TRICC_PROCESS_EXT_SUFFIX = "tricc-process"
+private const val TRICC_PROCESS_ORDER_EXT_SUFFIX = "tricc-process-order"
 
 /**
  * Discovers synced PlanDefinitions by named-event trigger, evaluates applicability (trigger +
@@ -59,7 +69,69 @@ constructor(
     val definitionCanonical: String? = null,
     val planDefinitionId: String? = null,
     val questionnaireId: String? = null,
+    /**
+     * cpg-common-process order (10, 20, 30…), read from the `tricc-process-order` extension —
+     * see `feature/20260812-intervention-order-and-dedup.md` (tricc). Fixed/canonical, so it is
+     * comparable across options originating from different PlanDefinitions. Options without the
+     * extension (e.g. resolved via workflow `$apply`, which may not propagate custom action
+     * extensions onto the RequestGroup) sort last.
+     */
+    val order: Int = Int.MAX_VALUE,
+    /** cpg-common-process name, read from the `tricc-process` extension, for display/debug. */
+    val process: String? = null,
   )
+
+  /**
+   * One row of the "select available care" picker: a PlanDefinition carrying the named-event
+   * trigger, together with its own already-resolved (`$apply`/valid-action) options. Grouping by
+   * originating PlanDefinition — rather than the flat per-questionnaire list [listInterventions]
+   * returns — lets the picker show one checkbox per care option, and lets the caller consolidate
+   * several *selected* PDs' options together afterwards without re-running `$apply`.
+   */
+  data class AvailableCarePlan(
+    val planDefinitionId: String,
+    val title: String,
+    val options: List<InterventionOption>,
+  )
+
+  /**
+   * Returns one [AvailableCarePlan] per PlanDefinition matching [namedEvent] that has at least
+   * one launchable (Questionnaire-resolvable) option for [subjectPatientId] — i.e. exactly the
+   * set of rows the "select available care" picker should list, each with its own checkbox.
+   * PlanDefinitions with no launchable option are omitted (nothing to check).
+   */
+  suspend fun listAvailableCarePlans(
+    namedEvent: String,
+    subjectPatientId: String,
+  ): List<AvailableCarePlan> {
+    val patientId = subjectPatientId.extractLogicalIdUuid()
+    val patient =
+      runCatching { fhirEngine.get<Patient>(patientId) }
+        .onFailure { Timber.e(it, "Patient/$patientId not found for named-event apply") }
+        .getOrNull() ?: return emptyList()
+
+    val matching = loadPlanDefinitions().filter { it.hasNamedEventTrigger(namedEvent) }
+    if (matching.isEmpty()) {
+      Timber.i("No PlanDefinitions with named-event '$namedEvent'")
+      return emptyList()
+    }
+
+    return matching.mapNotNull { planDefinition ->
+      val options = linkedMapOf<String, InterventionOption>()
+      collectFromPlanDefinition(planDefinition, namedEvent, patient, options)
+      val launchable =
+        options.values.filter { !it.questionnaireId.isNullOrBlank() }.sortedBy { it.order }
+      if (launchable.isEmpty()) {
+        null
+      } else {
+        AvailableCarePlan(
+          planDefinitionId = planDefinition.logicalId,
+          title = planDefinition.title ?: planDefinition.name ?: "Care",
+          options = launchable,
+        )
+      }
+    }
+  }
 
   /**
    * Returns applicable interventions for [subjectPatientId] whose PlanDefinition actions declare
@@ -105,14 +177,19 @@ constructor(
       )
     }
 
-    // Only launchable questionnaires — drop Task/AD/#fragment or empty apply results
+    // Only launchable questionnaires — drop Task/AD/#fragment or empty apply results.
+    // Sorted by cpg-common-process order (stable — ties keep discovery/insertion order) so a
+    // caller juggling several selected PlanDefinitions can pick the lowest-order option overall.
     val launchable =
-      options.values.filter { !it.questionnaireId.isNullOrBlank() }.also { list ->
-        Timber.i(
-          "Named-event '$namedEvent': ${list.size} launchable intervention(s) " +
-            "(${options.size} raw option(s) before Questionnaire filter)",
-        )
-      }
+      options.values
+        .filter { !it.questionnaireId.isNullOrBlank() }
+        .sortedBy { it.order }
+        .also { list ->
+          Timber.i(
+            "Named-event '$namedEvent': ${list.size} launchable intervention(s) " +
+              "(${options.size} raw option(s) before Questionnaire filter)",
+          )
+        }
     return launchable
   }
 
@@ -303,8 +380,22 @@ constructor(
       definitionCanonical = definition,
       planDefinitionId = nestedPlanId ?: planDefinition.logicalId,
       questionnaireId = questionnaireId,
+      order = triccProcessOrder() ?: Int.MAX_VALUE,
+      process = triccProcessName(),
     )
   }
+
+  private fun PlanDefinition.PlanDefinitionActionComponent.triccProcessOrder(): Int? =
+    extension
+      .firstOrNull { it.url?.endsWith(TRICC_PROCESS_ORDER_EXT_SUFFIX) == true }
+      ?.value
+      ?.let { (it as? IntegerType)?.value }
+
+  private fun PlanDefinition.PlanDefinitionActionComponent.triccProcessName(): String? =
+    extension
+      .firstOrNull { it.url?.endsWith(TRICC_PROCESS_EXT_SUFFIX) == true }
+      ?.value
+      ?.let { (it as? StringType)?.value }
 
   private fun RequestGroup.RequestGroupActionComponent.toInterventionOption(
     planDefinition: PlanDefinition,
