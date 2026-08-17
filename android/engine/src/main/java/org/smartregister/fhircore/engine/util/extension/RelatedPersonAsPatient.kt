@@ -16,9 +16,19 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import com.google.android.fhir.datacapture.extensions.logicalId
+import java.time.LocalDate
+import java.time.Period
+import java.time.ZoneId
+import java.util.Date
+import java.util.UUID
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
 
 /**
@@ -64,6 +74,74 @@ const val DEPENDENT_CHILDREN_RESOURCE_KEY = "dependentChildren"
  * Map key for RelatedPerson rows that define dependent children of the current guardian Patient.
  */
 const val DEPENDENT_RELATED_PERSONS_RESOURCE_KEY = "dependentRelatedPersons"
+
+/**
+ * Map key for guardian / mother / father [Patient]s resolved from RelatedPerson PI identifiers on
+ * a child profile.
+ */
+const val GUARDIAN_PATIENTS_RESOURCE_KEY = "guardianPatients"
+
+/** HL7 v3 RoleCode — used for mother / father. */
+const val ROLE_CODE_SYSTEM = "http://terminology.hl7.org/CodeSystem/v3-RoleCode"
+
+/** HL7 v3 RoleClass — used for guardian. */
+const val ROLE_CLASS_SYSTEM = "http://terminology.hl7.org/CodeSystem/v3-RoleClass"
+
+const val RELATIONSHIP_MOTHER = "MTH"
+const val RELATIONSHIP_FATHER = "FTH"
+const val RELATIONSHIP_GUARDIAN = "GUARD"
+
+/**
+ * Boolean extension on [RelatedPerson]: this join is the child's main caregiver / primary
+ * contact. Kinship stays `MTH` / `FTH` / `GUARD` on [RelatedPerson.relationship]. At most one
+ * RelatedPerson per child should have this set.
+ */
+const val PRIMARY_CAREGIVER_EXTENSION_URL =
+  "https://fhir.opensrp.io/cdss/StructureDefinition/primary-caregiver"
+
+/** Who the user is adding relative to the open client (direction of the join). */
+enum class RelatedPersonRole {
+  CHILD,
+  GUARDIAN,
+}
+
+/** Adult's kinship toward the child. Stored as the single [RelatedPerson.relationship] coding. */
+enum class RelatedPersonKinship {
+  MOTHER,
+  FATHER,
+  GUARDIAN,
+}
+
+/** Age band used when searching for a client to link. */
+enum class RelatedPersonAgeFilter {
+  UNDER_18,
+  AGE_18_OR_OVER,
+}
+
+fun RelatedPersonRole.defaultAgeFilter(): RelatedPersonAgeFilter =
+  when (this) {
+    RelatedPersonRole.CHILD -> RelatedPersonAgeFilter.UNDER_18
+    RelatedPersonRole.GUARDIAN -> RelatedPersonAgeFilter.AGE_18_OR_OVER
+  }
+
+fun RelatedPersonKinship.toCoding(): Coding =
+  when (this) {
+    RelatedPersonKinship.MOTHER -> Coding(ROLE_CODE_SYSTEM, RELATIONSHIP_MOTHER, "mother")
+    RelatedPersonKinship.FATHER -> Coding(ROLE_CODE_SYSTEM, RELATIONSHIP_FATHER, "father")
+    RelatedPersonKinship.GUARDIAN -> Coding(ROLE_CLASS_SYSTEM, RELATIONSHIP_GUARDIAN, "guardian")
+  }
+
+fun RelatedPerson.isPrimaryCaregiver(): Boolean {
+  val value = getExtensionByUrl(PRIMARY_CAREGIVER_EXTENSION_URL)?.value
+  return (value as? BooleanType)?.booleanValue() == true
+}
+
+fun RelatedPerson.setPrimaryCaregiver(enabled: Boolean) {
+  extension.removeAll { it.url == PRIMARY_CAREGIVER_EXTENSION_URL }
+  if (enabled) {
+    extension.add(Extension(PRIMARY_CAREGIVER_EXTENSION_URL, BooleanType(true)))
+  }
+}
 
 /**
  * Returns the guardian / mother / father Patient reference (`Patient/{id}`) from
@@ -195,4 +273,89 @@ fun String.patientReferenceFromIdentifierValue(): String? {
       .takeIf { it.isNotBlank() }
       ?: return null
   return "Patient/$logicalId"
+}
+
+/**
+ * Infers MTH / FTH / GUARD from the guardian Patient's gender. Used when the add-related flow
+ * only asked "child or guardian" and did not collect a more specific role.
+ */
+fun inferGuardianRelationship(guardian: Patient): Coding =
+  when (guardian.gender) {
+    Enumerations.AdministrativeGender.FEMALE ->
+      Coding(ROLE_CODE_SYSTEM, RELATIONSHIP_MOTHER, "mother")
+    Enumerations.AdministrativeGender.MALE ->
+      Coding(ROLE_CODE_SYSTEM, RELATIONSHIP_FATHER, "father")
+    else -> Coding(ROLE_CLASS_SYSTEM, RELATIONSHIP_GUARDIAN, "guardian")
+  }
+
+/**
+ * Builds the TRICC RelatedPerson: [RelatedPerson.patient] is always the child,
+ * [RelatedPerson.identifier] is the guardian Patient URL, relationship is the guardian's role
+ * toward the child. Copies name / gender / birthDate / telecom from [guardian] so profile
+ * lists can render without a second fetch.
+ */
+fun buildRelatedPersonLink(
+  child: Patient,
+  guardian: Patient,
+  relationship: Coding = inferGuardianRelationship(guardian),
+  isPrimaryCaregiver: Boolean = false,
+): RelatedPerson {
+  return RelatedPerson().apply {
+    id = UUID.randomUUID().toString()
+    active = true
+    patient = child.asReference()
+    addIdentifier(patientUrlIdentifier(guardian.logicalId))
+    addRelationship(CodeableConcept().addCoding(relationship))
+    setPrimaryCaregiver(isPrimaryCaregiver)
+    guardian.name.firstOrNull()?.let { addName(it.copy()) }
+    if (guardian.hasGender()) gender = guardian.gender
+    if (guardian.hasBirthDate()) birthDate = guardian.birthDate
+    guardian.telecom.forEach { addTelecom(it.copy()) }
+  }
+}
+
+/** Whole years since [Patient.birthDate], or null when DOB is missing. */
+fun Patient.ageInYears(now: LocalDate = LocalDate.now()): Int? {
+  val dob: Date = birthDate ?: return null
+  val born = dob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+  return Period.between(born, now).years
+}
+
+fun Patient.matchesAgeFilter(
+  filter: RelatedPersonAgeFilter,
+  now: LocalDate = LocalDate.now(),
+): Boolean {
+  val years = ageInYears(now) ?: return true
+  return when (filter) {
+    RelatedPersonAgeFilter.UNDER_18 -> years < 18
+    RelatedPersonAgeFilter.AGE_18_OR_OVER -> years >= 18
+  }
+}
+
+fun Patient.matchesNameQuery(query: String): Boolean {
+  val needle = query.trim()
+  if (needle.isEmpty()) return true
+  val haystack =
+    buildString {
+        name.forEach { humanName ->
+          append(humanName.nameAsSingleString)
+          append(' ')
+          append(humanName.text.orEmpty())
+          append(' ')
+          humanName.given.forEach { append(it.value.orEmpty()).append(' ') }
+          append(humanName.family.orEmpty())
+          append(' ')
+        }
+      }
+      .lowercase()
+  return haystack.contains(needle.lowercase())
+}
+
+/** Copies guardian demographics onto [this] when they are missing (in-memory display only). */
+fun RelatedPerson.hydrateFromGuardianPatient(guardian: Patient) {
+  if (name.isEmpty() && guardian.hasName()) {
+    guardian.name.forEach { addName(it.copy()) }
+  }
+  if (!hasGender() && guardian.hasGender()) gender = guardian.gender
+  if (!hasBirthDate() && guardian.hasBirthDate()) birthDate = guardian.birthDate
 }

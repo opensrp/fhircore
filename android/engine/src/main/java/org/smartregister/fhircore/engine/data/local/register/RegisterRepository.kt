@@ -44,9 +44,12 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.DEPENDENT_CHILDREN_RESOURCE_KEY
 import org.smartregister.fhircore.engine.util.extension.DEPENDENT_RELATED_PERSONS_RESOURCE_KEY
+import org.smartregister.fhircore.engine.util.extension.GUARDIAN_PATIENTS_RESOURCE_KEY
 import org.smartregister.fhircore.engine.util.extension.childPatientId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.guardianPatientReference
 import org.smartregister.fhircore.engine.util.extension.groupByGuardianPatientId
+import org.smartregister.fhircore.engine.util.extension.hydrateFromGuardianPatient
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
@@ -110,6 +113,7 @@ constructor(
     )
 
     enrichDependentChildrenFromRelatedPersons(repositoryResourceDataList)
+    enrichGuardianPatientsFromRelatedPersons(repositoryResourceDataList)
 
     return repositoryResourceDataList
   }
@@ -161,6 +165,37 @@ constructor(
         relatedPersonsForGuardian.mapNotNull { rp -> rp.childPatientId()?.let { childrenById[it] } }
       row.relatedResourcesMap[DEPENDENT_RELATED_PERSONS_RESOURCE_KEY] = relatedPersonsForGuardian
       row.relatedResourcesMap[DEPENDENT_CHILDREN_RESOURCE_KEY] = dependentChildren
+    }
+  }
+
+  /**
+   * Resolves guardian / mother / father Patients from RelatedPersons on a child row
+   * (`RelatedPerson.patient` = this child, `identifier` = guardian Patient URL). Hydrates
+   * RelatedPerson.name from the guardian Patient when it is empty so profile LISTs can render.
+   */
+  suspend fun enrichGuardianPatientsFromRelatedPersons(
+    repositoryResourceDataList: List<RepositoryResourceData>,
+  ) {
+    repositoryResourceDataList.forEach { row ->
+      if (row.resource !is Patient) return@forEach
+      val relatedPersons =
+        row.relatedResourcesMap["relatedPersons"]?.filterIsInstance<RelatedPerson>().orEmpty()
+      if (relatedPersons.isEmpty()) return@forEach
+
+      val guardians =
+        relatedPersons.mapNotNull { rp ->
+          val guardianId =
+            rp.guardianPatientReference()?.extractLogicalIdUuid() ?: return@mapNotNull null
+          runCatching { fhirEngine.get<Patient>(guardianId) }
+            .onFailure {
+              Timber.w(it, "Guardian Patient/$guardianId not found for profile nest")
+            }
+            .getOrNull()
+            ?.also { guardian -> rp.hydrateFromGuardianPatient(guardian) }
+        }
+      if (guardians.isNotEmpty()) {
+        row.relatedResourcesMap[GUARDIAN_PATIENTS_RESOURCE_KEY] = guardians
+      }
     }
   }
 
@@ -236,8 +271,9 @@ constructor(
       configComputedRuleValues = configComputedRuleValues,
       repositoryResourceDataList = repositoryResourceDataList,
     )
-    // Same RelatedPerson → dependent children join as registers (parent profile shows kids)
+    // Same RelatedPerson → dependent children / guardian Patients join as registers
     enrichDependentChildrenFromRelatedPersons(repositoryResourceDataList)
+    enrichGuardianPatientsFromRelatedPersons(repositoryResourceDataList)
     return repositoryResourceDataList.firstOrNull()
   }
 

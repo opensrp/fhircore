@@ -127,12 +127,16 @@ class CdssRegistrationDiagnosticTest : RobolectricTest() {
       val adultBundle = extract(questionnaire, compiled, adultResponse)
       println("ADULT ENTRY COUNT = ${adultBundle.entry.size}")
       println(adultBundle.encodeResourceToString())
-      org.junit.Assert.assertTrue(
-        "Adult registration must extract at least one Patient",
-        adultBundle.entry.any { it.resource is org.hl7.fhir.r4.model.Patient },
+      org.junit.Assert.assertEquals(
+        1,
+        adultBundle.entry.count { it.resource is org.hl7.fhir.r4.model.Patient },
+      )
+      org.junit.Assert.assertEquals(
+        0,
+        adultBundle.entry.count { it.resource is org.hl7.fhir.r4.model.RelatedPerson },
       )
 
-      // Minor with guardian info + new related person.
+      // Minor — registration extracts the child Patient only (no inline guardian).
       val minorResponse =
         """
         {
@@ -144,18 +148,7 @@ class CdssRegistrationDiagnosticTest : RobolectricTest() {
             {"linkId": "Ccc.A.DE04", "answer": [{"valueString": "Timmy"}]},
             {"linkId": "Ccc.A.DE06", "answer": [{"valueString": "Doe"}]},
             {"linkId": "Ccc.A.DE08", "answer": [{"valueDate": "2020-05-01"}]},
-            {"linkId": "Ccc.A.DE16", "answer": [{"valueCoding": {"code": "Ccc.A.DE18"}}]},
-            {"linkId": "newrelatedperson", "answer": [{"valueCoding": {"code": "newrelatedperson"}}]},
-            {"linkId": "relatedpersonuuid", "answer": [{"valueString": "guardian-uuid-1"}]},
-            {
-              "linkId": "Ccc.A.DE21.1",
-              "item": [
-                {"linkId": "Ccc.A.DE21", "answer": [{"valueString": "Jill"}]},
-                {"linkId": "Ccc.A.DE23", "answer": [{"valueString": "Smith"}]},
-                {"linkId": "Ccc.A.DE35", "answer": [{"valueString": "+123456789"}]},
-                {"linkId": "Ccc.A.DE24", "answer": [{"valueCoding": {"code": "Ccc.A.DE25"}}]}
-              ]
-            }
+            {"linkId": "Ccc.A.DE16", "answer": [{"valueCoding": {"code": "Ccc.A.DE18"}}]}
           ]
         }
         """
@@ -165,9 +158,13 @@ class CdssRegistrationDiagnosticTest : RobolectricTest() {
       val minorBundle = extract(questionnaire, compiled, minorResponse)
       println("MINOR ENTRY COUNT = ${minorBundle.entry.size}")
       println(minorBundle.encodeResourceToString())
-      org.junit.Assert.assertTrue(
-        "Minor registration must extract Patient resources",
-        minorBundle.entry.count { it.resource is org.hl7.fhir.r4.model.Patient } >= 1,
+      org.junit.Assert.assertEquals(
+        1,
+        minorBundle.entry.count { it.resource is org.hl7.fhir.r4.model.Patient },
+      )
+      org.junit.Assert.assertEquals(
+        0,
+        minorBundle.entry.count { it.resource is org.hl7.fhir.r4.model.RelatedPerson },
       )
     }
 }

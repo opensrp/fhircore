@@ -59,6 +59,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.data.local.RelatedPersonLinkService
 import org.smartregister.fhircore.engine.task.NamedEventInterventionService
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
@@ -75,6 +76,7 @@ import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherFragment
+import org.smartregister.fhircore.quest.ui.relatedperson.RelatedPersonAddCoordinator
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.util.openExternalApp
 import org.smartregister.p2p.utils.startP2PScreen
@@ -277,6 +279,22 @@ fun ActionConfig.handleClickEvent(
         interpolatedParams = interpolatedParams,
         resourceId = resourceId,
         computedValuesMap = computedValuesMap,
+      )
+    }
+    ApplicationWorkflow.ADD_RELATED_PERSON -> {
+      val subjectId =
+        interpolatedParams.find { it.key == "subjectId" }?.value?.extractLogicalIdUuid()
+          ?: resourceId?.extractLogicalIdUuid()
+      val registrationQuestionnaireId =
+        interpolatedParams
+          .find { it.key == "registrationQuestionnaireId" }
+          ?.value
+          ?.takeIf { it.isNotBlank() }
+          ?: RelatedPersonLinkService.DEFAULT_REGISTRATION_QUESTIONNAIRE_ID
+      RelatedPersonAddCoordinator.start(
+        navController = navController,
+        subjectId = subjectId,
+        registrationQuestionnaireId = registrationQuestionnaireId,
       )
     }
     else -> return

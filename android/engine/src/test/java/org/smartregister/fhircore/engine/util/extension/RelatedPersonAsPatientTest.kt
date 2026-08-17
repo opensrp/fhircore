@@ -18,7 +18,9 @@ package org.smartregister.fhircore.engine.util.extension
 
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.junit.Assert
@@ -137,5 +139,66 @@ class RelatedPersonAsPatientTest {
       "https://fhir.example.org/Patient/marie/_history/2".patientReferenceFromIdentifierValue(),
     )
     Assert.assertNull("not-a-patient".patientReferenceFromIdentifierValue())
+  }
+
+  @Test
+  fun defaultAgeFilter_matchesRole() {
+    Assert.assertEquals(RelatedPersonAgeFilter.UNDER_18, RelatedPersonRole.CHILD.defaultAgeFilter())
+    Assert.assertEquals(
+      RelatedPersonAgeFilter.AGE_18_OR_OVER,
+      RelatedPersonRole.GUARDIAN.defaultAgeFilter(),
+    )
+  }
+
+  @Test
+  fun inferGuardianRelationship_usesGender() {
+    val mother = Patient().apply { gender = Enumerations.AdministrativeGender.FEMALE }
+    val father = Patient().apply { gender = Enumerations.AdministrativeGender.MALE }
+    Assert.assertEquals(RELATIONSHIP_MOTHER, inferGuardianRelationship(mother).code)
+    Assert.assertEquals(RELATIONSHIP_FATHER, inferGuardianRelationship(father).code)
+    Assert.assertEquals(RELATIONSHIP_GUARDIAN, inferGuardianRelationship(Patient()).code)
+  }
+
+  @Test
+  fun buildRelatedPersonLink_copiesGuardianDemographics() {
+    val child = Patient().apply { id = "child-1" }
+    val mother =
+      Patient().apply {
+        id = "mother-1"
+        gender = Enumerations.AdministrativeGender.FEMALE
+        addName(
+          org.hl7.fhir.r4.model.HumanName().apply {
+            family = "Doe"
+            addGiven("Marie")
+          },
+        )
+      }
+
+    val rp = buildRelatedPersonLink(child, mother)
+    Assert.assertEquals("child-1", rp.childPatientId())
+    Assert.assertEquals("Patient/mother-1", rp.guardianPatientReference())
+    Assert.assertEquals(RELATIONSHIP_MOTHER, rp.relationshipFirstRep.codingFirstRep.code)
+    Assert.assertFalse(rp.isPrimaryCaregiver())
+    Assert.assertEquals("Marie Doe", rp.nameFirstRep.nameAsSingleString)
+    Assert.assertEquals(Enumerations.AdministrativeGender.FEMALE, rp.gender)
+  }
+
+  @Test
+  fun buildRelatedPersonLink_setsPrimaryCaregiverExtension() {
+    val child = Patient().apply { id = "child-1" }
+    val mother = Patient().apply { id = "mother-1" }
+    val rp =
+      buildRelatedPersonLink(
+        child = child,
+        guardian = mother,
+        relationship = RelatedPersonKinship.MOTHER.toCoding(),
+        isPrimaryCaregiver = true,
+      )
+    Assert.assertTrue(rp.isPrimaryCaregiver())
+    Assert.assertEquals(RELATIONSHIP_MOTHER, rp.relationshipFirstRep.codingFirstRep.code)
+    Assert.assertEquals(1, rp.relationship.size)
+
+    rp.setPrimaryCaregiver(false)
+    Assert.assertFalse(rp.isPrimaryCaregiver())
   }
 }

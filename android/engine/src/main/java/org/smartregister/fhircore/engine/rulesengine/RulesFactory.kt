@@ -38,6 +38,7 @@ import org.apache.commons.jexl3.JexlEngine
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
@@ -69,6 +70,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.generateRules
 import org.smartregister.fhircore.engine.util.extension.isOverDue
+import org.smartregister.fhircore.engine.util.extension.isPrimaryCaregiver
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
@@ -365,6 +367,14 @@ constructor(
         resource.extractBirthDate()?.let { format(it) }
       } ?: ""
     }
+
+    /** Logical id from a FHIR reference or identifier value such as `Patient/marie`. */
+    fun extractLogicalId(value: Any?): String =
+      value?.toString()?.takeIf { it.isNotBlank() && it != "null" }?.extractLogicalIdUuid().orEmpty()
+
+    /** True when [relatedPerson] is the child's primary caregiver (extension flag). */
+    fun isPrimaryCaregiver(relatedPerson: Any?): Boolean =
+      (relatedPerson as? RelatedPerson)?.isPrimaryCaregiver() == true
 
     /**
      * This function takes [inputDate] and returns a difference (for examples 7 hours, 2 day, 5
