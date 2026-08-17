@@ -66,6 +66,7 @@ import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.quest.BuildConfig
+import org.smartregister.fhircore.quest.data.DataMigration
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
@@ -90,10 +91,12 @@ constructor(
   val workManager: WorkManager,
   val dispatcherProvider: DispatcherProvider,
   private val preferenceDataStore: PreferenceDataStore,
+  private val dataMigration: DataMigration,
 ) : ViewModel() {
 
   val languages by lazy { configurationRegistry.fetchLanguages() }
   val showDBResetConfirmationDialog = MutableLiveData(false)
+  val showSyncConfigurationConfirmationDialog = MutableLiveData(false)
   val progressBarState = MutableLiveData(Pair(false, 0))
   val showProgressIndicatorFlow = MutableStateFlow(false)
   val unsyncedResourcesMutableSharedFlow = MutableSharedFlow<List<Pair<String, Int>>>()
@@ -167,6 +170,9 @@ constructor(
           )
         }
       }
+      is UserSettingsEvent.ShowSyncConfigurationConfirmationDialog ->
+        showSyncConfigurationConfirmationDialog.postValue(event.isShow)
+      is UserSettingsEvent.SyncConfiguration -> syncConfiguration(event.context)
       is UserSettingsEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
@@ -217,6 +223,43 @@ constructor(
         sharedPreferencesHelper.resetSharedPrefs()
         secureSharedPreference.resetSharedPrefs()
         context.getActivity()?.launchActivityWithNoBackStackHistory<AppSettingActivity>()
+      }
+    }
+  }
+
+  /**
+   * Re-download Composition-referenced configuration resources (PlanDefinition, Questionnaire,
+   * StructureMap, Binary, …) without wiping patient data. Force-refresh omits the incremental
+   * lastUpdated filter used by the silent login worker.
+   */
+  fun syncConfiguration(context: Context) {
+    if (!context.isDeviceOnline()) {
+      context.showToast(context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
+      return
+    }
+    viewModelScope.launch {
+      updateProgressBarState(true, R.string.syncing_configuration)
+      try {
+        withContext(dispatcherProvider.io()) {
+          configurationRegistry.fetchNonWorkflowConfigResources(forceRefresh = true)
+          val appId = sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+          if (!appId.isNullOrEmpty()) {
+            configurationRegistry.loadConfigurations(appId, context)
+          }
+          dataMigration.migrate()
+        }
+        context.showToast(
+          context.getString(R.string.sync_configuration_completed),
+          Toast.LENGTH_LONG,
+        )
+      } catch (exception: Exception) {
+        Timber.e(exception, "Failed to sync configuration resources")
+        context.showToast(
+          context.getString(R.string.sync_configuration_failed),
+          Toast.LENGTH_LONG,
+        )
+      } finally {
+        updateProgressBarState(false, R.string.syncing_configuration)
       }
     }
   }

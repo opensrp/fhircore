@@ -65,6 +65,7 @@ import org.smartregister.fhircore.engine.util.extension.spaceByUppercase
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.data.DataMigration
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
@@ -93,6 +94,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   private var fhirResourceDataSource: FhirResourceDataSource
   private val sync = mockk<Sync>(relaxed = true)
   private val navController = mockk<NavController>(relaxUnitFun = true)
+  private val dataMigration = mockk<DataMigration>(relaxUnitFun = true)
 
   init {
     sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
@@ -132,6 +134,7 @@ class UserSettingViewModelTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           workManager = workManager,
           dispatcherProvider = dispatcherProvider,
+          dataMigration = dataMigration,
         ),
       )
   }
@@ -307,6 +310,56 @@ class UserSettingViewModelTest : RobolectricTest() {
     val showInsightScreenEvent = UserSettingsEvent.ShowInsightsScreen(navController)
     userSettingViewModelSpy.onEvent(showInsightScreenEvent)
     verify { navController.navigate(MainNavigationScreen.Insight.route) }
+  }
+
+  @Test
+  fun testShowSyncConfigurationConfirmationDialogShouldUpdateFlagCorrectly() {
+    Assert.assertEquals(false, userSettingViewModel.showSyncConfigurationConfirmationDialog.value)
+
+    userSettingViewModel.onEvent(UserSettingsEvent.ShowSyncConfigurationConfirmationDialog(true))
+
+    ShadowLooper.idleMainLooper()
+    Assert.assertEquals(true, userSettingViewModel.showSyncConfigurationConfirmationDialog.value)
+  }
+
+  @Test
+  fun testSyncConfigurationWhenDeviceIsOnline() {
+    mockkStatic(Context::isDeviceOnline)
+
+    val context = mockk<Context>(relaxed = true) { every { isDeviceOnline() } returns true }
+
+    coEvery { configurationRegistry.fetchNonWorkflowConfigResources(forceRefresh = true) } just runs
+    coEvery { configurationRegistry.loadConfigurations(any(), any(), any()) } just runs
+    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "app"
+    coEvery { dataMigration.migrate() } just runs
+
+    userSettingViewModel.onEvent(UserSettingsEvent.SyncConfiguration(context))
+
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+    coVerify(exactly = 1) {
+      configurationRegistry.fetchNonWorkflowConfigResources(forceRefresh = true)
+    }
+    coVerify(exactly = 1) { configurationRegistry.loadConfigurations("app", context, any()) }
+    coVerify(exactly = 1) { dataMigration.migrate() }
+
+    unmockkStatic(Context::isDeviceOnline)
+  }
+
+  @Test
+  fun testDoNotSyncConfigurationWhenDeviceIsOffline() {
+    mockkStatic(Context::isDeviceOnline)
+
+    val context = mockk<Context>(relaxed = true) { every { isDeviceOnline() } returns false }
+
+    userSettingViewModel.onEvent(UserSettingsEvent.SyncConfiguration(context))
+
+    coVerify(exactly = 0) { configurationRegistry.fetchNonWorkflowConfigResources(any()) }
+
+    val errorMessage = context.getString(R.string.sync_failed)
+    coVerify { context.showToast(errorMessage, Toast.LENGTH_LONG) }
+
+    unmockkStatic(Context::isDeviceOnline)
   }
 
   @Test

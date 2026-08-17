@@ -47,6 +47,7 @@ data class ApplicationConfiguration(
   val settingsScreenMenuOptions: List<SettingsOptions> =
     listOf(
       SettingsOptions.MANUAL_SYNC,
+      SettingsOptions.SYNC_CONFIGURATION,
       SettingsOptions.SWITCH_LANGUAGES,
       SettingsOptions.RESET_DATA,
       SettingsOptions.INSIGHTS,
@@ -77,6 +78,7 @@ enum class LocationLogOptions {
 
 enum class SettingsOptions {
   MANUAL_SYNC,
+  SYNC_CONFIGURATION,
   OFFLINE_MAPS,
   SWITCH_LANGUAGES,
   RESET_DATA,

@@ -66,8 +66,23 @@ class UserSettingScreenTest {
       .assertDoesNotExist()
 
     composeRule.onNodeWithText("Manual sync").assertExists()
+    composeRule.onNodeWithText("Sync configuration").assertExists()
 
     composeRule.onNodeWithText("Log out").assertExists()
+  }
+
+  @Test
+  fun testSyncConfigurationRowIsNotShownWhenDisabled() {
+    initComposable(enableSyncConfiguration = false)
+    composeRule.onNodeWithText("Sync configuration").assertDoesNotExist()
+  }
+
+  @Test
+  fun testSyncConfigurationConfirmationDialogIsShown() {
+    initComposable(showSyncConfigurationConfirmation = true)
+    composeRule
+      .onNodeWithText(activity.getString(R.string.sync_configuration_message))
+      .assertExists()
   }
 
   // TODO temporary disabled the sync functionality and will be enabled in future
@@ -188,6 +203,8 @@ class UserSettingScreenTest {
     isDebugVariant: Boolean = false,
     isP2PAvailable: Boolean = false,
     showManualSync: Boolean = true,
+    enableSyncConfiguration: Boolean = true,
+    showSyncConfigurationConfirmation: Boolean = false,
     showAppInsights: Boolean = true,
     hasOfflineMaps: Boolean = true,
     showContactHelp: Boolean = true,
@@ -210,8 +227,10 @@ class UserSettingScreenTest {
           lastSyncTime = "05:30 PM, Mar 3",
           showProgressIndicatorFlow = MutableStateFlow(false),
           enableManualSync = showManualSync,
+          enableSyncConfiguration = enableSyncConfiguration,
           allowSwitchingLanguages = allowSwitchingLanguages,
           showDatabaseResetConfirmation = isShowDatabaseResetConfirmation,
+          showSyncConfigurationConfirmation = showSyncConfigurationConfirmation,
           allowP2PSync = isP2PAvailable,
           enableAppInsights = showAppInsights,
           showOfflineMaps = hasOfflineMaps,

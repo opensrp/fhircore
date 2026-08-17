@@ -49,6 +49,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.CloudDownload
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.material.icons.rounded.IosShare
@@ -103,6 +104,8 @@ const val USER_SETTING_ROW_INSIGHTS = "userSettingRowInsights"
 const val USER_SETTING_ROW_CONTACT_HELP = "userSettingRowContactHelp"
 const val USER_SETTING_ROW_OFFLINE_MAP = "userSettingRowOfflineMap"
 const val USER_SETTING_ROW_SYNC = "userSettingRowSync"
+const val USER_SETTING_ROW_SYNC_CONFIGURATION = "userSettingRowSyncConfiguration"
+const val SYNC_CONFIGURATION_DIALOG = "syncConfigurationDialog"
 const val OPENSRP_LOGO_TEST_TAG = "opensrpLogoTestTag"
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -124,8 +127,10 @@ fun UserSettingScreen(
   lastSyncTime: String?,
   showProgressIndicatorFlow: MutableStateFlow<Boolean>,
   enableManualSync: Boolean,
+  enableSyncConfiguration: Boolean = false,
   allowSwitchingLanguages: Boolean,
   showDatabaseResetConfirmation: Boolean,
+  showSyncConfigurationConfirmation: Boolean = false,
   enableAppInsights: Boolean,
   showOfflineMaps: Boolean = false,
   allowP2PSync: Boolean = false,
@@ -228,6 +233,17 @@ fun UserSettingScreen(
         )
       }
 
+      if (enableSyncConfiguration) {
+        UserSettingRow(
+          icon = Icons.Rounded.CloudDownload,
+          text = stringResource(id = R.string.sync_configuration),
+          clickListener = {
+            onEvent(UserSettingsEvent.ShowSyncConfigurationConfirmationDialog(true))
+          },
+          modifier = modifier.testTag(USER_SETTING_ROW_SYNC_CONFIGURATION),
+        )
+      }
+
       if (showOfflineMaps) {
         UserSettingRow(
           icon = Icons.Rounded.Map,
@@ -321,6 +337,18 @@ fun UserSettingScreen(
           },
           onDismissDialog = {
             onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(false))
+          },
+        )
+      }
+
+      if (showSyncConfigurationConfirmation) {
+        ConfirmSyncConfigurationDialog(
+          onConfirm = {
+            onEvent(UserSettingsEvent.ShowSyncConfigurationConfirmationDialog(false))
+            onEvent(UserSettingsEvent.SyncConfiguration(context))
+          },
+          onDismissDialog = {
+            onEvent(UserSettingsEvent.ShowSyncConfigurationConfirmationDialog(false))
           },
         )
       }
@@ -512,6 +540,42 @@ fun ConfirmClearDatabaseDialog(
 }
 
 @Composable
+fun ConfirmSyncConfigurationDialog(
+  onConfirm: () -> Unit,
+  onDismissDialog: () -> Unit,
+  modifier: Modifier = Modifier,
+) {
+  AlertDialog(
+    onDismissRequest = onDismissDialog,
+    title = {
+      Text(
+        text = stringResource(R.string.sync_configuration_title),
+        fontWeight = FontWeight.Bold,
+        fontSize = 18.sp,
+      )
+    },
+    text = { Text(text = stringResource(R.string.sync_configuration_message), fontSize = 16.sp) },
+    buttons = {
+      Row(
+        modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
+        horizontalArrangement = Arrangement.End,
+      ) {
+        Text(
+          text = stringResource(R.string.cancel),
+          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() },
+        )
+        Text(
+          color = MaterialTheme.colors.primary,
+          text = stringResource(R.string.sync_configuration).uppercase(),
+          modifier = modifier.padding(horizontal = 10.dp).clickable { onConfirm() },
+        )
+      }
+    },
+    modifier = Modifier.testTag(SYNC_CONFIGURATION_DIALOG),
+  )
+}
+
+@Composable
 @PreviewWithBackgroundExcludeGenerated
 fun UserSettingPreview() {
   UserSettingScreen(
@@ -530,8 +594,10 @@ fun UserSettingPreview() {
     lastSyncTime = "05:30 PM, Mar 3",
     showProgressIndicatorFlow = MutableStateFlow(false),
     enableManualSync = true,
+    enableSyncConfiguration = true,
     allowSwitchingLanguages = true,
     showDatabaseResetConfirmation = false,
+    showSyncConfigurationConfirmation = false,
     enableAppInsights = true,
     showOfflineMaps = true,
     allowP2PSync = true,
