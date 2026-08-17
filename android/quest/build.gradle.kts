@@ -429,6 +429,13 @@ android {
       versionNameSuffix = "-trueCover"
       manifestPlaceholders["appLabel"] = "True Cover"
     }
+
+    create("reagir") {
+      dimension = "apps"
+      applicationIdSuffix = ".reagir"
+      versionNameSuffix = "-reagir"
+      manifestPlaceholders["appLabel"] = "Redir Reagir"
+    }
   }
 
   applicationVariants.all {
