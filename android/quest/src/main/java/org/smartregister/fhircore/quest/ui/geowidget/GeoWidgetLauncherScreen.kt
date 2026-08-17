@@ -33,24 +33,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.compose.AndroidFragment
-import androidx.fragment.compose.rememberFragmentState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
-import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
-import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
-import org.smartregister.fhircore.quest.ui.bottomsheet.SummaryBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.shared.components.SyncBottomBar
@@ -131,49 +123,11 @@ fun GeoWidgetLauncherScreen(
       )
     },
   ) { innerPadding ->
-    val fragmentState = rememberFragmentState()
     Box(
       modifier = modifier.padding(innerPadding).fillMaxSize(),
     ) {
-      AndroidFragment<GeoWidgetFragment>(fragmentState = fragmentState) { fragment ->
-        fragment
-          .setUseGpsOnAddingLocation(false)
-          .setAddLocationButtonVisibility(geoWidgetConfiguration.showAddLocation)
-          .setOnAddLocationListener { feature: GeoJsonFeature ->
-            if (feature.geometry?.coordinates == null) return@setOnAddLocationListener
-            launchQuestionnaire(
-              geoWidgetConfiguration.registrationQuestionnaire,
-              feature,
-              fragmentActivityContext,
-            )
-          }
-          .setOnCancelAddingLocationListener {
-            context.showToast(context.getString(R.string.on_cancel_adding_location))
-          }
-          .setOnClickLocationListener {
-            feature: GeoJsonFeature,
-            parentFragmentManager: FragmentManager,
-            ->
-            SummaryBottomSheetFragment(
-                geoWidgetConfiguration.summaryBottomSheetConfig!!,
-                ResourceData(
-                  baseResourceId = feature.id,
-                  baseResourceType = ResourceType.Location,
-                  computedValuesMap =
-                    feature.properties?.mapValues { it.value.content } ?: emptyMap(),
-                ),
-              )
-              .run { show(parentFragmentManager, SummaryBottomSheetFragment.TAG) }
-          }
-          .setMapLayers(geoWidgetConfiguration.mapLayers)
-          .showCurrentLocationButtonVisibility(geoWidgetConfiguration.showLocation)
-          .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.showPlaneSwitcher)
-
-        fragment.apply {
-          observerMapReset(clearMapLiveData)
-          observerGeoJsonFeatures(geoJsonFeatures)
-        }
-      }
+      // GeoWidgetFragment removed: kujaku dependency unavailable
+      Box(modifier = Modifier.fillMaxSize())
       if (syncing == true) {
         Box(
           modifier =
