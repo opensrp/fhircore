@@ -38,7 +38,7 @@ project.tasks.register<JacocoReport>("fhircoreJacocoReport") {
       "**/org/smartregister/fhircore/engine/auth/*",
       "**/org/smartregister/fhircore/engine/configuration/ConfigType*.*",
       "**/org/smartregister/fhircore/engine/configuration/app/*",
-      "**/org/smartregister/fhircore/engine/configuration/geowidget/*",
+      // "**/org/smartregister/fhircore/engine/configuration/geowidget/*",
       "**/org/smartregister/fhircore/engine/configuration/navigation/*",
       "**/org/smartregister/fhircore/engine/configuration/profile/*",
       "**/org/smartregister/fhircore/engine/configuration/register/*",
@@ -64,7 +64,7 @@ project.tasks.register<JacocoReport>("fhircoreJacocoReport") {
       "**/org/smartregister/fhircore/engine/domain/model/SnackBarMessageConfig*.*",
       "**/org/smartregister/fhircore/engine/domain/model/TopBarConfig*.*",
       "**/org/smartregister/fhircore/engine/data/remote/model/response/*",
-      "**/org/smartregister/fhircore/geowidget/model/*",
+      // "**/org/smartregister/fhircore/geowidget/model/*",
       // DI (Dagger and Hilt)
       "**/*_MembersInjector.class",
       "**/Dagger*Component.class",
