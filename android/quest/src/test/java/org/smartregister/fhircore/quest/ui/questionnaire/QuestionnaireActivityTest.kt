@@ -238,6 +238,28 @@ class QuestionnaireActivityTest : RobolectricTest() {
     assertEquals(expectedIntent.component, startedIntent.component)
   }
 
+  @Test
+  fun testIntentBundleKeepsBuildListActionParametersAsParcelableArrayList() {
+    val params =
+      buildList {
+        add(
+          ActionParameter(
+            key = "generateEncounter",
+            paramType = ActionParameterType.PARAMDATA,
+            value = "true",
+          ),
+        )
+      }
+    val bundle = QuestionnaireActivity.intentBundle(questionnaireConfig, params)
+    val restored =
+      bundle.getParcelableArrayList<ActionParameter>(
+        QuestionnaireActivity.QUESTIONNAIRE_ACTION_PARAMETERS,
+      )
+    Assert.assertEquals(1, restored?.size)
+    Assert.assertEquals("generateEncounter", restored?.first()?.key)
+    Assert.assertEquals("true", restored?.first()?.value)
+  }
+
   private fun setupActivity() {
     val bundle = QuestionnaireActivity.intentBundle(questionnaireConfig, emptyList())
     questionnaireActivityController =

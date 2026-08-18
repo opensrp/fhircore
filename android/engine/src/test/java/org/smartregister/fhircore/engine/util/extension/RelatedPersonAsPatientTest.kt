@@ -86,7 +86,11 @@ class RelatedPersonAsPatientTest {
             type =
               CodeableConcept()
                 .addCoding(
-                  Coding(IDENTIFIER_TYPE_SYSTEM_V2_0203, IDENTIFIER_TYPE_PT, "Patient external identifier"),
+                  Coding(
+                    IDENTIFIER_TYPE_SYSTEM_V2_0203,
+                    IDENTIFIER_TYPE_PT,
+                    "Patient external identifier"
+                  ),
                 )
             system = RELATED_PERSON_PATIENT_IDENTIFIER_SYSTEM
             value = "https://fhir.example.org/Patient/mother-1"

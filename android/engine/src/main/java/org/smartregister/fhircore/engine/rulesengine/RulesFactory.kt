@@ -370,7 +370,11 @@ constructor(
 
     /** Logical id from a FHIR reference or identifier value such as `Patient/marie`. */
     fun extractLogicalId(value: Any?): String =
-      value?.toString()?.takeIf { it.isNotBlank() && it != "null" }?.extractLogicalIdUuid().orEmpty()
+      value
+        ?.toString()
+        ?.takeIf { it.isNotBlank() && it != "null" }
+        ?.extractLogicalIdUuid()
+        .orEmpty()
 
     /** True when [relatedPerson] is the child's primary caregiver (extension flag). */
     fun isPrimaryCaregiver(relatedPerson: Any?): Boolean =

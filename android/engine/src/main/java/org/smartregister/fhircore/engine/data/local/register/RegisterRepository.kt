@@ -47,8 +47,8 @@ import org.smartregister.fhircore.engine.util.extension.DEPENDENT_RELATED_PERSON
 import org.smartregister.fhircore.engine.util.extension.GUARDIAN_PATIENTS_RESOURCE_KEY
 import org.smartregister.fhircore.engine.util.extension.childPatientId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
-import org.smartregister.fhircore.engine.util.extension.guardianPatientReference
 import org.smartregister.fhircore.engine.util.extension.groupByGuardianPatientId
+import org.smartregister.fhircore.engine.util.extension.guardianPatientReference
 import org.smartregister.fhircore.engine.util.extension.hydrateFromGuardianPatient
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
@@ -187,9 +187,7 @@ constructor(
           val guardianId =
             rp.guardianPatientReference()?.extractLogicalIdUuid() ?: return@mapNotNull null
           runCatching { fhirEngine.get<Patient>(guardianId) }
-            .onFailure {
-              Timber.w(it, "Guardian Patient/$guardianId not found for profile nest")
-            }
+            .onFailure { Timber.w(it, "Guardian Patient/$guardianId not found for profile nest") }
             .getOrNull()
             ?.also { guardian -> rp.hydrateFromGuardianPatient(guardian) }
         }

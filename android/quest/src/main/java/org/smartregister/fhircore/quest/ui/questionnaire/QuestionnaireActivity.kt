@@ -191,14 +191,20 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
   override fun onDestroy() {
     Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler)
+    // The progress dialog is shown from a coroutine that can still be mid-flight (or its
+    // continuation already queued) when the activity is torn down - e.g. the user backs out
+    // while retrieveQuestionnaire/populateQuestionnaire is running. Nothing else dismisses it in
+    // that case, so the dialog's window outlives the activity and Android reports it as leaked.
+    alertDialog?.dismiss()
+    alertDialog = null
     super.onDestroy()
   }
 
   /**
    * Handles exceptions thrown from the FHIR SDK's questionnaire rendering internals (e.g. a
-   * malformed FHIRPath expression in the Questionnaire config) that would otherwise crash the
-   * whole app. Anything unrelated to questionnaire rendering is passed on to the previous
-   * handler so normal crash reporting/behaviour is preserved.
+   * malformed FHIRPath expression in the Questionnaire config) that would otherwise crash the whole
+   * app. Anything unrelated to questionnaire rendering is passed on to the previous handler so
+   * normal crash reporting/behaviour is preserved.
    */
   private fun handleUncaughtQuestionnaireException(thread: Thread, throwable: Throwable) {
     if (!isQuestionnaireRenderingException(throwable)) {
@@ -222,6 +228,8 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private fun handleQuestionnaireRenderingFailure(throwable: Throwable) {
     Timber.e(throwable, "Failed to render questionnaire ${questionnaireConfig.id}")
     runOnUiThread {
+      alertDialog?.dismiss()
+      alertDialog = null
       AlertDialogue.showAlert(
         context = this,
         alertIntent = AlertIntent.ERROR,
@@ -358,10 +366,12 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     val questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig)
     when {
       questionnaire == null -> {
+        showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
         showToast(getString(R.string.questionnaire_not_found))
         finish()
       }
       questionnaire.subjectType.isNullOrEmpty() -> {
+        showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
         val subjectRequiredMessage = getString(R.string.missing_subject_type)
         showToast(subjectRequiredMessage)
         Timber.e(subjectRequiredMessage)
@@ -414,10 +424,14 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
                 supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG)?.view?.let {
                   fragmentView ->
                   fragmentView
-                    .findViewById<View>(com.google.android.fhir.datacapture.R.id.submit_questionnaire)
+                    .findViewById<View>(
+                      com.google.android.fhir.datacapture.R.id.submit_questionnaire
+                    )
                     ?.isEnabled = false
                   fragmentView
-                    .findViewById<View>(com.google.android.fhir.datacapture.R.id.cancel_questionnaire)
+                    .findViewById<View>(
+                      com.google.android.fhir.datacapture.R.id.cancel_questionnaire
+                    )
                     ?.isEnabled = false
                   fragmentView
                     .findViewById<View>(
@@ -717,7 +731,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     ): Bundle =
       bundleOf(
         Pair(QUESTIONNAIRE_CONFIG, questionnaireConfig),
-        Pair(QUESTIONNAIRE_ACTION_PARAMETERS, actionParams),
+        // Must be ArrayList: parcelableArrayList() cannot read a ListBuilder / emptyList extra,
+        // which would drop generateEncounter and the carried Encounter id on start-care launches.
+        Pair(QUESTIONNAIRE_ACTION_PARAMETERS, ArrayList(actionParams)),
       )
   }
 }

@@ -25,8 +25,8 @@ import java.util.UUID
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -45,9 +45,9 @@ import org.hl7.fhir.r4.model.RelatedPerson
  */
 
 /**
- * Prefer absolute URI identifiers ([FHIR Identifier with URI value](https://hl7.org/fhir/datatypes.html#Identifier)).
- * Value holds a Patient reference or absolute Patient URL, e.g. `Patient/marie` or
- * `https://fhir.example.org/Patient/marie`.
+ * Prefer absolute URI identifiers ([FHIR Identifier with URI
+ * value](https://hl7.org/fhir/datatypes.html#Identifier)). Value holds a Patient reference or
+ * absolute Patient URL, e.g. `Patient/marie` or `https://fhir.example.org/Patient/marie`.
  */
 const val RELATED_PERSON_PATIENT_IDENTIFIER_SYSTEM = "urn:ietf:rfc:3986"
 
@@ -76,8 +76,8 @@ const val DEPENDENT_CHILDREN_RESOURCE_KEY = "dependentChildren"
 const val DEPENDENT_RELATED_PERSONS_RESOURCE_KEY = "dependentRelatedPersons"
 
 /**
- * Map key for guardian / mother / father [Patient]s resolved from RelatedPerson PI identifiers on
- * a child profile.
+ * Map key for guardian / mother / father [Patient]s resolved from RelatedPerson PI identifiers on a
+ * child profile.
  */
 const val GUARDIAN_PATIENTS_RESOURCE_KEY = "guardianPatients"
 
@@ -92,9 +92,9 @@ const val RELATIONSHIP_FATHER = "FTH"
 const val RELATIONSHIP_GUARDIAN = "GUARD"
 
 /**
- * Boolean extension on [RelatedPerson]: this join is the child's main caregiver / primary
- * contact. Kinship stays `MTH` / `FTH` / `GUARD` on [RelatedPerson.relationship]. At most one
- * RelatedPerson per child should have this set.
+ * Boolean extension on [RelatedPerson]: this join is the child's main caregiver / primary contact.
+ * Kinship stays `MTH` / `FTH` / `GUARD` on [RelatedPerson.relationship]. At most one RelatedPerson
+ * per child should have this set.
  */
 const val PRIMARY_CAREGIVER_EXTENSION_URL =
   "https://fhir.opensrp.io/cdss/StructureDefinition/primary-caregiver"
@@ -156,8 +156,7 @@ fun RelatedPerson.guardianPatientReference(): String? {
   val typed =
     identifier
       .firstOrNull {
-        it.hasPatientLinkIdentifierType() &&
-          it.value.patientReferenceFromIdentifierValue() != null
+        it.hasPatientLinkIdentifierType() && it.value.patientReferenceFromIdentifierValue() != null
       }
       ?.value
       ?.patientReferenceFromIdentifierValue()
@@ -265,19 +264,15 @@ fun String.patientReferenceFromIdentifierValue(): String? {
   if (delimiterIndex == -1) return null
   val afterPatient = trimmed.substring(delimiterIndex + "Patient/".length)
   val logicalId =
-    afterPatient
-      .substringBefore("/")
-      .substringBefore("?")
-      .substringBefore("#")
-      .trim()
-      .takeIf { it.isNotBlank() }
-      ?: return null
+    afterPatient.substringBefore("/").substringBefore("?").substringBefore("#").trim().takeIf {
+      it.isNotBlank()
+    } ?: return null
   return "Patient/$logicalId"
 }
 
 /**
- * Infers MTH / FTH / GUARD from the guardian Patient's gender. Used when the add-related flow
- * only asked "child or guardian" and did not collect a more specific role.
+ * Infers MTH / FTH / GUARD from the guardian Patient's gender. Used when the add-related flow only
+ * asked "child or guardian" and did not collect a more specific role.
  */
 fun inferGuardianRelationship(guardian: Patient): Coding =
   when (guardian.gender) {
@@ -291,8 +286,8 @@ fun inferGuardianRelationship(guardian: Patient): Coding =
 /**
  * Builds the TRICC RelatedPerson: [RelatedPerson.patient] is always the child,
  * [RelatedPerson.identifier] is the guardian Patient URL, relationship is the guardian's role
- * toward the child. Copies name / gender / birthDate / telecom from [guardian] so profile
- * lists can render without a second fetch.
+ * toward the child. Copies name / gender / birthDate / telecom from [guardian] so profile lists can
+ * render without a second fetch.
  */
 fun buildRelatedPersonLink(
   child: Patient,

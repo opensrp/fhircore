@@ -28,8 +28,8 @@ interface NamedEventInterventionEntryPoint {
   fun namedEventInterventionService(): NamedEventInterventionService
 
   /**
-   * Used by the "select available care" picker to react to questionnaire submissions (advance
-   * to the next lowest-order due action, learn the current-visit Encounter id) — see
+   * Used by the "select available care" picker to react to questionnaire submissions (advance to
+   * the next lowest-order due action, learn the current-visit Encounter id) — see
    * `feature/20260812-intervention-order-and-dedup.md` (tricc) and the companion Android spec.
    */
   fun eventBus(): EventBus

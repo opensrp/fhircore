@@ -70,8 +70,8 @@ constructor(
     val planDefinitionId: String? = null,
     val questionnaireId: String? = null,
     /**
-     * cpg-common-process order (10, 20, 30…), read from the `tricc-process-order` extension —
-     * see `feature/20260812-intervention-order-and-dedup.md` (tricc). Fixed/canonical, so it is
+     * cpg-common-process order (10, 20, 30…), read from the `tricc-process-order` extension — see
+     * `feature/20260812-intervention-order-and-dedup.md` (tricc). Fixed/canonical, so it is
      * comparable across options originating from different PlanDefinitions. Options without the
      * extension (e.g. resolved via workflow `$apply`, which may not propagate custom action
      * extensions onto the RequestGroup) sort last.
@@ -95,9 +95,9 @@ constructor(
   )
 
   /**
-   * Returns one [AvailableCarePlan] per PlanDefinition matching [namedEvent] that has at least
-   * one launchable (Questionnaire-resolvable) option for [subjectPatientId] — i.e. exactly the
-   * set of rows the "select available care" picker should list, each with its own checkbox.
+   * Returns one [AvailableCarePlan] per PlanDefinition matching [namedEvent] that has at least one
+   * launchable (Questionnaire-resolvable) option for [subjectPatientId] — i.e. exactly the set of
+   * rows the "select available care" picker should list, each with its own checkbox.
    * PlanDefinitions with no launchable option are omitted (nothing to check).
    */
   suspend fun listAvailableCarePlans(
@@ -369,10 +369,7 @@ constructor(
         ?.takeIf { definition.contains("PlanDefinition/") && it.isNotBlank() }
         ?.extractLogicalIdUuid()
     val id =
-      questionnaireId
-        ?: id
-        ?: definition
-        ?: "${planDefinition.logicalId}-${title.hashCode()}"
+      questionnaireId ?: id ?: definition ?: "${planDefinition.logicalId}-${title.hashCode()}"
     return InterventionOption(
       id = id,
       title = title,
@@ -414,10 +411,7 @@ constructor(
         ?.takeIf { resourceRef.contains("PlanDefinition/") && it.isNotBlank() }
         ?.extractLogicalIdUuid()
     val id =
-      questionnaireId
-        ?: this.id
-        ?: definition
-        ?: "${planDefinition.logicalId}-${title.hashCode()}"
+      questionnaireId ?: this.id ?: definition ?: "${planDefinition.logicalId}-${title.hashCode()}"
     return InterventionOption(
       id = id,
       title = title,
