@@ -19,10 +19,15 @@ package org.smartregister.fhircore.engine.data.local.register
 import android.content.Context
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.extensions.logicalId
+import com.google.android.fhir.get
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -37,7 +42,16 @@ import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.DEPENDENT_CHILDREN_RESOURCE_KEY
+import org.smartregister.fhircore.engine.util.extension.DEPENDENT_RELATED_PERSONS_RESOURCE_KEY
+import org.smartregister.fhircore.engine.util.extension.GUARDIAN_PATIENTS_RESOURCE_KEY
+import org.smartregister.fhircore.engine.util.extension.childPatientId
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.groupByGuardianPatientId
+import org.smartregister.fhircore.engine.util.extension.guardianPatientReference
+import org.smartregister.fhircore.engine.util.extension.hydrateFromGuardianPatient
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import timber.log.Timber
 
 @Singleton
 class RegisterRepository
@@ -98,7 +112,89 @@ constructor(
       repositoryResourceDataList = repositoryResourceDataList,
     )
 
+    enrichDependentChildrenFromRelatedPersons(repositoryResourceDataList)
+    enrichGuardianPatientsFromRelatedPersons(repositoryResourceDataList)
+
     return repositoryResourceDataList
+  }
+
+  /**
+   * For TRICC flexible client registers: mother/father/guardian are Patients; kids are nested via
+   * RelatedPerson (`patient` = child, `identifier` = guardian Patient URL).
+   *
+   * Populates [DEPENDENT_CHILDREN_RESOURCE_KEY] and [DEPENDENT_RELATED_PERSONS_RESOURCE_KEY] on
+   * each Patient row so register LIST views can render dependents. No-op when no matching
+   * RelatedPersons exist.
+   *
+   * See `feature/register-tricc.md`.
+   */
+  suspend fun enrichDependentChildrenFromRelatedPersons(
+    repositoryResourceDataList: List<RepositoryResourceData>,
+  ) {
+    val patientRows = repositoryResourceDataList.filter { it.resource is Patient }
+    if (patientRows.isEmpty()) return
+
+    val allRelatedPersons =
+      runCatching { search<RelatedPerson>(Search(ResourceType.RelatedPerson)) }
+        .onFailure { Timber.e(it, "Failed to load RelatedPerson for dependent enrichment") }
+        .getOrDefault(emptyList())
+    if (allRelatedPersons.isEmpty()) return
+
+    val byGuardian = allRelatedPersons.groupByGuardianPatientId()
+    if (byGuardian.isEmpty()) return
+
+    val childIds = byGuardian.values.flatten().mapNotNull { it.childPatientId() }.distinct()
+    val childrenById =
+      childIds
+        .mapNotNull { childId ->
+          runCatching { fhirEngine.get<Patient>(childId) }
+            .onFailure {
+              Timber.w(it, "Dependent child Patient/$childId not found for register nest")
+            }
+            .getOrNull()
+            ?.let { childId to it }
+        }
+        .toMap()
+
+    patientRows.forEach { row ->
+      val guardianId = row.resource.logicalId.extractLogicalIdUuid()
+      val relatedPersonsForGuardian = byGuardian[guardianId].orEmpty()
+      if (relatedPersonsForGuardian.isEmpty()) return@forEach
+
+      val dependentChildren =
+        relatedPersonsForGuardian.mapNotNull { rp -> rp.childPatientId()?.let { childrenById[it] } }
+      row.relatedResourcesMap[DEPENDENT_RELATED_PERSONS_RESOURCE_KEY] = relatedPersonsForGuardian
+      row.relatedResourcesMap[DEPENDENT_CHILDREN_RESOURCE_KEY] = dependentChildren
+    }
+  }
+
+  /**
+   * Resolves guardian / mother / father Patients from RelatedPersons on a child row
+   * (`RelatedPerson.patient` = this child, `identifier` = guardian Patient URL). Hydrates
+   * RelatedPerson.name from the guardian Patient when it is empty so profile LISTs can render.
+   */
+  suspend fun enrichGuardianPatientsFromRelatedPersons(
+    repositoryResourceDataList: List<RepositoryResourceData>,
+  ) {
+    repositoryResourceDataList.forEach { row ->
+      if (row.resource !is Patient) return@forEach
+      val relatedPersons =
+        row.relatedResourcesMap["relatedPersons"]?.filterIsInstance<RelatedPerson>().orEmpty()
+      if (relatedPersons.isEmpty()) return@forEach
+
+      val guardians =
+        relatedPersons.mapNotNull { rp ->
+          val guardianId =
+            rp.guardianPatientReference()?.extractLogicalIdUuid() ?: return@mapNotNull null
+          runCatching { fhirEngine.get<Patient>(guardianId) }
+            .onFailure { Timber.w(it, "Guardian Patient/$guardianId not found for profile nest") }
+            .getOrNull()
+            ?.also { guardian -> rp.hydrateFromGuardianPatient(guardian) }
+        }
+      if (guardians.isNotEmpty()) {
+        row.relatedResourcesMap[GUARDIAN_PATIENTS_RESOURCE_KEY] = guardians
+      }
+    }
   }
 
   /** Count register data for the provided [registerId]. Use the configured base resource filters */
@@ -173,6 +269,9 @@ constructor(
       configComputedRuleValues = configComputedRuleValues,
       repositoryResourceDataList = repositoryResourceDataList,
     )
+    // Same RelatedPerson → dependent children / guardian Patients join as registers
+    enrichDependentChildrenFromRelatedPersons(repositoryResourceDataList)
+    enrichGuardianPatientsFromRelatedPersons(repositoryResourceDataList)
     return repositoryResourceDataList.firstOrNull()
   }
 

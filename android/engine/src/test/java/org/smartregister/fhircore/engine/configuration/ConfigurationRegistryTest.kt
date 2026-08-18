@@ -1292,6 +1292,31 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
+  fun testGenerateRequestBundleForceRefreshOmitsLastUpdated() {
+    val resourceType = "BINARY"
+    val resourceId = "test-binary-id"
+    val timestamp = "2024-01-15T10:00:00Z"
+    val expectedKey = "${resourceType}_${resourceId}_LAST_CONFIG_SYNC_TIMESTAMP"
+
+    configRegistry.sharedPreferencesHelper.write(expectedKey, timestamp)
+
+    val resultBundle =
+      configRegistry.generateRequestBundle(resourceType, listOf(resourceId), forceRefresh = true)
+
+    assertEquals(
+      "$resourceType?_id=$resourceId",
+      resultBundle.entry.first().request.url,
+    )
+  }
+
+  @Test
+  fun testFilterResourceListIncludesParametersName() {
+    assertTrue(
+      ConfigurationRegistry.FILTER_RESOURCE_LIST.contains(ResourceType.Parameters.name),
+    )
+  }
+
+  @Test
   fun testCreateOrUpdateRemoteUpdatesTimestamp() = runTest {
     val resource =
       Binary().apply {

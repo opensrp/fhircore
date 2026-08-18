@@ -77,6 +77,7 @@ import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.plusYears
+import org.smartregister.fhircore.engine.util.extension.setPrimaryCaregiver
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
@@ -388,6 +389,22 @@ class RulesFactoryTest : RobolectricTest() {
       ),
     )
     Assert.assertEquals("", rulesEngineService.extractGender(Patient()))
+  }
+
+  @Test
+  fun extractLogicalId_stripsResourceType() {
+    Assert.assertEquals("marie", rulesEngineService.extractLogicalId("Patient/marie"))
+    Assert.assertEquals("marie", rulesEngineService.extractLogicalId("marie"))
+    Assert.assertEquals("", rulesEngineService.extractLogicalId(null))
+  }
+
+  @Test
+  fun isPrimaryCaregiver_readsRelatedPersonExtension() {
+    val flagged = org.hl7.fhir.r4.model.RelatedPerson().apply { setPrimaryCaregiver(true) }
+    Assert.assertTrue(rulesEngineService.isPrimaryCaregiver(flagged))
+    Assert.assertFalse(rulesEngineService.isPrimaryCaregiver(org.hl7.fhir.r4.model.RelatedPerson()))
+    Assert.assertFalse(rulesEngineService.isPrimaryCaregiver(null))
+    Assert.assertFalse(rulesEngineService.isPrimaryCaregiver(Patient()))
   }
 
   @Test

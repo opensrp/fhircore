@@ -990,6 +990,57 @@ class ConfigExtensionsKtTest : RobolectricTest() {
   }
 
   @Test
+  fun testResolveGenerateEncounterDefaultsTrueWhenParamAbsent() {
+    Assert.assertTrue(emptyList<ActionParameter>().resolveGenerateEncounter())
+  }
+
+  @Test
+  fun testResolveGenerateEncounterIsTrueWhenParamIsTrue() {
+    val params =
+      listOf(
+        ActionParameter(
+          key = GENERATE_ENCOUNTER_PARAM_KEY,
+          paramType = ActionParameterType.PARAMDATA,
+          value = "true",
+        ),
+      )
+    Assert.assertTrue(params.resolveGenerateEncounter())
+  }
+
+  @Test
+  fun testResolveGenerateEncounterIsFalseOnlyWhenExplicitlyFalse() {
+    val params =
+      listOf(
+        ActionParameter(
+          key = GENERATE_ENCOUNTER_PARAM_KEY,
+          paramType = ActionParameterType.PARAMDATA,
+          value = "false",
+        ),
+      )
+    Assert.assertFalse(params.resolveGenerateEncounter())
+  }
+
+  @Test
+  fun testBuildStartCareActionParametersIncludesGenerateEncounterAsArrayList() {
+    val params = buildStartCareActionParameters(encounterId = null, generateEncounter = true)
+    Assert.assertEquals(java.util.ArrayList::class.java, params.javaClass)
+    Assert.assertEquals(1, params.size)
+    Assert.assertEquals(GENERATE_ENCOUNTER_PARAM_KEY, params[0].key)
+    Assert.assertEquals("true", params[0].value)
+    Assert.assertEquals(ActionParameterType.PARAMDATA, params[0].paramType)
+  }
+
+  @Test
+  fun testBuildStartCareActionParametersCarriesEncounterWithoutDroppingGenerateFlag() {
+    val params =
+      buildStartCareActionParameters(encounterId = "enc-1", generateEncounter = true)
+    Assert.assertEquals(2, params.size)
+    Assert.assertEquals("encounter", params[0].key)
+    Assert.assertEquals("enc-1", params[0].value)
+    Assert.assertEquals(GENERATE_ENCOUNTER_PARAM_KEY, params[1].key)
+  }
+
+  @Test
   fun testShowToastWhenAnImageWithActionParamsIsPressed() {
     val context = mockk<Context>(relaxed = true)
     val navController = NavController(context)

@@ -108,10 +108,18 @@ class UserSettingFragment : Fragment(), OnSyncListener {
                 enableManualSync =
                   !org.smartregister.fhircore.quest.BuildConfig.SKIP_AUTHENTICATION &&
                     userSettingViewModel.enableMenuOption(SettingsOptions.MANUAL_SYNC),
+                enableSyncConfiguration =
+                  !org.smartregister.fhircore.quest.BuildConfig.SKIP_AUTHENTICATION &&
+                    userSettingViewModel.enableMenuOption(SettingsOptions.SYNC_CONFIGURATION),
                 allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
                 showDatabaseResetConfirmation =
                   userSettingViewModel.enableMenuOption(SettingsOptions.RESET_DATA) &&
                     userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
+                showSyncConfigurationConfirmation =
+                  userSettingViewModel.enableMenuOption(SettingsOptions.SYNC_CONFIGURATION) &&
+                    userSettingViewModel.showSyncConfigurationConfirmationDialog
+                      .observeAsState(false)
+                      .value,
                 enableAppInsights = userSettingViewModel.enableMenuOption(SettingsOptions.INSIGHTS),
                 showOfflineMaps =
                   userSettingViewModel.enableMenuOption(SettingsOptions.OFFLINE_MAPS),

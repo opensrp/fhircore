@@ -35,6 +35,10 @@ sealed class UserSettingsEvent {
 
   data class SyncData(val context: Context) : UserSettingsEvent()
 
+  data class ShowSyncConfigurationConfirmationDialog(val isShow: Boolean) : UserSettingsEvent()
+
+  data class SyncConfiguration(val context: Context) : UserSettingsEvent()
+
   data class ShowContactView(val isShow: Boolean, val context: Context) : UserSettingsEvent()
 
   data class OnLaunchOfflineMap(val isShow: Boolean, val context: Context) : UserSettingsEvent()

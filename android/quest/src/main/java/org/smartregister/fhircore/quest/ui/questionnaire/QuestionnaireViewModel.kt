@@ -47,6 +47,7 @@ import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Library
@@ -54,12 +55,16 @@ import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
 import org.hl7.fhir.r4.model.MedicationRequest
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComponent
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -81,6 +86,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.allItems
+import org.smartregister.fhircore.engine.util.extension.appendEncounterReference
 import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
@@ -94,6 +100,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuidFromURI
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.initialExpression
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepopulateWithComputedConfigValues
 import org.smartregister.fhircore.engine.util.extension.questionnaireResponseStatus
@@ -105,6 +112,7 @@ import org.smartregister.fhircore.engine.util.validation.ResourceValidationReque
 import org.smartregister.fhircore.engine.util.validation.ResourceValidationRequestHandler
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.util.QuestionnaireResponseUtils
+import org.smartregister.fhircore.quest.util.extensions.GENERATE_ENCOUNTER_PARAM_KEY
 import timber.log.Timber
 
 @HiltViewModel
@@ -203,13 +211,33 @@ constructor(
             context = context,
           )
 
+          val useStructureMap = questionnaire.extractByStructureMap()
           val bundle =
             performExtraction(
-              extractByStructureMap = questionnaire.extractByStructureMap(),
+              extractByStructureMap = useStructureMap,
               questionnaire = questionnaire,
               questionnaireResponse = currentQuestionnaireResponse,
               context = context,
             )
+
+          val extractedCount = bundle.entry?.size ?: 0
+          Timber.d(
+            "StructureMap extraction start for Questionnaire/${questionnaire.logicalId}",
+          )
+          // StructureMap extraction must produce at least one resource (e.g. Patient).
+          // Empty bundle means transform failed or StructureMap missing — do not pretend success.
+          if (useStructureMap && extractedCount == 0) {
+            Timber.e(
+              "StructureMap extraction produced 0 resources for Questionnaire/${questionnaire.logicalId}",
+            )
+            withContext(dispatcherProvider.main()) {
+              context.showToast(
+                context.getString(R.string.structuremap_failed, questionnaire.name ?: questionnaire.logicalId),
+                Toast.LENGTH_LONG,
+              )
+            }
+            return@async emptyList()
+          }
 
           defaultRepository.applyDbTransaction {
             performSave(
@@ -226,8 +254,10 @@ constructor(
             ?: emptyList()
         }
 
+      val extractedIds = idTypes.await()
+      // Still invoke callback so the Activity can dismiss progress; it should not finish on empty SM extract.
       onSuccessfulSubmission(
-        idTypes.await(),
+        extractedIds,
         currentQuestionnaireResponse,
       )
     }
@@ -247,6 +277,7 @@ constructor(
       questionnaireConfig = questionnaireConfig,
       questionnaireResponse = currentQuestionnaireResponse,
       context = context,
+      actionParameters = actionParameters,
     )
 
     updateResourcesLastUpdatedProperty(actionParameters)
@@ -432,6 +463,7 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
     questionnaireResponse: QuestionnaireResponse,
     context: Context,
+    actionParameters: List<ActionParameter> = emptyList(),
   ) {
     val extractionDate = Date()
 
@@ -459,95 +491,143 @@ constructor(
         it.resourceType
       } ?: emptyMap()
 
-    bundle.entry
-      ?.mapNotNull { it.resource }
-      ?.forEach { entryResource ->
-        entryResource.applyResourceMetadata(questionnaireConfig, questionnaireResponse, context)
-        if (
-          questionnaireResponse.subject.reference.isNullOrEmpty() &&
-            subjectType != null &&
-            entryResource.resourceType == subjectType &&
-            entryResource.logicalId.isNotEmpty()
-        ) {
-          questionnaireResponse.subject = entryResource.logicalId.asReference(subjectType)
+    val bundleResources = bundle.entry?.mapNotNull { it.resource } ?: emptyList()
+
+    // See feature/20260817-encounter-scoped-sync-tags.md: resolve which Encounter (if any) this
+    // submission's resources belong to — already in the bundle, carried over from an earlier step
+    // of the same start-care session, or generated here when generateEncounter=true.
+    val bundleEncounter = bundleResources.filterIsInstance<Encounter>().firstOrNull()
+    val carriedEncounterReference =
+      actionParameters
+        .find {
+          it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE &&
+            it.resourceType == ResourceType.Encounter
         }
+        ?.value
+        ?.takeIf { it.isNotBlank() }
+        ?.asReference(ResourceType.Encounter)
+    val generateEncounter =
+      actionParameters.any {
+        it.key == GENERATE_ENCOUNTER_PARAM_KEY && it.value.equals("true", ignoreCase = true)
+      }
+    val generatedEncounter =
+      if (bundleEncounter == null && carriedEncounterReference == null && generateEncounter) {
+        Encounter().apply {
+          id = UUID.randomUUID().toString()
+          status = Encounter.EncounterStatus.INPROGRESS
+          period = Period().apply { start = extractionDate }
+          val subjectReference =
+            questionnaireResponse.subject.takeIf { it.hasReference() }
+              ?: bundleResources.firstOrNull { it.resourceType == subjectType }?.asReference()
+          if (subjectReference != null) subject = subjectReference
+        }
+      } else {
+        null
+      }
+    if (generatedEncounter != null) {
+      bundle.addEntry(Bundle.BundleEntryComponent().apply { resource = generatedEncounter })
+    }
+    val resolvedEncounterReference: Reference? =
+      bundleEncounter?.asReference()
+        ?: carriedEncounterReference
+        ?: generatedEncounter?.asReference()
 
-        if (questionnaireConfig.isEditable()) {
-          if (entryResource.resourceType == subjectType) {
-            entryResource.id = questionnaireResponse.subject.extractId()
-          } else if (
-            extractedResourceUniquePropertyExpressionsMap.containsKey(entryResource.resourceType) &&
-              previouslyExtractedResources.containsKey(
-                entryResource.resourceType,
+    (listOfNotNull(generatedEncounter) + bundleResources).forEach { entryResource ->
+      entryResource.applyResourceMetadata(questionnaireConfig, questionnaireResponse, context)
+      if (
+        questionnaireResponse.subject.reference.isNullOrEmpty() &&
+          subjectType != null &&
+          entryResource.resourceType == subjectType &&
+          entryResource.logicalId.isNotEmpty()
+      ) {
+        questionnaireResponse.subject = entryResource.logicalId.asReference(subjectType)
+      }
+
+      if (questionnaireConfig.isEditable()) {
+        if (entryResource.resourceType == subjectType) {
+          entryResource.id = questionnaireResponse.subject.extractId()
+        } else if (
+          extractedResourceUniquePropertyExpressionsMap.containsKey(entryResource.resourceType) &&
+            previouslyExtractedResources.containsKey(
+              entryResource.resourceType,
+            )
+        ) {
+          val fhirPathExpression =
+            extractedResourceUniquePropertyExpressionsMap
+              .getValue(entryResource.resourceType)
+              .fhirPathExpression
+
+          val currentResourceIdentifier =
+            withContext(dispatcherProvider.default()) {
+              fhirPathDataExtractor.extractValue(
+                base = entryResource,
+                expression = fhirPathExpression,
               )
-          ) {
-            val fhirPathExpression =
-              extractedResourceUniquePropertyExpressionsMap
-                .getValue(entryResource.resourceType)
-                .fhirPathExpression
+            }
 
-            val currentResourceIdentifier =
-              withContext(dispatcherProvider.default()) {
-                fhirPathDataExtractor.extractValue(
-                  base = entryResource,
-                  expression = fhirPathExpression,
-                )
-              }
+          // Search for resource with property value matching extracted value
+          val resource =
+            previouslyExtractedResources.getValue(entryResource.resourceType).find {
+              val extractedValue =
+                withContext(dispatcherProvider.default()) {
+                  fhirPathDataExtractor.extractValue(
+                    base = it,
+                    expression = fhirPathExpression,
+                  )
+                }
+              extractedValue.isNotEmpty() && extractedValue.equals(currentResourceIdentifier, true)
+            }
 
-            // Search for resource with property value matching extracted value
-            val resource =
-              previouslyExtractedResources.getValue(entryResource.resourceType).find {
-                val extractedValue =
-                  withContext(dispatcherProvider.default()) {
-                    fhirPathDataExtractor.extractValue(
-                      base = it,
-                      expression = fhirPathExpression,
-                    )
-                  }
-                extractedValue.isNotEmpty() &&
-                  extractedValue.equals(currentResourceIdentifier, true)
-              }
-
-            // Found match use the id on current resource; override identifiers for RelatedPerson
-            if (resource != null) {
-              entryResource.id = resource.logicalId
-              if (entryResource is RelatedPerson && resource is RelatedPerson) {
-                entryResource.identifier = resource.identifier
-              }
+          // Found match use the id on current resource; override identifiers for RelatedPerson
+          if (resource != null) {
+            entryResource.id = resource.logicalId
+            if (entryResource is RelatedPerson && resource is RelatedPerson) {
+              entryResource.identifier = resource.identifier
             }
           }
         }
-
-        // Set Encounter on QR if the ResourceType is Encounter
-        if (entryResource.resourceType == ResourceType.Encounter) {
-          questionnaireResponse.setEncounter(entryResource.asReference())
-        }
-
-        // Set the Group's Related Entity Location metadata tag on Resource before saving.
-        entryResource.applyRelatedEntityLocationMetaTag(questionnaireConfig, context, subjectType)
-
-        defaultRepository.addOrUpdate(true, resource = entryResource)
-
-        updateGroupManagingEntity(
-          resource = entryResource,
-          groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
-          managingEntityRelationshipCode = questionnaireConfig.managingEntityRelationshipCode,
-        )
-        addMemberToGroup(
-          resource = entryResource,
-          memberResourceType = questionnaireConfig.groupResource?.memberResourceType,
-          groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
-        )
-
-        // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
-        val listEntryComponent =
-          ListEntryComponent().apply {
-            deleted = false
-            date = extractionDate
-            item = entryResource.asReference()
-          }
-        listResource.addEntry(listEntryComponent)
       }
+
+      // Set Encounter on QR if the ResourceType is Encounter
+      if (entryResource.resourceType == ResourceType.Encounter) {
+        questionnaireResponse.setEncounter(entryResource.asReference())
+      } else if (resolvedEncounterReference != null) {
+        // Ties this submission's other resources back to the resolved Encounter instead of
+        // duplicating its sync tags onto each of them — see
+        // feature/20260817-encounter-scoped-sync-tags.md.
+        entryResource.appendEncounterReference(resolvedEncounterReference)
+      }
+
+      // Set the Group's Related Entity Location metadata tag on Resource before saving.
+      entryResource.applyRelatedEntityLocationMetaTag(questionnaireConfig, context, subjectType)
+
+      // Sync-strategy tags land on the resolved Encounter only; everything else in the same
+      // submission relies on its .encounter reference for that context instead of duplicating
+      // the tags. When no Encounter is resolved at all, behavior is unchanged: tag everything.
+      val addMandatoryTags =
+        resolvedEncounterReference == null || entryResource.resourceType == ResourceType.Encounter
+      defaultRepository.addOrUpdate(addMandatoryTags, resource = entryResource)
+
+      updateGroupManagingEntity(
+        resource = entryResource,
+        groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
+        managingEntityRelationshipCode = questionnaireConfig.managingEntityRelationshipCode,
+      )
+      addMemberToGroup(
+        resource = entryResource,
+        memberResourceType = questionnaireConfig.groupResource?.memberResourceType,
+        groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
+      )
+
+      // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
+      val listEntryComponent =
+        ListEntryComponent().apply {
+          deleted = false
+          date = extractionDate
+          item = entryResource.asReference()
+        }
+      listResource.addEntry(listEntryComponent)
+    }
 
     // Reference extracted resources in QR then save it if subject exists
     questionnaireResponse.apply { addContained(listResource) }
@@ -760,16 +840,36 @@ constructor(
   ): Bundle =
     runCatching {
         if (extractByStructureMap) {
+          val targetUrl =
+            questionnaire
+              .getExtensionByUrl(
+                "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+              )
+              ?.value
+              ?.toString()
+          val structureMapId = targetUrl?.substringAfterLast("/")?.substringBefore("|")
+          Timber.d(
+            "StructureMap extraction: target=$targetUrl id=$structureMapId answers=${questionnaireResponse.item.size}",
+          )
           ResourceMapper.extract(
             questionnaire = questionnaire,
             questionnaireResponse = questionnaireResponse,
             structureMapExtractionContext =
               StructureMapExtractionContext(
                 transformSupportServices = transformSupportServices,
-                structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
-                  structureMapUrl?.substringAfterLast("/")?.let { structureMapId ->
-                    defaultRepository.loadResourceFromCache<StructureMap>(structureMapId)
+                // Reuse the same worker as TransformSupportServices (terminology-safe).
+                workerContext = transformSupportServices.simpleWorkerContext,
+                structureMapProvider = { structureMapUrl: String, _: IWorkerContext ->
+                  val id = structureMapUrl.substringAfterLast("/").substringBefore("|")
+                  val sm = defaultRepository.loadResourceFromCache<StructureMap>(id)
+                  if (sm == null) {
+                    Timber.e("StructureMap not found in local store for id=$id url=$structureMapUrl")
+                  } else {
+                    Timber.w(
+                      "Loaded StructureMap/$id groups=${sm.group?.size} rules=${sm.group?.firstOrNull()?.rule?.size}",
+                    )
                   }
+                  sm
                 },
               ),
           )
@@ -781,16 +881,17 @@ constructor(
         }
       }
       .onFailure { exception ->
-        Timber.e(exception)
+        Timber.e(exception, "Questionnaire extraction failed")
         viewModelScope.launch(dispatcherProvider.main()) {
-          if (exception is NullPointerException && exception.message!!.contains("StructureMap")) {
+          val msg = exception.message.orEmpty()
+          if (exception is NullPointerException && msg.contains("StructureMap")) {
             context.showToast(
               context.getString(R.string.structure_map_missing_message),
               Toast.LENGTH_LONG,
             )
           } else {
             context.showToast(
-              context.getString(R.string.structuremap_failed, questionnaire.name),
+              context.getString(R.string.structuremap_failed, questionnaire.name ?: questionnaire.logicalId),
               Toast.LENGTH_LONG,
             )
           }
@@ -964,6 +1065,129 @@ constructor(
     } else {
       base.toString()
     }
+
+  /**
+   * Evaluates CQL-based `initialExpression` extensions (`text/cql-identifier` or `text/cql`) when
+   * the Questionnaire declares one or more `cqf-library` extensions.
+   *
+   * Results are written to [Questionnaire.QuestionnaireItemComponent.initial] and the CQL
+   * `initialExpression` is removed so [ResourceMapper.populate] can seed the
+   * [QuestionnaireResponse] from those initials.
+   */
+  private suspend fun evaluateCqlInitialExpressions(
+    questionnaire: Questionnaire,
+    launchContextResources: List<Resource>,
+  ) {
+    val cqlLibraryUrls = questionnaire.cqfLibraryUrls()
+    if (cqlLibraryUrls.isEmpty()) return
+
+    val subject =
+      launchContextResources.firstOrNull { res ->
+        questionnaire.subjectType.firstOrNull()?.code.equals(res.resourceType.name, ignoreCase = true)
+      } ?: launchContextResources.firstOrNull()
+
+    if (subject == null) return
+
+    val expressionSet = mutableSetOf<String>()
+    collectCqlInitialExpressionItems(questionnaire.item, expressionSet)
+    if (expressionSet.isEmpty()) return
+
+    val dataBundle =
+      Bundle().apply {
+        launchContextResources.forEach { addEntry(Bundle.BundleEntryComponent().setResource(it)) }
+      }
+
+    val inputParameters = Parameters()
+    launchContextResources.firstOrNull { it.resourceType == ResourceType.Encounter }?.let { enc ->
+      inputParameters.addParameter(
+        Parameters.ParametersParameterComponent().apply {
+          name = "encounterid"
+          value = StringType(enc.logicalId)
+        },
+      )
+    }
+    (subject as? Patient)?.let { p ->
+      inputParameters.addParameter(
+        Parameters.ParametersParameterComponent().apply {
+          name = "patient"
+          value = StringType(p.logicalId)
+        },
+      )
+    }
+
+    cqlLibraryUrls.distinct().forEach { libraryUrl ->
+      runCatching {
+          val resultParameters =
+            fhirOperator.evaluateLibrary(
+              libraryUrl,
+              subject.asReference().reference,
+              if (inputParameters.hasParameter()) inputParameters else null,
+              dataBundle,
+              expressionSet,
+            ) as? Parameters
+              ?: return@forEach
+
+          applyCqlExpressionResultsToInitial(questionnaire.item, resultParameters, expressionSet)
+        }
+        .onFailure { e ->
+          Timber.e(e, "Failed to evaluate CQL initialExpression using library $libraryUrl")
+        }
+    }
+  }
+
+  private fun collectCqlInitialExpressionItems(
+    items: List<Questionnaire.QuestionnaireItemComponent>,
+    expressionSet: MutableSet<String>,
+  ) {
+    items.forEach { item ->
+      item.initialExpression?.let { expr ->
+        if (
+          !expr.expression.isNullOrBlank() &&
+            expr.language in CQL_INITIAL_EXPRESSION_LANGUAGES
+        ) {
+          expressionSet.add(expr.expression)
+        }
+      }
+      if (item.item.isNotEmpty()) {
+        collectCqlInitialExpressionItems(item.item, expressionSet)
+      }
+    }
+  }
+
+  private fun applyCqlExpressionResultsToInitial(
+    items: List<Questionnaire.QuestionnaireItemComponent>,
+    resultParameters: Parameters,
+    expressionSet: Set<String>,
+  ) {
+    items.forEach { item ->
+      item.initialExpression?.let { expr ->
+        val exprName = expr.expression
+        if (
+          !exprName.isNullOrBlank() &&
+            expressionSet.contains(exprName) &&
+            expr.language in CQL_INITIAL_EXPRESSION_LANGUAGES
+        ) {
+          val param = resultParameters.getParameter(exprName)
+          if (param != null) {
+            val cqlResultValue = (param.value ?: param.resource) as? org.hl7.fhir.r4.model.Type
+            if (cqlResultValue != null) {
+              // Avoid ResourceMapper rejecting items that have both initial and initialExpression.
+              item.removeExtension(org.smartregister.fhircore.engine.util.extension.EXTENSION_INITIAL_EXPRESSION_URL)
+              item.initial =
+                mutableListOf(
+                  Questionnaire.QuestionnaireItemInitialComponent().apply {
+                    value = cqlResultValue
+                  },
+                )
+            }
+          }
+        }
+      }
+      if (item.item.isNotEmpty()) {
+        applyCqlExpressionResultsToInitial(item.item, resultParameters, expressionSet)
+      }
+    }
+  }
 
   /**
    * This function generates CarePlans for the [QuestionnaireResponse.subject] using the configured
@@ -1188,6 +1412,19 @@ constructor(
         },
       )
 
+      // Apply CQL initialExpression defaults before ResourceMapper.populate so they become QR answers.
+      // Skip when reopening a saved/editable/draft response (saved answers take precedence).
+      val willLoadSavedResponse =
+        resourceType != null &&
+          !resourceIdentifier.isNullOrEmpty() &&
+          (questionnaireConfig.isEditable() ||
+            questionnaireConfig.isReadOnly() ||
+            questionnaireConfig.isSummary() ||
+            questionnaireConfig.saveDraft)
+      if (!willLoadSavedResponse) {
+        evaluateCqlInitialExpressions(questionnaire, launchContextResources)
+      }
+
       // Populate questionnaire with latest QuestionnaireResponse and initial default values
       val questionnaireResponse =
         fetchRepositoryQuestionnaireResponse(
@@ -1375,6 +1612,7 @@ constructor(
     const val CONTAINED_LIST_TITLE = "GeneratedResourcesList"
     const val OUTPUT_PARAMETER_KEY = "OUTPUT"
     const val DELIMITER = ","
+    private val CQL_INITIAL_EXPRESSION_LANGUAGES = setOf("text/cql-identifier", "text/cql")
   }
 }
 

@@ -108,8 +108,20 @@ class ProfileFragment : Fragment() {
         eventBus.events
           .getFor(MainNavigationScreen.Profile.eventId(profileFragmentArgs.profileId))
           .onEach { appEvent ->
-            if (appEvent is AppEvent.OnSubmitQuestionnaire) {
-              handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+            when (appEvent) {
+              is AppEvent.OnSubmitQuestionnaire ->
+                handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+              is AppEvent.RefreshData -> {
+                with(profileFragmentArgs) {
+                  profileViewModel.retrieveProfileUiState(
+                    requireContext(),
+                    profileId,
+                    resourceId,
+                    resourceConfig,
+                    params,
+                  )
+                }
+              }
             }
           }
           .launchIn(viewLifecycleOwner.lifecycleScope)

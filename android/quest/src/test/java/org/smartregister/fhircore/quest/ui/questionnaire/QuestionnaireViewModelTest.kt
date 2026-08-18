@@ -126,6 +126,7 @@ import org.smartregister.fhircore.quest.assertResourceEquals
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
 import org.smartregister.fhircore.quest.util.QuestionnaireResponseUtils
+import org.smartregister.fhircore.quest.util.extensions.GENERATE_ENCOUNTER_PARAM_KEY
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 
@@ -1757,6 +1758,131 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
   @Test
+  fun testSaveExtractedResourcesTagsOnlyEncounterWhenBundleContainsOne() = runTest {
+    val encounter = Encounter().apply { id = "enc-1" }
+    val observation = Observation().apply { id = "obs-1" }
+    val bundle =
+      Bundle().apply {
+        addEntry(Bundle.BundleEntryComponent().apply { resource = encounter })
+        addEntry(Bundle.BundleEntryComponent().apply { resource = observation })
+      }
+    val questionnaire = extractionQuestionnaire()
+    val questionnaireResponse = extractionQuestionnaireResponse()
+
+    coEvery { defaultRepository.addOrUpdate(any(Boolean::class), any<Resource>()) } just runs
+
+    questionnaireViewModel.saveExtractedResources(
+      bundle = bundle,
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig,
+      questionnaireResponse = questionnaireResponse,
+      context = context,
+    )
+
+    // Encounter is tagged; the Observation alongside it in the same bundle is not, and is
+    // instead attached to the Encounter via its own .encounter reference.
+    coVerify { defaultRepository.addOrUpdate(true, resource = encounter) }
+    coVerify { defaultRepository.addOrUpdate(false, resource = observation) }
+    Assert.assertEquals("Encounter/enc-1", observation.encounter.reference)
+  }
+
+  @Test
+  fun testSaveExtractedResourcesTagsEveryResourceWhenNoEncounterIsResolved() = runTest {
+    val observation = Observation().apply { id = "obs-1" }
+    val bundle =
+      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = observation }) }
+    val questionnaire = extractionQuestionnaire()
+    val questionnaireResponse = extractionQuestionnaireResponse()
+
+    coEvery { defaultRepository.addOrUpdate(any(Boolean::class), any<Resource>()) } just runs
+
+    // No Encounter in the bundle, no `encounter`/`generateEncounter` action params — a plain
+    // questionnaire submission outside a start-care session must behave exactly as before.
+    questionnaireViewModel.saveExtractedResources(
+      bundle = bundle,
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig,
+      questionnaireResponse = questionnaireResponse,
+      context = context,
+    )
+
+    coVerify { defaultRepository.addOrUpdate(true, resource = observation) }
+    Assert.assertFalse(observation.hasEncounter())
+  }
+
+  @Test
+  fun testSaveExtractedResourcesGeneratesEncounterWhenOptedIn() = runTest {
+    val observation = Observation().apply { id = "obs-1" }
+    val bundle =
+      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = observation }) }
+    val questionnaire = extractionQuestionnaire()
+    val questionnaireResponse =
+      extractionQuestionnaireResponse().apply { subject = patient.asReference() }
+    val actionParameters =
+      listOf(
+        ActionParameter(
+          key = GENERATE_ENCOUNTER_PARAM_KEY,
+          paramType = ActionParameterType.PARAMDATA,
+          value = "true",
+        ),
+      )
+
+    coEvery { defaultRepository.addOrUpdate(any(Boolean::class), any<Resource>()) } just runs
+
+    questionnaireViewModel.saveExtractedResources(
+      bundle = bundle,
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig,
+      questionnaireResponse = questionnaireResponse,
+      context = context,
+      actionParameters = actionParameters,
+    )
+
+    Assert.assertTrue(questionnaireResponse.hasEncounter())
+    val generatedEncounterReference = questionnaireResponse.encounter.reference
+    Assert.assertEquals(generatedEncounterReference, observation.encounter.reference)
+    val generatedEncounter = bundle.entry.map { it.resource }.filterIsInstance<Encounter>().single()
+    Assert.assertEquals(patient.asReference().reference, generatedEncounter.subject.reference)
+
+    coVerify { defaultRepository.addOrUpdate(true, resource = any<Encounter>()) }
+    coVerify { defaultRepository.addOrUpdate(false, resource = observation) }
+  }
+
+  @Test
+  fun testSaveExtractedResourcesAttachesToCarriedEncounterWithoutGenerating() = runTest {
+    val observation = Observation().apply { id = "obs-1" }
+    val bundle =
+      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = observation }) }
+    val questionnaire = extractionQuestionnaire()
+    val questionnaireResponse = extractionQuestionnaireResponse()
+    val actionParameters =
+      listOf(
+        ActionParameter(
+          key = "encounter",
+          paramType = ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE,
+          value = "existing-enc-id",
+          resourceType = ResourceType.Encounter,
+        ),
+      )
+
+    coEvery { defaultRepository.addOrUpdate(any(Boolean::class), any<Resource>()) } just runs
+
+    questionnaireViewModel.saveExtractedResources(
+      bundle = bundle,
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig,
+      questionnaireResponse = questionnaireResponse,
+      context = context,
+      actionParameters = actionParameters,
+    )
+
+    // Reuses the carried-over Encounter id — no new Encounter generated this round.
+    Assert.assertFalse(questionnaireResponse.hasEncounter())
+    Assert.assertEquals("Encounter/existing-enc-id", observation.encounter.reference)
+    coVerify { defaultRepository.addOrUpdate(false, resource = observation) }
+  }
+
+  @Test
   fun testRetireUsedQuestionnaireUniqueIdShouldUpdateGroupResourceWhenIDIsUsed() = runTest {
     val linkId = "phn"
     val uniqueIdAssignmentConfig =
@@ -2072,6 +2198,96 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       Assert.assertTrue(result!!.item.isNotEmpty())
       Assert.assertTrue((result.item.single().answerFirstRep.value as DateType).isToday)
     }
+
+  @Test
+  fun testPopulateQuestionnaireEvaluatesCqlBasedInitialExpression() = runTest {
+    val questionnaireViewModelInstance =
+      QuestionnaireViewModel(
+        defaultRepository = defaultRepository,
+        dispatcherProvider = dispatcherProvider,
+        fhirCarePlanGenerator = fhirCarePlanGenerator,
+        rulesExecutor = rulesExecutor,
+        transformSupportServices = mockk(),
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        fhirOperator = fhirOperator,
+        fhirValidatorRequestHandlerProvider = fhirValidatorRequestHandlerProvider,
+        fhirPathDataExtractor = fhirPathDataExtractor,
+        configurationRegistry = configurationRegistry,
+      )
+    val cqlIdentifier = "hasChronicCondition"
+    val questionnaireWithCqlInitExpr =
+      Questionnaire().apply {
+        id = questionnaireConfig.id
+        addExtension(
+          Extension(
+            "http://hl7.org/fhir/StructureDefinition/cqf-library",
+            StringType("http://example.org/Library/test-cql-lib|1.0.0"),
+          ),
+        )
+        addItem(
+          QuestionnaireItemComponent().apply {
+            linkId = "chronicCondition"
+            type = Questionnaire.QuestionnaireItemType.BOOLEAN
+            addExtension(
+              Extension(
+                "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                Expression().apply {
+                  language = "text/cql-identifier"
+                  expression = cqlIdentifier
+                },
+              ),
+            )
+          },
+        )
+      }
+
+    // New questionnaire (not edit/draft) so CQL initialExpression population runs.
+    val thisConfig =
+      questionnaireConfig.copy(
+        resourceType = ResourceType.Patient,
+        resourceIdentifier = "patient-1",
+        type = QuestionnaireType.DEFAULT.name,
+      )
+
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, thisConfig.id) } returns
+      questionnaireWithCqlInitExpr
+    coEvery { defaultRepository.loadResource("patient-1", ResourceType.Patient) } returns patient
+
+    val cqlResultParams =
+      Parameters().apply {
+        addParameter(
+          Parameters.ParametersParameterComponent().apply {
+            name = cqlIdentifier
+            value = BooleanType(true)
+          },
+        )
+      }
+    coEvery { fhirOperator.evaluateLibrary(any(), any(), any(), any(), any()) } returns
+      cqlResultParams
+
+    questionnaireViewModelInstance.populateQuestionnaire(
+      questionnaireWithCqlInitExpr,
+      thisConfig,
+      emptyList(),
+    )
+
+    val initial =
+      questionnaireWithCqlInitExpr.item
+        .first { it.linkId == "chronicCondition" }
+        .initial
+        .firstOrNull()
+        ?.value
+    Assert.assertTrue(initial is BooleanType && (initial as BooleanType).booleanValue())
+    coVerify {
+      fhirOperator.evaluateLibrary(
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+      )
+    }
+  }
 
   @Test
   fun testThatPopulateQuestionnaireReturnsQuestionnaireResponseWithUnAnsweredRemoved() = runTest {

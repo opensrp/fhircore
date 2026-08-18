@@ -438,7 +438,7 @@ constructor(
    * Type'?_id='comma,separated,list,of,ids'
    */
   @Throws(UnknownHostException::class, HttpException::class)
-  suspend fun fetchNonWorkflowConfigResources() {
+  suspend fun fetchNonWorkflowConfigResources(forceRefresh: Boolean = false) {
     Timber.d("Triggered fetching application configurations remotely")
     configCacheMap.clear()
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
@@ -468,7 +468,7 @@ constructor(
           }
         }
 
-        processCompositionSectionComponent(sectionComponentMap)
+        processCompositionSectionComponent(sectionComponentMap, forceRefresh)
 
         // Save composition after fetching all the referenced section resources
         addOrUpdate(compositionResource)
@@ -480,12 +480,13 @@ constructor(
 
   private suspend fun processCompositionSectionComponent(
     sectionComponentMap: Map<String, List<Composition.SectionComponent>>,
+    forceRefresh: Boolean = false,
   ) {
     sectionComponentMap
       .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
       .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
         if (entry.key == ResourceType.List.name) {
-          processCompositionListResources(entry)
+          processCompositionListResources(entry, forceRefresh)
         } else {
           val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
@@ -501,6 +502,7 @@ constructor(
               resourceType = entry.key,
               resourceIdList =
                 sectionComponents.map { sectionComponent -> sectionComponent.focus.extractId() },
+              forceRefresh = forceRefresh,
             )
           }
         }
@@ -557,14 +559,15 @@ constructor(
   private suspend fun fetchResources(
     resourceType: String,
     resourceIdList: List<String>,
+    forceRefresh: Boolean = false,
   ): Bundle {
     val resultBundle =
       if (isNonProxy()) {
-        fhirResourceDataSourceGetBundle(resourceType, resourceIdList)
+        fhirResourceDataSourceGetBundle(resourceType, resourceIdList, forceRefresh)
       } else {
         fhirResourceDataSource.post(
           requestBody =
-            generateRequestBundle(resourceType, resourceIdList)
+            generateRequestBundle(resourceType, resourceIdList, forceRefresh)
               .encodeResourceToString()
               .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
         )
@@ -705,7 +708,11 @@ constructor(
   }
 
   @VisibleForTesting
-  fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
+  fun generateRequestBundle(
+    resourceType: String,
+    idList: List<String>,
+    forceRefresh: Boolean = false,
+  ): Bundle {
     val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
 
     idList.forEach {
@@ -713,7 +720,7 @@ constructor(
         Bundle.BundleEntryComponent().apply {
           request =
             Bundle.BundleEntryRequestComponent().apply {
-              url = "$resourceType?$ID=$it${getLastConfigUpdatedTimestampParam(resourceType, it)}"
+              url = "$resourceType?$ID=$it${lastUpdatedQuery(resourceType, it, forceRefresh)}"
               method = Bundle.HTTPVerb.GET
             }
         },
@@ -735,9 +742,16 @@ constructor(
     return if (timestamp.isNotEmpty()) "&$LAST_UPDATED_KEY=$GREATER_THAN_PREFIX$timestamp" else ""
   }
 
+  private fun lastUpdatedQuery(
+    resourceType: String,
+    resourceId: String,
+    forceRefresh: Boolean,
+  ): String = if (forceRefresh) "" else getLastConfigUpdatedTimestampParam(resourceType, resourceId)
+
   private suspend fun fhirResourceDataSourceGetBundle(
     resourceType: String,
     resourceIds: List<String>,
+    forceRefresh: Boolean = false,
   ): Bundle =
     Bundle().apply {
       type = Bundle.BundleType.COLLECTION
@@ -746,7 +760,7 @@ constructor(
           .map {
             fhirResourceDataSource
               .getResource(
-                "$resourceType?${Composition.SP_RES_ID}=$it${getLastConfigUpdatedTimestampParam(resourceType, it)}",
+                "$resourceType?${Composition.SP_RES_ID}=$it${lastUpdatedQuery(resourceType, it, forceRefresh)}",
               )
               .entry
           }
@@ -755,6 +769,7 @@ constructor(
 
   private suspend fun processCompositionListResources(
     sectionComponentEntry: Map.Entry<String, List<Composition.SectionComponent>>,
+    forceRefresh: Boolean = false,
   ) {
     if (isNonProxy()) {
       val chunkedResourceIdList = sectionComponentEntry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
@@ -762,6 +777,7 @@ constructor(
         fetchResources(
             resourceType = sectionComponentEntry.key,
             resourceIdList = it.map { sectionComponent -> sectionComponent.focus.extractId() },
+            forceRefresh = forceRefresh,
           )
           .entry
           .forEach { bundleEntryComponent ->
@@ -903,7 +919,8 @@ constructor(
      * These are hardcoded as they are not meant to be easily configurable to avoid config vs data
      * sync issues
      */
-    private val FILTER_RESOURCE_LIST =
+    @VisibleForTesting
+    internal val FILTER_RESOURCE_LIST =
       listOf(
         ResourceType.Questionnaire.name,
         ResourceType.StructureMap.name,
@@ -913,7 +930,7 @@ constructor(
         ResourceType.Measure.name,
         ResourceType.Basic.name,
         ResourceType.Binary.name,
-        ResourceType.Parameters,
+        ResourceType.Parameters.name,
       )
   }
 }

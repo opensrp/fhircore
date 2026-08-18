@@ -39,6 +39,7 @@ import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
@@ -73,6 +74,9 @@ import org.smartregister.fhircore.quest.ui.shared.ON_RESULT_TYPE
 import org.smartregister.fhircore.quest.util.ResourceUtils
 import timber.log.Timber
 
+/** Wraps any failure from the questionnaire rendering pipeline so it can be handled uniformly. */
+class QuestionnaireRenderException(message: String, cause: Throwable) : Exception(message, cause)
+
 @AndroidEntryPoint
 class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
@@ -84,6 +88,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private lateinit var actionParameters: ArrayList<ActionParameter>
   private lateinit var viewBinding: QuestionnaireActivityBinding
   private var alertDialog: AlertDialog? = null
+  private var previousUncaughtExceptionHandler: Thread.UncaughtExceptionHandler? = null
   private lateinit var fusedLocationClient: FusedLocationProviderClient
   private var currentLocation: Location? = null
   private val locationPermissionLauncher: ActivityResultLauncher<Array<String>> =
@@ -142,6 +147,13 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       return
     }
 
+    // The FHIR SDK's QuestionnaireFragment/QuestionnaireViewModel evaluates config-driven
+    // FHIRPath expressions (enableWhen, calculatedExpression, etc.) inside its own internal
+    // coroutine scope. A malformed expression throws there, outside any try/catch we control,
+    // and would otherwise crash the whole app. Guard against that while this activity is alive.
+    previousUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+    Thread.setDefaultUncaughtExceptionHandler(this::handleUncaughtQuestionnaireException)
+
     viewBinding.questionnaireToolbar.setNavigationIcon(R.drawable.ic_cancel)
     viewBinding.questionnaireToolbar.setNavigationOnClickListener { handleBackPress() }
     viewBinding.questionnaireTitle.text = questionnaireConfig.title
@@ -156,7 +168,13 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     }
 
     if (savedInstanceState == null) {
-      lifecycleScope.launch { launchQuestionnaire() }
+      lifecycleScope.launch {
+        try {
+          launchQuestionnaire()
+        } catch (e: Exception) {
+          handleQuestionnaireRenderingFailure(e)
+        }
+      }
     }
 
     setupLocationServices()
@@ -169,6 +187,57 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         }
       },
     )
+  }
+
+  override fun onDestroy() {
+    Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler)
+    // The progress dialog is shown from a coroutine that can still be mid-flight (or its
+    // continuation already queued) when the activity is torn down - e.g. the user backs out
+    // while retrieveQuestionnaire/populateQuestionnaire is running. Nothing else dismisses it in
+    // that case, so the dialog's window outlives the activity and Android reports it as leaked.
+    alertDialog?.dismiss()
+    alertDialog = null
+    super.onDestroy()
+  }
+
+  /**
+   * Handles exceptions thrown from the FHIR SDK's questionnaire rendering internals (e.g. a
+   * malformed FHIRPath expression in the Questionnaire config) that would otherwise crash the whole
+   * app. Anything unrelated to questionnaire rendering is passed on to the previous handler so
+   * normal crash reporting/behaviour is preserved.
+   */
+  private fun handleUncaughtQuestionnaireException(thread: Thread, throwable: Throwable) {
+    if (!isQuestionnaireRenderingException(throwable)) {
+      previousUncaughtExceptionHandler?.uncaughtException(thread, throwable)
+      return
+    }
+    // This runs after the SDK Fragment's exception has already unwound Looper.loop(), so the
+    // main thread's message queue is dead: Timber.e below still fires (it's a direct call, not
+    // posted), but the recovery UI below is a best-effort fallback only, not a guarantee - the
+    // process is typically killed right after this handler returns. Prefer catching failures
+    // earlier (see launchQuestionnaire/getQuestionnaireFragmentBuilder) whenever possible.
+    handleQuestionnaireRenderingFailure(throwable)
+  }
+
+  private fun isQuestionnaireRenderingException(throwable: Throwable): Boolean =
+    generateSequence(throwable) { it.cause }
+      .flatMap { it.stackTrace.asSequence() }
+      .any { it.className.startsWith("com.google.android.fhir.datacapture") }
+
+  /** Single choke point for questionnaire rendering failures: log to Timber, tell the user. */
+  private fun handleQuestionnaireRenderingFailure(throwable: Throwable) {
+    Timber.e(throwable, "Failed to render questionnaire ${questionnaireConfig.id}")
+    runOnUiThread {
+      alertDialog?.dismiss()
+      alertDialog = null
+      AlertDialogue.showAlert(
+        context = this,
+        alertIntent = AlertIntent.ERROR,
+        message = getString(R.string.error_loading_questionnaire_form),
+        title = getString(R.string.error_loading_questionnaire_form_title),
+        confirmButton = AlertDialogButton(listener = { finish() }),
+      )
+    }
   }
 
   private fun reviewRecordAudioPermissionToLaunchSpeechToText() {
@@ -297,10 +366,12 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     val questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig)
     when {
       questionnaire == null -> {
+        showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
         showToast(getString(R.string.questionnaire_not_found))
         finish()
       }
       questionnaire.subjectType.isNullOrEmpty() -> {
+        showProgressDialog(QuestionnaireProgressState.QuestionnaireLaunch(false))
         val subjectRequiredMessage = getString(R.string.missing_subject_type)
         showToast(subjectRequiredMessage)
         Timber.e(subjectRequiredMessage)
@@ -333,44 +404,52 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     viewModel.questionnaireFormUpdateStateflow.collect {
       when (it) {
         is QuestionnaireFormUpdate.ShowSpeechToTextSubView -> {
-          viewBinding.recordSpeechActionButton.visibility = View.GONE
-          viewBinding.editFormActionButton.visibility = View.VISIBLE
-          viewBinding.speechToTextContainer.visibility = View.VISIBLE
-          renderSpeechToTextFragment()
-          val disabledQuestionnaire =
-            questionnaire.copy().apply { item.forEach(viewModel::disableQuestionnaireItem) }
+          try {
+            viewBinding.recordSpeechActionButton.visibility = View.GONE
+            viewBinding.editFormActionButton.visibility = View.VISIBLE
+            viewBinding.speechToTextContainer.visibility = View.VISIBLE
+            renderSpeechToTextFragment()
+            val disabledQuestionnaire =
+              questionnaire.copy().apply { item.forEach(viewModel::disableQuestionnaireItem) }
 
-          renderQuestionnaire(
-            disabledQuestionnaire,
-            it.currentQuestionnaireResponse,
-            launchContextResources,
-          )
+            renderQuestionnaire(
+              disabledQuestionnaire,
+              it.currentQuestionnaireResponse,
+              launchContextResources,
+            )
 
-          // Disable form buttons - very hacky
-          handler.postDelayed(
-            {
-              supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG)?.view?.let {
-                fragmentView ->
-                fragmentView
-                  .findViewById<View>(com.google.android.fhir.datacapture.R.id.submit_questionnaire)
-                  ?.isEnabled = false
-                fragmentView
-                  .findViewById<View>(com.google.android.fhir.datacapture.R.id.cancel_questionnaire)
-                  ?.isEnabled = false
-                fragmentView
-                  .findViewById<View>(
-                    com.google.android.fhir.datacapture.R.id.pagination_previous_button,
-                  )
-                  ?.isEnabled = false
-                fragmentView
-                  .findViewById<View>(
-                    com.google.android.fhir.datacapture.R.id.pagination_next_button,
-                  )
-                  ?.isEnabled = false
-              }
-            },
-            200,
-          )
+            // Disable form buttons - very hacky
+            handler.postDelayed(
+              {
+                supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG)?.view?.let {
+                  fragmentView ->
+                  fragmentView
+                    .findViewById<View>(
+                      com.google.android.fhir.datacapture.R.id.submit_questionnaire
+                    )
+                    ?.isEnabled = false
+                  fragmentView
+                    .findViewById<View>(
+                      com.google.android.fhir.datacapture.R.id.cancel_questionnaire
+                    )
+                    ?.isEnabled = false
+                  fragmentView
+                    .findViewById<View>(
+                      com.google.android.fhir.datacapture.R.id.pagination_previous_button,
+                    )
+                    ?.isEnabled = false
+                  fragmentView
+                    .findViewById<View>(
+                      com.google.android.fhir.datacapture.R.id.pagination_next_button,
+                    )
+                    ?.isEnabled = false
+                }
+              },
+              200,
+            )
+          } catch (e: Exception) {
+            handleQuestionnaireRenderingFailure(e)
+          }
         }
         is QuestionnaireFormUpdate.ShowQuestionnaireResponse -> {
           viewBinding.speechToTextContainer.visibility = View.GONE
@@ -388,9 +467,8 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
                 200,
               )
             }
-          } catch (e: IllegalArgumentException) {
-            Timber.e(e)
-            showToast(e.message.toString())
+          } catch (e: Exception) {
+            handleQuestionnaireRenderingFailure(e)
           } finally {
             removeSpeechToTextFragment()
           }
@@ -443,6 +521,23 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         .setShowSubmitAnywayButton(questionnaireConfig.showSubmitAnywayButton.toBooleanStrict())
         .apply {
           if (questionnaireResponse != null) {
+            // com.google.android.fhir.datacapture.QuestionnaireViewModel runs this same
+            // structural check in its constructor, on the SDK Fragment's own lazy-viewModel
+            // path - an exception there escapes outside any try/catch we control and crashes
+            // the app. Run it ourselves first, on our own stack, so a mismatch is a normal
+            // catchable QuestionnaireRenderException instead.
+            try {
+              QuestionnaireResponseValidator.checkQuestionnaireResponse(
+                questionnaire,
+                questionnaireResponse,
+              )
+            } catch (e: Exception) {
+              throw QuestionnaireRenderException(
+                "QuestionnaireResponse is structurally inconsistent with Questionnaire ${questionnaire.id}",
+                e,
+              )
+            }
+
             questionnaireResponse
               .takeIf {
                 viewModel.validateQuestionnaireResponse(
@@ -529,6 +624,18 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             // Dismiss progress indicator dialog, submit result then finish activity
             // TODO Ensure this dialog is dismissed even when an exception is encountered
             showProgressDialog(QuestionnaireProgressState.ExtractionInProgress(false))
+            // StructureMap path must create resources; empty id list means extraction failed.
+            if (
+              idTypes.isEmpty() &&
+                questionnaire.extension.any {
+                  it.url.contains("sdc-questionnaire-targetStructureMap")
+                }
+            ) {
+              Timber.e(
+                "Not finishing QuestionnaireActivity: StructureMap extraction returned no resources",
+              )
+              return@handleQuestionnaireSubmission
+            }
             setResult(
               Activity.RESULT_OK,
               Intent().apply {
@@ -624,7 +731,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     ): Bundle =
       bundleOf(
         Pair(QUESTIONNAIRE_CONFIG, questionnaireConfig),
-        Pair(QUESTIONNAIRE_ACTION_PARAMETERS, actionParams),
+        // Must be ArrayList: parcelableArrayList() cannot read a ListBuilder / emptyList extra,
+        // which would drop generateEncounter and the carried Encounter id on start-care launches.
+        Pair(QUESTIONNAIRE_ACTION_PARAMETERS, ArrayList(actionParams)),
       )
   }
 }

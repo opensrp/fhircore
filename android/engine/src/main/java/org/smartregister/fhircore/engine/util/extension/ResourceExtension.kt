@@ -36,6 +36,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Consent
+import org.hl7.fhir.r4.model.DiagnosticReport
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
@@ -45,10 +46,13 @@ import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.Location
+import org.hl7.fhir.r4.model.MedicationAdministration
+import org.hl7.fhir.r4.model.MedicationRequest
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.PrimitiveType
+import org.hl7.fhir.r4.model.Procedure
 import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -56,6 +60,7 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.ServiceRequest
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
@@ -317,6 +322,25 @@ fun Resource.appendPractitionerInfo(practitionerId: String?) {
       is Consent -> performer = updateReferenceList(performer, practitionerRef)
       else -> {}
     }
+  }
+}
+
+/**
+ * Sets the `.encounter` reference (or `.context` for [MedicationAdministration]) on resource types
+ * that carry one, unless already set by the StructureMap that produced the resource. Used to tie
+ * clinical resources extracted alongside an Encounter (generated or otherwise resolved) back to it,
+ * see `feature/20260817-encounter-scoped-sync-tags.md`.
+ */
+fun Resource.appendEncounterReference(encounterReference: Reference) {
+  when (this) {
+    is Observation -> encounter = updateReference(encounter, encounterReference)
+    is Condition -> encounter = updateReference(encounter, encounterReference)
+    is Procedure -> encounter = updateReference(encounter, encounterReference)
+    is MedicationRequest -> encounter = updateReference(encounter, encounterReference)
+    is MedicationAdministration -> context = updateReference(context, encounterReference)
+    is ServiceRequest -> encounter = updateReference(encounter, encounterReference)
+    is DiagnosticReport -> encounter = updateReference(encounter, encounterReference)
+    else -> {}
   }
 }
 

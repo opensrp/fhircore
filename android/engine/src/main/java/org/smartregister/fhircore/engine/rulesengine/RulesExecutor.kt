@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import com.google.android.fhir.datacapture.extensions.logicalId
@@ -62,6 +63,46 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
       baseResourceType = repositoryResourceData.resource.resourceType,
       computedValuesMap = computedValuesMap,
     )
+  }
+
+  /**
+   * Like [processResourceData], then pre-computes nested [ListProperties] into a plain
+   * [ResourceData.listResourceDataMap] suitable for register paging (where Compose SnapshotStateMap
+   * is not shared across rows).
+   */
+  fun processResourceDataWithLists(
+    repositoryResourceData: RepositoryResourceData,
+    rules: Rules,
+    params: Map<String, String>?,
+    listProperties: List<ListProperties>,
+  ): ResourceData {
+    val resourceData =
+      processResourceData(
+        repositoryResourceData = repositoryResourceData,
+        rules = rules,
+        params = params,
+      )
+    if (listProperties.isEmpty()) return resourceData
+
+    val listResourceDataStateMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
+    val paramsMap = params ?: emptyMap()
+    listProperties.forEach { listConfig ->
+      processListResourceData(
+        listProperties = listConfig,
+        relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
+        computedValuesMap =
+          if (paramsMap.isNotEmpty()) {
+            resourceData.computedValuesMap.plus(paramsMap)
+          } else {
+            resourceData.computedValuesMap
+          },
+        listResourceDataStateMap = listResourceDataStateMap,
+      )
+    }
+
+    val listResourceDataMap =
+      listResourceDataStateMap.mapValues { (_, snapshotList) -> snapshotList.toList() }
+    return resourceData.copy(listResourceDataMap = listResourceDataMap)
   }
 
   /**

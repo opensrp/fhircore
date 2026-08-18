@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.util.extensions
 
+import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -27,11 +28,20 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.EntryPointAccessors
+import java.util.UUID
 import kotlin.collections.set
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.hl7.fhir.r4.model.Binary
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
@@ -49,6 +59,8 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.data.local.RelatedPersonLinkService
+import org.smartregister.fhircore.engine.task.NamedEventInterventionService
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -58,14 +70,60 @@ import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.di.NamedEventInterventionEntryPoint
+import org.smartregister.fhircore.quest.event.AppEvent
+import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherFragment
+import org.smartregister.fhircore.quest.ui.relatedperson.RelatedPersonAddCoordinator
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.util.openExternalApp
 import org.smartregister.p2p.utils.startP2PScreen
+import timber.log.Timber
 
 const val PRACTITIONER_ID = "practitionerId"
+
+/**
+ * [ActionParameter] key for `APPLY_NAMED_EVENT` action configs. Start-care generates an Encounter
+ * on the first extraction that doesn't already produce one, unless this is explicitly `"false"`.
+ * See `feature/20260817-encounter-scoped-sync-tags.md`.
+ */
+const val GENERATE_ENCOUNTER_PARAM_KEY = "generateEncounter"
+
+/** Absent or any value other than `"false"` means generate the session Encounter. */
+fun List<ActionParameter>.resolveGenerateEncounter(): Boolean =
+  find { it.key == GENERATE_ENCOUNTER_PARAM_KEY }
+    ?.value
+    ?.equals("false", ignoreCase = true) != true
+
+fun buildStartCareActionParameters(
+  encounterId: String?,
+  generateEncounter: Boolean,
+): ArrayList<ActionParameter> =
+  ArrayList<ActionParameter>().apply {
+    if (!encounterId.isNullOrBlank()) {
+      // Makes the current-visit Encounter id available to CQL as the `encounterid` library
+      // parameter and tells extraction/save which Encounter to attach this submission to.
+      add(
+        ActionParameter(
+          key = "encounter",
+          paramType = ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE,
+          value = encounterId,
+          resourceType = org.hl7.fhir.r4.model.ResourceType.Encounter,
+        ),
+      )
+    }
+    if (generateEncounter) {
+      add(
+        ActionParameter(
+          key = GENERATE_ENCOUNTER_PARAM_KEY,
+          paramType = ActionParameterType.PARAMDATA,
+          value = "true",
+        ),
+      )
+    }
+  }
 
 fun List<ActionConfig>.handleClickEvent(
   navController: NavController,
@@ -256,8 +314,293 @@ fun ActionConfig.handleClickEvent(
         )
       navController.navigate(MainNavigationScreen.AlertDialogFragment.route, args)
     }
+    ApplicationWorkflow.APPLY_NAMED_EVENT -> {
+      handleApplyNamedEvent(
+        navController = navController,
+        interpolatedParams = interpolatedParams,
+        resourceId = resourceId,
+        computedValuesMap = computedValuesMap,
+      )
+    }
+    ApplicationWorkflow.ADD_RELATED_PERSON -> {
+      val subjectId =
+        interpolatedParams.find { it.key == "subjectId" }?.value?.extractLogicalIdUuid()
+          ?: resourceId?.extractLogicalIdUuid()
+      val registrationQuestionnaireId =
+        interpolatedParams
+          .find { it.key == "registrationQuestionnaireId" }
+          ?.value
+          ?.takeIf { it.isNotBlank() }
+          ?: RelatedPersonLinkService.DEFAULT_REGISTRATION_QUESTIONNAIRE_ID
+      RelatedPersonAddCoordinator.start(
+        navController = navController,
+        subjectId = subjectId,
+        registrationQuestionnaireId = registrationQuestionnaireId,
+      )
+    }
     else -> return
   }
+}
+
+private fun handleApplyNamedEvent(
+  navController: NavController,
+  interpolatedParams: List<ActionParameter>,
+  resourceId: String?,
+  computedValuesMap: Map<String, Any>,
+) {
+  val context = navController.context
+  val namedEvent =
+    interpolatedParams.find { it.key == "namedEvent" }?.value?.takeIf { it.isNotBlank() }
+      ?: "available-care"
+  val subjectId =
+    interpolatedParams.find { it.key == "subjectId" }?.value?.extractLogicalIdUuid()
+      ?: resourceId?.extractLogicalIdUuid()
+  if (subjectId.isNullOrBlank()) {
+    context.showToast("No client selected for care", Toast.LENGTH_SHORT)
+    return
+  }
+  val generateEncounter = interpolatedParams.resolveGenerateEncounter()
+
+  val lifecycleOwner = context as? LifecycleOwner
+  if (lifecycleOwner == null) {
+    Timber.e("APPLY_NAMED_EVENT requires a LifecycleOwner context")
+    context.showToast("Unable to start care", Toast.LENGTH_SHORT)
+    return
+  }
+
+  val entryPoint =
+    EntryPointAccessors.fromApplication(
+      context.applicationContext,
+      NamedEventInterventionEntryPoint::class.java,
+    )
+  val service = entryPoint.namedEventInterventionService()
+
+  lifecycleOwner.lifecycleScope.launch {
+    val plans =
+      runCatching { service.listAvailableCarePlans(namedEvent, subjectId) }
+        .onFailure { Timber.e(it, "Failed to list available care plans for event=$namedEvent") }
+        .getOrDefault(emptyList())
+
+    if (plans.isEmpty()) {
+      context.showToast("No care available for this client", Toast.LENGTH_LONG)
+      return@launch
+    }
+
+    showAvailableCarePicker(
+      context = context,
+      navController = navController,
+      service = service,
+      eventBus = entryPoint.eventBus(),
+      namedEvent = namedEvent,
+      subjectId = subjectId,
+      plans = plans,
+      title = actionDisplayOrDefault(computedValuesMap),
+      generateEncounter = generateEncounter,
+    )
+  }
+}
+
+private fun actionDisplayOrDefault(computedValuesMap: Map<String, Any>): String {
+  val fromMap = computedValuesMap["actionDisplay"] as? String
+  return fromMap?.takeIf { it.isNotBlank() } ?: "Start care"
+}
+
+/**
+ * One checkbox per PlanDefinition that carries the named-event trigger and has at least one
+ * valid ($apply-resolved) action, plus a Start button — per
+ * `feature/20260812-intervention-order-and-dedup.md`'s companion Android spec. All rows default
+ * checked (everything listed is already eligible); Start begins the ordered launch sequence for
+ * whichever rows remain checked.
+ */
+private fun showAvailableCarePicker(
+  context: Context,
+  navController: NavController,
+  service: NamedEventInterventionService,
+  eventBus: EventBus,
+  namedEvent: String,
+  subjectId: String,
+  plans: List<NamedEventInterventionService.AvailableCarePlan>,
+  title: String,
+  generateEncounter: Boolean,
+) {
+  val labels = plans.map { it.title }.toTypedArray()
+  val checked = BooleanArray(plans.size) { true }
+  val selectedIndices = plans.indices.toMutableSet()
+  AlertDialog.Builder(context)
+    .setTitle(title)
+    .setMultiChoiceItems(labels, checked) { _, which, isChecked ->
+      if (isChecked) selectedIndices.add(which) else selectedIndices.remove(which)
+    }
+    .setPositiveButton("Start") { _, _ ->
+      val selectedPlans = selectedIndices.mapNotNull { plans.getOrNull(it) }
+      if (selectedPlans.isEmpty()) return@setPositiveButton
+      val session =
+        AvailableCareSession(
+          namedEvent = namedEvent,
+          subjectId = subjectId,
+          selectedPlanIds = selectedPlans.map { it.planDefinitionId }.toSet(),
+          initialPlans = selectedPlans,
+          generateEncounter = generateEncounter,
+        )
+      advanceAvailableCareSession(context, navController, service, eventBus, session)
+    }
+    .setNegativeButton(android.R.string.cancel, null)
+    .show()
+}
+
+/**
+ * Tracks one "select available care" run across its whole sequence of launches: which PDs the
+ * user checked, which questionnaires are already submitted this session (so a re-`$apply` never
+ * re-shows something just completed — no PD-level applicability condition exists yet, see
+ * `feature/careplan-intervention-plandefinition.md` §26), and the current-visit Encounter id
+ * once known (learned from the first submission that produced one).
+ */
+private class AvailableCareSession(
+  val namedEvent: String,
+  val subjectId: String,
+  val selectedPlanIds: Set<String>,
+  initialPlans: List<NamedEventInterventionService.AvailableCarePlan>,
+  val generateEncounter: Boolean,
+) {
+  /** Unique per session so [EventBus]'s one-time-per-consumer delivery doesn't cross sessions. */
+  val consumerId: String = UUID.randomUUID().toString()
+  val submittedQuestionnaireIds: MutableSet<String> = mutableSetOf()
+  var encounterId: String? = null
+
+  /**
+   * The picker's own already-computed `$apply` result, reused for exactly the first batch
+   * ("should have been saved, no need to run it again") — cleared after first use so every
+   * subsequent batch re-runs `$apply` for real (an earlier submission may have unlocked a
+   * lower-order action).
+   */
+  var cachedPlans: List<NamedEventInterventionService.AvailableCarePlan>? = initialPlans
+}
+
+/** Consolidates the selected PDs' current options, finds the lowest order still due. */
+private suspend fun resolveNextBatch(
+  service: NamedEventInterventionService,
+  session: AvailableCareSession,
+): List<NamedEventInterventionService.InterventionOption> {
+  val plans =
+    session.cachedPlans
+      ?: runCatching { service.listAvailableCarePlans(session.namedEvent, session.subjectId) }
+        .onFailure { Timber.e(it, "Failed to re-apply available-care PlanDefinitions") }
+        .getOrDefault(emptyList())
+  session.cachedPlans = null
+
+  val consolidated =
+    plans
+      .filter { it.planDefinitionId in session.selectedPlanIds }
+      .flatMap { it.options }
+      .filterNot { session.submittedQuestionnaireIds.contains(it.questionnaireId) }
+      .distinctBy { it.questionnaireId }
+  val lowestOrder = consolidated.minOfOrNull { it.order } ?: return emptyList()
+  return consolidated.filter { it.order == lowestOrder }
+}
+
+/**
+ * Launches the next lowest-order due questionnaire(s) from [session]'s selected PDs, then waits
+ * for its submission (via [EventBus]) to advance again. Ends silently once nothing is left due.
+ *
+ * Note: if the user backs out of the launched Questionnaire without submitting, no event fires
+ * (matches today's `AppMainActivity.onSubmitQuestionnaire`, which only triggers on `RESULT_OK`)
+ * and this session simply stops advancing — bounded by [LifecycleOwner]'s own scope cancellation,
+ * not a leak, but the user would need to re-open the picker to resume.
+ */
+private fun advanceAvailableCareSession(
+  context: Context,
+  navController: NavController,
+  service: NamedEventInterventionService,
+  eventBus: EventBus,
+  session: AvailableCareSession,
+) {
+  val lifecycleOwner = context as? LifecycleOwner ?: return
+  lifecycleOwner.lifecycleScope.launch {
+    val batch = resolveNextBatch(service, session)
+    if (batch.isEmpty()) {
+      Timber.i("Available-care session for subject=${session.subjectId} complete")
+      return@launch
+    }
+    val chosen = if (batch.size == 1) batch.first() else awaitTieBreakChoice(context, batch)
+    val chosenQuestionnaireId = chosen?.questionnaireId
+    if (chosen == null || chosenQuestionnaireId.isNullOrBlank()) return@launch
+
+    launchInterventionOption(
+      navController,
+      chosen,
+      session.subjectId,
+      session.encounterId,
+      session.generateEncounter,
+    )
+
+    val submission =
+      eventBus.events
+        .getFor(session.consumerId)
+        .filterIsInstance<AppEvent.OnSubmitQuestionnaire>()
+        .first { it.questionnaireSubmission.questionnaireConfig.id == chosenQuestionnaireId }
+        .questionnaireSubmission
+
+    session.submittedQuestionnaireIds.add(chosenQuestionnaireId)
+    if (session.encounterId == null && submission.questionnaireResponse.hasEncounter()) {
+      session.encounterId =
+        submission.questionnaireResponse.encounter.reference?.extractLogicalIdUuid()
+    }
+    advanceAvailableCareSession(context, navController, service, eventBus, session)
+  }
+}
+
+/** Single-choice fallback when more than one option ties at the lowest order. */
+private suspend fun awaitTieBreakChoice(
+  context: Context,
+  batch: List<NamedEventInterventionService.InterventionOption>,
+): NamedEventInterventionService.InterventionOption? = suspendCancellableCoroutine { cont ->
+  val labels = batch.map { it.title }.toTypedArray()
+  val dialog =
+    AlertDialog.Builder(context)
+      .setTitle("Choose one")
+      .setItems(labels) { _, which -> cont.resume(batch.getOrNull(which)) {} }
+      .setOnCancelListener { cont.resume(null) {} }
+      .show()
+  cont.invokeOnCancellation { dialog.dismiss() }
+}
+
+private fun launchInterventionOption(
+  navController: NavController,
+  option: NamedEventInterventionService.InterventionOption,
+  subjectId: String,
+  encounterId: String? = null,
+  generateEncounter: Boolean = true,
+) {
+  val questionnaireId = option.questionnaireId
+  if (!questionnaireId.isNullOrBlank() && navController.context is QuestionnaireHandler) {
+    Timber.i(
+      "APPLY_NAMED_EVENT launching Questionnaire/$questionnaireId title=${option.title} " +
+        "order=${option.order} subject=$subjectId encounter=$encounterId " +
+        "generateEncounter=$generateEncounter",
+    )
+    (navController.context as QuestionnaireHandler).launchQuestionnaire(
+      context = navController.context,
+      questionnaireConfig =
+        QuestionnaireConfig(
+          id = questionnaireId,
+          title = option.title,
+          resourceIdentifier = subjectId,
+          resourceType = org.hl7.fhir.r4.model.ResourceType.Patient,
+          saveButtonText = "Save",
+        ),
+      actionParams = buildStartCareActionParameters(encounterId, generateEncounter),
+    )
+    return
+  }
+
+  // Should not happen once listAvailableCarePlans filters to Questionnaire-only options.
+  navController.context.showToast(
+    "No questionnaire for: ${option.title}",
+    Toast.LENGTH_LONG,
+  )
+  Timber.e(
+    "APPLY_NAMED_EVENT option has no Questionnaire id=${option.id} definition=${option.definitionCanonical}",
+  )
 }
 
 fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =

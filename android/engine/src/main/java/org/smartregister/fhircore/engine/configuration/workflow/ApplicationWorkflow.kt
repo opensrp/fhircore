@@ -71,4 +71,21 @@ enum class ApplicationWorkflow {
 
   /** A workflow that launches an external application via Intent */
   LAUNCH_EXTERNAL_APP,
+
+  /**
+   * Discovers PlanDefinitions with a configured named-event trigger (e.g. `available-care`), runs
+   * `$apply` so applicability conditions are evaluated, and presents RequestGroup recommendations
+   * for the user to start an intervention. Intervention catalog is synced FHIR content — not
+   * hardcoded in the app. See `feature/register-tricc.md`.
+   */
+  APPLY_NAMED_EVENT,
+
+  /**
+   * Adds a RelatedPerson from a client profile: ask child / mother / father / guardian, whether
+   * they are the primary caregiver, then search an existing client or register one with the
+   * standard client questionnaire. Persists RelatedPerson (`patient` = child, `identifier` =
+   * guardian Patient URL, optional primary-caregiver extension). See
+   * `feature/20260813-related-person-picker.md`.
+   */
+  ADD_RELATED_PERSON,
 }

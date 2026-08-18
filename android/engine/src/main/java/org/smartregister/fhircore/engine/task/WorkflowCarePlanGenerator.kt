@@ -24,7 +24,6 @@ import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.isAccessible
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -66,12 +65,17 @@ constructor(
    * @param patient Patient resource for which the [PlanDefinition] $apply is run
    * @param data Bundle resource containing the input resource/data
    * @param output [CarePlan] resource object with the generated care plan
+   * @param persist Whether the request resources proposed by $apply (Task, RequestGroup, etc.)
+   *   should be written to the local database. Set to `false` for read-only previews/discovery
+   *   (e.g. listing applicable interventions) so browsing does not create duplicate resources; the
+   *   proposed resources are still attached to [output] either way.
    */
   suspend fun applyPlanDefinitionOnPatient(
     planDefinition: PlanDefinition,
     patient: Patient,
     data: Bundle = Bundle(),
     output: CarePlan,
+    persist: Boolean = true,
   ) {
     withContext(Dispatchers.IO) {
       val carePlanProposal =
@@ -81,7 +85,7 @@ constructor(
           data,
         ) as CarePlan
 
-      acceptCarePlan(carePlanProposal, output)
+      acceptCarePlan(carePlanProposal, output, persist)
 
       resolveDynamicValues(
         planDefinition = planDefinition,
@@ -191,20 +195,32 @@ constructor(
         "DiagnosticReport" -> TODO("Not supported yet")
         "Communication" -> TODO("Not supported yet")
         "CommunicationRequest" -> TODO("Not supported yet")
+        "CarePlan",
+        "RequestGroup", -> {
+          // Attach as a contained resource (in addition to an activity reference) so callers can
+          // read it straight off `carePlan.contained` — e.g. named-event intervention discovery
+          // reads the RequestGroup produced by $apply this way (see
+          // feature/client-register-applicable-care.md).
+          carePlan.addContained(resource)
+          carePlan.addActivity().setReference(Reference(resource))
+        }
         else -> TODO("Not a valid request resource ${resource.fhirType()}")
       }
     }
   }
 
   /**
-   * Invokes the respective [RequestResourceManager] to create new request resources as per the
-   * proposed [CarePlan]
+   * Classifies and creates new request resources as per the proposed [CarePlan]
    *
    * @param resourceList List of request resources to be created
-   * @param requestResourceConfigs Application-specific configurations to be applied on the created
-   *   request resources
+   * @param persist Whether matched resources should be persisted via [DefaultRepository]. When
+   *   `false` this only classifies/returns the resources for linking onto the CarePlan of record,
+   *   without writing anything to the database (used for read-only previews).
    */
-  private suspend fun createProposedRequestResources(resourceList: List<Resource>): List<Resource> {
+  private suspend fun createProposedRequestResources(
+    resourceList: List<Resource>,
+    persist: Boolean,
+  ): List<Resource> {
     val createdRequestResources = ArrayList<Resource>()
     for (resource in resourceList) {
       when (resource.fhirType()) {
@@ -212,8 +228,11 @@ constructor(
         "QuestionnaireResponse",
         "OperationOutcome",
         "MedicationRequest",
-        "CarePlan", -> {
-          defaultRepository.create(true, resource)
+        "CarePlan",
+        "RequestGroup", -> {
+          if (persist) {
+            defaultRepository.create(true, resource)
+          }
           createdRequestResources.add(resource)
         }
         "ServiceRequest" -> TODO("Not supported yet")
@@ -222,7 +241,6 @@ constructor(
         "DiagnosticReport" -> TODO("Not supported yet")
         "Communication" -> TODO("Not supported yet")
         "CommunicationRequest" -> TODO("Not supported yet")
-        "RequestGroup" -> {}
         else -> TODO("Not a valid request resource ${resource.fhirType()}")
       }
     }
@@ -236,14 +254,15 @@ constructor(
    * @param proposedCarePlan Proposed [CarePlan] generated when $apply is run on a [PlanDefinition]
    * @param carePlanOfRecord CarePlan of record for a [Patient] which needs to be updated with the
    *   new request resources created as per the proposed CarePlan
-   * @param requestResourceConfigs Application-specific configurations to be applied on the created
-   *   request resources
+   * @param persist Whether the proposed request resources should be persisted; see
+   *   [applyPlanDefinitionOnPatient].
    */
   private suspend fun acceptCarePlan(
     proposedCarePlan: CarePlan,
     carePlanOfRecord: CarePlan,
+    persist: Boolean,
   ) {
-    val resourceList = createProposedRequestResources(proposedCarePlan.contained)
+    val resourceList = createProposedRequestResources(proposedCarePlan.contained, persist)
     addRequestResourcesToCarePlanOfRecord(carePlanOfRecord, resourceList)
   }
 
@@ -269,13 +288,5 @@ constructor(
       Task.TaskStatus.NULL -> CarePlan.CarePlanActivityStatus.NULL
       else -> CarePlan.CarePlanActivityStatus.NULL
     }
-  }
-
-  private inline fun <reified T : Any> getPrivateProperty(property: String, obj: T): Any? {
-    return T::class
-      .declaredMemberProperties
-      .find { it.name == property }!!
-      .apply { isAccessible = true }
-      .get(obj)
   }
 }

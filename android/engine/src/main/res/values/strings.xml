@@ -1,5 +1,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="manual_sync">Manual sync</string>
+    <string name="sync_configuration">Sync configuration</string>
+    <string name="sync_configuration_title">Sync configuration?</string>
+    <string name="sync_configuration_message">This may break compatibility with existing data if a questionnaire or care plan has changed version or been removed. Sync configuration anyway?</string>
+    <string name="syncing_configuration">Syncing configuration…</string>
+    <string name="sync_configuration_completed">Configuration sync complete</string>
+    <string name="sync_configuration_failed">Configuration sync failed. Check internet connection or try again later</string>
     <string name="sync">Sync</string>
     <string name="language">Language</string>
     <string name="logout_as_user">Log out as </string>
