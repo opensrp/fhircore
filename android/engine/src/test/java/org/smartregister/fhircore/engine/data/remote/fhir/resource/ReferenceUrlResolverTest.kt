@@ -70,6 +70,46 @@ class ReferenceUrlResolverTest : RobolectricTest() {
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testResolveBitmapUrlWithRelativeBinaryReferenceReturnsBitmap() {
+    runTest {
+      val binary =
+        Binary().apply {
+          id = "0eadaee6-1965-5862-ba94-fab36b971abf"
+          contentType = "image/png"
+          content = byteArrayOf(1, 2, 3, 4)
+        }
+      coEvery { fhirEngine.get(ResourceType.Binary, binary.idPart) } returns binary
+
+      val bitmap =
+        referenceUrlResolver.resolveBitmapUrl("Binary/${binary.idPart}")
+
+      Assert.assertNotNull(bitmap)
+    }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testResolveBitmapUrlWithAbsoluteBinaryUrlUsesFhirEngine() {
+    runTest {
+      val binary =
+        Binary().apply {
+          id = "sample-binary-image"
+          contentType = "image/png"
+          content = byteArrayOf(1, 2, 3, 4)
+        }
+      coEvery { fhirEngine.get(ResourceType.Binary, "sample-binary-image") } returns binary
+
+      val bitmap =
+        referenceUrlResolver.resolveBitmapUrl(
+          "https://fhir-server.org/Binary/sample-binary-image",
+        )
+
+      Assert.assertNotNull(bitmap)
+    }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testResolveImageUrlWithNullBodyShouldReturnNull() {
     runTest {
       coEvery { fhirResourceService.fetchImage(any()) } returns null

@@ -44,6 +44,8 @@ import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Location
+import org.hl7.fhir.r4.model.MedicationAdministration
+import org.hl7.fhir.r4.model.MedicationRequest
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
@@ -883,6 +885,52 @@ class ResourceExtensionTest : RobolectricTest() {
     val consent = Consent().apply { this.id = "123456" }
     consent.appendOrganizationInfo(listOf("Organization/12345"))
     Assert.assertEquals("Organization/12345", consent.organization.first().reference)
+  }
+
+  @Test
+  fun `test appendEncounterReference sets encounter on Observation Resource`() {
+    val observation = Observation().apply { this.id = "obs-1" }
+    observation.appendEncounterReference("enc-1".asReference(ResourceType.Encounter))
+    Assert.assertEquals("Encounter/enc-1", observation.encounter.reference)
+  }
+
+  @Test
+  fun `test appendEncounterReference sets encounter on Condition Resource`() {
+    val condition = Condition().apply { this.id = "condition-1" }
+    condition.appendEncounterReference("enc-1".asReference(ResourceType.Encounter))
+    Assert.assertEquals("Encounter/enc-1", condition.encounter.reference)
+  }
+
+  @Test
+  fun `test appendEncounterReference sets encounter on MedicationRequest Resource`() {
+    val medicationRequest = MedicationRequest().apply { this.id = "med-req-1" }
+    medicationRequest.appendEncounterReference("enc-1".asReference(ResourceType.Encounter))
+    Assert.assertEquals("Encounter/enc-1", medicationRequest.encounter.reference)
+  }
+
+  @Test
+  fun `test appendEncounterReference sets context on MedicationAdministration Resource`() {
+    val medicationAdministration = MedicationAdministration().apply { this.id = "med-admin-1" }
+    medicationAdministration.appendEncounterReference("enc-1".asReference(ResourceType.Encounter))
+    Assert.assertEquals("Encounter/enc-1", medicationAdministration.context.reference)
+  }
+
+  @Test
+  fun `test appendEncounterReference does not overwrite an existing encounter reference`() {
+    val observation =
+      Observation().apply {
+        this.id = "obs-1"
+        encounter = "already-set".asReference(ResourceType.Encounter)
+      }
+    observation.appendEncounterReference("enc-1".asReference(ResourceType.Encounter))
+    Assert.assertEquals("Encounter/already-set", observation.encounter.reference)
+  }
+
+  @Test
+  fun `test appendEncounterReference is a no-op for unsupported Resource types`() {
+    val patient = Patient().apply { this.id = "patient-1" }
+    // Should not throw for a Resource type with no .encounter/.context field
+    patient.appendEncounterReference("enc-1".asReference(ResourceType.Encounter))
   }
 
   @Test

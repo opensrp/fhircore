@@ -126,6 +126,7 @@ import org.smartregister.fhircore.quest.assertResourceEquals
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
 import org.smartregister.fhircore.quest.util.QuestionnaireResponseUtils
+import org.smartregister.fhircore.quest.util.extensions.GENERATE_ENCOUNTER_PARAM_KEY
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 
@@ -1755,6 +1756,131 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       // Assert that the listResource id matches the linkId
       assertEquals(linkId, listResource.id)
     }
+
+  @Test
+  fun testSaveExtractedResourcesTagsOnlyEncounterWhenBundleContainsOne() = runTest {
+    val encounter = Encounter().apply { id = "enc-1" }
+    val observation = Observation().apply { id = "obs-1" }
+    val bundle =
+      Bundle().apply {
+        addEntry(Bundle.BundleEntryComponent().apply { resource = encounter })
+        addEntry(Bundle.BundleEntryComponent().apply { resource = observation })
+      }
+    val questionnaire = extractionQuestionnaire()
+    val questionnaireResponse = extractionQuestionnaireResponse()
+
+    coEvery { defaultRepository.addOrUpdate(any(Boolean::class), any<Resource>()) } just runs
+
+    questionnaireViewModel.saveExtractedResources(
+      bundle = bundle,
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig,
+      questionnaireResponse = questionnaireResponse,
+      context = context,
+    )
+
+    // Encounter is tagged; the Observation alongside it in the same bundle is not, and is
+    // instead attached to the Encounter via its own .encounter reference.
+    coVerify { defaultRepository.addOrUpdate(true, resource = encounter) }
+    coVerify { defaultRepository.addOrUpdate(false, resource = observation) }
+    Assert.assertEquals("Encounter/enc-1", observation.encounter.reference)
+  }
+
+  @Test
+  fun testSaveExtractedResourcesTagsEveryResourceWhenNoEncounterIsResolved() = runTest {
+    val observation = Observation().apply { id = "obs-1" }
+    val bundle =
+      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = observation }) }
+    val questionnaire = extractionQuestionnaire()
+    val questionnaireResponse = extractionQuestionnaireResponse()
+
+    coEvery { defaultRepository.addOrUpdate(any(Boolean::class), any<Resource>()) } just runs
+
+    // No Encounter in the bundle, no `encounter`/`generateEncounter` action params — a plain
+    // questionnaire submission outside a start-care session must behave exactly as before.
+    questionnaireViewModel.saveExtractedResources(
+      bundle = bundle,
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig,
+      questionnaireResponse = questionnaireResponse,
+      context = context,
+    )
+
+    coVerify { defaultRepository.addOrUpdate(true, resource = observation) }
+    Assert.assertFalse(observation.hasEncounter())
+  }
+
+  @Test
+  fun testSaveExtractedResourcesGeneratesEncounterWhenOptedIn() = runTest {
+    val observation = Observation().apply { id = "obs-1" }
+    val bundle =
+      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = observation }) }
+    val questionnaire = extractionQuestionnaire()
+    val questionnaireResponse =
+      extractionQuestionnaireResponse().apply { subject = patient.asReference() }
+    val actionParameters =
+      listOf(
+        ActionParameter(
+          key = GENERATE_ENCOUNTER_PARAM_KEY,
+          paramType = ActionParameterType.PARAMDATA,
+          value = "true",
+        ),
+      )
+
+    coEvery { defaultRepository.addOrUpdate(any(Boolean::class), any<Resource>()) } just runs
+
+    questionnaireViewModel.saveExtractedResources(
+      bundle = bundle,
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig,
+      questionnaireResponse = questionnaireResponse,
+      context = context,
+      actionParameters = actionParameters,
+    )
+
+    Assert.assertTrue(questionnaireResponse.hasEncounter())
+    val generatedEncounterReference = questionnaireResponse.encounter.reference
+    Assert.assertEquals(generatedEncounterReference, observation.encounter.reference)
+    val generatedEncounter = bundle.entry.map { it.resource }.filterIsInstance<Encounter>().single()
+    Assert.assertEquals(patient.asReference().reference, generatedEncounter.subject.reference)
+
+    coVerify { defaultRepository.addOrUpdate(true, resource = any<Encounter>()) }
+    coVerify { defaultRepository.addOrUpdate(false, resource = observation) }
+  }
+
+  @Test
+  fun testSaveExtractedResourcesAttachesToCarriedEncounterWithoutGenerating() = runTest {
+    val observation = Observation().apply { id = "obs-1" }
+    val bundle =
+      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = observation }) }
+    val questionnaire = extractionQuestionnaire()
+    val questionnaireResponse = extractionQuestionnaireResponse()
+    val actionParameters =
+      listOf(
+        ActionParameter(
+          key = "encounter",
+          paramType = ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE,
+          value = "existing-enc-id",
+          resourceType = ResourceType.Encounter,
+        ),
+      )
+
+    coEvery { defaultRepository.addOrUpdate(any(Boolean::class), any<Resource>()) } just runs
+
+    questionnaireViewModel.saveExtractedResources(
+      bundle = bundle,
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig,
+      questionnaireResponse = questionnaireResponse,
+      context = context,
+      actionParameters = actionParameters,
+    )
+
+    // Reuses the carried-over Encounter id — no new Encounter generated this round.
+    Assert.assertFalse(questionnaireResponse.hasEncounter())
+    Assert.assertEquals("Encounter/existing-enc-id", observation.encounter.reference)
+    coVerify { defaultRepository.addOrUpdate(false, resource = observation) }
+  }
 
   @Test
   fun testRetireUsedQuestionnaireUniqueIdShouldUpdateGroupResourceWhenIDIsUsed() = runTest {

@@ -84,6 +84,47 @@ import timber.log.Timber
 
 const val PRACTITIONER_ID = "practitionerId"
 
+/**
+ * [ActionParameter] key for `APPLY_NAMED_EVENT` action configs. Start-care generates an Encounter
+ * on the first extraction that doesn't already produce one, unless this is explicitly `"false"`.
+ * See `feature/20260817-encounter-scoped-sync-tags.md`.
+ */
+const val GENERATE_ENCOUNTER_PARAM_KEY = "generateEncounter"
+
+/** Absent or any value other than `"false"` means generate the session Encounter. */
+fun List<ActionParameter>.resolveGenerateEncounter(): Boolean =
+  find { it.key == GENERATE_ENCOUNTER_PARAM_KEY }
+    ?.value
+    ?.equals("false", ignoreCase = true) != true
+
+fun buildStartCareActionParameters(
+  encounterId: String?,
+  generateEncounter: Boolean,
+): ArrayList<ActionParameter> =
+  ArrayList<ActionParameter>().apply {
+    if (!encounterId.isNullOrBlank()) {
+      // Makes the current-visit Encounter id available to CQL as the `encounterid` library
+      // parameter and tells extraction/save which Encounter to attach this submission to.
+      add(
+        ActionParameter(
+          key = "encounter",
+          paramType = ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE,
+          value = encounterId,
+          resourceType = org.hl7.fhir.r4.model.ResourceType.Encounter,
+        ),
+      )
+    }
+    if (generateEncounter) {
+      add(
+        ActionParameter(
+          key = GENERATE_ENCOUNTER_PARAM_KEY,
+          paramType = ActionParameterType.PARAMDATA,
+          value = "true",
+        ),
+      )
+    }
+  }
+
 fun List<ActionConfig>.handleClickEvent(
   navController: NavController,
   resourceData: ResourceData? = null,
@@ -318,6 +359,7 @@ private fun handleApplyNamedEvent(
     context.showToast("No client selected for care", Toast.LENGTH_SHORT)
     return
   }
+  val generateEncounter = interpolatedParams.resolveGenerateEncounter()
 
   val lifecycleOwner = context as? LifecycleOwner
   if (lifecycleOwner == null) {
@@ -353,6 +395,7 @@ private fun handleApplyNamedEvent(
       subjectId = subjectId,
       plans = plans,
       title = actionDisplayOrDefault(computedValuesMap),
+      generateEncounter = generateEncounter,
     )
   }
 }
@@ -378,6 +421,7 @@ private fun showAvailableCarePicker(
   subjectId: String,
   plans: List<NamedEventInterventionService.AvailableCarePlan>,
   title: String,
+  generateEncounter: Boolean,
 ) {
   val labels = plans.map { it.title }.toTypedArray()
   val checked = BooleanArray(plans.size) { true }
@@ -396,6 +440,7 @@ private fun showAvailableCarePicker(
           subjectId = subjectId,
           selectedPlanIds = selectedPlans.map { it.planDefinitionId }.toSet(),
           initialPlans = selectedPlans,
+          generateEncounter = generateEncounter,
         )
       advanceAvailableCareSession(context, navController, service, eventBus, session)
     }
@@ -415,6 +460,7 @@ private class AvailableCareSession(
   val subjectId: String,
   val selectedPlanIds: Set<String>,
   initialPlans: List<NamedEventInterventionService.AvailableCarePlan>,
+  val generateEncounter: Boolean,
 ) {
   /** Unique per session so [EventBus]'s one-time-per-consumer delivery doesn't cross sessions. */
   val consumerId: String = UUID.randomUUID().toString()
@@ -479,7 +525,13 @@ private fun advanceAvailableCareSession(
     val chosenQuestionnaireId = chosen?.questionnaireId
     if (chosen == null || chosenQuestionnaireId.isNullOrBlank()) return@launch
 
-    launchInterventionOption(navController, chosen, session.encounterId)
+    launchInterventionOption(
+      navController,
+      chosen,
+      session.subjectId,
+      session.encounterId,
+      session.generateEncounter,
+    )
 
     val submission =
       eventBus.events
@@ -515,40 +567,28 @@ private suspend fun awaitTieBreakChoice(
 private fun launchInterventionOption(
   navController: NavController,
   option: NamedEventInterventionService.InterventionOption,
+  subjectId: String,
   encounterId: String? = null,
+  generateEncounter: Boolean = true,
 ) {
   val questionnaireId = option.questionnaireId
   if (!questionnaireId.isNullOrBlank() && navController.context is QuestionnaireHandler) {
     Timber.i(
       "APPLY_NAMED_EVENT launching Questionnaire/$questionnaireId title=${option.title} " +
-        "order=${option.order} encounter=$encounterId",
+        "order=${option.order} subject=$subjectId encounter=$encounterId " +
+        "generateEncounter=$generateEncounter",
     )
-    val actionParams =
-      if (encounterId.isNullOrBlank()) {
-        emptyList()
-      } else {
-        // Makes the current-visit Encounter id available to CQL as the `encounterid` library
-        // parameter (see `feature/20260812-intervention-order-and-dedup.md`, tricc) so the
-        // dedup `initialExpression`s it wires up can actually resolve.
-        listOf(
-          ActionParameter(
-            key = "encounter",
-            paramType = ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE,
-            value = encounterId,
-            resourceType = org.hl7.fhir.r4.model.ResourceType.Encounter,
-          ),
-        )
-      }
     (navController.context as QuestionnaireHandler).launchQuestionnaire(
       context = navController.context,
       questionnaireConfig =
         QuestionnaireConfig(
           id = questionnaireId,
           title = option.title,
+          resourceIdentifier = subjectId,
           resourceType = org.hl7.fhir.r4.model.ResourceType.Patient,
           saveButtonText = "Save",
         ),
-      actionParams = actionParams,
+      actionParams = buildStartCareActionParameters(encounterId, generateEncounter),
     )
     return
   }
