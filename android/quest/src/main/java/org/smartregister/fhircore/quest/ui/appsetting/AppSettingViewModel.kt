@@ -98,9 +98,7 @@ constructor(
     val appId = appId.value?.trim()
     if (!appId.isNullOrEmpty()) {
       when {
-        // Check directly for /debug suffix, regardless of build variant
-        appId.endsWith(ConfigurationRegistry.DEBUG_SUFFIX, ignoreCase = true) ->
-          loadConfigurations(context)
+        sharedPreferencesHelper.hasDebugSuffix() -> loadConfigurations(context)
         else -> fetchRemoteConfigurations(appId, context)
       }
     }
