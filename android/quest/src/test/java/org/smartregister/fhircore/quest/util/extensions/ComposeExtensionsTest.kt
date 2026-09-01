@@ -21,7 +21,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.Modifier
 import io.mockk.spyk
 import io.mockk.verify
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 
 class ComposeExtensionsTest {
 
@@ -32,5 +35,30 @@ class ComposeExtensionsTest {
     verify { modifier.fillMaxWidth() }
     modifier.conditional(false, { fillMaxWidth() }) { fillMaxHeight() }
     verify { modifier.fillMaxHeight() }
+  }
+
+  @Test
+  fun testShouldEnableDrawerGesturesEnabledOnOpenDrawerScreenWhenDrawerClosed() {
+    // On OPEN_DRAWER screens the edge swipe must open the drawer even while it is closed.
+    assertTrue(ToolBarHomeNavigation.OPEN_DRAWER.shouldEnableDrawerGestures(isDrawerOpen = false))
+  }
+
+  @Test
+  fun testShouldEnableDrawerGesturesEnabledOnOpenDrawerScreenWhenDrawerOpen() {
+    assertTrue(ToolBarHomeNavigation.OPEN_DRAWER.shouldEnableDrawerGestures(isDrawerOpen = true))
+  }
+
+  @Test
+  fun testShouldEnableDrawerGesturesDisabledOnNavigateBackScreenWhenDrawerClosed() {
+    // On NAVIGATE_BACK screens the edge swipe must not open the drawer.
+    assertFalse(
+      ToolBarHomeNavigation.NAVIGATE_BACK.shouldEnableDrawerGestures(isDrawerOpen = false),
+    )
+  }
+
+  @Test
+  fun testShouldEnableDrawerGesturesEnabledOnNavigateBackScreenWhenDrawerOpen() {
+    // An already open drawer can still be swiped closed regardless of the home navigation.
+    assertTrue(ToolBarHomeNavigation.NAVIGATE_BACK.shouldEnableDrawerGestures(isDrawerOpen = true))
   }
 }

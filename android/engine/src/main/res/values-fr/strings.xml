@@ -162,6 +162,7 @@
     <string name="care_team">Care Team</string>
     <string name="location">Localisation</string>
     <string name="app_version_code">Code de version de l\'application</string>
+    <string name="app_build_type">Type de build d\'application</string>
     <string name="build_date">Date de création</string>
     <string name="manufacture">Fabricant</string>
     <string name="app_versions">Version de l\'application</string>

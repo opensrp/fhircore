@@ -431,6 +431,20 @@ android {
       versionNameSuffix = "-trueCover"
       manifestPlaceholders["appLabel"] = "True Cover"
     }
+
+    create("echisDataFi") {
+      dimension = "apps"
+      applicationId = "org.dataforimplementation.echis"
+      versionNameSuffix = "-echis"
+      manifestPlaceholders["appLabel"] = "Data.FI eCHIS Reference"
+    }
+
+    create("echisNawi") {
+      dimension = "apps"
+      applicationId = "ke.nawi.echis"
+      versionNameSuffix = "-echis"
+      manifestPlaceholders["appLabel"] = "Nawi eCHIS"
+    }
   }
 
   applicationVariants.all {
@@ -444,12 +458,17 @@ android {
 
     variant.outputs.all {
       val output = this as BaseVariantOutputImpl
-      val buildTypeName = variant.buildType.name
+      val abi = output.filters.firstOrNull { it.filterType == "ABI" }?.identifier
       output.outputFileName =
-        output.outputFileName.replace(
-          "-$buildTypeName.apk",
-          "-${BuildConfigs.versionName}(${BuildConfigs.versionCode})-$buildTypeName.apk",
-        )
+        listOfNotNull(
+            "quest",
+            variant.flavorName.takeIf { !it.isNullOrEmpty() },
+            variant.buildType.name,
+            abi,
+            variant.versionName ?: BuildConfigs.versionName,
+            variant.versionCode.toString(),
+          )
+          .joinToString("-") + ".apk"
     }
   }
 

@@ -11,7 +11,7 @@
     <string name="empty_client_list_message_title">No Results</string>
     <string name="empty_client_list_message_details">Sorry, we could not find client with given name or ID</string>
     <string name="register_new_client">Register new client</string>
-    <string name="default_app_title" translatable="false">Fhir App</string>
+    <string name="default_app_title" translatable="false">OpenSRP</string>
     <string name="app_logo">Application logo</string>
     <string name="powered_by">Powered By</string>
     <string name="app_version">App version %1$d(%2$s)</string>
@@ -99,7 +99,7 @@
     <string name="application_id">Application ID</string>
     <string name="app_id_sample" translatable="false">e.g. ecbis, quest, cha</string>
     <string name="load_configurations">LOAD CONFIGURATIONS</string>
-    <string name="fhir_core_app" translatable="false">FHIRCORE APP</string>
+    <string name="fhir_core_app" translatable="false">OPENSRP</string>
     <string name="remember_app">Remember application</string>
     <string name="done">Done</string>
     <string name="replace_photo">Replace photo</string>
@@ -182,10 +182,11 @@
     <string name="user">User</string>
     <string name="team">Team</string>
     <string name="locality" >Locality</string>
-    <string name="team_organization">Team(Organization)</string>
+    <string name="team_organization">Team (Organization)</string>
     <string name="care_team">Care Team</string>
     <string name="location">Location</string>
     <string name="app_version_code">App version code</string>
+    <string name="app_build_type">App build type</string>
     <string name="build_date">Build date</string>
     <string name="manufacture">Manufacturer</string>
     <string name="app_versions">App version</string>
@@ -205,7 +206,7 @@
     <string name="sync_down_inprogress"> %1$d%% Syncing down…</string>
     <string name="default_html_title">file</string>
     <string name="retry">RETRY</string>
-    <string name="unsynced_data_present">There\'s some un-synced data</string>
+    <string name="unsynced_data_present">There\'s some unsynced data</string>
     <string name="missing_supervisor_contact">Supervisor contact missing or the provided phone number is invalid</string>
     <string name="apply_filter">APPLY FILTER</string>
     <string name="questionnaire_save_draft_title">Save draft changes</string>

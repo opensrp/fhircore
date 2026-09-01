@@ -73,7 +73,7 @@ class PinLoginScreenKtTest {
           ApplicationConfiguration(
             appId = "appId",
             configType = "application",
-            appTitle = "FHIRCore App",
+            appTitle = "OPENSRP 2",
           ),
         onSetPin = {},
         showProgressBar = false,
@@ -111,7 +111,7 @@ class PinLoginScreenKtTest {
           ApplicationConfiguration(
             appId = "appId",
             configType = "application",
-            appTitle = "FHIRCore App",
+            appTitle = "OPENSRP 2",
           ),
         onSetPin = {},
         showProgressBar = false,
@@ -155,7 +155,7 @@ class PinLoginScreenKtTest {
           ApplicationConfiguration(
             appId = "appId",
             configType = "application",
-            appTitle = "FHIRCore App",
+            appTitle = "OPENSRP 2",
           ),
         onSetPin = {},
         showProgressBar = false,
@@ -185,7 +185,7 @@ class PinLoginScreenKtTest {
           ApplicationConfiguration(
             appId = "appId",
             configType = "application",
-            appTitle = "FHIRCore App",
+            appTitle = "OPENSRP 2",
           ),
         onSetPin = {},
         showProgressBar = true,
@@ -219,7 +219,7 @@ class PinLoginScreenKtTest {
           ApplicationConfiguration(
             appId = "appId",
             configType = "application",
-            appTitle = "FHIRCore App",
+            appTitle = "OPENSRP 2",
           ),
         onSetPin = {},
         showProgressBar = false,

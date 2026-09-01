@@ -353,7 +353,7 @@ private fun PinSetupPreview() {
       ApplicationConfiguration(
         appId = "appId",
         configType = "application",
-        appTitle = "FHIRCore App",
+        appTitle = "OPENSRP 2",
       ),
     showProgressBar = false,
     showError = false,
@@ -381,7 +381,7 @@ private fun PinSetupPreviewWithProgress() {
       ApplicationConfiguration(
         appId = "appId",
         configType = "application",
-        appTitle = "FHIRCore App",
+        appTitle = "OPENSRP 2",
       ),
     showProgressBar = true,
     showError = false,
@@ -409,7 +409,7 @@ private fun PinLoginPreview() {
       ApplicationConfiguration(
         appId = "appId",
         configType = "application",
-        appTitle = "FHIRCore App",
+        appTitle = "OPENSRP 2",
       ),
     showProgressBar = false,
     showError = false,
