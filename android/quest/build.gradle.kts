@@ -58,6 +58,7 @@ sonar {
 
 android {
   compileSdk = BuildConfigs.compileSdk
+  ndkVersion = "27.2.12479018"
 
   val buildDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
 
@@ -273,11 +274,11 @@ android {
       manifestPlaceholders["appLabel"] = "eCHIS"
     }
 
-    create("echisSupervisor") {
+    create("echisTraining") {
       dimension = "apps"
-      applicationId = "ug.go.health.echisSupervisor"
-      versionNameSuffix = "-echis-supervisor"
-      manifestPlaceholders["appLabel"] = "MOH UG eCHIS Supervisor"
+      applicationId = "ug.go.health.echis.training"
+      versionNameSuffix = "-echisTraining"
+      manifestPlaceholders["appLabel"] = "Training eCHIS"
     }
 
     create("sidBunda") {
@@ -455,12 +456,20 @@ android {
       "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"",
     )
 
-    variant.outputs
-      .map { it as BaseVariantOutputImpl }
-      .forEach { output ->
-        output.outputFileName =
-          "quest-${variant.flavorName}-${variant.buildType.name}-${variant.versionName}.apk"
-      }
+    variant.outputs.all {
+      val output = this as BaseVariantOutputImpl
+      val abi = output.filters.firstOrNull { it.filterType == "ABI" }?.identifier
+      output.outputFileName =
+        listOfNotNull(
+            "quest",
+            variant.flavorName.takeIf { !it.isNullOrEmpty() },
+            variant.buildType.name,
+            abi,
+            variant.versionName ?: BuildConfigs.versionName,
+            variant.versionCode.toString(),
+          )
+          .joinToString("-") + ".apk"
+    }
   }
 
   applicationVariants.all {

@@ -78,34 +78,34 @@ constructor(
     )
 
   override suspend fun doWork(): Result {
-    kotlin
-      .runCatching {
-        saveSyncStartTimestamp()
-        setForeground(getForegroundInfo())
-        customResourceSyncService.runCustomResourceSync()
-      }
-      .onSuccess {
-        return super.doWork()
-      }
-      .onFailure { exception ->
-        when (exception) {
-          is HttpException -> {
-            val response = exception.response()
-            if (response != null && (400..503).contains(response.code())) {
-              Timber.e("HTTP exception ${response.code()} -> ${response.errorBody()}")
-            }
+    saveSyncStartTimestamp()
+    // setForeground can throw ForegroundServiceStartNotAllowedException on Android 12+ when the
+    // periodic sync fires while the app is in the background. Catch this separately so that a
+    // failed foreground-service start does not prevent the actual sync from running.
+    runCatching { setForeground(getForegroundInfo()) }
+      .onFailure { Timber.w(it, "Could not start foreground service for sync; proceeding anyway") }
+
+    return try {
+      customResourceSyncService.runCustomResourceSync()
+      super.doWork()
+    } catch (exception: Exception) {
+      when (exception) {
+        is HttpException -> {
+          val response = exception.response()
+          if (response != null && (400..503).contains(response.code())) {
+            Timber.e("HTTP exception ${response.code()} -> ${response.errorBody()}")
           }
-          else -> Timber.e(exception)
         }
-        syncListenerManager.emitSyncStatus(
-          SyncState(
-            counter = SYNC_COUNTER_1,
-            currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
-          ),
-        )
-        return result()
+        else -> Timber.e(exception)
       }
-    return Result.success()
+      syncListenerManager.emitSyncStatus(
+        SyncState(
+          counter = SYNC_COUNTER_1,
+          currentSyncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now()),
+        ),
+      )
+      result()
+    }
   }
 
   private fun result(): Result =
