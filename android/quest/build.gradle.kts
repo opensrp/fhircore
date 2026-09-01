@@ -270,7 +270,7 @@ android {
       dimension = "apps"
       applicationId = "ug.go.health.echis"
       versionNameSuffix = "-echis"
-      manifestPlaceholders["appLabel"] = "MOH UG eCHIS"
+      manifestPlaceholders["appLabel"] = "eCHIS"
     }
 
     create("echisSupervisor") {
