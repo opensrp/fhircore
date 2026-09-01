@@ -97,7 +97,7 @@
     <string name="application_id">ID Aplikasi</string>
     <string name="app_id_sample" translatable="false">e.g. ecbis, quest, cha</string>
     <string name="load_configurations">MEMUAT KONFIGURASI</string>
-    <string name="fhir_core_app" translatable="false">OPENSRP 2</string>
+    <string name="fhir_core_app" translatable="false">OPENSRP</string>
     <string name="remember_app">Ingat aplikasi</string>
     <string name="done">Selesai</string>
     <string name="replace_photo">Ganti foto</string>
