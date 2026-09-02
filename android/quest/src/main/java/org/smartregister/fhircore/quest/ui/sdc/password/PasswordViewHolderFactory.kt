@@ -58,7 +58,7 @@ object PasswordViewHolderFactory :
 
         passwordEditText =
           itemView
-            .findViewById<TextInputEditText?>(
+            .findViewById<TextInputEditText>(
               org.smartregister.fhircore.quest.R.id.password_edit_text,
             )
             .apply {
