@@ -29,7 +29,6 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.app.LoginConfig
 import org.smartregister.fhircore.engine.ui.components.PIN_CELL_TEST_TAG
 import org.smartregister.fhircore.quest.ui.pin.CIRCULAR_PROGRESS_INDICATOR
 import org.smartregister.fhircore.quest.ui.pin.ForgotPinDialog
@@ -40,29 +39,20 @@ import org.smartregister.fhircore.quest.ui.pin.PinUiState
 class PinLoginScreenKtTest {
   @get:Rule(order = 1) val composeRule = createComposeRule()
 
-  private val applicationConfiguration =
-    ApplicationConfiguration(
-      appTitle = "My app",
-      appId = "app/debug",
-      loginConfig = LoginConfig(showLogo = true, supervisorContactNumber = "123-456-7890"),
-    )
-
   @Test
-  fun testForgotPasswordDialog_DisplaysCorrectContactNumber() {
-    // Set the content for the test
+  fun testForgotPinDialogShowsResetConfirmation() {
     composeRule.setContent {
       ForgotPinDialog(
-        supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
-        forgotPin = {},
+        onConfirmReset = {},
         onDismissDialog = {},
       )
     }
 
-    // Retrieve the contact number from the context
-    val contactNumber = applicationConfiguration.loginConfig.supervisorContactNumber
-
-    // Assert that the contact number is displayed correctly in the dialog
-    composeRule.onNodeWithText(contactNumber.toString()).assertIsDisplayed()
+    composeRule
+      .onNodeWithText("Reset PIN", ignoreCase = true, useUnmergedTree = true)
+      .assertIsDisplayed()
+    composeRule.onNodeWithText("CANCEL").assertIsDisplayed().assertHasClickAction()
+    composeRule.onNodeWithText("CONTINUE").assertIsDisplayed().assertHasClickAction()
   }
 
   @Test
@@ -79,7 +69,6 @@ class PinLoginScreenKtTest {
         showProgressBar = false,
         showError = false,
         onMenuLoginClicked = {},
-        forgotPin = {},
         pinUiState =
           PinUiState(
             message = "CHA will use this PIN to login",
@@ -117,7 +106,6 @@ class PinLoginScreenKtTest {
         showProgressBar = false,
         showError = false,
         onMenuLoginClicked = {},
-        forgotPin = {},
         pinUiState =
           PinUiState(
             message = "Enter PIN for ecbis",
@@ -143,7 +131,7 @@ class PinLoginScreenKtTest {
 
     forgotPinNode.performClick()
     composeRule.onNodeWithText("CANCEL").assertIsDisplayed().assertHasClickAction()
-    composeRule.onNodeWithText("DIAL NUMBER").assertIsDisplayed().assertHasClickAction()
+    composeRule.onNodeWithText("CONTINUE").assertIsDisplayed().assertHasClickAction()
   }
 
   @Test
@@ -161,7 +149,6 @@ class PinLoginScreenKtTest {
         showProgressBar = false,
         showError = true,
         onMenuLoginClicked = {},
-        forgotPin = {},
         pinUiState =
           PinUiState(
             message = errorMessage,
@@ -191,7 +178,6 @@ class PinLoginScreenKtTest {
         showProgressBar = true,
         showError = false,
         onMenuLoginClicked = {},
-        forgotPin = {},
         pinUiState =
           PinUiState(
             message = "Provider will use this PIN to login",
@@ -225,7 +211,6 @@ class PinLoginScreenKtTest {
         showProgressBar = false,
         showError = false,
         onMenuLoginClicked = {},
-        forgotPin = {},
         pinUiState =
           PinUiState(
             message = pinStateMessage,

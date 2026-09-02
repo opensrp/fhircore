@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.ui.pin
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
@@ -39,8 +38,6 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.clearPasswordInMemory
-import org.smartregister.fhircore.engine.util.extension.formatPhoneNumber
-import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.toPasswordHash
 
 @Suppress("UNUSED_EXPRESSION")
@@ -53,10 +50,6 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
-
-  private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
-  val launchDialPad
-    get() = _launchDialPad
 
   private val _navigateToHome = MutableLiveData<Boolean>()
   val navigateToHome: LiveData<Boolean>
@@ -141,16 +134,6 @@ constructor(
       _navigateToSettings.value = true
     } else {
       _navigateToLogin.value = true
-    }
-  }
-
-  fun forgotPin(context: Context) {
-    val formattedNumber =
-      applicationConfiguration.loginConfig.supervisorContactNumber.formatPhoneNumber(context)
-    if (!formattedNumber.isNullOrBlank()) {
-      _launchDialPad.value = formattedNumber
-    } else {
-      context.showToast(context.getString(R.string.missing_supervisor_contact), Toast.LENGTH_LONG)
     }
   }
 

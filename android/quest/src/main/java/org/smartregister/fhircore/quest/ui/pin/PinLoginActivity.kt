@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.pin
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -63,11 +62,6 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
       navigateToHome.observe(pinLoginActivity) {
         if (it) pinLoginActivity.navigateToHome()
         finish()
-      }
-      launchDialPad.observe(pinLoginActivity) { phone ->
-        if (!phone.isNullOrBlank()) {
-          startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:$phone") })
-        }
       }
       navigateToLogin.observe(pinLoginActivity) {
         if (it) pinLoginActivity.launchActivityWithNoBackStackHistory<LoginActivity>()

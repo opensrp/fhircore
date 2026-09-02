@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.pin
 
-import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -57,7 +56,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -89,7 +87,6 @@ fun PinLoginScreen(viewModel: PinViewModel) {
     showError = showError,
     pinUiState = pinUiState,
     onMenuLoginClicked = viewModel::onMenuItemClicked,
-    forgotPin = viewModel::forgotPin,
     onSetPin = viewModel::onSetPin,
     onShowPinError = viewModel::onShowPinError,
     onPinEntered = viewModel::pinLogin,
@@ -107,7 +104,6 @@ fun PinLoginPage(
   onSetPin: (CharArray) -> Unit,
   onMenuLoginClicked: (Boolean) -> Unit,
   onShowPinError: (Boolean) -> Unit,
-  forgotPin: (Context) -> Unit,
   onPinEntered: (CharArray, (Boolean) -> Unit) -> Unit,
 ) {
   var showMenu by remember { mutableStateOf(false) }
@@ -129,13 +125,12 @@ fun PinLoginPage(
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (
-        showForgotPinDialog &&
-          !applicationConfiguration.loginConfig.supervisorContactNumber.isNullOrBlank()
-      ) {
+      if (showForgotPinDialog) {
         ForgotPinDialog(
-          supervisorContactNumber = applicationConfiguration.loginConfig.supervisorContactNumber,
-          forgotPin = forgotPin,
+          onConfirmReset = {
+            showForgotPinDialog = false
+            onMenuLoginClicked(false)
+          },
           onDismissDialog = { showForgotPinDialog = false },
         )
       }
@@ -292,18 +287,15 @@ private fun PinTopBar(
 
 @Composable
 fun ForgotPinDialog(
-  supervisorContactNumber: String?,
-  forgotPin: (Context) -> Unit,
+  onConfirmReset: () -> Unit,
   onDismissDialog: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
-  val context = LocalContext.current
-
   AlertDialog(
     onDismissRequest = onDismissDialog,
     title = {
       Text(
-        text = stringResource(R.string.forgot_pin),
+        text = stringResource(R.string.forgot_pin_reset_title),
         fontWeight = FontWeight.Bold,
         fontSize = 20.sp,
       )
@@ -313,11 +305,7 @@ fun ForgotPinDialog(
         modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
       ) {
         Text(
-          text = stringResource(R.string.call_supervisor),
-          fontSize = 16.sp,
-        )
-        Text(
-          text = supervisorContactNumber?.takeIf { it.isNotBlank() } ?: "",
+          text = stringResource(R.string.forgot_pin_reset_message),
           fontSize = 16.sp,
         )
       }
@@ -333,12 +321,8 @@ fun ForgotPinDialog(
         )
         Text(
           color = MaterialTheme.colors.primary,
-          text = stringResource(R.string.dial_number),
-          modifier =
-            modifier.padding(horizontal = 10.dp).clickable {
-              onDismissDialog()
-              forgotPin(context)
-            },
+          text = stringResource(R.string.forgot_pin_reset_confirm),
+          modifier = modifier.padding(horizontal = 10.dp).clickable { onConfirmReset() },
         )
       }
     },
@@ -368,7 +352,6 @@ private fun PinSetupPreview() {
     onSetPin = {},
     onMenuLoginClicked = {},
     onShowPinError = {},
-    forgotPin = {},
     onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
   )
 }
@@ -396,7 +379,6 @@ private fun PinSetupPreviewWithProgress() {
     onSetPin = {},
     onMenuLoginClicked = {},
     onShowPinError = {},
-    forgotPin = {},
     onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
   )
 }
@@ -424,7 +406,6 @@ private fun PinLoginPreview() {
     onSetPin = {},
     onMenuLoginClicked = {},
     onShowPinError = {},
-    forgotPin = {},
     onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
   )
 }
