@@ -20,12 +20,14 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.serialization.json.Json
@@ -42,6 +44,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 object Faker {
@@ -71,7 +74,14 @@ object Faker {
     }
 
   fun buildTestConfigurationRegistry(
-    sharedPreferencesHelper: SharedPreferencesHelper = mockk(),
+    sharedPreferencesHelper: SharedPreferencesHelper =
+      mockk<SharedPreferencesHelper>().apply {
+        // currentLocale() resolves config translations against the persisted app language, so any
+        // config retrieval reads LANG. Answer it here so tests using the default helper do not need
+        // to stub it individually.
+        every { read(SharedPreferenceKey.LANG.name, any<String>()) } returns
+          Locale.ENGLISH.toLanguageTag()
+      },
     dispatcherProvider: DispatcherProvider = testDispatcherProvider,
   ): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
