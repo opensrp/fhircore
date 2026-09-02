@@ -34,9 +34,11 @@ class OpenSrpDownloadManager(
     ResourceParamsBasedDownloadWorkManager(resourceSearchParams, context)
 
   override suspend fun getNextRequest(): DownloadRequest? =
-    downloadWorkManager.getNextRequest().apply {
-      if (this is UrlDownloadRequest) {
-        url.replace("_pretty=true", "_pretty=false")
+    downloadWorkManager.getNextRequest()?.let { request ->
+      if (request is UrlDownloadRequest) {
+        DownloadRequest.of(request.url.disablePrettyPrint(), request.headers)
+      } else {
+        request
       }
     }
 
@@ -47,3 +49,15 @@ class OpenSrpDownloadManager(
     return downloadWorkManager.processResponse(response).onEach { it.updateLastUpdated() }
   }
 }
+
+/**
+ * Forces the FHIR `_pretty` query parameter to `false` so the server returns compact JSON, keeping
+ * sync payloads small. An existing `_pretty=<value>` (any case/value) is rewritten to
+ * `_pretty=false`; when the parameter is absent it is appended with the correct separator.
+ */
+internal fun String.disablePrettyPrint(): String =
+  if (contains("_pretty=", ignoreCase = true)) {
+    replace(Regex("_pretty=[^&]*", RegexOption.IGNORE_CASE), "_pretty=false")
+  } else {
+    this + (if (contains('?')) '&' else '?') + "_pretty=false"
+  }
