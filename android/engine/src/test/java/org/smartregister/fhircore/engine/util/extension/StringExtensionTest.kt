@@ -133,4 +133,15 @@ class StringExtensionTest {
     val result = input.removeHashPrefix()
     Assert.assertEquals("8036ea0d-da4f-435c-bd4a-3e819a5a52dc", result)
   }
+
+  @Test
+  fun testFileExtensionReturnsExtensionWhenPresent() {
+    Assert.assertEquals("txt", "/file/path/to/strings.txt".fileExtension)
+    Assert.assertEquals("json", "sample_config.json".fileExtension)
+  }
+
+  @Test
+  fun testFileExtensionReturnsEmptyStringWhenNoPeriodPresent() {
+    Assert.assertEquals("", "json".fileExtension)
+  }
 }

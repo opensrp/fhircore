@@ -93,10 +93,10 @@ fun String.translationPropertyKey(): String {
  * This property returns the substring of the filepath after the last period '.' which is the
  * extension
  *
- * e.g /file/path/to/strings.txt would return txt
+ * e.g /file/path/to/strings.txt would return txt. Returns an empty string when there is no period.
  */
 val String.fileExtension
-  get() = this.substringAfterLast('.')
+  get() = this.substringAfterLast('.', "")
 
 /** Function that converts snake_case string to camelCase */
 fun String.camelCase(): String = CaseUtils.toCamelCase(this, false, '_')

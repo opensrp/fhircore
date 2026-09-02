@@ -157,6 +157,16 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
+  fun testRetrieveResourceBundleConfigurationResolvesRawUnderscoreKey() {
+    configRegistry.configsJsonMap["strings"] = "name.title=Mr.\n" + "gender.male=Male"
+    configRegistry.configsJsonMap["strings_fr"] = "name.title=M.\n" + "gender.male=Homme"
+    val resource = configRegistry.retrieveResourceBundleConfiguration("strings_fr")
+    assertNotNull(resource)
+    assertEquals("M.", resource?.getString("name.title"))
+    assertEquals("Homme", resource?.getString("gender.male"))
+  }
+
+  @Test
   fun testRetrieveConfigurationParseTemplate() {
     val appId = "idOfApp"
     configRegistry.configsJsonMap[ConfigType.Application.name] =
@@ -1094,6 +1104,15 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     // Validate no crash occurs and configsJsonMap remains empty
     assertTrue(configRegistry.configsJsonMap.isEmpty())
+  }
+
+  @Test
+  fun testPopulateConfigurationsMapHandlesDirectoryNamedLikeFileExtension() = runTest {
+    val appId = "dirext"
+
+    configRegistry.populateConfigurationsMap(context, Composition(), true, appId) {}
+
+    assertTrue(configRegistry.configsJsonMap.containsKey("sample"))
   }
 
   @Test

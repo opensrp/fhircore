@@ -127,7 +127,7 @@ constructor(
       localizationHelper
         .parseTemplate(
           bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
-          locale = Locale.getDefault(),
+          locale = currentLocale(),
           template = getConfigValueWithParam(paramsMap, configKey),
         )
         .decodeJson<T>(jsonInstance = json)
@@ -149,11 +149,24 @@ constructor(
         localizationHelper
           .parseTemplate(
             bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
-            locale = Locale.getDefault(),
+            locale = currentLocale(),
             template = it,
           )
           .decodeJson()
       }
+
+  /**
+   * The locale used to resolve config translations. It reads the persisted app language
+   * ([SharedPreferenceKey.LANG]) — the single source of truth — instead of [Locale.getDefault],
+   * which is a process-global that resets to the device locale when the OS recreates the process
+   * and is only re-asserted at activity attach. Relying on it caused translations to intermittently
+   * revert to English after the app was backgrounded.
+   */
+  fun currentLocale(): Locale =
+    Locale.forLanguageTag(
+      sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
+        ?: Locale.ENGLISH.toLanguageTag(),
+    )
 
   /**
    * This function interpolates the value for the given [configKey] by replacing the string
@@ -179,8 +192,7 @@ constructor(
    * from [configsJsonMap] can be directly converted to a ResourceBundle.
    */
   fun retrieveResourceBundleConfiguration(bundleName: String): ResourceBundle? {
-    val resourceBundle =
-      configsJsonMap[bundleName.camelCase()] // Convention for config map keys is camelCase
+    val resourceBundle = configsJsonMap[bundleName] ?: configsJsonMap[bundleName.camelCase()]
     if (resourceBundle != null) {
       return PropertyResourceBundle(
         InputStreamReader(resourceBundle.byteInputStream(), Charsets.UTF_8),
@@ -443,7 +455,9 @@ constructor(
     // Check directly for /debug suffix in app ID, regardless of build variant
     val appId = sharedPreferencesHelper.retrieveApplicationId()?.trim()
     if (appId?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true) {
-      Timber.d("Skipping remote config fetch - app ID '$appId' has /debug suffix, using local assets")
+      Timber.d(
+        "Skipping remote config fetch - app ID '$appId' has /debug suffix, using local assets"
+      )
       return
     }
     Timber.d("Triggered fetching application configurations remotely")
