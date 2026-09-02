@@ -52,6 +52,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
+import org.smartregister.fhircore.engine.data.remote.shared.DataEntryForegroundState
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.domain.model.isSummary
@@ -169,6 +170,16 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         }
       },
     )
+  }
+
+  override fun onResume() {
+    super.onResume()
+    DataEntryForegroundState.questionnaireInForeground = true
+  }
+
+  override fun onDestroy() {
+    DataEntryForegroundState.questionnaireInForeground = false
+    super.onDestroy()
   }
 
   private fun reviewRecordAudioPermissionToLaunchSpeechToText() {
@@ -471,24 +482,48 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       QuestionnaireFragment.SUBMIT_REQUEST_KEY,
       this,
     ) { _, _ ->
-      if (questionnaireConfig.showSubmissionConfirmationDialog.toBooleanStrict()) {
-        AlertDialogue.showAlert(
-          context = this,
-          alertIntent = AlertIntent.CONFIRM,
-          message = getString(R.string.questionnaire_submission_confirmation_message),
-          title = getString(R.string.questionnaire_submission_confirmation_title),
-          confirmButton =
-            AlertDialogButton(
-              listener = { processSubmission(questionnaire) },
-            ),
-          neutralButton =
-            AlertDialogButton(
-              text = R.string.no,
-              listener = { it.dismiss() },
-            ),
-        )
-      } else {
-        processSubmission(questionnaire)
+      val confirmationDialog = questionnaireConfig.confirmationDialog
+      when {
+        confirmationDialog != null -> {
+          val dialog =
+            AlertDialogue.showAlert(
+              context = this,
+              alertIntent = AlertIntent.CONFIRM,
+              message = confirmationDialog.message,
+              title = confirmationDialog.title,
+              confirmButton =
+                AlertDialogButton(
+                  listener = { processSubmission(questionnaire) },
+                ),
+              neutralButton =
+                AlertDialogButton(
+                  text = R.string.no,
+                  listener = { it.dismiss() },
+                ),
+            )
+          if (confirmationDialog.actionButtonText.isNotBlank()) {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.text =
+              confirmationDialog.actionButtonText
+          }
+        }
+        questionnaireConfig.showSubmissionConfirmationDialog.toBooleanStrict() -> {
+          AlertDialogue.showAlert(
+            context = this,
+            alertIntent = AlertIntent.CONFIRM,
+            message = getString(R.string.questionnaire_submission_confirmation_message),
+            title = getString(R.string.questionnaire_submission_confirmation_title),
+            confirmButton =
+              AlertDialogButton(
+                listener = { processSubmission(questionnaire) },
+              ),
+            neutralButton =
+              AlertDialogButton(
+                text = R.string.no,
+                listener = { it.dismiss() },
+              ),
+          )
+        }
+        else -> processSubmission(questionnaire)
       }
     }
   }

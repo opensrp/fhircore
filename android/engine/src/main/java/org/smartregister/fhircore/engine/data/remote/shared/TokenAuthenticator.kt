@@ -118,12 +118,18 @@ constructor(
         bundle.containsKey(AccountManager.KEY_INTENT) -> {
           val launchIntent = bundle.get(AccountManager.KEY_INTENT) as? Intent
 
-          // Deletes session PIN to allow reset
-          secureSharedPreference.deleteSessionPin()
+          if (DataEntryForegroundState.questionnaireInForeground) {
+            Timber.w(
+              "Token refresh failed while a questionnaire is open; deferring re-login to avoid discarding the form",
+            )
+          } else {
+            // Deletes session PIN to allow reset
+            secureSharedPreference.deleteSessionPin()
 
-          if (launchIntent != null && !isLoginPageRendered) {
-            context.startActivity(launchIntent.putExtra(CANCEL_BACKGROUND_SYNC, true))
-            isLoginPageRendered = true
+            if (launchIntent != null && !isLoginPageRendered) {
+              context.startActivity(launchIntent.putExtra(CANCEL_BACKGROUND_SYNC, true))
+              isLoginPageRendered = true
+            }
           }
         }
       }
@@ -140,7 +146,10 @@ constructor(
     }
   }
 
-  fun isCurrentRefreshTokenActive() = isTokenActive(accountManager.getPassword(findAccount()))
+  fun isCurrentRefreshTokenActive(): Boolean {
+    val account = findAccount() ?: return false
+    return isTokenActive(accountManager.getPassword(account))
+  }
 
   private fun buildOAuthPayload(grantType: String) =
     mutableMapOf(
@@ -188,6 +197,7 @@ constructor(
             account.type,
             accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE),
           )
+          runCatching { accountManager.removeAccountExplicitly(account) }.onFailure { Timber.e(it) }
           Result.success(true)
         } else {
           Result.success(false)

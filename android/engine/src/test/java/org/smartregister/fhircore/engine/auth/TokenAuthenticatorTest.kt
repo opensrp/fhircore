@@ -18,9 +18,11 @@ package org.smartregister.fhircore.engine.auth
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.accounts.AccountManagerCallback
 import android.accounts.AccountManagerFuture
 import android.accounts.AuthenticatorException
 import android.accounts.OperationCanceledException
+import android.content.Intent
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
@@ -49,9 +51,11 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.Shadows.shadowOf
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.data.remote.shared.DataEntryForegroundState
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator.Companion.AUTH_TOKEN_TYPE
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -143,6 +147,52 @@ class TokenAuthenticatorTest : RobolectricTest() {
       accountManager.invalidateAuthToken(account.type, accessToken)
       accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, any(), true, any(), any())
     }
+  }
+
+  @Test
+  fun testTokenRefreshFailureDefersLoginRedirectWhileQuestionnaireInForeground() {
+    val account = Account(sampleUsername, PROVIDER)
+    val accessToken = "gibberishaccesstoken"
+    val loginIntent =
+      Intent().apply {
+        setClassName(context, "org.smartregister.fhircore.engine.FakeLoginActivity")
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      }
+    val callbackSlot = slot<AccountManagerCallback<Bundle>>()
+    val outerFuture = mockk<AccountManagerFuture<Bundle>>()
+    every { outerFuture.result } returns bundleOf()
+    every { tokenAuthenticator.findAccount() } returns account
+    every { tokenAuthenticator.isTokenActive(any()) } returns false
+    every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns accessToken
+    every { accountManager.invalidateAuthToken(account.type, accessToken) } just runs
+    every {
+      accountManager.getAuthToken(
+        account,
+        AUTH_TOKEN_TYPE,
+        any(),
+        true,
+        capture(callbackSlot),
+        any(),
+      )
+    } answers
+      {
+        val callbackFuture = mockk<AccountManagerFuture<Bundle>>()
+        every { callbackFuture.result } returns bundleOf(AccountManager.KEY_INTENT to loginIntent)
+        callbackSlot.captured.run(callbackFuture)
+        outerFuture
+      }
+
+    val shadowApplication = shadowOf(context)
+
+    DataEntryForegroundState.questionnaireInForeground = true
+    tokenAuthenticator.getAccessToken()
+    Assert.assertNull(shadowApplication.nextStartedActivity)
+
+    DataEntryForegroundState.questionnaireInForeground = false
+    tokenAuthenticator.getAccessToken()
+    Assert.assertNotNull(shadowApplication.nextStartedActivity)
+
+    DataEntryForegroundState.questionnaireInForeground = false
   }
 
   @Test
@@ -312,8 +362,10 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
     every { accountManager.invalidateAuthToken(account.type, any()) } just runs
     every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns "oldToken"
+    every { accountManager.removeAccountExplicitly(account) } returns true
     val result = tokenAuthenticator.logout()
     Assert.assertTrue(result.isSuccess)
+    verify { accountManager.removeAccountExplicitly(account) }
   }
 
   @Test
@@ -445,6 +497,13 @@ class TokenAuthenticatorTest : RobolectricTest() {
     every { accountManager.getPassword(account) } returns token
 
     Assert.assertTrue(tokenAuthenticator.isCurrentRefreshTokenActive())
+  }
+
+  @Test
+  fun testIsCurrentRefreshTokenActiveReturnsFalseWhenNoAccount() {
+    every { tokenAuthenticator.findAccount() } returns null
+    Assert.assertFalse(tokenAuthenticator.isCurrentRefreshTokenActive())
+    verify(exactly = 0) { accountManager.getPassword(any()) }
   }
 
   companion object {
