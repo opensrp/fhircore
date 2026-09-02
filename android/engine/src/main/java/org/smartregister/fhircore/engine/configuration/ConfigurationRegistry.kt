@@ -454,7 +454,11 @@ constructor(
     // Skip remote fetch when using /debug mode - resources are loaded from assets
     // Check directly for /debug suffix in app ID, regardless of build variant
     val appId = sharedPreferencesHelper.retrieveApplicationId()?.trim()
-    if (appId?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true) {
+    if (appId.isNullOrBlank()) {
+      Timber.d("Skipping remote config fetch - no app ID is set")
+      return
+    }
+    if (appId.endsWith(DEBUG_SUFFIX, ignoreCase = true)) {
       Timber.d(
         "Skipping remote config fetch - app ID '$appId' has /debug suffix, using local assets",
       )

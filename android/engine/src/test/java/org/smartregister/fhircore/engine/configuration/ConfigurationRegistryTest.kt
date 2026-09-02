@@ -31,7 +31,9 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import java.util.Date
 import javax.inject.Inject
@@ -1328,102 +1330,73 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun `fetchNonWorkflowConfigResources() should skip remote fetch when appId has debug suffix`() =
     runTest {
-      // Given: App ID with /debug suffix
       val appId = "echis/debug"
       sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+      val spyConfigRegistry = spyk(configRegistry)
 
-      // When: fetchNonWorkflowConfigResources is called
-      configRegistry.fetchNonWorkflowConfigResources()
+      spyConfigRegistry.fetchNonWorkflowConfigResources()
 
-      // Then: Should NOT fetch from remote (no calls to fetchRemoteCompositionByAppId)
-      coVerify(exactly = 0) { configRegistry.fetchRemoteCompositionByAppId(any()) }
-      // And configCacheMap should remain empty (no remote configs loaded)
-      assertTrue(configRegistry.configCacheMap.isEmpty())
+      coVerify(exactly = 0) { spyConfigRegistry.fetchRemoteCompositionByAppId(any()) }
+      assertTrue(spyConfigRegistry.configCacheMap.isEmpty())
     }
 
   @Test
   fun `fetchNonWorkflowConfigResources() should skip remote fetch when appId has DEBUG suffix uppercase`() =
     runTest {
-      // Given: App ID with /DEBUG suffix (uppercase)
       val appId = "echis/DEBUG"
       sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+      val spyConfigRegistry = spyk(configRegistry)
 
-      // When: fetchNonWorkflowConfigResources is called
-      configRegistry.fetchNonWorkflowConfigResources()
+      spyConfigRegistry.fetchNonWorkflowConfigResources()
 
-      // Then: Should NOT fetch from remote (case-insensitive check)
-      coVerify(exactly = 0) { configRegistry.fetchRemoteCompositionByAppId(any()) }
+      coVerify(exactly = 0) { spyConfigRegistry.fetchRemoteCompositionByAppId(any()) }
     }
 
   @Test
   fun `fetchNonWorkflowConfigResources() should fetch from remote when appId has no debug suffix`() =
     runTest {
-      // Given: App ID without /debug suffix
       val appId = "echis"
       sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+      val spyConfigRegistry = spyk(configRegistry)
 
-      val composition =
-        Composition().apply {
-          identifier = Identifier().setValue(appId)
-          addSection().apply {
-            focus =
-              Reference().apply {
-                reference = "Binary/test-config"
-                identifier = Identifier().setValue("application")
-              }
-          }
-        }
+      val composition = Composition().apply { identifier = Identifier().setValue(appId) }
+      coEvery { spyConfigRegistry.fetchRemoteCompositionByAppId(appId) } returns composition
+      coEvery { spyConfigRegistry.addOrUpdate(any()) } just runs
 
-      coEvery { configRegistry.fetchRemoteCompositionByAppId(appId) } returns composition
-      coEvery { fhirResourceDataSource.getResource(any()) } returns Bundle()
-      coEvery { fhirEngine.get<Binary>(any()) } returns
-        Binary().apply {
-          id = "test-config"
-          content = """{"appId":"echis"}""".toByteArray()
-        }
+      spyConfigRegistry.fetchNonWorkflowConfigResources()
 
-      // When: fetchNonWorkflowConfigResources is called
-      configRegistry.fetchNonWorkflowConfigResources()
-
-      // Then: Should fetch from remote
-      coVerify { configRegistry.fetchRemoteCompositionByAppId(appId) }
+      coVerify { spyConfigRegistry.fetchRemoteCompositionByAppId(appId) }
     }
 
   @Test
   fun `fetchNonWorkflowConfigResources() should skip when appId is null`() = runTest {
-    // Given: No App ID set
     sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, null)
+    val spyConfigRegistry = spyk(configRegistry)
 
-    // When: fetchNonWorkflowConfigResources is called
-    configRegistry.fetchNonWorkflowConfigResources()
+    spyConfigRegistry.fetchNonWorkflowConfigResources()
 
-    // Then: Should NOT fetch from remote
-    coVerify(exactly = 0) { configRegistry.fetchRemoteCompositionByAppId(any()) }
+    coVerify(exactly = 0) { spyConfigRegistry.fetchRemoteCompositionByAppId(any()) }
   }
 
   @Test
   fun `fetchNonWorkflowConfigResources() should skip when appId is empty`() = runTest {
-    // Given: Empty App ID
     sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "")
+    val spyConfigRegistry = spyk(configRegistry)
 
-    // When: fetchNonWorkflowConfigResources is called
-    configRegistry.fetchNonWorkflowConfigResources()
+    spyConfigRegistry.fetchNonWorkflowConfigResources()
 
-    // Then: Should NOT fetch from remote
-    coVerify(exactly = 0) { configRegistry.fetchRemoteCompositionByAppId(any()) }
+    coVerify(exactly = 0) { spyConfigRegistry.fetchRemoteCompositionByAppId(any()) }
   }
 
   @Test
   fun `fetchNonWorkflowConfigResources() should handle appId with whitespace and debug suffix`() =
     runTest {
-      // Given: App ID with whitespace and /debug suffix
       val appId = "  echis/debug  "
       sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+      val spyConfigRegistry = spyk(configRegistry)
 
-      // When: fetchNonWorkflowConfigResources is called
-      configRegistry.fetchNonWorkflowConfigResources()
+      spyConfigRegistry.fetchNonWorkflowConfigResources()
 
-      // Then: Should trim and detect debug suffix, skipping remote fetch
-      coVerify(exactly = 0) { configRegistry.fetchRemoteCompositionByAppId(any()) }
+      coVerify(exactly = 0) { spyConfigRegistry.fetchRemoteCompositionByAppId(any()) }
     }
 }
