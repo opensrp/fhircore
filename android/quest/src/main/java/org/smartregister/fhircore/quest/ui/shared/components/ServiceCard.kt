@@ -86,7 +86,40 @@ fun ServiceCard(
   decodeImage: ((String) -> Bitmap?)?,
 ) {
   val serviceMemberIconsTint = serviceCardProperties.serviceMemberIconsTint.parseColor()
-  if (serviceCardProperties.showVerticalDivider) {
+  val hasActionContent =
+    (serviceCardProperties.serviceButton != null &&
+      serviceCardProperties.serviceButton!!.visible.toBoolean()) ||
+      serviceCardProperties.services?.isNotEmpty() == true
+  if (!hasActionContent) {
+    Row(
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically,
+      modifier =
+        modifier
+          .fillMaxWidth()
+          .padding(vertical = 16.dp)
+          .conditional(
+            serviceCardProperties.clickable.toBoolean(),
+            {
+              clickable {
+                serviceCardProperties.actions.handleClickEvent(
+                  navController = navController,
+                  resourceData = resourceData,
+                )
+              }
+            },
+          ),
+    ) {
+      RenderDetails(
+        weight = 1f,
+        details = serviceCardProperties.details,
+        serviceMemberIcons = serviceCardProperties.serviceMemberIcons,
+        serviceMemberIconsTint = serviceMemberIconsTint,
+        navController = navController,
+        resourceData = resourceData,
+      )
+    }
+  } else if (serviceCardProperties.showVerticalDivider) {
     Row(
       horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically,
