@@ -137,6 +137,7 @@ class ProfileFragment : Fragment() {
         profileViewModel.emitSnackBarState(snackBarMessageConfig)
       }
 
+      // Refresh drawer register counts after every submission
       appMainViewModel.retrieveAppMainUiState(refreshAll = false)
 
       // Perform optional on submit actions

@@ -24,6 +24,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onChildAt
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
@@ -46,10 +47,13 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterContentConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.integration.Faker
@@ -117,6 +121,75 @@ class RegisterScreenTest {
     }
     composeTestRule.waitUntil(5_000) { true }
     composeTestRule.onAllNodesWithTag(FAB_BUTTON_REGISTER_TEST_TAG, useUnmergedTree = true)
+  }
+
+  @Test
+  fun testHouseholdRegisterShowsRegistrationFabThatLaunchesQuestionnaire() {
+    val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+    val registrationFab =
+      NavigationMenuConfig(
+        id = "addHousehold",
+        display = "Add Household",
+        visible = true,
+        animate = false,
+        actions =
+          listOf(
+            ActionConfig(
+              trigger = ActionTrigger.ON_CLICK,
+              workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE.name,
+              questionnaire = QuestionnaireConfig(id = "household-registration"),
+            ),
+          ),
+      )
+    val registerUiState =
+      RegisterUiState(
+        screenTitle = "Households",
+        isFirstTimeSync = false,
+        registerConfiguration =
+          configurationRegistry
+            .retrieveConfiguration<RegisterConfiguration>(ConfigType.Register, "householdRegister")
+            .copy(fabActions = listOf(registrationFab)),
+        registerId = "householdRegister",
+        progressPercentage = flowOf(0),
+        isSyncUpload = flowOf(false),
+        params = emptyList(),
+      )
+    val searchText = mutableStateOf(SearchQuery.emptyText)
+    val currentPage = mutableStateOf(0)
+
+    composeTestRule.setContent {
+      val data = listOf(ResourceData("1", ResourceType.Group, emptyMap()))
+      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
+
+      RegisterScreen(
+        modifier = Modifier,
+        openDrawer = {},
+        onEvent = {},
+        registerUiState = registerUiState,
+        registerUiCountState =
+          RegisterUiCountState(
+            totalRecordsCount = 1,
+            filteredRecordsCount = 0,
+            pagesCount = 1,
+          ),
+        onAppMainEvent = {},
+        searchQuery = searchText,
+        currentPage = currentPage,
+        pagingItems = pagingItems,
+        navController = rememberNavController(),
+        decodeImage = null,
+      )
+    }
+
+    composeTestRule
+      .onAllNodesWithTag(FAB_BUTTON_REGISTER_TEST_TAG, useUnmergedTree = true)
+      .onFirst()
+      .assertIsDisplayed()
+
+    composeTestRule
+      .onNodeWithText("ADD HOUSEHOLD", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test

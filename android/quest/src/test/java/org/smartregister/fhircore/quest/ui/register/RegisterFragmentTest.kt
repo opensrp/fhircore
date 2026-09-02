@@ -21,6 +21,7 @@ import androidx.compose.material.SnackbarDuration
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
 import androidx.navigation.testing.TestNavHostController
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -47,6 +48,7 @@ import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
@@ -75,6 +77,10 @@ class RegisterFragmentTest : RobolectricTest() {
 
   @BindValue lateinit var registerViewModel: RegisterViewModel
 
+  @BindValue val registerRepository: RegisterRepository = mockk(relaxUnitFun = true, relaxed = true)
+
+  @Inject lateinit var fhirEngine: FhirEngine
+
   private lateinit var navController: TestNavHostController
   private lateinit var registerFragment: RegisterFragment
   private lateinit var mainActivity: AppMainActivity
@@ -84,6 +90,7 @@ class RegisterFragmentTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    coEvery { fhirEngine.getUnsyncedLocalChanges() } returns emptyList()
     registerViewModel =
       spyk(
         RegisterViewModel(
