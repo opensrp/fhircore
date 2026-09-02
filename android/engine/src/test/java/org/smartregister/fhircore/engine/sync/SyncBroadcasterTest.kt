@@ -19,12 +19,19 @@ package org.smartregister.fhircore.engine.sync
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.LastSyncJobStatus
+import com.google.android.fhir.sync.PeriodicSyncJobStatus
+import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.MockKAnnotations
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import java.time.OffsetDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -247,5 +254,152 @@ class SyncBroadcasterTest : RobolectricTest() {
 
     Assert.assertTrue(syncParam.isNotEmpty())
     syncParam.values.forEach { Assert.assertFalse(it.containsValue(practitionerId)) }
+  }
+
+  private fun periodicStatus(
+    current: CurrentSyncJobStatus,
+    last: LastSyncJobStatus? = null,
+  ): PeriodicSyncJobStatus =
+    mockk<PeriodicSyncJobStatus> {
+      every { currentSyncJobStatus } returns current
+      every { lastSyncJobStatus } returns last
+    }
+
+  @Test
+  fun periodicStatusToBroadcastSuppressesIdleEnqueuedHeartbeat() {
+    val result =
+      syncBroadcaster.periodicStatusToBroadcast(
+        periodicStatus(CurrentSyncJobStatus.Enqueued, last = null),
+        lastKnownTerminalTimestamp = null,
+      )
+    Assert.assertNull(result)
+  }
+
+  @Test
+  fun periodicStatusToBroadcastSuppressesRepeatedStaleSucceeded() {
+    val timestamp = OffsetDateTime.now()
+    val last =
+      mockk<LastSyncJobStatus.Succeeded> { every { this@mockk.timestamp } returns timestamp }
+    val result =
+      syncBroadcaster.periodicStatusToBroadcast(
+        periodicStatus(CurrentSyncJobStatus.Enqueued, last = last),
+        lastKnownTerminalTimestamp = timestamp,
+      )
+    Assert.assertNull(result)
+  }
+
+  @Test
+  fun periodicStatusToBroadcastSurfacesNewSucceededOnce() {
+    val timestamp = OffsetDateTime.now()
+    val last =
+      mockk<LastSyncJobStatus.Succeeded> { every { this@mockk.timestamp } returns timestamp }
+    val result =
+      syncBroadcaster.periodicStatusToBroadcast(
+        periodicStatus(CurrentSyncJobStatus.Enqueued, last = last),
+        lastKnownTerminalTimestamp = null,
+      )
+    Assert.assertTrue(result is CurrentSyncJobStatus.Succeeded)
+    Assert.assertEquals(timestamp, (result as CurrentSyncJobStatus.Succeeded).timestamp)
+  }
+
+  @Test
+  fun periodicStatusToBroadcastSuppressesFailed() {
+    val timestamp = OffsetDateTime.now()
+    val last = mockk<LastSyncJobStatus.Failed> { every { this@mockk.timestamp } returns timestamp }
+    val result =
+      syncBroadcaster.periodicStatusToBroadcast(
+        periodicStatus(CurrentSyncJobStatus.Enqueued, last = last),
+        lastKnownTerminalTimestamp = null,
+      )
+    Assert.assertNull(result)
+  }
+
+  @Test
+  fun periodicStatusToBroadcastAlwaysSurfacesRunningProgress() {
+    val running =
+      CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 10, 5))
+    val last =
+      mockk<LastSyncJobStatus.Succeeded> { every { timestamp } returns OffsetDateTime.now() }
+    val result =
+      syncBroadcaster.periodicStatusToBroadcast(
+        periodicStatus(running, last = last),
+        lastKnownTerminalTimestamp = null,
+      )
+    Assert.assertEquals(running, result)
+  }
+
+  @Test
+  fun terminalTimestampOfReturnsTimestampForTerminalStatuses() {
+    val ts = OffsetDateTime.now()
+    val succeeded = mockk<LastSyncJobStatus.Succeeded> { every { timestamp } returns ts }
+    val failed = mockk<LastSyncJobStatus.Failed> { every { timestamp } returns ts }
+    Assert.assertEquals(ts, syncBroadcaster.terminalTimestampOf(succeeded))
+    Assert.assertEquals(ts, syncBroadcaster.terminalTimestampOf(failed))
+    Assert.assertNull(syncBroadcaster.terminalTimestampOf(null))
+  }
+
+  @Test
+  fun startupBaselineSeededFromFirstEmissionSuppressesStaleFailed() {
+    val staleTimestamp = OffsetDateTime.now()
+    val staleFailed =
+      mockk<LastSyncJobStatus.Failed> { every { this@mockk.timestamp } returns staleTimestamp }
+    val firstEmission = periodicStatus(CurrentSyncJobStatus.Enqueued, last = staleFailed)
+
+    val seededBaseline = syncBroadcaster.terminalTimestampOf(firstEmission.lastSyncJobStatus)
+    Assert.assertEquals(staleTimestamp, seededBaseline)
+
+    val result = syncBroadcaster.periodicStatusToBroadcast(firstEmission, seededBaseline)
+    Assert.assertNull(result)
+  }
+
+  @Test
+  fun startupSeedingStillSurfacesGenuinePeriodicResult() {
+    val staleTimestamp = OffsetDateTime.now().minusHours(1)
+    val staleFailed =
+      mockk<LastSyncJobStatus.Failed> { every { this@mockk.timestamp } returns staleTimestamp }
+    val seededBaseline =
+      syncBroadcaster.terminalTimestampOf(
+        periodicStatus(CurrentSyncJobStatus.Enqueued, last = staleFailed).lastSyncJobStatus,
+      )
+
+    val freshTimestamp = OffsetDateTime.now()
+    val freshSucceeded =
+      mockk<LastSyncJobStatus.Succeeded> { every { this@mockk.timestamp } returns freshTimestamp }
+    val result =
+      syncBroadcaster.periodicStatusToBroadcast(
+        periodicStatus(CurrentSyncJobStatus.Enqueued, last = freshSucceeded),
+        lastKnownTerminalTimestamp = seededBaseline,
+      )
+    Assert.assertTrue(result is CurrentSyncJobStatus.Succeeded)
+    Assert.assertEquals(freshTimestamp, (result as CurrentSyncJobStatus.Succeeded).timestamp)
+  }
+
+  @Test
+  fun isWithinRedundantPeriodicWindowReturnsTrueForEventJustAfterSucceeded() {
+    val succeeded = OffsetDateTime.now()
+    val event = succeeded.plusSeconds(30)
+    Assert.assertTrue(syncBroadcaster.isWithinRedundantPeriodicWindow(event, succeeded))
+  }
+
+  @Test
+  fun isWithinRedundantPeriodicWindowReturnsFalseBeyondWindow() {
+    val succeeded = OffsetDateTime.now()
+    val event = succeeded.plusMinutes(3)
+    Assert.assertFalse(syncBroadcaster.isWithinRedundantPeriodicWindow(event, succeeded))
+  }
+
+  @Test
+  fun isWithinRedundantPeriodicWindowReturnsFalseForEventBeforeSucceeded() {
+    val succeeded = OffsetDateTime.now()
+    val event = succeeded.minusSeconds(30)
+    Assert.assertFalse(syncBroadcaster.isWithinRedundantPeriodicWindow(event, succeeded))
+  }
+
+  @Test
+  fun isWithinRedundantPeriodicWindowReturnsFalseForNullInputs() {
+    val timestamp = OffsetDateTime.now()
+    Assert.assertFalse(syncBroadcaster.isWithinRedundantPeriodicWindow(null, timestamp))
+    Assert.assertFalse(syncBroadcaster.isWithinRedundantPeriodicWindow(timestamp, null))
+    Assert.assertFalse(syncBroadcaster.isWithinRedundantPeriodicWindow(null, null))
   }
 }

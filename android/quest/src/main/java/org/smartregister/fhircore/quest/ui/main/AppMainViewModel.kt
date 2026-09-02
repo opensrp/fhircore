@@ -19,11 +19,13 @@ package org.smartregister.fhircore.quest.ui.main
 import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.core.os.LocaleListCompat
 import androidx.core.os.bundleOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -225,7 +227,11 @@ constructor(
       is AppMainEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
+          configurationRegistry.configCacheMap.clear()
           setAppLocale(event.language.tag)
+          AppCompatDelegate.setApplicationLocales(
+            LocaleListCompat.forLanguageTags(event.language.tag),
+          )
           getActivity()?.refresh()
         }
       }
@@ -400,13 +406,45 @@ constructor(
     currentSyncJobStatus: CurrentSyncJobStatus?,
     percentageProgress: Int? = null,
   ) {
+    val current = appDrawerUiState.value
+
+    if (
+      current.currentSyncJobStatus is CurrentSyncJobStatus.Running &&
+        currentSyncJobStatus is CurrentSyncJobStatus.Enqueued
+    ) {
+      return
+    }
+
+    val resolvedPercentage = percentageProgress ?: current.percentageProgress
+
+    val monotonicPercentage =
+      if (
+        currentSyncJobStatus is CurrentSyncJobStatus.Running &&
+          current.currentSyncJobStatus is CurrentSyncJobStatus.Running
+      ) {
+        maxOf(resolvedPercentage ?: 0, current.percentageProgress ?: 0)
+      } else {
+        resolvedPercentage
+      }
+
+    val stableIsSyncUpload =
+      if (
+        currentSyncJobStatus is CurrentSyncJobStatus.Running &&
+          current.currentSyncJobStatus is CurrentSyncJobStatus.Running &&
+          (current.percentageProgress ?: 0) >= 100
+      ) {
+        current.isSyncUpload
+      } else {
+        isSyncUpload
+      }
+
     appDrawerUiState.value =
       AppDrawerUIState(
-        isSyncUpload = isSyncUpload,
+        isSyncUpload = stableIsSyncUpload,
         syncCounter = syncCounter,
         totalSyncCount = configurationRegistry.retrieveTotalSyncCount(),
         currentSyncJobStatus = currentSyncJobStatus,
-        percentageProgress = percentageProgress,
+        percentageProgress = monotonicPercentage,
       )
   }
 

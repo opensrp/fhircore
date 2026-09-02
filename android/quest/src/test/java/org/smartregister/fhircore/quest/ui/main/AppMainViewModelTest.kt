@@ -25,6 +25,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import com.google.gson.Gson
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -360,4 +362,120 @@ class AppMainViewModelTest : RobolectricTest() {
 
       coVerify(inverse = true) { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) }
     }
+
+  @Test
+  fun testUpdateAppDrawerUIStatePreservesLastPercentageOnNonProgressUpdate() {
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = false,
+      syncCounter = 1,
+      currentSyncJobStatus =
+        CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 100, 100)),
+      percentageProgress = 100,
+    )
+    Assert.assertEquals(100, appMainViewModel.appDrawerUiState.value.percentageProgress)
+
+    appMainViewModel.updateAppDrawerUIState(
+      syncCounter = 1,
+      currentSyncJobStatus = CurrentSyncJobStatus.Enqueued,
+    )
+    Assert.assertEquals(100, appMainViewModel.appDrawerUiState.value.percentageProgress)
+  }
+
+  @Test
+  fun testUpdateAppDrawerUIStateIgnoresInterleavedEnqueuedWhileRunning() {
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = false,
+      syncCounter = 1,
+      currentSyncJobStatus =
+        CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 100, 60)),
+      percentageProgress = 60,
+    )
+
+    appMainViewModel.updateAppDrawerUIState(
+      syncCounter = 1,
+      currentSyncJobStatus = CurrentSyncJobStatus.Enqueued,
+    )
+
+    val state = appMainViewModel.appDrawerUiState.value
+    Assert.assertTrue(state.currentSyncJobStatus is CurrentSyncJobStatus.Running)
+    Assert.assertEquals(false, state.isSyncUpload)
+    Assert.assertEquals(60, state.percentageProgress)
+  }
+
+  @Test
+  fun testUpdateAppDrawerUIStateTerminalStatusStillAppliesWhileRunning() {
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = false,
+      syncCounter = 1,
+      currentSyncJobStatus =
+        CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 100, 100)),
+      percentageProgress = 100,
+    )
+
+    val succeeded = CurrentSyncJobStatus.Succeeded(java.time.OffsetDateTime.now())
+    appMainViewModel.updateAppDrawerUIState(syncCounter = 1, currentSyncJobStatus = succeeded)
+
+    val state = appMainViewModel.appDrawerUiState.value
+    Assert.assertTrue(state.currentSyncJobStatus is CurrentSyncJobStatus.Succeeded)
+    Assert.assertEquals(100, state.percentageProgress)
+  }
+
+  @Test
+  fun testUpdateAppDrawerUIStateKeepsPercentageMonotonicWhileRunning() {
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = false,
+      syncCounter = 1,
+      currentSyncJobStatus =
+        CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 100, 100)),
+      percentageProgress = 100,
+    )
+    Assert.assertEquals(100, appMainViewModel.appDrawerUiState.value.percentageProgress)
+
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = true,
+      syncCounter = 1,
+      currentSyncJobStatus =
+        CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.UPLOAD, 0, 0)),
+      percentageProgress = 0,
+    )
+    Assert.assertEquals(100, appMainViewModel.appDrawerUiState.value.percentageProgress)
+  }
+
+  @Test
+  fun testUpdateAppDrawerUIStateResetsPercentageForNewSync() {
+    appMainViewModel.updateAppDrawerUIState(
+      syncCounter = 1,
+      currentSyncJobStatus = CurrentSyncJobStatus.Succeeded(java.time.OffsetDateTime.now()),
+      percentageProgress = 100,
+    )
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = false,
+      syncCounter = 2,
+      currentSyncJobStatus =
+        CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 100, 5)),
+      percentageProgress = 5,
+    )
+    Assert.assertEquals(5, appMainViewModel.appDrawerUiState.value.percentageProgress)
+  }
+
+  @Test
+  fun testUpdateAppDrawerUIStateFreezesSyncDirectionMessageAt100() {
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = false,
+      syncCounter = 1,
+      currentSyncJobStatus =
+        CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 100, 100)),
+      percentageProgress = 100,
+    )
+    Assert.assertEquals(false, appMainViewModel.appDrawerUiState.value.isSyncUpload)
+
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = true,
+      syncCounter = 1,
+      currentSyncJobStatus =
+        CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.UPLOAD, 0, 0)),
+      percentageProgress = 0,
+    )
+    Assert.assertEquals(false, appMainViewModel.appDrawerUiState.value.isSyncUpload)
+  }
 }
