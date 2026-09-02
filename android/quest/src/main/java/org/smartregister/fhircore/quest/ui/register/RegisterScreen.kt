@@ -173,11 +173,6 @@ fun RegisterScreen(
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      // Tear down the first-time sync dialog (and its full-screen scrim) on a single authoritative
-      // signal: the sync reaching a terminal state. Relying on isFirstTimeSync alone left the scrim
-      // composed until a fragile, async recompute (timestamp write + register count) landed, which
-      // could lag badly or never complete on low-resource devices, stranding a touch-blocking
-      // overlay. The terminal CurrentSyncJobStatus is delivered to all listeners on the same event.
       val syncTerminated =
         appDrawerUIState.currentSyncJobStatus is CurrentSyncJobStatus.Succeeded ||
           appDrawerUIState.currentSyncJobStatus is CurrentSyncJobStatus.Failed

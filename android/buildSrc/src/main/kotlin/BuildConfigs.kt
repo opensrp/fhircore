@@ -12,3 +12,4 @@ object BuildConfigs {
     const val enableUnitTestCoverage = true
     const val enableAndroidTestCoverage = false
 }
+

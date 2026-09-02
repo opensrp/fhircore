@@ -456,12 +456,20 @@ android {
       "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"",
     )
 
-    variant.outputs
-      .map { it as BaseVariantOutputImpl }
-      .forEach { output ->
-        output.outputFileName =
-          "quest-${variant.flavorName}-${variant.buildType.name}-${variant.versionName}.apk"
-      }
+    variant.outputs.all {
+      val output = this as BaseVariantOutputImpl
+      val abi = output.filters.firstOrNull { it.filterType == "ABI" }?.identifier
+      output.outputFileName =
+        listOfNotNull(
+            "quest",
+            variant.flavorName.takeIf { !it.isNullOrEmpty() },
+            variant.buildType.name,
+            abi,
+            variant.versionName ?: BuildConfigs.versionName,
+            variant.versionCode.toString(),
+          )
+          .joinToString("-") + ".apk"
+    }
   }
 
   applicationVariants.all {
