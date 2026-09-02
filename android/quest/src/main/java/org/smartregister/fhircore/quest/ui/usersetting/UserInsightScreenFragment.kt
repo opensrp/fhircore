@@ -54,6 +54,7 @@ class UserInsightScreenFragment : Fragment() {
             location = userSettingViewModel.practitionerLocation(),
             appVersionCode = userSettingViewModel.appVersionCode.toString(),
             appVersion = userSettingViewModel.appVersionName,
+            appBuildType = userSettingViewModel.appBuildType,
             buildDate = userSettingViewModel.getBuildDate(),
             unsyncedResourcesFlow = userSettingViewModel.unsyncedResourcesMutableSharedFlow,
             navController = findNavController(),

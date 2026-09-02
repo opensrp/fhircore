@@ -1,4 +1,5 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
+import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import io.sentry.android.gradle.extensions.InstrumentationFeature
 import io.sentry.android.gradle.instrumentation.logcat.LogcatLevel
 import java.io.FileReader
@@ -57,6 +58,7 @@ sonar {
 
 android {
   compileSdk = BuildConfigs.compileSdk
+  ndkVersion = "27.2.12479018"
 
   val buildDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
 
@@ -269,14 +271,14 @@ android {
       dimension = "apps"
       applicationId = "ug.go.health.echis"
       versionNameSuffix = "-echis"
-      manifestPlaceholders["appLabel"] = "MOH UG eCHIS"
+      manifestPlaceholders["appLabel"] = "eCHIS"
     }
 
-    create("echisSupervisor") {
+    create("echisTraining") {
       dimension = "apps"
-      applicationId = "ug.go.health.echisSupervisor"
-      versionNameSuffix = "-echis-supervisor"
-      manifestPlaceholders["appLabel"] = "MOH UG eCHIS Supervisor"
+      applicationId = "ug.go.health.echis.training"
+      versionNameSuffix = "-echisTraining"
+      manifestPlaceholders["appLabel"] = "Training eCHIS"
     }
 
     create("sidBunda") {
@@ -429,6 +431,20 @@ android {
       versionNameSuffix = "-trueCover"
       manifestPlaceholders["appLabel"] = "True Cover"
     }
+
+    create("echisDataFi") {
+      dimension = "apps"
+      applicationId = "org.dataforimplementation.echis"
+      versionNameSuffix = "-echis"
+      manifestPlaceholders["appLabel"] = "Data.FI eCHIS Reference"
+    }
+
+    create("echisNawi") {
+      dimension = "apps"
+      applicationId = "ke.nawi.echis"
+      versionNameSuffix = "-echis"
+      manifestPlaceholders["appLabel"] = "Nawi eCHIS"
+    }
   }
 
   applicationVariants.all {
@@ -439,6 +455,21 @@ android {
       "app_name",
       "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"",
     )
+
+    variant.outputs.all {
+      val output = this as BaseVariantOutputImpl
+      val abi = output.filters.firstOrNull { it.filterType == "ABI" }?.identifier
+      output.outputFileName =
+        listOfNotNull(
+            "quest",
+            variant.flavorName.takeIf { !it.isNullOrEmpty() },
+            variant.buildType.name,
+            abi,
+            variant.versionName ?: BuildConfigs.versionName,
+            variant.versionCode.toString(),
+          )
+          .joinToString("-") + ".apk"
+    }
   }
 
   applicationVariants.all {

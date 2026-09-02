@@ -23,3 +23,6 @@ keystore.properties
 gradle.properties
 
 /sentry.properties
+.kotlin/
+quest/echis/
+quest/echisSupervisor/

@@ -36,7 +36,8 @@ import org.smartregister.fhircore.quest.R
 
 object EditTextQrCodeViewHolderFactory :
   QuestionnaireItemAndroidViewHolderFactory(R.layout.edit_text_qr_code_view) {
-  override fun getQuestionnaireItemViewHolderDelegate() =
+  override fun getQuestionnaireItemViewHolderDelegate():
+    QuestionnaireItemAndroidViewHolderDelegate =
     object : QuestionnaireItemAndroidViewHolderDelegate {
       override lateinit var questionnaireViewItem: QuestionnaireViewItem
 

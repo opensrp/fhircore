@@ -23,7 +23,6 @@ import android.text.InputType
 import android.text.TextWatcher
 import android.view.MotionEvent
 import android.view.View
-import android.view.View.FOCUS_DOWN
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
@@ -48,9 +47,9 @@ import org.smartregister.fhircore.quest.util.QrCodeScanUtils
 internal class EditTextQrCodeItemViewHolderFactory(
   private val qrCodeAnswerChangeListener: QrCodeChangeListener,
 ) : QuestionnaireItemAndroidViewHolderFactory(R.layout.edit_text_single_line_qr_code_item_view) {
-  override fun getQuestionnaireItemViewHolderDelegate() =
+  override fun getQuestionnaireItemViewHolderDelegate():
+    QuestionnaireItemAndroidViewHolderDelegate =
     object : QuestionnaireItemAndroidViewHolderDelegate {
-
       override lateinit var questionnaireViewItem: QuestionnaireViewItem
 
       private lateinit var context: AppCompatActivity
@@ -59,7 +58,8 @@ internal class EditTextQrCodeItemViewHolderFactory(
       private lateinit var textInputEditText: TextInputEditText
       private var textWatcher: TextWatcher? = null
 
-      private fun superInit(itemView: View) {
+      @SuppressLint("ClickableViewAccessibility")
+      override fun init(itemView: View) {
         context = itemView.context.tryUnwrapContext()!!
         header = itemView.findViewById(R.id.header)
         textInputLayout = itemView.findViewById(R.id.text_input_layout)
@@ -67,36 +67,13 @@ internal class EditTextQrCodeItemViewHolderFactory(
 
         textInputEditText.setRawInputType(InputType.TYPE_NULL)
         // Override `setOnEditorActionListener` to avoid crash with `IllegalStateException` if it's
-        // not
-        // possible to move focus forward.
-        // See
-        // https://stackoverflow.com/questions/13614101/fatal-crash-focus-search-returned-a-view-that-wasnt-able-to-take-focus/47991577
+        // not possible to move focus forward.
         textInputEditText.setOnEditorActionListener { view, actionId, _ ->
           if (actionId != EditorInfo.IME_ACTION_NEXT) {
             return@setOnEditorActionListener false
           }
-          view.focusSearch(FOCUS_DOWN)?.requestFocus(FOCUS_DOWN) ?: false
+          view.focusSearch(View.FOCUS_DOWN)?.requestFocus(View.FOCUS_DOWN) ?: false
         }
-        textInputEditText.setOnFocusChangeListener { view, focused ->
-          if (!focused) {
-            (view.context.applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE)
-                as InputMethodManager)
-              .hideSoftInputFromWindow(view.windowToken, 0)
-
-            context.lifecycleScope.launch {
-              // Update answer even if the text box loses focus without any change. This will mark
-              // the
-              // questionnaire response item as being modified in the view model and trigger
-              // validation.
-              handleInput(textInputEditText.editableText, questionnaireViewItem)
-            }
-          }
-        }
-      }
-
-      @SuppressLint("ClickableViewAccessibility")
-      override fun init(itemView: View) {
-        superInit(itemView)
 
         val onQrCodeIconClickListener: (Context) -> Unit = {
           it.tryUnwrapContext()?.let { appCompatActivity ->
@@ -106,7 +83,7 @@ internal class EditTextQrCodeItemViewHolderFactory(
           }
         }
 
-        itemView.findViewById<TextInputLayout>(R.id.text_input_layout).apply {
+        textInputLayout.apply {
           setEndIconOnClickListener { onQrCodeIconClickListener.invoke(it.context) }
           findViewById<TextInputEditText>(R.id.text_input_edit_text).apply {
             setOnFocusChangeListener { v, hasFocus ->
@@ -116,8 +93,7 @@ internal class EditTextQrCodeItemViewHolderFactory(
                   .hideSoftInputFromWindow(v.windowToken, 0)
               }
             }
-            setOnTouchListener { v, event,
-              ->
+            setOnTouchListener { v, event ->
               if (event.action == MotionEvent.ACTION_UP) {
                 onQrCodeIconClickListener(v.context)
               }
@@ -133,35 +109,11 @@ internal class EditTextQrCodeItemViewHolderFactory(
           hint = questionnaireViewItem.enabledDisplayItems.localizedFlyoverSpanned
           helperText = getRequiredOrOptionalText(questionnaireViewItem, context)
         }
-
-        /**
-         * Ensures that any validation errors or warnings are immediately reflected in the UI
-         * whenever the view is bound to a new or updated item.
-         */
         updateValidationTextUI(questionnaireViewItem, textInputLayout)
 
-        /**
-         * Updates the EditText *only* if the EditText is not currently focused.
-         *
-         * This is done to avoid disrupting the user's typing experience and prevent conflicts if
-         * they are actively editing the field. Updating the text programmatically is safe in the
-         * following scenarios:
-         * 1. **ViewHolder Reuse:** When the same ViewHolder is being used to display a different
-         *    QuestionnaireViewItem, the EditText needs to be updated with the new item's content.
-         * 2. **Read-Only Items:** When the item is read-only, its value may change dynamically due
-         *    to expressions, and the EditText needs to reflect this updated value.
-         *
-         * The following actions are performed if the EditText is not focused:
-         * - Removes any existing text change listener.
-         * - Updates the input text UI based on the QuestionnaireViewItem.
-         * - Updates the unit text view (if applicable).
-         * - Attaches a new text change listener to handle user input.
-         */
         if (!textInputEditText.isFocused) {
           textInputEditText.removeTextChangedListener(textWatcher)
           updateInputTextUI(questionnaireViewItem, textInputEditText)
-
-          // TextWatcher is set only once for each question item in scenario 1
           textWatcher =
             textInputEditText.doAfterTextChanged { editable: Editable? ->
               context.lifecycleScope.launch { handleInput(editable!!, questionnaireViewItem) }
@@ -173,12 +125,11 @@ internal class EditTextQrCodeItemViewHolderFactory(
         val questionnaireItemHasAnswer = questionnaireViewItem.answers.any { !it.value.isEmpty }
         val readOnly =
           questionnaireItemHasAnswer && (isReadOnly || questionnaireViewItem.isSetOnceReadOnly)
-
         textInputLayout.isEnabled = !readOnly
         textInputEditText.isEnabled = !readOnly
       }
 
-      suspend fun handleInput(
+      private suspend fun handleInput(
         editable: Editable,
         questionnaireViewItem: QuestionnaireViewItem,
       ) {
@@ -198,7 +149,7 @@ internal class EditTextQrCodeItemViewHolderFactory(
         )
       }
 
-      fun updateInputTextUI(
+      private fun updateInputTextUI(
         questionnaireViewItem: QuestionnaireViewItem,
         textInputEditText: TextInputEditText,
       ) {
@@ -209,7 +160,7 @@ internal class EditTextQrCodeItemViewHolderFactory(
         }
       }
 
-      fun updateValidationTextUI(
+      private fun updateValidationTextUI(
         questionnaireViewItem: QuestionnaireViewItem,
         textInputLayout: TextInputLayout,
       ) {

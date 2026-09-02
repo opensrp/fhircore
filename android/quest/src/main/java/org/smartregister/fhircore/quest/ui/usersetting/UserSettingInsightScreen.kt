@@ -93,6 +93,7 @@ fun UserSettingInsightScreen(
   location: String?,
   appVersionCode: String,
   appVersion: String,
+  appBuildType: String,
   buildDate: String,
   dividerColor: Color = DividerColor,
   unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
@@ -246,6 +247,7 @@ fun UserSettingInsightScreen(
             stringResource(R.string.app_versions) to appVersion,
             stringResource(R.string.app_version_code) to appVersionCode,
             stringResource(R.string.build_date) to buildDate,
+            stringResource(R.string.app_build_type) to appBuildType,
           )
         InsightInfoView(
           title = stringResource(id = R.string.app_info),
@@ -265,10 +267,9 @@ fun UserSettingInsightScreen(
               (if (Build.MANUFACTURER.isNullOrEmpty()) "-" else Build.MANUFACTURER),
             stringResource(R.string.device) to
               (if (Build.DEVICE.isNullOrEmpty()) "-" else Build.DEVICE),
-            stringResource(R.string.os_version) to
-              (if (Build.VERSION.BASE_OS.isNullOrEmpty()) "-" else Build.VERSION.BASE_OS),
+            stringResource(R.string.os_version) to Build.VERSION.RELEASE,
             stringResource(R.string.device_date) to
-              (formatDate(Build.TIME, desireFormat = dateFormat).ifEmpty { "-" }),
+              (formatDate(System.currentTimeMillis(), desireFormat = dateFormat).ifEmpty { "-" }),
           )
         InsightInfoView(
           title = stringResource(id = R.string.device_info),
@@ -394,6 +395,7 @@ fun UserSettingInsightScreenPreview() {
       location = "location",
       appVersionCode = "v2.3.4",
       appVersion = "119",
+      appBuildType = "debug",
       buildDate = "29 Jan 2023",
       unsyncedResourcesFlow = MutableSharedFlow(),
       navController = rememberNavController(),

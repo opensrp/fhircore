@@ -455,7 +455,7 @@ fun LoginScreenPreview() {
       ApplicationConfiguration(
         appId = "appId",
         configType = "application",
-        appTitle = "FHIRCore App",
+        appTitle = "OPENSRP 2",
       ),
     username = "",
     onUsernameChanged = {},
@@ -475,7 +475,7 @@ fun LoginScreenPreviewDarkMode() {
       ApplicationConfiguration(
         appId = "appId",
         configType = "application",
-        appTitle = "FHIRCore App",
+        appTitle = "OPENSRP 2",
       ),
     username = "",
     onUsernameChanged = {},

@@ -625,6 +625,19 @@ constructor(
     if (registerId.isNotEmpty()) {
       val paramsMap: Map<String, String> = params.toParamDataMap()
       val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
+
+      fun buildRegisterUiState() =
+        RegisterUiState(
+          screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
+          isFirstTimeSync = isFirstTimeSync(),
+          registerConfiguration = currentRegisterConfiguration,
+          registerId = registerId,
+          progressPercentage = _percentageProgress,
+          isSyncUpload = _isUploadSync,
+          currentSyncJobStatus = _currentSyncJobStatusFlow,
+          params = params?.toList() ?: emptyList(),
+        )
+
       if (currentRegisterConfiguration.infiniteScroll) {
         registerData.value = getPagerFlow(currentRegisterConfiguration.id, clearCache)
       } else {
@@ -666,20 +679,12 @@ constructor(
                   )
                   .toInt(),
             )
+
+          registerUiState.value = buildRegisterUiState()
         }
       }
 
-      registerUiState.value =
-        RegisterUiState(
-          screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
-          isFirstTimeSync = isFirstTimeSync(),
-          registerConfiguration = currentRegisterConfiguration,
-          registerId = registerId,
-          progressPercentage = _percentageProgress,
-          isSyncUpload = _isUploadSync,
-          currentSyncJobStatus = _currentSyncJobStatusFlow,
-          params = params?.toList() ?: emptyList(),
-        )
+      registerUiState.value = buildRegisterUiState()
     }
   }
 

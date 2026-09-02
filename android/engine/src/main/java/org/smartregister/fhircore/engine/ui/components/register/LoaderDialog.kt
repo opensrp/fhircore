@@ -27,10 +27,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -112,63 +109,55 @@ private fun LoaderContent(
   showBackground: Boolean,
   showLineSpinIndicator: Boolean,
 ) {
-  val openDialog = remember { mutableStateOf(true) }
-  if (openDialog.value) {
-    Box(modifier.size(boxWidth, boxHeight)) {
-      Column(
-        modifier = modifier.padding(8.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+  Box(modifier.size(boxWidth, boxHeight)) {
+    Column(
+      modifier = modifier.padding(8.dp),
+      verticalArrangement = Arrangement.Center,
+      horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+      Surface(
+        modifier = modifier.size(boxWidth, boxHeight),
+        shape = RoundedCornerShape(8.dp),
+        color = if (showBackground) Color.Black.copy(alpha = 0.56f) else Color.Transparent,
       ) {
-        Surface(
-          modifier = modifier.size(boxWidth, boxHeight),
-          shape = RoundedCornerShape(8.dp),
-          color = if (showBackground) Color.Black.copy(alpha = 0.56f) else Color.Transparent,
+        Column(
+          modifier = modifier.padding(8.dp),
+          verticalArrangement = Arrangement.Center,
+          horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          Column(
-            modifier = modifier.padding(8.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-          ) {
-            if (showLineSpinIndicator) {
-              LineSpinFadeLoaderProgressIndicator(
-                color = Color.White,
-                lineLength = 12f,
-                innerRadius = 16f,
-              )
-            } else {
-              CircularProgressIndicator(
-                color = Color.White,
-                strokeWidth = 3.dp,
-                modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_BAR_TAG).size(progressBarSize),
-              )
-            }
+          if (showLineSpinIndicator) {
+            LineSpinFadeLoaderProgressIndicator(
+              color = Color.White,
+              lineLength = 12f,
+              innerRadius = 16f,
+            )
+          } else {
+            CircularProgressIndicator(
+              color = Color.White,
+              strokeWidth = 3.dp,
+              modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_BAR_TAG).size(progressBarSize),
+            )
+          }
 
-            dialogMessage?.let {
-              Text(
-                text = it,
-                color = Color.White,
-                fontSize = 14.sp,
-                modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(top = 8.dp),
-              )
-            }
+          dialogMessage?.let {
+            Text(
+              text = it,
+              color = Color.White,
+              fontSize = 14.sp,
+              modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(top = 8.dp),
+            )
+          }
 
-            if (showPercentageProgress) {
-              Text(
-                fontSize = 15.sp,
-                color = Color.White,
-                text = "$currentPercentage%",
-                modifier = modifier.padding(top = 4.dp),
-              )
-            }
+          if (showPercentageProgress) {
+            Text(
+              fontSize = 15.sp,
+              color = Color.White,
+              text = "$currentPercentage%",
+              modifier = modifier.padding(top = 4.dp),
+            )
           }
         }
       }
-    }
-  }
-  SideEffect {
-    if (currentPercentage >= 100) {
-      openDialog.value = false
     }
   }
 }
