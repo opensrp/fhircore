@@ -456,7 +456,7 @@ constructor(
     val appId = sharedPreferencesHelper.retrieveApplicationId()?.trim()
     if (appId?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true) {
       Timber.d(
-        "Skipping remote config fetch - app ID '$appId' has /debug suffix, using local assets"
+        "Skipping remote config fetch - app ID '$appId' has /debug suffix, using local assets",
       )
       return
     }
