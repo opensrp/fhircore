@@ -162,7 +162,7 @@ class ReportIndicatorViewModel @Inject constructor(val defaultRepository: Defaul
     while (currentDate >= actualStartDate) {
       yearMonths.add(
         ReportRangeSelectionData(
-          currentDate.formatDate(SDF_MMMM),
+          currentDate.formatDate(SDF_MMMM, defaultRepository.configurationRegistry.currentLocale()),
           currentDate.formatDate(SDF_YYYY),
           currentDate,
         ),

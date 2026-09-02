@@ -1,5 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="manual_sync">Sincronización manual</string>
+    <string name="sync">Sincronizar</string>
     <string name="language">Idioma</string>
     <string name="logout_as_user">Cerrar sesión como </string>
     <string name="show_overdue">Mostrar vencido</string>
@@ -10,7 +11,6 @@
     <string name="empty_client_list_message_title">Sin resultados</string>
     <string name="empty_client_list_message_details">Lo sentimos, no pudimos encontrar el cliente con su nombre o ID</string>
     <string name="register_new_client">Registrar nuevo cliente</string>
-    <string name="default_app_title" translatable="false">OpenSRP</string>
     <string name="app_logo">Logotipo de la aplicación</string>
     <string name="powered_by">Desarrollado por</string>
     <string name="app_version">Versión de la aplicación %1$d(%2$s)</string>
@@ -40,6 +40,7 @@
     <string name="date_last_seen">Visto por última vez %1$s</string>
     <string name="date_last_visited">Última visita %1$s</string>
     <string name="str_save">Guardar</string>
+    <string name="save">Hifadhi</string>
     <string name="login_error">Error de inicio de sesión: %1$s</string>
     <string name="str_next">SIGUIENTE</string>
     <string name="str_previous">ANTERIOR</string>
@@ -70,10 +71,12 @@
     <string name="questionnaire_alert_back_pressed_button_title">Descartar</string>
     <string name="questionnaire_alert_back_pressed_save_draft_button_title">Guardar borrador parcial</string>
     <string name="questionnaire_alert_neutral_button_title">Cancelar</string>
+    <string name="questionnaire_alert_negative_button_title">Descartar cambios</string>
     <string name="questionnaire_alert_confirm_button_title">Sí</string>
     <string name="questionnaire_alert_invalid_message">Los detalles proporcionados tienen errores de validación. Resolver errores y enviar de nuevo</string>
     <string name="questionnaire_alert_invalid_title">Validación fallida</string>
     <string name="questionnaire_alert_ack_button_title">Aceptar</string>
+    <string name="questionnaire_alert_delete_draft_button_title">Borrar borrador</string>
     <string name="username">Nombre de usuario</string>
     <string name="password">Contraseña</string>
     <string name="forgot_password">Olvidé mi contraseña</string>
@@ -92,16 +95,13 @@
     <string name="clients">Clientes</string>
     <string name="logout">Cerrar sesión</string>
     <string name="application_id">ID de aplicación</string>
-    <string name="app_id_sample" translatable="false">por ejemplo, ecbis, quest, cha</string>
     <string name="load_configurations">CARGAR CONFIGURACIONES</string>
-    <string name="fhir_core_app" translatable="false">OpenSRP</string>
     <string name="remember_app">Recordar aplicación</string>
     <string name="done">Listo</string>
     <string name="replace_photo">Reemplazar foto</string>
     <string name="take_photo">Tomar foto</string>
     <string name="edit">Editar</string>
     <string name="application_not_supported">Error al cargar las configuraciones de la aplicación %1$s</string>
-    <string name="eCBIS_app_name" translatable="false">eCBIS</string>
     <string name="invalid_login_credentials">el nombre de usuario o la contraseña no son válidos</string>
     <string name="invalid_form_id">ID de formulario adjunto no válido</string>
     <string name="no">No</string>
@@ -113,14 +113,12 @@
     <string name="incorrect_pin_please_retry">PIN incorrecto, inténtelo de nuevo</string>
     <string name="pin_menu_login">Iniciar sesión</string>
     <string name="forgot_pin">¿Olvidaste tu PIN?</string>
-    <string name="please_contact_supervisor">Por favor, póngase en contacto con su supervisor.</string>
-    <string name="percentage" translatable="false">%</string>
+    <string name="please_contact_supervisor">Por favor, contacte con el supervisor.</string>
     <string name="logging_out">Cerrar sesión. Por favor espera…</string>
     <string name="session_expired">La sesión ha caducado y debes iniciar sesión nuevamente</string>
     <string name="sex">Sexo</string>
     <string name="age">Edad</string>
     <string name="dob">fecha de nacimiento</string>
-    <string name="id" translatable="false">ID: %1$s</string>
     <string name="see_all">VER TODO</string>
     <string name="forms">FORMULARIOS</string>
     <string name="medical_history">ANTECEDENTES MÉDICOS</string>
@@ -136,25 +134,14 @@
     <string name="clear_database_title">¡Restablecer base de datos!</string>
     <string name="clear_database_message">Restablecer la base de datos borrará todos los registros de su dispositivo. Esta acción no se puede deshacer.</string>
     <string name="resetting_app">Restableciendo aplicación…</string>
-    <string name="sync_strategy_careteam_system" translatable="false">https://smartregister.org/care-team-tag-id</string>
-    <string name="sync_strategy_location_system" translatable="false">https://smartregister.org/location-tag-id</string>
-    <string name="sync_strategy_organization_system" translatable="false">https://smartregister.org/organization-tag-id</string>
-    <string name="sync_strategy_practitioner_system" translatable="false">https://smartregister.org/practitioner-tag-id</string>
-    <string name="sync_strategy_related_entity_location_system" translatable="false">https://smartregister.org/ related-entity-location-tag-id</string>
-    <string name="sync_strategy_related_entity_location_display" translatable="false">Ubicación de entidad relacionada</string>
-    <string name="sync_strategy_careteam_display" translatable="false">Equipo de atención de profesionales</string>
-    <string name="sync_strategy_location_display" translatable="false">Ubicación del practicante</string>
-    <string name="sync_strategy_organization_display" translatable="false">Organización profesional</string>
-    <string name="sync_strategy_practitioner_display" translatable="false">Practicante</string>
     <string name="year">Año</string>
     <string name="month">Mes</string>
     <string name="weeks">Semana(s)</string>
     <string name="days">Días(s)</string>
     <string name="initializing">Inicializando configuración &#8230;</string>
-    <string name="username_sample" translatable="false">por ejemplo, JohnDoe</string>
-    <string name="percentage_progress" translatable="false">%1$d%%</string>
     <string name="error_occurred">Algo salió mal…</string>
     <string name="insights">Perspectivas</string>
+    <string name="share_file">Compartir archivo</string>
     <string name="contact_help">Contactar con ayuda</string>
     <string name="offline_map">Mapas sin conexión</string>
     <string name="dismiss">Descartar</string>
@@ -169,6 +156,7 @@
     <string name="all_data_synced">Todos los datos sincronizados</string>
     <string name="invalid_offline_login_state">Se requiere configuración de usuario. Habilite su conexión a Internet </string>
     <string name="select_month">Seleccionar mes</string>
+    <string name="full_year">Año completo</string>
     <string name="user">Usuario</string>
     <string name="team">Equipo</string>
     <string name="locality">Localidad</string>
@@ -185,9 +173,18 @@
     <string name="device">Dispositivo</string>
     <string name="ok">OK</string>
     <string name="add">AÑADIR</string>
+    <string name="back_arrow">Flecha atrás</string>
     <string name="data_migration_started">Migración de datos iniciada desde la versión %1$d</string>
     <string name="data_migration_completed">Datos de la aplicación migrados a la versión %1$d</string>
     <string name="help">Ayuda</string>
     <string name="no_data">Sin conjunto de datos</string>
     <string name="default_html_title">archivo</string>
+    <string name="record_gps_location">Registrar ubicación GPS</string>
+    <string name="questionnaire_alert_open_draft_button_title">Borrador abierto</string>
+    <string name="select_period">Seleccionar período</string>
+    <string name="export_db">Exportar base de datos</string>
+    <string name="exporting_db">Exportando la base de datos...</string>
+    <string name="button_pagination_next">Kitufe cha kurasa kinachofuata</string>
+    <string name="button_pagination_previous">Paginación de botones anterior</string>
+    <string name="initializing_application">Inicializando la aplicación &#8230;</string>
 </resources>

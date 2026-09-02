@@ -62,6 +62,8 @@
     <string name="all">Tout</string>
     <string name="individual">Individuel</string>
     <string name="please_wait">S\'il vous plaît, attendez</string>
+    <string name="no_encounter_data_available">Aucune donnée disponible</string>
+    <string name="reports_suffix">Rapports</string>
     <string name="patient">Patient</string>
     <string name="subject">Sujet</string>
     <string name="generate_report">GÉNÉRER DES RAPPORTS</string>
@@ -278,4 +280,5 @@
 
     <!-- End SDK SDC Strings -->
 
+    <string name="sync_counter"><b>Synchronisation %1$d</b> sur <b>%2$d</b></string>
 </resources>

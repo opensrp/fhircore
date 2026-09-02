@@ -549,7 +549,7 @@ constructor(
     ) {
       yearMonths.add(
         ReportRangeSelectionData(
-          lastDate.formatDate(SDF_MMMM),
+          lastDate.formatDate(SDF_MMMM, configurationRegistry.currentLocale()),
           lastDate.formatDate(SDF_YYYY),
           lastDate,
         ),

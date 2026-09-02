@@ -448,7 +448,7 @@ class AppSettingViewModelTest : RobolectricTest() {
       coVerify(exactly = 0) {
         appSettingViewModel.configurationRegistry.fetchRemoteImplementationGuideByAppId(
           any(),
-          any()
+          any(),
         )
       }
     }
@@ -489,7 +489,7 @@ class AppSettingViewModelTest : RobolectricTest() {
       coEvery {
         appSettingViewModel.configurationRegistry.fetchRemoteImplementationGuideByAppId(
           any(),
-          any()
+          any(),
         )
       } returns null
       coEvery {

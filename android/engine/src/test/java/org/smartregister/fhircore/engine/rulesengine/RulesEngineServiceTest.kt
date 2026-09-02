@@ -96,6 +96,12 @@ class RulesEngineServiceTest : RobolectricTest() {
   }
 
   @Test
+  fun testTranslateWithBlankValueReturnsBlank() {
+    Assert.assertEquals("", rulesEngineService.translate(""))
+    Assert.assertEquals("   ", rulesEngineService.translate("   "))
+  }
+
+  @Test
   fun testTranslateWithOtherLocaleReturnsCorrectTranslatedString() {
     val templateString = "Vaccine status"
     Locale.setDefault(Locale.FRENCH)

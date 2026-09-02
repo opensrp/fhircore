@@ -19,6 +19,8 @@ package org.smartregister.fhircore.quest.ui.usersetting
 import android.content.Context
 import android.os.Environment
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -173,6 +175,9 @@ constructor(
         event.context.run {
           configurationRegistry.configCacheMap.clear()
           setAppLocale(event.language.tag)
+          AppCompatDelegate.setApplicationLocales(
+            LocaleListCompat.forLanguageTags(event.language.tag),
+          )
           getActivity()?.refresh()
         }
       }

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.appsetting
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -24,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.res.stringResource
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Locale
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
@@ -32,6 +34,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
+import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.BuildConfig
 
@@ -43,6 +46,18 @@ class AppSettingActivity : AppCompatActivity() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   private val appSettingViewModel: AppSettingViewModel by viewModels()
+
+  override fun attachBaseContext(baseContext: Context) {
+    val lang =
+      baseContext
+        .getSharedPreferences(SharedPreferencesHelper.PREFS_NAME, Context.MODE_PRIVATE)
+        .getString(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
+        ?: Locale.ENGLISH.toLanguageTag()
+    baseContext.setAppLocale(lang).run {
+      super.attachBaseContext(baseContext)
+      applyOverrideConfiguration(this)
+    }
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)

@@ -99,14 +99,12 @@
     <string name="application_id">معرف التطبيق</string>
     <string name="app_id_sample" translatable="false">e.g. ecbis, quest, cha</string>
     <string name="load_configurations">تكوينات التحميل</string>
-    <string name="fhir_core_app" translatable="false">OPENSRP</string>
     <string name="remember_app">تذكر التطبيق</string>
     <string name="done">منتهي</string>
     <string name="replace_photo">استبدال الصورة</string>
     <string name="take_photo">التقط صورة</string>
     <string name="edit">يحرر</string>
     <string name="application_not_supported">خطأ في تحميل تكوينات التطبيق %1$s</string>
-    <string name="eCBIS_app_name" translatable="false">eCBIS</string>
     <string name="invalid_login_credentials">اسم المستخدم أو كلمة المرور غير صالحة</string>
     <string name="invalid_form_id">تم إرفاق معرف نموذج غير صالح</string>
     <string name="no">لا</string>
@@ -118,13 +116,11 @@
     <string name="incorrect_pin_please_retry">رقم التعريف الشخصي غير صحيح، يرجى المحاولة مرة أخرى</string>
     <string name="pin_menu_login">تسجيل الدخول</string>
     <string name="forgot_pin">هل نسيت الرقم السري؟</string>
-    <string name="percentage" translatable="false">%</string>
     <string name="logging_out">جاري تسجيل الخروج. الرجاء الانتظار…</string>
     <string name="session_expired">لقد انتهت الجلسة ويجب تسجيل الدخول مرة أخرى</string>
     <string name="sex">جنس</string>
     <string name="age">عمر</string>
     <string name="dob">تاريخ الميلاد</string>
-    <string name="id" translatable="false">ID: %1$s</string>
     <string name="see_all">رؤية الكل</string>
     <string name="forms">النماذج</string>
     <string name="medical_history">التاريخ الطبي</string>
@@ -136,33 +132,19 @@
     <string name="multi_user_login_attempt">حاولت تسجيل الدخول باستخدام مزود مختلف</string>
     <string name="please_wait">انتظر من فضلك…</string>
     <string name="clear_database">إعادة ضبط البيانات</string>
-    <string name="transfer_data">Transfer Data</string>
+    <string name="transfer_data">نقل البيانات</string>
     <string name="clear_database_title">إعادة تعيين قاعدة البيانات!</string>
     <string name="clear_database_message">ستؤدي إعادة ضبط قاعدة البيانات إلى مسح جميع السجلات من جهازك. لا يمكن التراجع عن هذا الإجراء.</string>
     <string name="resetting_app">إعادة تعيين التطبيق…</string>
-    <string name="sync_strategy_careteam_system" translatable="false">https://smartregister.org/care-team-tag-id</string>
-    <string name="sync_strategy_location_system" translatable="false">https://smartregister.org/location-tag-id</string>
-    <string name="sync_strategy_organization_system" translatable="false">https://smartregister.org/organisation-tag-id</string>
-    <string name="sync_strategy_practitioner_system" translatable="false">https://smartregister.org/practitioner-tag-id</string>
-    <string name="sync_strategy_related_entity_location_system" translatable="false">https://smartregister.org/related-entity-location-tag-id</string>
-    <string name="sync_strategy_related_entity_location_display" translatable="false">Related Entity Location</string>
-    <string name="sync_strategy_careteam_display" translatable="false">Practitioner CareTeam</string>
-    <string name="sync_strategy_location_display" translatable="false">Practitioner Location</string>
-    <string name="sync_strategy_organization_display" translatable="false">Practitioner Organization</string>
-    <string name="sync_strategy_practitioner_display" translatable="false">Practitioner</string>
     <string name="year">سنة</string>
     <string name="month">شهر</string>
     <string name="weeks">الأسبوع (الأسابيع)</string>
     <string name="days">الأيام</string>
     <string name="initializing">تهيئة الإعدادات &#8230;</string>
     <string name="initializing_application">تهيئة التطبيق &#8230;</string>
-    <string name="username_sample" translatable="false">e.g JohnDoe</string>
-    <string name="percentage_progress" translatable="false">%1$d%%</string>
     <string name="error_occurred">حدث خطأ ما…</string>
     <string name="insights">رؤى</string>
-    <string name="export_db" translatable="false">Export DB</string>
-    <string name="exporting_db" translatable="false">Exporting DB...</string>
-    <string name="share_file" translatable="false">Share File</string>
+    <string name="share_file">ملف مشاركة</string>
     <string name="contact_help">اتصل بالمساعدة</string>
     <string name="offline_map">خرائط دون اتصال</string>
     <string name="dismiss">رفض</string>
@@ -177,6 +159,7 @@
     <string name="all_data_synced">تمت مزامنة كافة البيانات</string>
     <string name="invalid_offline_login_state">يلزم إعداد المستخدم. فعّل اتصالك بالإنترنت. </string>
     <string name="select_month">اختر الشهر</string>
+    <string name="full_year">حدد الفترة</string>
     <string name="user">مستخدم</string>
     <string name="team">فريق</string>
     <string name="locality" >محلية</string>
@@ -193,6 +176,7 @@
     <string name="device">جهاز</string>
     <string name="ok">نعم</string>
     <string name="add">يضيف</string>
+    <string name="back_arrow">السهم الخلفي</string>
     <string name="data_migration_started">%1$d بدأت عملية نقل البيانات من الإصدار</string>
     <string name="data_migration_completed">%1$d تم نقل بيانات التطبيق إلى الإصدار</string>
     <string name="help">يساعد</string>
@@ -211,4 +195,11 @@
     <string name="questionnaire_save_draft_message">هل تريد حفظ تغييرات المسودة؟</string>
     <string name="open_draft_changes_title">فتح مسودة التغييرات</string>
     <string name="open_draft_changes_message">يمكنك إعادة فتح نموذج مسودة محفوظ للمتابعة أو حذفه</string>
+    <string name="record_gps_location">تسجيل موقع GPS</string>
+    <string name="select_period">حدد الفترة</string>
+    <string name="export_db">تصدير قاعدة البيانات</string>
+    <string name="exporting_db">جارٍ تصدير قاعدة البيانات...</string>
+    <string name="please_contact_supervisor">يرجى الاتصال بالمشرف</string>
+    <string name="button_pagination_next">التالي</string>
+    <string name="button_pagination_previous">السابق</string>
 </resources>

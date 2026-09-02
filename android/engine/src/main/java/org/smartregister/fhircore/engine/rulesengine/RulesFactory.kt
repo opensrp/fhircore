@@ -190,12 +190,16 @@ constructor(
      * This function creates a property key from the string [value] and uses the key to retrieve the
      * correct translation from the string.properties file.
      */
-    fun translate(value: String): String =
-      configurationRegistry.localizationHelper.parseTemplate(
+    fun translate(value: String): String {
+      if (value.isBlank()) return value
+      return configurationRegistry.localizationHelper.parseTemplate(
         LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
-        Locale.getDefault(),
+        // Use the persisted app language, not Locale.getDefault() which
+        // can revert to the device locale after the process is recreated
+        configurationRegistry.currentLocale(),
         "{{${value.translationPropertyKey()}}}",
       )
+    }
 
     /**
      * This method retrieves a list of relatedResources for a given resource from the facts map It

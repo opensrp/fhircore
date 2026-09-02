@@ -118,6 +118,9 @@
     <string name="incorrect_pin_please_retry">Incorrect PIN, please try again</string>
     <string name="pin_menu_login">Login</string>
     <string name="forgot_pin">Forgot PIN?</string>
+    <string name="forgot_pin_reset_title">Reset PIN</string>
+    <string name="forgot_pin_reset_message">To reset your PIN you will need to sign in again with your username and password.</string>
+    <string name="forgot_pin_reset_confirm" tools:ignore="ButtonCase">CONTINUE</string>
     <string name="percentage" translatable="false">%</string>
     <string name="logging_out">Logging out. Please wait…</string>
     <string name="session_expired">Session has been expired and must login again</string>
@@ -160,9 +163,9 @@
     <string name="percentage_progress" translatable="false">%1$d%%</string>
     <string name="error_occurred">Something went wrong…</string>
     <string name="insights">Insights</string>
-    <string name="export_db" translatable="false">Export DB</string>
-    <string name="exporting_db" translatable="false">Exporting DB...</string>
-    <string name="share_file" translatable="false">Share File</string>
+    <string name="export_db">Export DB</string>
+    <string name="exporting_db">Exporting DB...</string>
+    <string name="share_file">Share File</string>
     <string name="contact_help">Contact help</string>
     <string name="offline_map">Offline Maps</string>
     <string name="dismiss">Dismiss</string>
@@ -195,6 +198,7 @@
     <string name="device">Device</string>
     <string name="ok">OK</string>
     <string name="add">ADD</string>
+    <string name="back_arrow">Back arrow</string>
     <string name="data_migration_started">Started data migration from version %1$d</string>
     <string name="data_migration_completed">Application data migrated to version %1$d</string>
     <string name="help">Help</string>
@@ -213,4 +217,8 @@
     <string name="questionnaire_save_draft_message">Do you want to save draft changes?</string>
     <string name="open_draft_changes_title">Open draft changes</string>
     <string name="open_draft_changes_message">You can reopen a saved draft form to continue or delete it</string>
+    <string name="record_gps_location">Record GPS Location</string>
+    <string name="please_contact_supervisor">Please contact supervisor</string>
+    <string name="button_pagination_next">Next</string>
+    <string name="button_pagination_previous">Previous</string>
 </resources>

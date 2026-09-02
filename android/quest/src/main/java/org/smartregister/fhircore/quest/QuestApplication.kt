@@ -17,9 +17,12 @@
 package org.smartregister.fhircore.quest
 
 import android.app.Application
+import android.content.Context
 import android.database.CursorWindow
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
@@ -41,6 +44,8 @@ import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Questionnaire
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getSubDomain
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
@@ -62,6 +67,13 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
 
   override fun onCreate() {
     super.onCreate()
+    // Seed the per-app locale from the stored language on process start
+    val languageTag =
+      getSharedPreferences(SharedPreferencesHelper.PREFS_NAME, Context.MODE_PRIVATE)
+        .getString(SharedPreferenceKey.LANG.name, null)
+    if (!languageTag.isNullOrBlank() && AppCompatDelegate.getApplicationLocales().isEmpty) {
+      AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(languageTag))
+    }
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     } else {

@@ -40,6 +40,7 @@
     <string name="date_last_seen">Dernière visite %1$s</string>
     <string name="date_last_visited">Dernière visite %1$s</string>
     <string name="str_save">Sauvegardez</string>
+    <string name="save">Sauvegarder</string>
     <string name="login_error">Erreur de connexion :%1$s</string>
     <string name="str_next">SUIVANT</string>
     <string name="str_previous">PRÉCÉDENT</string>
@@ -95,6 +96,7 @@
     <string name="clients">Clients</string>
     <string name="logout">Déconnexion</string>
     <string name="application_id">ID de l’application</string>
+    <string name="app_id_sample">par exemple ecbis, quest, cha</string>
     <string name="load_configurations">CHARGER LES CONFIGURATIONS</string>
     <string name="remember_app">Se souvenir de l\'application</string>
     <string name="done">Effectué</string>
@@ -128,6 +130,8 @@
     <string name="responses">RÉPONSES (%1$s)</string>
     <string name="multi_user_login_attempt">Tentative de connexion avec un autre fournisseur d\'accès</string>
     <string name="please_wait">Veuillez patienter…</string>
+    <string name="select_period">Sélectionner la période</string>
+    <string name="full_year">Année entière</string>
     <string name="clear_database">Réinitialiser les données</string>
     <string name="transfer_data">Transfert de données</string>
     <string name="clear_database_title">Réinitialiser la base de données !</string>
@@ -141,6 +145,7 @@
     <string name="initializing_application">Initialisation de l\'application &#8230;</string>
     <string name="error_occurred">Quelque chose a mal tourné…</string>
     <string name="insights">Insights</string>
+    <string name="share_file">Partager un fichier</string>
     <string name="contact_help">Contacter l\'aide</string>
     <string name="offline_map">Cartes hors connexion</string>
     <string name="dismiss">Rejeter</string>
@@ -159,7 +164,7 @@
     <string name="team">L\'équipe</string>
     <string name="locality" >Localité</string>
     <string name="team_organization">Équipe (Organisation)</string>
-    <string name="care_team">Care Team</string>
+    <string name="care_team">Équipe de soins</string>
     <string name="location">Localisation</string>
     <string name="app_version_code">Code de version de l\'application</string>
     <string name="app_build_type">Type de build d\'application</string>
@@ -171,6 +176,7 @@
     <string name="device">Appareil</string>
     <string name="ok">D\'ACCORD</string>
     <string name="add">AJOUTER</string>
+    <string name="back_arrow">Flèche retour</string>
     <string name="data_migration_started">Début de la migration des données à partir de la version %1$d</string>
     <string name="data_migration_completed">Migration des données de l\'application vers la version %1$d</string>
     <string name="help">Aide</string>
@@ -179,7 +185,7 @@
     <string name="sync_error">Erreur de synchronisation</string>
     <string name="minutes_remaining">Calcul des minutes restantes…</string>
     <string name="sync_up_inprogress">%1$d%% Synchronisation…</string>
-    <string name="sync_down_inprogress">%1$d%%Syncing down…</string>
+    <string name="sync_down_inprogress">%1$d%% Synchronisation en cours…</string>
     <string name="default_html_title">fichier</string>
     <string name="retry">REESSAYER</string>
     <string name="unsynced_data_present">Il y a des données non synchronisées</string>
@@ -189,4 +195,10 @@
     <string name="questionnaire_save_draft_message">Voulez-vous enregistrer les modifications du brouillon ?</string>
     <string name="open_draft_changes_title">Modifications du projet en cours</string>
     <string name="open_draft_changes_message">Vous pouvez rouvrir un projet de formulaire enregistré pour le poursuivre ou le supprimer</string>
+    <string name="record_gps_location">Enregistrer la position GPS</string>
+    <string name="export_db">Base de données d\'exportation</string>
+    <string name="exporting_db">Exportation de la base de données...</string>
+    <string name="please_contact_supervisor">Veuillez contacter votre superviseur.</string>
+    <string name="button_pagination_next">Suivant</string>
+    <string name="button_pagination_previous">Précédent</string>
 </resources>

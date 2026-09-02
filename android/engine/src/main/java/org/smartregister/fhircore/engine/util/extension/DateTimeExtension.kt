@@ -50,8 +50,8 @@ fun yesterday(): Date = DateTimeType.now().apply { add(Calendar.DATE, -1) }.valu
 
 fun today(): Date = DateTimeType.today().value
 
-fun Date.formatDate(pattern: String = "dd-MMM-yyyy"): String =
-  SimpleDateFormat(pattern, Locale.ENGLISH).format(this)
+fun Date.formatDate(pattern: String = "dd-MMM-yyyy", locale: Locale = Locale.ENGLISH): String =
+  SimpleDateFormat(pattern, locale).format(this)
 
 fun Date.isToday() = this.formatDate(SDF_YYYY_MM_DD) == today().formatDate(SDF_YYYY_MM_DD)
 

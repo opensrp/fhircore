@@ -102,7 +102,7 @@ fun SubjectSelector(
             ) {
               Icon(
                 Icons.Filled.Close,
-                contentDescription = "Back arrow",
+                contentDescription = stringResource(id = R.string.back_arrow),
                 modifier = modifier.size(20.dp).testTag(CLOSE_ICON_TEST_TAG),
               )
             }

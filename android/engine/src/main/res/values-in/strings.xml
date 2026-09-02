@@ -11,7 +11,6 @@
     <string name="empty_client_list_message_title">Tidak Ada Hasil</string>
     <string name="empty_client_list_message_details">Maaf, kami tidak dapat menemukan klien dengan nama atau nomor ID tersebut</string>
     <string name="register_new_client">Daftarkan klien baru</string>
-    <string name="default_app_title" translatable="false">OpenSRP</string>
     <string name="app_logo">Logo aplikasi</string>
     <string name="powered_by">Dipersembahkan oleh</string>
     <string name="app_version">App versi %1$d(%2$s)</string>
@@ -40,6 +39,7 @@
     <string name="date_last_seen">Terakhir dilihat %1$s</string>
     <string name="date_last_visited">Terakhir dikunjungi %1$s</string>
     <string name="str_save">Simpan</string>
+    <string name="save">Menyimpan</string>
     <string name="login_error">Kesalahan masuk: %1$s</string>
     <string name="str_next">SELANJUTNYA</string>
     <string name="str_previous">SEBELUMNYA</string>
@@ -95,16 +95,13 @@
     <string name="clients">Klien</string>
     <string name="logout">Keluar (log out)</string>
     <string name="application_id">ID Aplikasi</string>
-    <string name="app_id_sample" translatable="false">e.g. ecbis, quest, cha</string>
     <string name="load_configurations">MEMUAT KONFIGURASI</string>
-    <string name="fhir_core_app" translatable="false">OPENSRP</string>
     <string name="remember_app">Ingat aplikasi</string>
     <string name="done">Selesai</string>
     <string name="replace_photo">Ganti foto</string>
     <string name="take_photo">Ambil foto</string>
     <string name="edit">Edit</string>
     <string name="application_not_supported">Eror memuat configs aplikasi %1$s</string>
-    <string name="eCBIS_app_name" translatable="false">eCBIS</string>
     <string name="invalid_login_credentials">username atau password tidak valid</string>
     <string name="invalid_form_id">ID formulir terlampir tidak valid</string>
     <string name="no">Tidak</string>
@@ -116,13 +113,11 @@
     <string name="incorrect_pin_please_retry">PIN salah, mohon coba lagi</string>
     <string name="pin_menu_login">Masuk</string>
     <string name="forgot_pin">Lupa PIN?</string>
-    <string name="percentage" translatable="false">%</string>
     <string name="logging_out">Sedang keluar (log out). Mohon tunggu…</string>
     <string name="session_expired">Sesi telah kedaluwarsa dan harus login lagi</string>
     <string name="sex">Jenis Kelamin</string>
     <string name="age">Umur</string>
     <string name="dob">Tanggal Lahir</string>
-    <string name="id" translatable="false">ID: %1$s</string>
     <string name="see_all">LIHAT SEMUA</string>
     <string name="forms">FORMULIR</string>
     <string name="medical_history">RIWAYAT MEDIS</string>
@@ -138,24 +133,15 @@
     <string name="clear_database_title">Setel Ulang Database!</string>
     <string name="clear_database_message">Menyetel ulang database akan menghapus semua catatan dari perangkat Anda. Tindakan ini tidak dapat dibatalkan.</string>
     <string name="resetting_app">Menyetel Ulang Aplikasi…</string>
-    <string name="sync_strategy_careteam_system" translatable="false">https://smartregister.org/care-team-tag-id</string>
-    <string name="sync_strategy_location_system" translatable="false">https://smartregister.org/location-tag-id</string>
-    <string name="sync_strategy_organization_system" translatable="false">https://smartregister.org/organisation-tag-id</string>
-    <string name="sync_strategy_practitioner_system" translatable="false">https://smartregister.org/practitioner-tag-id</string>
-    <string name="sync_strategy_careteam_display">Tim Pelayanan Tenaga Kesehatan/Petugas</string>
-    <string name="sync_strategy_location_display">Lokasi Tenaga Kesehatan/Petugas</string>
-    <string name="sync_strategy_organization_display">Organisasi Tenaga Kesehatan/Petugas</string>
-    <string name="sync_strategy_practitioner_display">Tenaga Kesehatan/Petugas</string>
     <string name="year">Tahun</string>
     <string name="month">Bulan</string>
     <string name="weeks">Pekan/minggu</string>
     <string name="days">Hari</string>
     <string name="initializing">Menginisiasi pengaturan &#8230;</string>
     <string name="initializing_application">Initializing application &#8230;</string>
-    <string name="username_sample" translatable="false">e.g JohnDoe</string>
-    <string name="percentage_progress" translatable="false">%1$d%%</string>
     <string name="error_occurred">Ada yang salah…</string>
     <string name="insights">Pengertian</string>
+    <string name="share_file">Bagikan File</string>
     <string name="contact_help">Kontak pertolongan</string>
     <string name="offline_map">Peta Luring/Offline</string>
     <string name="dismiss">Abaikan</string>
@@ -170,6 +156,7 @@
     <string name="all_data_synced">Semua data disinkronkan</string>
     <string name="invalid_offline_login_state">Diperlukan pengaturan pengguna. Aktifkan koneksi internet Anda</string>
     <string name="select_month">Pilih bulan</string>
+    <string name="full_year">Sepanjang Tahun</string>
     <string name="user">Pengguna</string>
     <string name="team">Tim</string>
     <string name="locality" >Lokalitas</string>
@@ -206,4 +193,9 @@
     <string name="open_draft_changes_message">Anda dapat membuka kembali formulir draf yang disimpan untuk melanjutkan atau menghapusnya</string>
     <string name="button_pagination_next">Berikutnya</string>
     <string name="button_pagination_previous">Sebelumnya</string>
+    <string name="record_gps_location">Rekam Lokasi GPS</string>
+    <string name="select_period">Pilih Periode</string>
+    <string name="export_db">Ekspor Basis Data</string>
+    <string name="exporting_db">Mengekspor basis data...</string>
+    <string name="please_contact_supervisor">Silakan hubungi supervisor.</string>
 </resources>

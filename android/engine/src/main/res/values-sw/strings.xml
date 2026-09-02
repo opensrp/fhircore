@@ -2,6 +2,7 @@
     <string name="app_version">Toleo %1$d(%2$s)</string>
     <string name="data_migration_version">Toleo la uhamiaji wa data %1$s</string>
     <string name="last_sync">Usawazishaji wa mwisho %1$s</string>
+    <string name="sync">Sawazisha</string>
     <string name="language">Lugha</string>
     <string name="empty_client_list_message_title">Hakuna Matokeo</string>
     <string name="empty_client_list_message_details">Pole, hatukupata mteja kwa hilo Jina wala ID</string>
@@ -32,11 +33,14 @@
     <string name="logout_user">Toka kama %1$s</string>
     <string name="sync_completed">Kusawazisha imekamilika</string>
     <string name="syncing">Inasawazisha</string>
+    <string name="syncing_up">Inasawazisha&#8230;</string>
+    <string name="syncing_down">Inasawazisha chini&#8230;</string>
     <string name="syncing_initiated">Kusawazisha imeanza&#8230;</string>
     <string name="sync_failed">Hitilafu ukisawazisha. Angalia muunganisho wako wa mtandao au jaribu tena.</string>
     <string name="sync_unauthorised">Usawazishaji haukufaulu kwa sababu hauna vitambulisho sahihi vya uthibitishaji</string>
     <string name="try_again">Jaribu tena</string>
     <string name="date_last_seen">Mara ya mwisho kuonekana %1$s</string>
+    <string name="save">Hifadhi</string>
     <string name="login_error">Hitiliafu ukiidhinisha: %1$s</string>
     <string name="search_result">MATOKEO %1$d </string>
     <string name="no_results">Hakuna matokeo</string>
@@ -60,11 +64,13 @@
     <string name="questionnaire_alert_back_pressed_button_title">Futa</string>
     <string name="questionnaire_alert_back_pressed_save_draft_button_title">Hifadhi rasimu ya sehemu</string>
     <string name="questionnaire_alert_neutral_button_title">Ghairi</string>
+    <string name="questionnaire_alert_negative_button_title">Tupa Mabadiliko</string>
     <string name="questionnaire_alert_confirm_button_title">Nido</string>
     <string name="questionnaire_alert_invalid_message">Maelezo yaliyotolewa yana hitilafu za uthibitishaji. Tatua makosa na uwasilishe tena</string>
     <string name="questionnaire_alert_invalid_title">Uthibitishaji Haujafaulu</string>
     <string name="questionnaire_alert_ack_button_title">Sawa</string>
     <string name="password">Nenosiri</string>
+    <string name="questionnaire_alert_delete_draft_button_title">Futa rasimu</string>
     <string name="username">Jina</string>
     <string name="forgot_password">Nenosiri liliosahaulika</string>
     <string name="forgot_password_title">Nenosiri liliosahaulika!</string>
@@ -80,7 +86,6 @@
     <string name="select_register">Chagua rejista</string>
     <string name="tick">Tiki</string>
     <string name="invalid_login_credentials">Jina la mtumiaji au nenosiri batili</string>
-    <string name="app_id_sample">k.m ecbis, quest, cha</string>
     <string name="load_configurations">PAKIA MIPANGILIO</string>
     <string name="edit">Hariri</string>
     <string name="clients">Wateja</string>
@@ -113,6 +118,7 @@
     <string name="date_last_visited">Ziara ya mwisho %1$s</string>
     <string name="clear_database">Futa yote</string>
     <string name="other_patients">Wagonjwa wengine</string>
+    <string name="select_location">Chagua eneo</string>
     <string name="responses">MAJIBU (%1$s)</string>
     <string name="multi_user_login_attempt">Umejaribu kuingia na mtoa huduma tofauti</string>
     <string name="clear_database_title">Weka upya hifadhidata</string>
@@ -130,6 +136,7 @@
     <string name="error_loading_config_general">Hitilafu katika kuunganisha kwenye seva. Tafadhali wasiliana na msimamizi wa mfumo</string>
     <string name="error_loading_config_http_error">Haikuweza kupakia usanidi. Tafadhali jaribu tena baadae</string>
     <string name="insights">Takwimu</string>
+    <string name="share_file">Share File</string>
     <string name="contact_help">Wasiliana na usaidizi</string>
     <string name="offline_map">Ramani ya nje ya Mtandao</string>
     <string name="dismiss">Ondoa</string>
@@ -140,4 +147,16 @@
     <string name="sync_completed_with_errors">Usawazishaji umekamilika na hitilafu. Inajaribu tena…</string>
     <string name="error_occurred">Hitilafu fulani imetokea…</string>
     <string name="app_build_type">Aina ya uundaji wa programu</string>
+    <string name="back_arrow">Mshale wa nyuma</string>
+    <string name="record_gps_location">Rekodi Eneo la GPS</string>
+    <string name="questionnaire_alert_open_draft_button_title">Rasimu ya wazi</string>
+    <string name="select_period">Chagua Kipindi</string>
+    <string name="full_year">Mwaka Kamili</string>
+    <string name="export_db">Hamisha DB</string>
+    <string name="exporting_db">Inahamisha DB...</string>
+    <string name="please_contact_supervisor">Tafadhali wasiliana na msimamizi</string>
+    <string name="button_pagination_next">Endelea</string>
+    <string name="button_pagination_previous">Nyuma</string>
+    <string name="search">Tafuta kwa jina</string>
+    <string name="initializing_application">Kuanzisha programu &#8230;</string>
 </resources>
