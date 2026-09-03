@@ -140,7 +140,8 @@ constructor(
     }
   }
 
-  fun isCurrentRefreshTokenActive() = isTokenActive(accountManager.getPassword(findAccount()))
+  fun isCurrentRefreshTokenActive() =
+    findAccount()?.let { isTokenActive(accountManager.getPassword(it)) } ?: false
 
   private fun buildOAuthPayload(grantType: String) =
     mutableMapOf(
