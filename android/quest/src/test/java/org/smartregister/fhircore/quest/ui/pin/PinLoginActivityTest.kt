@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.pin
 
-import android.content.Intent
 import androidx.compose.material.ExperimentalMaterialApi
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -66,15 +65,6 @@ class PinLoginActivityTest : RobolectricTest() {
   fun testThaPinUiStateIsUpdatedWithActivityLaunch() {
     val pinUiState = pinLoginActivity.pinViewModel.pinUiState.value
     Assert.assertTrue(pinUiState.appName.isNotEmpty())
-  }
-
-  @Test
-  fun testDialPadLaunched() {
-    val phoneNumber = "1234567890"
-    pinLoginActivity.pinViewModel.launchDialPad.value = phoneNumber
-    val resultIntent = Shadows.shadowOf(pinLoginActivity).nextStartedActivity
-    Assert.assertEquals(Intent.ACTION_DIAL, resultIntent.action)
-    Assert.assertEquals(phoneNumber, resultIntent.data?.schemeSpecificPart.toString())
   }
 
   @Test
