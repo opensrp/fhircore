@@ -498,14 +498,17 @@ class AppSettingViewModelTest : RobolectricTest() {
       coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
       coEvery { appSettingViewModel.fhirResourceDataSource.post(requestBody = any()) } returns
         Bundle()
+      // The remote path loads the freshly fetched configs; stub it so the real load is not run.
+      coEvery {
+        appSettingViewModel.configurationRegistry.loadConfigurations(any(), any(), any())
+      } just runs
 
       // When: fetchConfigurations is called
       appSettingViewModel.fetchConfigurations(context)
 
-      // Then: Should fetch from remote
+      // fetches from remote, then loads the freshly fetched configs
       coVerify { appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any()) }
-      // And should NOT call loadConfigurations
-      coVerify(exactly = 0) { appSettingViewModel.loadConfigurations(any()) }
+      coVerify { appSettingViewModel.loadConfigurations(any()) }
     }
   }
 
