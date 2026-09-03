@@ -459,6 +459,27 @@ class AppMainViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testUpdateAppDrawerUIStateResetsPercentageWhenNewSyncStartsWithoutTerminal() {
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = true,
+      syncCounter = 1,
+      currentSyncJobStatus =
+        CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.UPLOAD, 100, 100)),
+      percentageProgress = 100,
+    )
+    Assert.assertEquals(100, appMainViewModel.appDrawerUiState.value.percentageProgress)
+
+    appMainViewModel.updateAppDrawerUIState(
+      isSyncUpload = false,
+      syncCounter = 1,
+      currentSyncJobStatus =
+        CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 100, 5)),
+      percentageProgress = 5,
+    )
+    Assert.assertEquals(5, appMainViewModel.appDrawerUiState.value.percentageProgress)
+  }
+
+  @Test
   fun testUpdateAppDrawerUIStateFreezesSyncDirectionMessageAt100() {
     appMainViewModel.updateAppDrawerUIState(
       isSyncUpload = false,

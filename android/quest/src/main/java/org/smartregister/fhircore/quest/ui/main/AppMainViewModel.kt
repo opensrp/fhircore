@@ -417,22 +417,20 @@ constructor(
 
     val resolvedPercentage = percentageProgress ?: current.percentageProgress
 
+    val inUploadTail =
+      currentSyncJobStatus is CurrentSyncJobStatus.Running &&
+        current.currentSyncJobStatus is CurrentSyncJobStatus.Running &&
+        isSyncUpload == true
+
     val monotonicPercentage =
-      if (
-        currentSyncJobStatus is CurrentSyncJobStatus.Running &&
-          current.currentSyncJobStatus is CurrentSyncJobStatus.Running
-      ) {
+      if (inUploadTail) {
         maxOf(resolvedPercentage ?: 0, current.percentageProgress ?: 0)
       } else {
         resolvedPercentage
       }
 
     val stableIsSyncUpload =
-      if (
-        currentSyncJobStatus is CurrentSyncJobStatus.Running &&
-          current.currentSyncJobStatus is CurrentSyncJobStatus.Running &&
-          (current.percentageProgress ?: 0) >= 100
-      ) {
+      if (inUploadTail && (current.percentageProgress ?: 0) >= 100) {
         current.isSyncUpload
       } else {
         isSyncUpload
