@@ -295,6 +295,26 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testUnSuccessfulOnlineLoginWithEmptyPractitionerDetailsBundleEmitsErrorFetchingUser() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+
+    coEvery { keycloakService.fetchUserInfo() } returns
+      Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
+
+    // The gateway returns an empty bundle when the user has no practitioner or no CareTeam
+    coEvery { fhirResourceService.getResource(any()) } returns Bundle()
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertFalse(loginViewModel.navigateToHome.value!!)
+    Assert.assertEquals(LoginErrorState.ERROR_FETCHING_USER, loginViewModel.loginErrorState.value!!)
+    verify(exactly = 0) { loginViewModel.savePractitionerDetails(any(), any(), any()) }
+  }
+
+  @Test
   fun testUnSuccessfulOnlineLoginUserInfoNotFetched() {
     updateCredentials()
     secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())

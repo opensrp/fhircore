@@ -152,9 +152,16 @@ constructor(
             onFetchPractitioner = { bundleResult, userInfo ->
               if (bundleResult.isSuccess) {
                 val bundle = bundleResult.getOrDefault(FhirR4ModelBundle())
-                savePractitionerDetails(bundle, userInfo) {
+                if (bundle.entry.isNullOrEmpty()) {
+                  // savePractitionerDetails skips an empty bundle, so stop here with an error
+                  Timber.e("No practitioner details returned for this user")
                   _showProgressBar.postValue(false)
-                  updateNavigateHome(true)
+                  _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
+                } else {
+                  savePractitionerDetails(bundle, userInfo) {
+                    _showProgressBar.postValue(false)
+                    updateNavigateHome(true)
+                  }
                 }
               } else {
                 _showProgressBar.postValue(false)
