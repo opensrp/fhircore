@@ -294,6 +294,11 @@ fun LoginPage(
                   id = R.string.login_error,
                   stringResource(R.string.login_call_fail_error_message),
                 )
+              LoginErrorState.SERVER_UNREACHABLE ->
+                stringResource(
+                  id = R.string.login_error,
+                  stringResource(R.string.login_server_unreachable_error_message),
+                )
               LoginErrorState.INVALID_CREDENTIALS ->
                 stringResource(
                   id = R.string.login_error,

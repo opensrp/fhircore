@@ -18,6 +18,7 @@
     <string name="last_sync">Dernière synchronisation%1$s</string>
     <string name="login_text">SE CONNECTER</string>
     <string name="login_call_fail_error_message">Échec de la vérification des informations d\'identification du serveur. Vérifiez votre connexion internet</string>
+    <string name="login_server_unreachable_error_message">Impossible de joindre le serveur. Vérifiez votre connexion internet ou réessayez plus tard</string>
     <string name="userinfo_call_fail_error_message">Échec de l\'obtention des informations sur l\'utilisateur à partir du serveur. Vérifiez votre connexion internet</string>
     <string name="select_language">Choix de la langue</string>
     <string name="logout_user">Se déconnecter en tant que %1$s</string>

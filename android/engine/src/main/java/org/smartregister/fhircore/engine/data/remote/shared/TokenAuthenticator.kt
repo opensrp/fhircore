@@ -169,6 +169,9 @@ constructor(
       Result.failure(unknownHostException)
     } catch (sslHandShakeException: SSLHandshakeException) {
       Result.failure(sslHandShakeException)
+    } catch (ioException: IOException) {
+      // A refused connection or a timeout, e.g. ConnectException or SocketTimeoutException
+      Result.failure(ioException)
     }
   }
 
@@ -196,6 +199,8 @@ constructor(
         Result.failure(httpException)
       } catch (unknownHostException: UnknownHostException) {
         Result.failure(unknownHostException)
+      } catch (ioException: IOException) {
+        Result.failure(ioException)
       }
     }
   }

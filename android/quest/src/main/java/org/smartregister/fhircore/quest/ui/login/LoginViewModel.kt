@@ -30,6 +30,7 @@ import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import io.sentry.protocol.User
+import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
@@ -261,6 +262,8 @@ constructor(
               }
             } else if (it is UnknownHostException) {
               errorState = LoginErrorState.UNKNOWN_HOST
+            } else if (it is ConnectException || it is SocketTimeoutException) {
+              errorState = LoginErrorState.SERVER_UNREACHABLE
             }
 
             _loginErrorState.postValue(errorState)

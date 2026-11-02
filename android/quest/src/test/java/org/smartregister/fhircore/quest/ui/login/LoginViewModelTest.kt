@@ -33,6 +33,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.inject.Inject
@@ -393,6 +394,28 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertEquals(LoginErrorState.UNKNOWN_HOST, loginViewModel.loginErrorState.value!!)
+  }
+
+  @Test
+  fun testUnsuccessfulOnlineLoginWithConnectOrTimeoutExceptionEmitsServerUnreachable() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+
+    val exceptions = listOf(ConnectException("refused"), SocketTimeoutException("timeout"))
+    for (exception in exceptions) {
+      coEvery {
+        tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+      } returns Result.failure(exception)
+
+      loginViewModel.login(mockedActivity(isDeviceOnline = true))
+
+      Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+      Assert.assertEquals(
+        LoginErrorState.SERVER_UNREACHABLE,
+        loginViewModel.loginErrorState.value!!,
+      )
+    }
   }
 
   @Test

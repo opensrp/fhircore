@@ -38,6 +38,8 @@ import io.mockk.spyk
 import io.mockk.verify
 import io.mockk.verifyOrder
 import java.io.IOException
+import java.net.ConnectException
+import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import javax.net.ssl.SSLHandshakeException
@@ -301,6 +303,31 @@ class TokenAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
+  @ExperimentalCoroutinesApi
+  fun testFetchTokenShouldCatchConnectAndSocketTimeoutExceptions() {
+    val username = sampleUsername
+    val password = charArrayOf('P', '4', '5', '5', 'W', '4', '0')
+
+    val connectException = ConnectException("Failed to connect")
+
+    coEvery { oAuthService.fetchToken(any()) }.throws(connectException)
+
+    runTest {
+      val result = tokenAuthenticator.fetchAccessToken(username, password)
+      Assert.assertEquals(Result.failure<ConnectException>(connectException), result)
+    }
+
+    val socketTimeoutException = SocketTimeoutException("timeout")
+
+    coEvery { oAuthService.fetchToken(any()) }.throws(socketTimeoutException)
+
+    runTest {
+      val result = tokenAuthenticator.fetchAccessToken(username, password)
+      Assert.assertEquals(Result.failure<SocketTimeoutException>(socketTimeoutException), result)
+    }
+  }
+
+  @Test
   fun testLogout() {
     val account = Account(sampleUsername, PROVIDER)
     val refreshToken = "gibberishaccesstoken"
@@ -336,6 +363,21 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
     result = tokenAuthenticator.logout()
     Assert.assertEquals(Result.failure<UnknownHostException>(unknownHostException), result)
+  }
+
+  @Test
+  fun testLogoutShouldCatchConnectException() {
+    val account = Account(sampleUsername, PROVIDER)
+    val refreshToken = "gibberishaccesstoken"
+    every { tokenAuthenticator.findAccount() } returns account
+    every { accountManager.getPassword(account) } returns refreshToken
+
+    val connectException = ConnectException("Failed to connect")
+
+    coEvery { oAuthService.logout(any(), any()) }.throws(connectException)
+
+    val result = tokenAuthenticator.logout()
+    Assert.assertEquals(Result.failure<ConnectException>(connectException), result)
   }
 
   @Test
