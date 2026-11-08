@@ -16,14 +16,22 @@
 
 package org.smartregister.fhircore.quest.ui.questionnaire.signature
 
-import android.util.Base64
 import android.view.View
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.google.android.fhir.datacapture.extensions.tryUnwrapContext
+import com.google.android.fhir.datacapture.validation.Invalid
+import com.google.android.fhir.datacapture.validation.ValidationResult
+import com.google.android.fhir.datacapture.views.HeaderView
 import com.google.android.fhir.datacapture.views.QuestionnaireViewItem
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemAndroidViewHolderDelegate
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemAndroidViewHolderFactory
 import java.util.Date
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Attachment
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Questionnaire
@@ -51,48 +59,94 @@ object SignatureItemViewHolderFactory :
 
       override lateinit var questionnaireViewItem: QuestionnaireViewItem
 
-      private val scope = MainScope()
+      private lateinit var context: AppCompatActivity
+      private lateinit var header: HeaderView
+      private lateinit var errorText: TextView
       private lateinit var signaturePad: SignatureCaptureView
 
+      /** The item this view shows. A recycled view can get another item. */
+      private var boundLinkId: String? = null
+
+      /** The PNG this pad last saved or loaded, to tell its own saves from other changes. */
+      private var shownPng: ByteArray? = null
+
+      private var saveJob: Job? = null
+
       override fun init(itemView: View) {
+        context = itemView.context.tryUnwrapContext()!!
+        header = itemView.findViewById(R.id.header)
+        errorText = itemView.findViewById(R.id.signature_error_text)
         signaturePad = itemView.findViewById(R.id.signature_pad)
         signaturePad.setOnSignatureChangedListener { hasSignature ->
+          // A newer stroke or Clear replaces a save that hasn't finished
+          saveJob?.cancel()
           if (hasSignature) {
-            val base64 =
-              signaturePad.getSignaturePngBase64()
-                ?: return@setOnSignatureChangedListener
-            val attachment =
-              Attachment().apply {
-                contentType = "image/png"
-                data = Base64.decode(base64, Base64.NO_WRAP)
-                creation = Date()
+            val bitmap =
+              signaturePad.exportSignatureBitmap() ?: return@setOnSignatureChangedListener
+            saveJob =
+              context.lifecycleScope.launch {
+                val png =
+                  withContext(Dispatchers.Default) { SignatureCaptureView.encodePng(bitmap) }
+                shownPng = png
+                val attachment =
+                  Attachment().apply {
+                    contentType = "image/png"
+                    data = png
+                    creation = Date()
+                  }
+                questionnaireViewItem.setAnswer(
+                  QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
+                    .setValue(attachment),
+                )
               }
-            val answer =
-              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
-                .setValue(attachment)
-            scope.launch { questionnaireViewItem.setAnswer(answer) }
           } else {
-            scope.launch { questionnaireViewItem.clearAnswer() }
+            shownPng = null
+            context.lifecycleScope.launch { questionnaireViewItem.clearAnswer() }
           }
         }
       }
 
       override fun bind(questionnaireViewItem: QuestionnaireViewItem) {
         this.questionnaireViewItem = questionnaireViewItem
-        val existingAttachment =
-          questionnaireViewItem.answers.firstOrNull()?.value as? Attachment
-        val base64 =
-          existingAttachment?.data?.let { Base64.encodeToString(it, Base64.NO_WRAP) }
+        header.bind(questionnaireViewItem, showRequiredOrOptionalText = true)
+        displayValidationResult(questionnaireViewItem.validationResult)
+
+        val linkId = questionnaireViewItem.questionnaireItem.linkId
+        if (linkId != boundLinkId) {
+          saveJob?.cancel()
+          signaturePad.clearSilently()
+          shownPng = null
+          boundLinkId = linkId
+        }
+
+        val png = (questionnaireViewItem.answers.firstOrNull()?.value as? Attachment)?.data
         when {
-          !base64.isNullOrEmpty() && signaturePad.isEmpty() ->
-            signaturePad.loadSignaturePngBase64(base64)
-          base64.isNullOrEmpty() && signaturePad.isEmpty() -> signaturePad.clearSilently()
-          else -> Unit
+          // The answer was removed: clear the saved drawing. Strokes not saved yet stay.
+          png == null || png.isEmpty() ->
+            if (shownPng != null) {
+              signaturePad.clearSilently()
+              shownPng = null
+            }
+          // This pad's own save, or the answer it already shows
+          png contentEquals shownPng -> Unit
+          else -> {
+            signaturePad.loadSignaturePng(png)
+            shownPng = png
+          }
         }
       }
 
       override fun setReadOnly(isReadOnly: Boolean) {
-        signaturePad.isEnabled = !isReadOnly
+        signaturePad.setReadOnly(isReadOnly)
+      }
+
+      private fun displayValidationResult(validationResult: ValidationResult) {
+        if (validationResult is Invalid) {
+          errorText.text = validationResult.getSingleStringValidationMessage()
+          errorText.visibility = View.VISIBLE
+        } else {
+          errorText.visibility = View.GONE
+        }
       }
     }
 }

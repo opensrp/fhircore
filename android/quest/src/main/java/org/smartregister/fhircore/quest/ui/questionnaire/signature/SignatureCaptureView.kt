@@ -24,9 +24,9 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.RectF
 import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
-import android.util.Base64
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -46,9 +46,11 @@ constructor(
   private val drawingView = DrawingCanvasView(context)
   private lateinit var clearButton: Button
   private lateinit var primaryButton: Button
+  private lateinit var buttonRow: LinearLayout
   private var onSignatureChangedListener: ((Boolean) -> Unit)? = null
   private var suppressListener = false
   private var isLocked = false
+  private var isReadOnly = false
 
   init {
     orientation = VERTICAL
@@ -74,7 +76,7 @@ constructor(
     val canvasParams = LayoutParams(LayoutParams.MATCH_PARENT, dpToPx(CANVAS_HEIGHT_DP))
     addView(drawingView, canvasParams)
 
-    val buttonRow =
+    buttonRow =
       LinearLayout(context).apply {
         orientation = HORIZONTAL
         gravity = Gravity.END
@@ -95,7 +97,9 @@ constructor(
 
     addView(buttonRow, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
 
-    drawingView.onStrokeDrawn = { notifyChanged(true) }
+    // Save once per stroke, when the finger lifts. The touch-down only refreshes the buttons.
+    drawingView.onStrokeStarted = { updateUi() }
+    drawingView.onStrokeFinished = { notifyChanged(true) }
     updateUi()
   }
 
@@ -124,16 +128,14 @@ constructor(
     }
   }
 
-  fun getSignaturePngBase64(): String? {
-    if (drawingView.isEmpty()) return null
-    val bitmap = drawingView.exportBitmap()
-    val outputStream = ByteArrayOutputStream()
-    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-    return Base64.encodeToString(outputStream.toByteArray(), Base64.NO_WRAP)
-  }
+  /**
+   * Draws the signature into a new bitmap, on the main thread. Encode it with [encodePng] off the
+   * main thread. Returns null when the pad is empty.
+   */
+  fun exportSignatureBitmap(): Bitmap? =
+    if (drawingView.isEmpty()) null else drawingView.exportBitmap()
 
-  fun loadSignaturePngBase64(base64: String) {
-    val bytes = Base64.decode(base64, Base64.NO_WRAP)
+  fun loadSignaturePng(bytes: ByteArray) {
     val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return
     suppressListener = true
     try {
@@ -143,6 +145,12 @@ constructor(
     } finally {
       suppressListener = false
     }
+  }
+
+  /** Read-only blocks drawing and hides Clear, Done and Edit. */
+  fun setReadOnly(readOnly: Boolean) {
+    isReadOnly = readOnly
+    updateUi()
   }
 
   private fun onPrimaryClicked() {
@@ -164,6 +172,8 @@ constructor(
   private fun updateUi() {
     val hasContent = !drawingView.isEmpty()
     drawingView.setLocked(isLocked)
+    drawingView.acceptsTouch = !isReadOnly
+    buttonRow.visibility = if (isReadOnly) View.GONE else View.VISIBLE
 
     if (isLocked) {
       clearButton.visibility = View.GONE
@@ -188,7 +198,11 @@ constructor(
 
   private class DrawingCanvasView(context: Context) : View(context) {
 
-    var onStrokeDrawn: (() -> Unit)? = null
+    var onStrokeStarted: (() -> Unit)? = null
+    var onStrokeFinished: (() -> Unit)? = null
+
+    /** False when the form is read-only. Separate from [locked], which turns the border green. */
+    var acceptsTouch = true
 
     private var locked = false
 
@@ -221,6 +235,8 @@ constructor(
     private var lastY = 0f
     private var hasContent = false
     private var loadedBitmap: Bitmap? = null
+    private val loadedBitmapPaint = Paint(Paint.FILTER_BITMAP_FLAG)
+    private val loadedBitmapBounds = RectF()
 
     init {
       background =
@@ -250,16 +266,26 @@ constructor(
       val w = width.coerceAtLeast(1)
       val h = height.coerceAtLeast(1)
 
-      val targetW = (w / 2).coerceAtLeast(1)
-      val targetH = (h / 2).coerceAtLeast(1)
+      val targetW = (w * EXPORT_SCALE).toInt().coerceAtLeast(1)
+      val targetH = (h * EXPORT_SCALE).toInt().coerceAtLeast(1)
 
       val bitmap = Bitmap.createBitmap(targetW, targetH, Bitmap.Config.RGB_565)
       val canvas = Canvas(bitmap)
-      canvas.scale(0.5f, 0.5f)
+      canvas.scale(EXPORT_SCALE, EXPORT_SCALE)
       canvas.drawRect(0f, 0f, w.toFloat(), h.toFloat(), backgroundPaint)
-      loadedBitmap?.let { canvas.drawBitmap(it, 0f, 0f, null) }
+      drawLoadedBitmap(canvas)
       canvas.drawPath(path, paint)
       return bitmap
+    }
+
+    /**
+     * A saved signature was exported at [EXPORT_SCALE], so draw it back at full size. Otherwise it
+     * shows at half size, and each export after Edit halves it again.
+     */
+    private fun drawLoadedBitmap(canvas: Canvas) {
+      val bitmap = loadedBitmap ?: return
+      loadedBitmapBounds.set(0f, 0f, bitmap.width / EXPORT_SCALE, bitmap.height / EXPORT_SCALE)
+      canvas.drawBitmap(bitmap, null, loadedBitmapBounds, loadedBitmapPaint)
     }
 
     fun loadBitmap(bitmap: Bitmap) {
@@ -270,7 +296,7 @@ constructor(
 
     override fun onDraw(canvas: Canvas) {
       super.onDraw(canvas)
-      loadedBitmap?.let { canvas.drawBitmap(it, 0f, 0f, null) }
+      drawLoadedBitmap(canvas)
       canvas.drawPath(path, paint)
       val half = borderPaint.strokeWidth / 2f
       val radius = dpToPx(4).toFloat()
@@ -286,7 +312,7 @@ constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-      if (locked) return false
+      if (locked || !acceptsTouch) return false
       when (event.actionMasked) {
         MotionEvent.ACTION_DOWN -> {
           parent?.requestDisallowInterceptTouchEvent(true)
@@ -295,7 +321,7 @@ constructor(
           lastX = event.x
           lastY = event.y
           hasContent = true
-          onStrokeDrawn?.invoke()
+          onStrokeStarted?.invoke()
         }
         MotionEvent.ACTION_MOVE -> {
           val midX = (lastX + event.x) / 2
@@ -306,7 +332,7 @@ constructor(
         }
         MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
           parent?.requestDisallowInterceptTouchEvent(false)
-          onStrokeDrawn?.invoke()
+          onStrokeFinished?.invoke()
         }
         else -> return false
       }
@@ -326,5 +352,12 @@ constructor(
     private val BORDER_LOCKED_GREEN = Color.parseColor("#2E7D32")
     private const val DISABLED_ALPHA = 0.5f
     private const val CANVAS_HEIGHT_DP = 180
+    private const val EXPORT_SCALE = 0.5f
+
+    /** PNG bytes of a bitmap from [exportSignatureBitmap]. Slow: call it off the main thread. */
+    fun encodePng(bitmap: Bitmap): ByteArray =
+      ByteArrayOutputStream()
+        .also { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        .toByteArray()
   }
 }
