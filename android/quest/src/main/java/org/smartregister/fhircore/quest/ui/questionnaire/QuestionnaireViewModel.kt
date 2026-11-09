@@ -88,6 +88,7 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.batchedSearch
 import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
+import org.smartregister.fhircore.engine.util.extension.estimatedJsonSize
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -180,6 +181,7 @@ constructor(
     actionParameters: List<ActionParameter>,
     context: Context,
     onQuestionnaireResponseInvalid: () -> Unit,
+    onQuestionnaireResponseTooLarge: () -> Unit,
     onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit,
   ) {
     viewModelScope.launch(SupervisorJob()) {
@@ -193,6 +195,20 @@ constructor(
       if (questionnaireConfig.saveQuestionnaireResponse && !questionnaireResponseValid) {
         onQuestionnaireResponseInvalid.invoke()
         return@launch
+      }
+
+      // A saved response over the database read window can't be read back. Every read of it
+      // throws, including the unsynced count after each login and the sync upload
+      if (questionnaireConfig.saveQuestionnaireResponse) {
+        val responseSize =
+          withContext(dispatcherProvider.default()) {
+            currentQuestionnaireResponse.estimatedJsonSize()
+          }
+        if (responseSize > MAX_SAVED_RESPONSE_SIZE) {
+          Timber.w("Questionnaire response too large to save: $responseSize bytes")
+          onQuestionnaireResponseTooLarge.invoke()
+          return@launch
+        }
       }
 
       val idTypes =
@@ -1375,6 +1391,9 @@ constructor(
     const val CONTAINED_LIST_TITLE = "GeneratedResourcesList"
     const val OUTPUT_PARAMETER_KEY = "OUTPUT"
     const val DELIMITER = ","
+
+    /** Bytes of JSON, under the 10,485,760-byte database read window set in QuestApplication */
+    const val MAX_SAVED_RESPONSE_SIZE = 10_000_000L
   }
 }
 

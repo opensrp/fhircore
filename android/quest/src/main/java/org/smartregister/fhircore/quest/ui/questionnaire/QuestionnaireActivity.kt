@@ -26,6 +26,8 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Parcelable
 import android.provider.Settings
+import android.text.TextUtils
+import android.text.format.Formatter
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -47,6 +49,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Attachment
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
@@ -63,11 +66,14 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.parcelableArrayList
+import org.smartregister.fhircore.engine.util.extension.removeAttachmentData
+import org.smartregister.fhircore.engine.util.extension.replaceAttachmentDataWithLabel
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.location.LocationUtils
 import org.smartregister.fhircore.engine.util.location.PermissionUtils
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
+import org.smartregister.fhircore.quest.ui.questionnaire.signature.isSignatureItem
 import org.smartregister.fhircore.quest.ui.shared.ActivityOnResultType
 import org.smartregister.fhircore.quest.ui.shared.ON_RESULT_TYPE
 import org.smartregister.fhircore.quest.util.ResourceUtils
@@ -422,6 +428,33 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     registerFragmentResultListener(questionnaire)
   }
 
+  /**
+   * What a read-only summary shows for a saved file: its title and size, or that it's signed. The
+   * SDK reads the label as HTML, so it is escaped: a title such as `consent <signed>.pdf` would
+   * otherwise lose `<signed>`.
+   */
+  private fun summaryLabel(attachment: Attachment, isSignature: Boolean): String =
+    TextUtils.htmlEncode(
+      if (isSignature) {
+        getString(R.string.attachment_summary_signature)
+      } else {
+        getString(
+          R.string.attachment_summary_label,
+          attachment.title?.takeIf { it.isNotBlank() }
+            ?: getString(R.string.attachment_summary_untitled),
+          Formatter.formatShortFileSize(this, attachment.data.size.toLong()),
+        )
+      },
+    )
+
+  /** The linkIds of the signature items, nested ones included. */
+  private fun List<Questionnaire.QuestionnaireItemComponent>.signatureLinkIds(): Set<String> =
+    flatMap { item ->
+        (if (isSignatureItem(item)) listOf(item.linkId) else emptyList()) +
+          item.item.signatureLinkIds()
+      }
+      .toSet()
+
   private suspend fun getQuestionnaireFragmentBuilder(
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig,
@@ -451,7 +484,18 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
                   this@QuestionnaireActivity,
                 )
               }
-              ?.let { setQuestionnaireResponse(questionnaireResponse.json()) }
+              ?.let {
+                // A summary can't show the files or save them, and Android copies this text
+                // each time the app goes to the background, up to about 1 MB. Each file gets a
+                // label instead, so the summary doesn't show it as « Not Answered »
+                if (questionnaireConfig.isSummary()) {
+                  val signatureLinkIds = questionnaire.item.signatureLinkIds()
+                  it.replaceAttachmentDataWithLabel { item, attachment ->
+                    summaryLabel(attachment, isSignature = item.linkId in signatureLinkIds)
+                  }
+                }
+                setQuestionnaireResponse(it.json())
+              }
               ?: withContext(dispatcherProvider.main()) {
                 showToast(getString(R.string.error_populating_questionnaire))
               }
@@ -518,6 +562,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             showProgressDialog(QuestionnaireProgressState.ExtractionInProgress(false))
           }
 
+          val questionnaireResponseTooLarge = {
+            showToast(getString(R.string.questionnaire_response_too_large))
+            showProgressDialog(QuestionnaireProgressState.ExtractionInProgress(false))
+          }
+
           handleQuestionnaireSubmission(
             questionnaire = questionnaire,
             currentQuestionnaireResponse = questionnaireResponse,
@@ -525,14 +574,19 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             actionParameters = actionParameters,
             context = this@QuestionnaireActivity,
             onQuestionnaireResponseInvalid = questionnaireResponseInvalid,
+            onQuestionnaireResponseTooLarge = questionnaireResponseTooLarge,
           ) { idTypes, questionnaireResponse ->
             // Dismiss progress indicator dialog, submit result then finish activity
             // TODO Ensure this dialog is dismissed even when an exception is encountered
             showProgressDialog(QuestionnaireProgressState.ExtractionInProgress(false))
+            // Saved already. The main screen doesn't read the files, and with them the result
+            // can pass Android's limit: the app dies, or the form never closes. Strip a copy,
+            // since addOrUpdate may still merge from this object in the background
+            val resultResponse = questionnaireResponse.copy().apply { removeAttachmentData() }
             setResult(
               Activity.RESULT_OK,
               Intent().apply {
-                putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
+                putExtra(QUESTIONNAIRE_RESPONSE, resultResponse as Serializable)
                 putExtra(QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS, idTypes as Serializable)
                 putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
                 putExtra(ON_RESULT_TYPE, ActivityOnResultType.QUESTIONNAIRE.name)

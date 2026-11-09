@@ -193,8 +193,7 @@ constructor(
     }
   }
 
-  private fun dpToPx(dp: Int): Int =
-    (dp * context.resources.displayMetrics.density).toInt()
+  private fun dpToPx(dp: Int): Int = (dp * context.resources.displayMetrics.density).toInt()
 
   private class DrawingCanvasView(context: Context) : View(context) {
 
@@ -330,7 +329,8 @@ constructor(
           lastX = event.x
           lastY = event.y
         }
-        MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+        MotionEvent.ACTION_UP,
+        MotionEvent.ACTION_CANCEL, -> {
           parent?.requestDisallowInterceptTouchEvent(false)
           onStrokeFinished?.invoke()
         }
@@ -340,8 +340,7 @@ constructor(
       return true
     }
 
-    private fun dpToPx(dp: Int): Int =
-      (dp * resources.displayMetrics.density).toInt()
+    private fun dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()
   }
 
   companion object {

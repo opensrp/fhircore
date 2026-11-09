@@ -100,6 +100,13 @@
     <string name="questionnaire_not_found">Questionnaire introuvable, synchroniser tous les questionnaires pour régler ce problème</string>
     <string name="no_visits">Pas de visites</string>
     <string name="questionnaire_response_invalid">Réponse du questionnaire invalide</string>
+    <string name="questionnaire_response_too_large">Les photos sont trop volumineuses pour être enregistrées.</string>
+    <string name="attachment_file_too_large">Le fichier dépasse %1$s.</string>
+    <string name="attachment_photo_unreadable">Cette image ne peut pas être lue. Choisissez-en une autre.</string>
+    <string name="attachment_file_unreadable">Ce fichier ne peut pas être lu. Choisissez-en un autre.</string>
+    <string name="attachment_summary_label">%1$s (%2$s)</string>
+    <string name="attachment_summary_untitled">Fichier enregistré</string>
+    <string name="attachment_summary_signature">Signature enregistrée</string>
     <string name="extracted_resources_validation_fail">La validation des ressources extraites a échoué. Veuillez vérifier les journaux.</string>
     <string name="error_occurred_generating_careplan">Une erreur est survenue lors de la génération du CarePlan. Veuillez vérifier les journaux.</string>
     <string name="application_version">Version de l\'application</string>

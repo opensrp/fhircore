@@ -22,6 +22,8 @@ import com.google.android.fhir.datacapture.contrib.views.barcode.BarCodeReaderVi
 import com.google.android.fhir.datacapture.contrib.views.locationwidget.LocationGpsCoordinateViewHolderFactory
 import com.google.android.fhir.datacapture.contrib.views.locationwidget.LocationWidgetViewHolderFactory
 import com.google.android.fhir.datacapture.extensions.asStringValue
+import org.smartregister.fhircore.quest.ui.questionnaire.attachment.AttachmentItemViewHolderFactory
+import org.smartregister.fhircore.quest.ui.questionnaire.attachment.isAttachmentItem
 import org.smartregister.fhircore.quest.ui.questionnaire.signature.SignatureItemViewHolderFactory
 import org.smartregister.fhircore.quest.ui.questionnaire.signature.isSignatureItem
 import org.smartregister.fhircore.quest.ui.sdc.password.PasswordViewHolderFactory
@@ -82,6 +84,10 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
         QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
           factory = SignatureItemViewHolderFactory,
           matches = ::isSignatureItem,
+        ),
+        QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
+          factory = AttachmentItemViewHolderFactory,
+          matches = ::isAttachmentItem,
         ),
       )
     }

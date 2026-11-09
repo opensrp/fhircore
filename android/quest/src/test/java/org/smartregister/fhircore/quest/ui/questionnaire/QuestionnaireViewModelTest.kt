@@ -306,6 +306,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         questionnaireConfig = updatedQuestionnaireConfig,
         onSuccessfulSubmission = onSuccessfulSubmission,
         onQuestionnaireResponseInvalid = {},
+        onQuestionnaireResponseTooLarge = {},
       )
 
       // Verify QuestionnaireResponse was validated
@@ -424,6 +425,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireConfig = updatedQuestionnaireConfig,
       onSuccessfulSubmission = onSuccessfulSubmission,
       onQuestionnaireResponseInvalid = {},
+      onQuestionnaireResponseTooLarge = {},
     )
 
     // Verify QuestionnaireResponse was validated
@@ -560,6 +562,46 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     unmockkObject(QuestionnaireResponseUtils)
     unmockkObject(ResourceMapper)
+  }
+
+  @Test
+  fun testHandleQuestionnaireSubmissionDoesNotSaveAResponseTooLargeToRead() = runTest {
+    mockkObject(QuestionnaireResponseUtils)
+    coEvery {
+      QuestionnaireResponseUtils.validateQuestionnaireResponse(any(), any(), any())
+    } returns true
+    val onQuestionnaireResponseTooLarge: () -> Unit = spyk()
+    val onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit = spyk()
+    // 7,500,000 bytes are 10,000,000 characters of base64, over the limit with the rest
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        addItem().apply {
+          linkId = "photo"
+          addAnswer().apply {
+            value =
+              Attachment().apply {
+                contentType = "image/jpeg"
+                data = ByteArray(7_500_000)
+              }
+          }
+        }
+      }
+
+    questionnaireViewModel.handleQuestionnaireSubmission(
+      questionnaire = extractionQuestionnaire(),
+      currentQuestionnaireResponse = questionnaireResponse,
+      questionnaireConfig = questionnaireConfig,
+      actionParameters = emptyList(),
+      context = context,
+      onQuestionnaireResponseInvalid = {},
+      onQuestionnaireResponseTooLarge = onQuestionnaireResponseTooLarge,
+      onSuccessfulSubmission = onSuccessfulSubmission,
+    )
+
+    verify { onQuestionnaireResponseTooLarge() }
+    verify(exactly = 0) { onSuccessfulSubmission(any(), any()) }
+    coVerify(exactly = 0) { defaultRepository.addOrUpdate(any(Boolean::class), any<Resource>()) }
+    unmockkObject(QuestionnaireResponseUtils)
   }
 
   @Test

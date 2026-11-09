@@ -105,6 +105,13 @@
     <string name="questionnaire_not_found">Questionnaire not found.  Sync all questionnaires to fix</string>
     <string name="no_visits">No visits</string>
     <string name="questionnaire_response_invalid">Questionnaire response invalid</string>
+    <string name="questionnaire_response_too_large">The photos are too large to save.</string>
+    <string name="attachment_file_too_large">The file is larger than %1$s.</string>
+    <string name="attachment_photo_unreadable">This picture can\'t be read. Choose another one.</string>
+    <string name="attachment_file_unreadable">This file can\'t be read. Choose another one.</string>
+    <string name="attachment_summary_label">%1$s (%2$s)</string>
+    <string name="attachment_summary_untitled">File saved</string>
+    <string name="attachment_summary_signature">Signature saved</string>
     <string name="extracted_resources_validation_fail">Validation on extracted resources failed. Please check the logs</string>
     <string name="error_occurred_generating_careplan">An error occurred generating CarePlan. Please check the logs</string>
     <string name="app_version_tag_url" translatable="false">https://smartregister.org/app-version</string>

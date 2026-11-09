@@ -63,10 +63,7 @@ class SignatureItemViewHolderFactoryTest {
 
   @Test
   fun isSignatureItemReturnsFalseWhenValueIsNotCodeableConcept() {
-    val extension =
-      Extension(EXTENSION_URL).apply {
-        value = StringType(CODE)
-      }
+    val extension = Extension(EXTENSION_URL).apply { value = StringType(CODE) }
     val item = Questionnaire.QuestionnaireItemComponent().apply { addExtension(extension) }
     Assert.assertFalse(isSignatureItem(item))
   }
